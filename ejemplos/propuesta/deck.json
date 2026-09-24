@@ -229,7 +229,7 @@
     1
    ],
    "voz": "Segundo: lo aplican en sus chats reales, con acompañamiento.",
-   "nota": "Con sus chats reales"
+   "texto": "Lo aplican en **sus chats reales**"
   },
   {
    "id": "como",
@@ -263,12 +263,13 @@
     1,
     2
    ],
-   "voz": "Y tercero: medimos cada semana."
+   "voz": "Y tercero: medimos cada semana.",
+   "texto": "Medimos **cada semana**"
   },
   {
    "id": "metricas",
    "tipo": "tarjetas",
-   "encabezado": "Lo que medimos cada semana:",
+   "encabezado": "En el reporte del lunes:",
    "items": [
     {
      "emoji": "⏳",

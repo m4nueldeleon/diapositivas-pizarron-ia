@@ -30,6 +30,8 @@ export const COMUNES = ['id', 'tipo', 'como', 'voz', 'dur', 'ancla', 'anclas', '
   // `llamado: true` marca una lámina como llamado visible (reglas-deck.mjs); `paso_ref` elige el paso que
   // comparar.mjs mide contra el cuadro del video (réplica)
   'llamado', 'paso_ref', 'ms_ref',
+  // `contrato: true` marca la lámina que promete el tiempo («los próximos 10 minutos»): qa.json → arco lo compara con la voz
+  'contrato',
   // `anotaciones`: nota a mano con gancho (o flecha que entra desde el borde) hacia un ancla de CUALQUIER diseño
   'anotaciones'];
 export const CAMPOS = {
@@ -38,7 +40,7 @@ export const CAMPOS = {
   lista: ['items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'alinear', 'encabezado', 'nota', 'nota_paso', 'activo', 'hechos'],
   flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'retornos', 'aparte', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota',
     'nota_paso', 'fuente', 'fuente_paso'],
-  pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'texto', 'texto_paso',
+  pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'emoji_tam', 'texto', 'texto_paso',
     'tam_texto', 'nota', 'nota_paso',
     // internos (los pone resolverComo → marcarGrupos; empiezan con «_» y el autor no los escribe)
     '_grupo_texto', '_grupo_nota', '_grupo_hechos'],
@@ -81,7 +83,7 @@ export const CAMPOS = {
 // nunca id, voz, revelar, activo, hechos, fase_activa, texto, notas ni marcas. Lo que trae la hija gana. La madre va
 // ANTES; se permiten cadenas (A ← B ← C). Devuelve una copia: el deck original no se toca.
 export const CAMPOS_OBJETO = {
-  pasos: ['n', 'iconos', 'etiquetas', 'prefijo', 'sobre', 'ruta', 'separacion', 'tam_etiqueta'],
+  pasos: ['n', 'iconos', 'etiquetas', 'prefijo', 'sobre', 'ruta', 'separacion', 'tam_etiqueta', 'emoji_tam'],
   calendario: ['titulo', 'dias', 'fases', 'n', 'columnas', 'palabra_dia', 'color', 'rango'],
   tabla: ['esquina', 'columnas', 'filas', 'ancho_etiqueta', 'vacias'],
   // los pilares del producto que vuelven con uno activo [37:40 → 39:45]

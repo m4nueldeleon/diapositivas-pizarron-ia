@@ -32,7 +32,7 @@ también en vivo.
 
 | Pieza (`"pieza"`) | Duración | Voz escrita | Beats | Láminas | Oferta | Llamado |
 |---|---|---|---|---|---|---|
-| `reel` | 30-60 s | 80-140 palabras | 12-20 | 8-12 | ninguna, sin oscuras | 1: guardar o comentar una palabra |
+| `reel` | 30-60 s | 80-140 palabras | 12-20 | 6-12 | ninguna, sin oscuras | 1: guardar o comentar una palabra |
 | `video` (YouTube) | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | puente suave o ninguna | 1-2 |
 | `vsl` | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | el 25-30% final (GUION §7) | 2 o más |
 | `clase` (en vivo) | 40-60 min | el guion completo en beats, más tramos en vivo con `dur` | 500-900 + tramos | 220-400 | sin oscuras; puente al siguiente paso | al final: comunidad, próxima clase o invitación suave |
@@ -59,11 +59,19 @@ escribir con **~6.5-9.5 s por lámina; planea con 7.5 s** (2.2 pasos × 2.9 s po
 
 | Láminas fijadas | Pieza |
 |---|---|
-| 5-9 | `reel` |
-| 10-15 | `libre`, o `reel`/`tutorial` ajustando la voz |
+| 6-12 | `reel` (la misma cifra que la tabla de arriba: 11 láminas miden ~55 s) |
+| 13-15 | `tutorial` o `libre` |
 | 16-60 | `tutorial` (o `vsl-corto` si vende: 25-50) |
 | 60-150 | `video` o `vsl` |
 | 90-200 más tramos en vivo | `clase-corta` |
+| una pieza larga pedida (webinar, clase, VSL) con MENOS láminas que su mínimo | su versión corta: webinar o VSL → `vsl-corto`; clase → `clase-corta`, o `tutorial` con `"clase": true` |
+
+**Nunca se cambia la pieza en silencio.** «Un webinar de 30 láminas» son ~3.5-4.5 min (láminas × 7.5 s), no 60-90: se arma
+como `vsl-corto` (la parte de la oferta del webinar) y se dice ANTES de escribir, en una línea, con la duración estimada
+(«30 láminas son ~4 min, no un webinar de 60-90: lo armo como `vsl-corto`»). En un loop o un agente de fondo, donde no
+se puede preguntar, esa línea va en la entrega y en `_comentario`. Del webinar se conservan, dentro del `vsl-corto`, las
+2 objeciones y un beat de filtro («para quién no es») antes de la revelación. Es una recomendación del arco: QA no la
+revisa.
 
 QA solo avisa fuera de 0.7 × el mínimo y 1.3 × el máximo de la pieza. Una **clase express** (menos de 15 min) es
 `"pieza": "tutorial"` con `"clase": true`: no hay pieza aparte. La duración real la mide QA con la voz.
@@ -105,6 +113,18 @@ la voz (y los `dur`) y:
   llamado de la oferta, si su voz afirma una frecuencia que nadie midió («la de siempre», «la que más oigo»), si no hay ninguna prueba real o la única es una maqueta, y si antes de la revelación no
   aparece una cifra de credibilidad (GUION §7).
 - `qa.json → duracion` trae la voz total y, aparte, `laminas` y `camara`.
+- `qa.json → arco` trae las métricas que antes se cuadraban a mano: el **contrato de tiempo** (`contrato`: sus minutos,
+  la lámina y si se marcó con `"contrato": true` o se detectó), la voz (`duracion_s`) y el desvío en %; en piezas con
+  oferta, `oferta.revelacion_lamina`, `revelacion_pct` e `inicio_pct`; y cada llamado visible con su lámina y su %. QA
+  lo imprime en una línea («arco: contrato 4:00 (lám 4) · voz 3:24 (-15 %) · revelación 59 % · llamados lám 25 (83 %)…»).
+  Avisa si la voz se aleja más de 30% de lo que promete el contrato, y si una clase, clase corta, webinar o clase
+  express no trae contrato de tiempo.
+- avisa el mapa repetido seguido y el que vuelve sin nada nuevo (arriba, «Las plantillas»); en `vsl`, `vsl-corto` y
+  `webinar`, la respuesta a una objeción que solo afirma (GUION §2); y en un reel que promete un cómo sin enseñarlo a la
+  vista (`falta_para_final`: «el cómo a la vista»).
+- `qa.json → prueba` dice de dónde sale la prueba: `propia` (captura o caso del creador), `mercado` (un dato publicado de
+  terceros), `logica` o `garantia`. La de mercado cuenta para final, pero en un vsl o webinar avisa: respalda la
+  oportunidad, no tu resultado (GUION §7 c).
 - `qa.json → estado`: `con errores` → `borrador` (datos por confirmar, sin errores) → `bajo-90` → `falta-venta` → `listo`.
   Un borrador con errores sale `con errores`; en borrador, `nota_sin_tope` y `listo_salvo_datos` dicen si quedan avisos.
   `falta_para_final` lista lo que le falta a una pieza de venta (prueba real, cifra de credibilidad, objeción antes
@@ -116,12 +136,34 @@ la voz (y los `dur`) y:
 
 ## Las plantillas
 
-Minutos por bloque. Cada bloque abre, si toca, con el mapa 1-2-3 (`pasos` con `activo`).
+Minutos por bloque. **El mapa 1-2-3** (`pasos` con `activo`) es un separador entre bloques largos: en la referencia
+presenta el sistema [16:35] y vuelve cada 5-6 min [17:19 → 23:08 → 28:01].
+
+- El mapa entra **una vez, con el primer paso ya activo** (`activo: 1`). Nunca un mapa completo seguido del mismo mapa
+  con `activo: 1`: es la misma lámina dos veces (QA avisa «mapa repetido seguido»).
+- Un regreso al mapa se justifica si trae algo nuevo: **el titular del bloque en `texto`** («La IA te hace __la
+  minuta__»), el patrón del reel, donde mapa y rótulo son una sola lámina. Un regreso SIN texto va solo cuando el bloque
+  anterior tuvo 3 láminas o más y 20 s de voz o más; si no, el avance va dentro de la lámina del bloque (el mapa con su
+  titular, o una nota gris «Paso 2 de 3»). QA avisa «el mapa vuelve sin nada nuevo» (mapa → cita → mapa → reto → mapa).
+- En piezas largas (clase, video, webinar) el regreso sin texto se mantiene: cada bloque dura minutos, como en el
+  original.
 
 ### Reel (30-60 s)
-1. **Gancho de conflicto** (0-3 s): el conflicto concreto en la lámina 1 (el chat en visto, el número).
-2. **Mapa o 3 beats** (3-45 s): los 3 errores o los 3 pasos, uno por lámina.
+Modelo: **`ejemplos/reel/`** (9:16, 11 láminas, ~55 s). Recetas de tamaño en LAYOUTS.md, «Recetas 9:16».
+1. **Gancho de conflicto** (0-3 s): el conflicto concreto en la lámina 1 (el chat en visto, el número, la hora).
+2. **Mapa o 3 beats** (3-45 s): los 3 errores o los 3 pasos. El mapa entra una vez ya en el paso 1 y vuelve con el
+   titular de cada bloque; cada beat lleva 1-2 láminas.
 3. **Un solo llamado** (últimos 5 s): guardar 📌 o comentar una palabra 💬.
+
+- Si el reel promete tareas, pasos o un «cómo» («puedes», «pasos», «delegar», «prompt»), **cada beat enseña algo que se
+  puede hacer a la vista**: el prompt literal y corto en un `chat` (el mensaje `de: "yo"`), la captura o la foto del
+  paso. Un botón «Enviar» solo no enseña qué escribir. QA lo avisa y lo pone en `falta_para_final` («el cómo a la
+  vista»): el deck no sale `listo`. Un reel de opinión o de «3 errores» no promete un cómo y no se revisa.
+- Una condición legal o de consentimiento («con permiso de todos», «con su autorización») va **en pantalla**, no solo en
+  la voz: la lámina «Grabas la junta» sin ella enseña a grabar a escondidas.
+- «Guarda este reel» solo si hay algo que guardar a la vista (los prompts, la lista). Si no, «Comenta PALABRA 💬» con
+  `datos.ENTREGABLE` declarado (o pendiente).
+- Si nombras una herramienta, va su logo real o un hueco declarado (SKILL, regla 10), nunca un emoji en su lugar.
 
 ### Video de YouTube (8-20 min)
 1. Gancho con los beats de retención de GUION §6.1 (0:00-1:30).
@@ -138,8 +180,8 @@ Minutos por bloque. Cada bloque abre, si toca, con el mapa 1-2-3 (`pasos` con `a
 4. Prueba real (1-2 min), o un sustituto de GUION §7 («Sin prueba real, en este orden»).
 5. **Objeciones o razones antes de la oferta**: 2 si el VSL dura 8 min o más. Con la forma de GUION §2: `idea`
    con emoji negado, «Objeción #N» o «Razón #N» entre el emoji y la frase y la objeción en negrita; la
-   respuesta va en la lámina siguiente, con un dato real o un paso concreto. Nunca pegada al botón. Salen del
-   público real, no se inventan [34:17-36:00].
+   respuesta va en la lámina siguiente y DEMUESTRA: su primera lámina no es una `idea` que afirma (GUION §2, tabla
+   «objeción → respuesta»). Nunca pegada al botón. Salen del público real, no se inventan [34:17-36:00].
 6. Oferta en el 25-30% final, beat por beat (GUION §7, «El orden en un `vsl`»): revelación, qué incluye, prueba,
    precio y garantía si los hay, llamado con qué pasa después, resumen y el llamado otra vez. Ningún «aplica» antes
    de la revelación y una sola acción en todos los llamados.
@@ -147,8 +189,8 @@ Minutos por bloque. Cada bloque abre, si toca, con el mapa 1-2-3 (`pasos` con `a
 ### Clase en vivo (40-60 min)
 1. Gancho (≤ 2 min, GUION §6.1) y **contrato de tiempo**: qué se van a llevar en esta hora.
 2. Mapa 1-2-3 de la clase.
-3. **Tres bloques** de 10-15 min. Cada uno abre con el mapa, explica en beats, hace una demostración
-   en vivo (`camara` con `vivo: true` y `dur`) y regresa al mapa.
+3. **Tres bloques** de 10-15 min. Cada uno abre con el mapa (con bloques de 10-15 min el regreso sin texto siempre
+   se justifica), explica en beats, hace una demostración en vivo (`camara` con `vivo: true` y `dur`) y regresa al mapa.
 4. **Tarea**: qué hacer hoy, con objeto (qué mandar, a quién).
 5. **Puente al siguiente paso**: la comunidad, la próxima clase o una invitación suave, con su dato a la vista:
    CUÁNDO (fecha y hora, `{{PROXIMA_CLASE}}`) o CÓMO se entra (link, palabra clave o `boton` con destino,

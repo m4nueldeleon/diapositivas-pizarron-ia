@@ -5,7 +5,10 @@
 //              + salida/pasos.json (manifiesto para video y QA) + salida/hojas.json (qué hojas hay y qué láminas cubren)
 //
 //   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales]
-//                           [--pdf [--notas | --sin-notas]] [--pasos]
+//                           [--pdf [--notas | --sin-notas]] [--pasos] [--qa]
+//
+//   --qa        al terminar corre qa.mjs sobre la misma salida: nota, ESTADO y la línea del arco (contrato de tiempo,
+//               revelación y llamados en %), todo en qa.json
 //
 //   --pasos     imprime qué entra en cada paso de cada lámina (sin navegador ni PNG) y sale: para escribir la `voz` con
 //               una frase por paso ANTES de renderizar (LAYOUTS.md, «Pasos que genera cada diseño»)
@@ -19,13 +22,14 @@
 // «hoja 1/N — revisa TODAS»: la revisión visual recorre todas.
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina, archivoPagina, POR_HOJA, FILAS_POR_HOJA } from './lib/hoja.mjs';
 import { duracionTotal, mmss } from './lib/tiempos.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { exportarPdf, conNotas } from './lib/pdf.mjs';
 import { duracionVivo } from './lib/construir.mjs';
+import { mensajeSinFirma } from './lib/reglas-deck.mjs';
 
 const { opt, flag, pos } = argumentos(process.argv);
 let prep;
@@ -45,7 +49,8 @@ const auto = !prep.crudo.emoji || prep.crudo.emoji === 'auto' ? ` (auto → ${mo
 console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji}${auto} · voz ~${mmss(duracionTotal(deck, pasos))})`);
 avisosBuild.forEach(a => console.warn('⚠ ' + a));
 if (prep.firmaDe) console.log(`Firma tomada de ${prep.firmaDe}`);
-else if (prep.crudo.marca === undefined) console.log(`ℹ Va sin firma: llena «Texto» en ${rutaGlobal()} (o bash scripts/setup.sh); "marca": false la apaga a propósito`);
+else if (prep.crudo.marca === undefined) console.log(`ℹ ${mensajeSinFirma({ ficha: prep.fichaMarca, rutaGlobal: rutaGlobal() })}`);
+(prep.infoDatosFicha || []).forEach(x => console.log(`ℹ ${x}`));
 if (prep.avisoFirma) console.warn('⚠ ' + prep.avisoFirma);
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 if (flag('--solo-html')) process.exit(0);
@@ -143,4 +148,11 @@ if (flag('--pdf')) {
 if (errores.length) console.error('✗ errores de la página:\n  ' + errores.join('\n  '));
 await browser.close();
 console.log(`Presentador: abre ${htmlPath} (→ avanza, ← regresa, N notas, O vista de ensayo, B negro, 5 G salta, ? ayuda)`);
+// --qa: corre QA sobre la misma salida al terminar (ESTADO, falta_para_final y la línea del arco: contrato, revelación y
+// llamados en %), para que la entrega salga de qa.json y no de juntar a mano (SKILL §4)
+if (flag('--qa')) {
+  const { spawnSync } = await import('node:child_process');
+  const q = spawnSync(process.execPath, [path.join(path.dirname(fileURLToPath(import.meta.url)), 'qa.mjs'), prep.jsonPath, '--salida', dirSalida], { stdio: 'inherit' });
+  process.exit(errores.length ? 1 : q.status ?? 1);
+}
 process.exit(errores.length ? 1 : 0);

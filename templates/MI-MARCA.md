@@ -10,6 +10,14 @@ Déjala vacía si no tienes marca: las láminas saldrán sin firma. **Nunca pong
 - Sufijo chico (opcional): 
 - Logo (opcional, reemplaza al texto; un PNG sin fondo de unos 58 px de alto, en `assets/`): 
 
+Desde Claude Code (sin terminal interactiva): `bash scripts/setup.sh --solo-ficha --firma "@tu_arroba"` la crea.
+
+## Puente de clases (lo repites en cada clase: se escribe una vez)
+Llena `{{COMUNIDAD}}` y `{{PROXIMA_CLASE}}` por omisión en el puente de tus clases (render y QA dicen «tomada de …»). Un
+dato que el deck ya trae, o que declara pendiente con su valor, no se pisa. Si una clase es otro día, ponlo en `"datos"`.
+- Comunidad (nombre, palabra clave o link): 
+- Próxima clase (día y hora, p. ej. cada lunes 8 pm): 
+
 ## Valores por omisión
 - Formato: `16:9`, o `9:16` para reels
 - Idioma: español

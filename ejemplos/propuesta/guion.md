@@ -16,7 +16,7 @@ QA deja el deck en BORRADOR y los lista al entregar. **Nunca «Pongamos que cada
 | — | Portada y temario | 1-2 | el nombre del cliente desde `{{CLIENTE}}` y los tres temas de la junta |
 | 1 | **Diagnóstico con sus números** | 3-5 | `cifra` con `fuente: "Llamada de diagnóstico"` y los números como `{{…}}`; el dolor con sus palabras |
 | 2 | **Costo de no hacer nada** | 6-7 | `{{HORAS_MES}} h × {{COSTO_HORA}}`: el ancla de la inversión, en la misma unidad y periodo |
-| 3 | Solución y cómo funciona | 8-14 | el mapa 1-2-3 que vuelve con `como`, la demostración en `chat`, el `flujo` y lo que se mide (`tarjetas`) |
+| 3 | Solución y cómo funciona | 8-14 | el mapa 1-2-3 que vuelve con `como` y el titular de su bloque en `texto` (un regreso vacío tras una o dos láminas es un vaivén: ARCOS «Las plantillas»), la demostración en `chat`, el `flujo` y lo que se mide (`tarjetas`) |
 | 4 | **Quién la imparte y un caso** | 15-16 | «Más de {{EMPRESAS}} empresas desde {{DESDE}}» y un caso parecido con `fuente` ({{FUENTE_CASO}}) |
 | 5 | Metas medibles | 17-18 | de {{HOY}} a {{META}}, medido en la semana 4, y la `linea-tiempo` de 8 semanas |
 | 6 | **Alcance** | 19-20 | `lista` «Incluye:» y `lista` «No incluye:» (evita el malentendido al firmar) |

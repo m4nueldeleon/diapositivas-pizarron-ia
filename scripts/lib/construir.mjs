@@ -166,8 +166,9 @@ function guion(l, pasos) {
 }
 
 // Tramo en vivo (`camara` con `vivo: true`): la actividad, la demostración o las preguntas de una clase. En el
-// presentador el público ve la consigna en blanco, con su emoji y una cuenta regresiva desde `dur`; los PNG, la
-// hoja y el montaje no cambian (siguen como tramo a cámara). Todo texto pasa por marcar().
+// presentador el público ve la consigna en blanco, con su emoji y una cuenta regresiva desde `dur`. Los PNG, la hoja, el
+// PDF y el QA la capturan igual con `.captura-vivo` (reloj congelado en `dur`); el montaje y video.mjs siguen poniendo ahí
+// el crudo o el cuadro de cámara. Todo texto pasa por marcar().
 const MAX_ITEMS_VIVO = 5;
 export function duracionVivo(l) {
   const d = Array.isArray(l.dur) ? l.dur.reduce((a, b) => a + (Number(b) || 0), 0) : Number(l.dur) || 0;

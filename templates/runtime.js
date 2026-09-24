@@ -151,7 +151,9 @@
   }
 
   // ---------- conexiones entre anclas ----------
-  function dentro(esc, sel) { return [...esc.querySelectorAll(sel)].filter(e => e.closest('.escena') === esc); }
+  // El «fantasma» (.pz-oculto) del mapa que vuelve reserva el alto del texto más largo del grupo: su subrayado o su
+  // círculo NO se dibuja (salía un trazo rojo suelto bajo la frase real [r5, ejemplos/reel])
+  function dentro(esc, sel) { return [...esc.querySelectorAll(sel)].filter(e => e.closest('.escena') === esc && !e.closest('.pz-oculto')); }
   function ancla(esc, id) { return dentro(esc, `[data-a="${CSS.escape(id)}"]`)[0]; }
 
   const TONO = { r: C.rojo, v: '#22a812', n: C.negro };

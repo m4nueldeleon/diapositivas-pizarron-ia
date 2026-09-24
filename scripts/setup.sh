@@ -3,11 +3,38 @@
 # las tipografías libres si faltan. No instala nada global sin decirlo.
 #
 #   bash scripts/setup.sh
+#   bash scripts/setup.sh --solo-ficha --firma "@tu_arroba" [--sufijo ".com"] [--logo assets/logo.png]
+#        [--vetadas "gurú, fácil"] [--comunidad "Club X, palabra CLUB"] [--proxima-clase "cada lunes 8 pm"]
+#        [--importar-carrusel ruta/MI-MARCA.md] [--forzar]
+#
+# Con cualquier flag de ficha escribe ~/.config/diapositivas-pizarron-ia/MI-MARCA.md SIN terminal interactiva (el Bash
+# de Claude no lo es): así la firma y el puente de clases ({{COMUNIDAD}}, {{PROXIMA_CLASE}}) se llenan desde Claude Code.
+# Una ficha que ya existe no se sobrescribe sin --forzar. --solo-ficha se salta Node, Playwright y la prueba de humo.
 set -euo pipefail
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FUENTES="$AQUI/assets/fonts"
-mkdir -p "$FUENTES"
 ok() { echo "  ✓ $*"; }; mal() { echo "  ✗ $*"; }
+
+FIRMA=""; SUFIJO=""; LOGO=""; VETADAS=""; COMUNIDAD=""; PROXIMA=""; IMPORTAR=""; SOLO_FICHA=0; FORZAR=0; CON_FICHA=0
+valor() { if [ $# -lt 2 ] || [ "${2#--}" != "$2" ]; then echo "✗ $1 necesita un valor" >&2; exit 2; fi; }
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --firma) valor "$@"; FIRMA="$2"; CON_FICHA=1; shift 2 ;;
+    --sufijo) valor "$@"; SUFIJO="$2"; CON_FICHA=1; shift 2 ;;
+    --logo) valor "$@"; LOGO="$2"; CON_FICHA=1; shift 2 ;;
+    --vetadas) valor "$@"; VETADAS="$2"; CON_FICHA=1; shift 2 ;;
+    --comunidad) valor "$@"; COMUNIDAD="$2"; CON_FICHA=1; shift 2 ;;
+    --proxima-clase) valor "$@"; PROXIMA="$2"; CON_FICHA=1; shift 2 ;;
+    --importar-carrusel) valor "$@"; IMPORTAR="$2"; CON_FICHA=1; shift 2 ;;
+    --solo-ficha) SOLO_FICHA=1; shift ;;
+    --forzar) FORZAR=1; shift ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "✗ opción desconocida: $1 (bash scripts/setup.sh --help)" >&2; exit 2 ;;
+  esac
+done
+
+if [ "$SOLO_FICHA" = 0 ]; then
+mkdir -p "$FUENTES"
 
 echo "▶ Node"
 if command -v node >/dev/null 2>&1; then ok "$(node -v)"; else mal "Falta Node.js 18+ → https://nodejs.org (Mac: brew install node)"; exit 1; fi
@@ -39,11 +66,26 @@ for par in "Figtree.ttf|figtree/Figtree%5Bwght%5D.ttf" "Figtree-Italic.ttf|figtr
   if [ -s "$FUENTES/$n" ]; then ok "$n"; elif curl -fsSL "$B/$r" -o "$FUENTES/$n"; then ok "$n (descargada)"; else mal "no pude bajar $n"; fi
 done
 
-echo "▶ Ficha de marca global (firma y palabras vetadas para todos tus decks)"
+fi   # fin de lo que --solo-ficha se salta
+
+echo "▶ Ficha de marca global (firma, palabras vetadas y puente de clases para todos tus decks)"
 FICHA="$HOME/.config/diapositivas-pizarron-ia/MI-MARCA.md"
 CARRUSEL="${PIZARRON_IMPORTAR:-}"
-if [ -f "$FICHA" ]; then ok "$FICHA"
-elif [ ! -t 0 ]; then echo "  · sin terminal interactiva: crea $FICHA con el formato de templates/MI-MARCA.md (o corre este script en una terminal)"
+if [ "$CON_FICHA" = 1 ]; then
+  if [ -f "$FICHA" ] && [ "$FORZAR" = 0 ]; then
+    echo "  · ya existe $FICHA: no la sobrescribo (usa --forzar). Esto tiene:"; sed 's/^/      /' "$FICHA"
+  else
+    if [ -n "$IMPORTAR" ] && [ ! -f "$IMPORTAR" ]; then mal "no existe $IMPORTAR"; exit 2; fi
+    mkdir -p "$(dirname "$FICHA")"
+    # fichaDesdeOpciones rechaza una firma de ejemplo («tumarca.com»): nunca queda un relleno como firma
+    if ! node --input-type=module -e "import fs from 'node:fs'; import { fichaDesdeOpciones } from '$AQUI/scripts/lib/marca.mjs';
+      const [ruta, firma, sufijo, logo, vetadas, comunidad, proximaClase, imp] = process.argv.slice(1);
+      try { fs.writeFileSync(ruta, fichaDesdeOpciones({ firma, sufijo, logo, vetadas, comunidad, proximaClase, carrusel: imp ? fs.readFileSync(imp, 'utf8') : '' })); }
+      catch (e) { console.error('  ✗ ' + e.message); process.exit(3); }" "$FICHA" "$FIRMA" "$SUFIJO" "$LOGO" "$VETADAS" "$COMUNIDAD" "$PROXIMA" "$IMPORTAR"; then exit 3; fi
+    chmod 600 "$FICHA"; ok "creada: $FICHA"; sed 's/^/      /' "$FICHA"
+  fi
+elif [ -f "$FICHA" ]; then ok "$FICHA"
+elif [ ! -t 0 ]; then echo "  · sin terminal interactiva: créala con bash scripts/setup.sh --solo-ficha --firma \"@tu_arroba\" [--proxima-clase \"cada lunes 8 pm\"] [--comunidad \"…\"]"
 else
   printf "  ¿La creo ahora? Tres preguntas (s/N): "; read -r R
   if [ "${R:-n}" = "s" ] || [ "${R:-n}" = "S" ]; then
@@ -62,6 +104,7 @@ else
   else echo "  · omitida: las láminas salen sin firma hasta que exista $FICHA"; fi
 fi
 
+[ "$SOLO_FICHA" = 1 ] && { echo "Listo."; exit 0; }
 echo "▶ Prueba de humo"
 if node "$AQUI/scripts/render.mjs" "$AQUI/ejemplos/demo" --finales --sin-hoja --salida "${TMPDIR:-/tmp}/pizarron-prueba" >/dev/null 2>&1; then ok "el demo se renderiza"; else mal "el demo no se renderizó: corre node scripts/render.mjs ejemplos/demo para ver el error"; fi
 echo "Listo."

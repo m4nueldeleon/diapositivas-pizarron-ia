@@ -68,11 +68,12 @@
   {
    "id": "contrato",
    "tipo": "objeto",
-   "reloj": "10:00",
-   "texto": "Te pido solo los **próximos 10 minutos.**",
+   "reloj": "4:00",
+   "texto": "Te pido solo los **próximos 4 minutos.**",
    "voz": [
-    "Te pido los próximos diez minutos: tres pasos y dos ejercicios."
-   ]
+    "Te pido los próximos cuatro minutos: tres pasos y dos ejercicios."
+   ],
+   "contrato": true
   },
   {
    "id": "mapa",

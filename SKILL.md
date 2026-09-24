@@ -33,8 +33,15 @@ deducir.
    sobre todo lo demás.
 4. Busca `MI-MARCA.md`, con la firma, el formato, el idioma y las palabras vetadas. La cadena es la misma que usan
    render y QA (`scripts/lib/marca.mjs`), y gana la primera que exista: la carpeta del deck → la de arriba →
-   `$PIZARRON_MARCA` → la ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md` (la crea
-   `bash scripts/setup.sh`). Si ninguna existe, usa los valores por omisión: sin firma, 16:9, español.
+   `$PIZARRON_MARCA` → la ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`. Si ninguna existe, usa los
+   valores por omisión: sin firma, 16:9, español. **Si no hay ficha, la única pregunta al creador incluye su @ o su
+   dominio** (y, si la pieza es una clase, su comunidad y cuándo es la próxima clase); con esas respuestas corres
+   `bash scripts/setup.sh --solo-ficha --firma "@su_arroba" [--comunidad "…"] [--proxima-clase "cada lunes 8 pm"]`,
+   que la escribe sin terminal interactiva (el Bash de Claude no lo es) y nunca pisa una ficha que ya existe sin
+   `--forzar`. Si no puedes preguntar (orquestador o subagente), usa `$PIZARRON_MARCA` con la ficha real que te pasen;
+   sin dato, no inventas. La ficha guarda también el **puente de clases**: la comunidad y la próxima clase llenan
+   `{{COMUNIDAD}}` y `{{PROXIMA_CLASE}}` por omisión (render y QA dicen «tomada de …»; un dato que el deck ya trae no se
+   pisa).
    Si el deck no trae `marca`, render toma la firma de esa ficha y lo dice («Firma tomada de …»); cópiala a
    `marca` en deck.json para que salga igual en otra máquina. `"marca": false` la apaga (una propuesta con la
    marca del cliente). **Si no hay ficha, o su firma está vacía, OMITE la clave `marca`.** Nunca copies
@@ -70,9 +77,12 @@ deducir.
    objetivo; una clase de 15-30 min es `clase-corta`. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si
    no, es la única pregunta. Van en el deck como `pieza`, `duracion_objetivo` y `en_vivo`. Una **clase express**
    (menos de 15 min) es `tutorial` con `"clase": true`. **Si el encargo fija el número de láminas**, la duración sale
-   de ahí (~6.5-9.5 s por lámina; planea con 7.5 s) y la pieza, de la tabla de ARCOS.md («Láminas fijadas»): 5-9 reel,
-   16-60 `tutorial` (`vsl-corto` si vende), 60-150 `video` o `vsl`, 90-200 con tramos en vivo `clase-corta`, y
-   10-15 `libre`; no fuerces
+   de ahí (~6.5-9.5 s por lámina; planea con 7.5 s) y la pieza, de la tabla de ARCOS.md («Láminas fijadas»): 6-12 reel,
+   13-15 `tutorial` o `libre`, 16-60 `tutorial` (`vsl-corto` si vende), 60-150 `video` o `vsl` y 90-200 con tramos en
+   vivo `clase-corta`. **Si el número de láminas contradice la pieza pedida, dilo en una línea ANTES de escribir**, con
+   la duración estimada (láminas × 7.5 s): «30 láminas son ~4 min, no un webinar de 60-90: lo armo como `vsl-corto`, la
+   parte de la oferta del webinar». En un loop o agente de fondo esa línea va en la entrega y en `_comentario`; nunca
+   cambias la pieza en silencio. No fuerces
    `duracion_objetivo` sobre una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas
    cosas; más de 60% en tramos es error aunque sea en vivo).
 6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 27 diseños y sus campos) y
@@ -85,7 +95,7 @@ las tipografías.
 
 | Fase | Qué haces | Sale |
 |---|---|---|
-| **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). En `vsl`, `vsl-corto` y `webinar`, ANTES de los beats, la **ficha de venta** en 6 líneas: público y dolor con sus palabras · la promesa (resultado + plazo + «sin…») · el mecanismo con nombre · la prueba disponible · una objeción real · un solo llamado (botón o palabra clave). Lo que falte va como dato pendiente, igual que un `{{…}}`. | beats |
+| **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). En `vsl`, `vsl-corto` y `webinar`, ANTES de los beats, la **ficha de venta** en 7 líneas: público y dolor con sus palabras · la promesa (resultado + plazo + «sin…») · el mecanismo con nombre · la prueba disponible · **promesa → qué la prueba → qué mide esa fuente** (si mide otra cosa, la voz la dice como dato del mercado y la lámina nombra lo que se midió) · una objeción real y cómo se DEMUESTRA la respuesta · un solo llamado (botón o palabra clave). Lo que falte va como dato pendiente, igual que un `{{…}}`. | beats |
 | **2. Beats → diseños** | Cada beat de 2 a 3 s es un paso. Mismo tema, mismo paso de la misma lámina; tema nuevo, lámina nueva. Elige el diseño con la tabla de GUION-A-LAMINAS §2. **Fija el diccionario del deck antes de escribir**: un emoji por concepto (EMOJIS.md), y que ninguno diga lo contrario en otra lámina (la silla vacía de una rejilla no es «llegó» después). | lista de láminas |
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
@@ -169,11 +179,16 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   | `vsl`, `vsl-corto`, `webinar` | **`ejemplos/vsl-corto/`**: promesa y mecanismo antes del segundo 25, objeción con respuesta antes de la revelación, stack, garantía y el mismo llamado dos veces después de la revelación |
   | `propuesta` | **`ejemplos/propuesta/`**: los 9 bloques de ARCOS.md, con los números del cliente como huecos declarados |
   | `tutorial` con `"clase": true` (clase express) | **`ejemplos/clase-express/`**: contrato de tiempo, mapa, dos bloques con tramo en vivo, tarea y puente |
+  | `reel` | **`ejemplos/reel/`** (9:16): gancho con hora, el mapa que entra una vez y vuelve con el titular de cada tarea, el prompt literal a la vista en un `chat`, la condición legal en pantalla y un solo llamado |
   | las demás | la plantilla de su pieza en ARCOS.md |
 
   Todos llevan los datos que faltan como huecos declarados.
 
 ## 4. Qué entregar al usuario
+
+`node <skill>/scripts/render.mjs <proyecto> --qa` renderiza y corre QA sobre la misma salida: la nota, el ESTADO,
+`falta_para_final` y la línea del arco (contrato de tiempo contra la voz, revelación y llamados en %, `qa.json → arco`).
+La entrega sale de ahí y de `qa.json`, no de cuadrar métricas a mano:
 
 - La ruta del presentador y de TODAS las hojas (`hojas.json`), la nota de QA y la duración estimada de la
   voz contra la de la pieza.

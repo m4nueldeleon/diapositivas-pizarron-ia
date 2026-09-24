@@ -113,3 +113,19 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   tabla; tres puntas apiladas a 100 px de una pregunta de 45 px; el ábaco tachado se leía «no calcules».
 - **Cómo se detectó**: auditorías de diseño, fidelidad, íconos, mercadotecnia, técnica y usabilidad (r5) con cortes
   contra hoja_04, hoja_07, hoja_17, c_0545, c_1045, c_1315 y 42:50; verificadas en /private/tmp/pz-loop/r6/verif.
+
+## 2026-09-24 · El mapa no va y viene, la respuesta demuestra y el reel enseña el cómo (loop, ronda 5, conocimiento)
+- **Regla**: el mapa 1-2-3 entra una vez con `activo: 1` y vuelve con el titular de su bloque en `texto`; un regreso vacío
+  va solo tras un bloque de 3 láminas y 20 s o más (en el video vuelve cada 5-6 min [17:19 → 23:08 → 28:01]). La
+  respuesta a una objeción DEMUESTRA con otro diseño (`flujo`, `chat`, `linea-tiempo`, `cuadrantes`, `prueba`) y la
+  `idea` de frase va después, como remate [34:30-36:05]. Un reel que promete un «cómo» enseña el prompt literal a la vista
+  y la condición legal en pantalla; «Guarda» solo si hay algo que guardar. Un dato publicado de terceros es prueba de
+  MERCADO: respalda la oportunidad, no el resultado, y la lámina nombra lo que se midió. El contrato de tiempo se
+  cumple: la clase express del ejemplo prometía 10 min y duraba ~3:24; ahora promete 4. «Sesión en vivo» es 📞, archivar
+  es 🗄️ (🗑️ dice «a la basura») y lo urgente, 🚨. La pieza no se cambia en silencio: «30 láminas no son un webinar».
+- **Porqué**: el webinar de r5 hacía mapa → cita → mapa → reto → mapa en 25 s; dos objeciones con respuesta en `idea` daban
+  4 `idea` seguidas y la segunda solo afirmaba; el reel «3 tareas que puedes delegar» salía `listo` sin un solo prompt;
+  un estudio de MOOCs contaba como «prueba real» de una comunidad que retiene; la firma nunca se creaba desde Claude Code
+  porque setup.sh exigía terminal.
+- **Cómo se detectó**: auditorías de diseño, fidelidad, mercadotecnia, íconos y usabilidad de la ronda 5 sobre
+  webinar-comunidad, reel-ia-ceo y precios-premium, con hoja_07 [16:35-17:25] y 34:25-36:05 de la referencia.

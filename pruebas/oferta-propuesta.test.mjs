@@ -132,14 +132,14 @@ test('ficha de marca: cadena deck → arriba → $PIZARRON_MARCA → ~/.config; 
   assert.equal(f.marca, undefined);
   assert.match(f.aviso, /no se copia/);
   // la plantilla vacía no da firma ni vetadas
-  assert.deepEqual(leerFicha(fs.readFileSync(new URL('../templates/MI-MARCA.md', import.meta.url), 'utf8')), { firma: null, vetadas: [] });
+  assert.deepEqual(leerFicha(fs.readFileSync(new URL('../templates/MI-MARCA.md', import.meta.url), 'utf8')), { firma: null, vetadas: [], datos: {} });
   assert.deepEqual(leerVetadas('- Palabras que nunca usas: hack, gurú\n'), ['hack', 'gurú']);
 });
 
 test('ficha de carruseles: se CONVIERTE (la cuenta y las vetadas), sin reglas de carrusel', () => {
   const carrusel = '## 1\n- **Cuenta de Instagram:** @manueldeleonmjr · ~509,000 seguidores\n## 3\n- **Palabras que NUNCA usas:** gurú/experto (de ti mismo) · secreto (como anzuelo vacío) · anglicismos con palabra en español (embudo, no funnel).\n- **Emojis:** 1-2 en el caption como máximo; nunca en las láminas.\n';
   const nueva = convertirFichaCarrusel(carrusel);
-  assert.deepEqual(leerFicha(nueva), { firma: { texto: '@manueldeleonmjr' }, vetadas: ['gurú', 'experto', 'secreto'] });
+  assert.deepEqual(leerFicha(nueva), { firma: { texto: '@manueldeleonmjr' }, vetadas: ['gurú', 'experto', 'secreto'], datos: {} });
   assert.ok(!/nunca en las láminas/.test(nueva));
 });
 

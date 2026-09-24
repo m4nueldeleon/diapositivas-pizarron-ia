@@ -209,19 +209,12 @@
     "Contesta",
     "Agenda"
    ],
-   "activo": 1,
-   "voz": "Son tres pasos. Primero: te escriben."
-  },
-  {
-   "id": "mapa-2b",
-   "tipo": "pasos",
-   "como": "mapa",
    "activo": 2,
+   "voz": "Son tres pasos. Te escriben, y tu agente contesta en el mismo minuto.",
    "hechos": [
     1
    ],
-   "voz": "Paso dos: tu agente contesta, en el mismo minuto.",
-   "nota": "En el mismo minuto"
+   "texto": "Tu agente contesta\n**en el mismo minuto**"
   },
   {
    "id": "contesta",
@@ -277,18 +270,13 @@
     1,
     2
    ],
-   "voz": "Y el paso tres: la cita queda en tu calendario."
-  },
-  {
-   "id": "agenda",
-   "tipo": "idea",
-   "emoji": "📅",
-   "texto": "La cita cae **sola** en tu calendario",
-   "nota": "Y a ti te llega el aviso",
    "voz": [
-    "La cita cae sola en tu calendario.",
+    "Y el paso tres: la cita cae sola en tu calendario.",
     "Y te llega el aviso."
-   ]
+   ],
+   "texto": "La cita cae **sola**\nen tu calendario",
+   "nota": "Y a ti te llega el aviso",
+   "nota_paso": 1
   },
   {
    "id": "objecion",
@@ -301,14 +289,26 @@
   },
   {
    "id": "respuesta",
-   "tipo": "idea",
-   "emoji": "si:📄",
-   "texto": "Llenas **una hoja**\ncon tus horarios y tus precios",
-   "nota": "El agente lo lee de ahí",
+   "tipo": "flujo",
+   "texto": "No programas **nada**",
+   "nodos": [
+    {
+     "emoji": "📄",
+     "etiqueta": "Llenas una hoja"
+    },
+    {
+     "emoji": "🤖",
+     "etiqueta": "El agente la lee"
+    }
+   ],
+   "nota": "Tus horarios y tus precios",
    "voz": [
-    "No programas nada: llenas una hoja con tus horarios y tus precios.",
-    "El agente lo lee de ahí."
-   ]
+    "No programas nada: llenas una hoja.",
+    "Tu agente la lee de ahí.",
+    "Solo tus horarios y tus precios."
+   ],
+   "texto_paso": 0,
+   "nota_paso": 2
   },
   {
    "id": "revelacion",

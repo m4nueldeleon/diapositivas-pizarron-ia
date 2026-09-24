@@ -57,7 +57,7 @@ import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, lineaArco } from './lib/reglas-deck.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
@@ -68,7 +68,7 @@ const NOTA_FINAL = 90;   // SKILL §6: 90 o más y cero errores
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, revela = [], avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, avisoFirma } = prep;
+const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, revela = [], avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, fichaMarca, avisoFirma, infoDatosFicha = [] } = prep;
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
@@ -847,15 +847,15 @@ const estado = estadoQA({ errores, borrador, nota, falta, notaFinal: NOTA_FINAL 
 const sinTope = notaSinTope({ errores, avisos: avis });
 const listoSalvoDatos = borrador && !errores.length && sinTope >= NOTA_FINAL && !falta.length;
 // Información que NO resta nota: el set de emojis sin fijar y la firma (de dónde salió o dónde se llena)
-const pruebaInfo = delDeck.prueba && delDeck.prueba.tipo !== 'real'
+const pruebaInfo = delDeck.prueba && ['logica', 'garantia'].includes(delDeck.prueba.tipo)
   ? `va con prueba por sustituto ${delDeck.prueba.tipo === 'logica' ? 'd (prueba lógica)' : 'e (primeros casos con garantía)'} en la lámina ${delDeck.prueba.lamina}; una captura real con permiso la refuerza (GUION §7)` : null;
 const infoContraste = [
   enVivoInfo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivoInfo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
-const info = [...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal() }), avisoFirma, pruebaInfo, infoIconos(deck)].filter(Boolean);
+const info = [...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck)].filter(Boolean);
 const informe = { nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
-  avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
+  avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
@@ -863,6 +863,7 @@ else {
   if (borrador) console.log(`BORRADOR: ${Object.keys(porConfirmar).length} dato(s) por confirmar (${Object.keys(porConfirmar).join(', ')}); la nota no pasa de ${TOPE_BORRADOR} hasta confirmarlos; ${avis.length} aviso(s), sin tope sería ${sinTope}; listo salvo datos: ${listoSalvoDatos ? 'sí' : 'no'}`);
   const partes = porTipo.camara ? ` (láminas ~${duracion.laminas} · cámara ~${duracion.camara})` : '';
   console.log(`QA ${nota}/100 · ${informe.laminas} láminas · ${informe.pasos} pasos · voz ~${duracion.estimada}${partes}${duracion.objetivo ? ` (objetivo ${duracion.objetivo})` : ''}`);
+  if (delDeck.arco && (delDeck.arco.contrato || delDeck.arco.oferta || delDeck.arco.llamados.length)) console.log(`  ${lineaArco(delDeck.arco)}`);
   errores.forEach(e => console.log('  ✗ ' + e));
   avis.forEach(e => console.log('  ⚠ ' + e));
   avisDatos.forEach(e => console.log('  ◌ ' + e));

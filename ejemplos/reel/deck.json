@@ -1,0 +1,189 @@
+{
+ "titulo": "3 tareas que ya puedes delegar a la IA — reel de ejemplo",
+ "formato": "9:16",
+ "emoji": "apple",
+ "animacion": "seco",
+ "piel": "🏻",
+ "pieza": "reel",
+ "_comentario": "Modelo de reel de «cómo» (9:16, 45-55 s): gancho con hora y conflicto en la lámina 1, el mapa entra UNA vez ya en la tarea 1 y vuelve con el titular de cada bloque, cada tarea enseña el prompt literal en un chat (lo que se guarda), la condición legal en pantalla y un solo llamado: guardar, porque los prompts están a la vista.",
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "idea",
+   "emoji": "😩+📥",
+   "emoji_tam": "heroe",
+   "texto": "11 pm y sigues\n__en el correo__",
+   "nota": "Y mañana, junta a las 8",
+   "voz": [
+    "Once de la noche y sigues en el correo.",
+    "Y mañana, junta a las ocho."
+   ]
+  },
+  {
+   "id": "mapa",
+   "tipo": "pasos",
+   "iconos": [
+    "📝",
+    "📥",
+    "📊"
+   ],
+   "etiquetas": [
+    "Minuta",
+    "Bandeja",
+    "Reporte"
+   ],
+   "prefijo": "Tarea",
+   "activo": 1,
+   "texto": "3 tareas para\n__delegar a la IA__",
+   "voz": "Tres tareas para delegar a la IA."
+  },
+  {
+   "id": "minuta",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "🎤+🔴",
+     "etiqueta": "Grabas la junta",
+     "sub": "con permiso de todos"
+    },
+    {
+     "emoji": "🤖",
+     "etiqueta": "La IA transcribe"
+    },
+    {
+     "emoji": "📝",
+     "etiqueta": "La minuta"
+    }
+   ],
+   "voz": [
+    "Uno: grabas la junta, con permiso de todos.",
+    "La IA la transcribe.",
+    "Y te da la minuta."
+   ],
+   "emoji_tam": 140
+  },
+  {
+   "id": "prompt-minuta",
+   "tipo": "chat",
+   "encabezado": "Le escribes:",
+   "avatar_otro": "🤖",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Resume esta junta en una tabla: quién hace qué y para cuándo."
+    },
+    {
+     "de": "otro",
+     "texto": "Listo: acuerdos, responsables y fechas."
+    }
+   ],
+   "voz": [
+    "Le escribes: resume la junta, quién hace qué y para cuándo.",
+    "Listo, en un minuto."
+   ]
+  },
+  {
+   "id": "tarea2",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 2,
+   "hechos": [
+    1
+   ],
+   "texto": "La IA ordena\n__tu bandeja__",
+   "voz": "Dos: la IA ordena tu bandeja."
+  },
+  {
+   "id": "separa",
+   "tipo": "tarjetas",
+   "encabezado": "La separa en:",
+   "items": [
+    {
+     "emoji": "🚨",
+     "texto": "Lo **urgente**: para ti",
+     "tono": "r"
+    },
+    {
+     "emoji": "🧑‍🤝‍🧑",
+     "texto": "Lo de tu **equipo**",
+     "tono": "n"
+    },
+    {
+     "emoji": "🗄️",
+     "texto": "Lo que se **archiva**"
+    }
+   ],
+   "voz": [
+    "La separa: lo urgente, para ti.",
+    "Lo de tu equipo.",
+    "Y lo que se archiva."
+   ]
+  },
+  {
+   "id": "prompt-bandeja",
+   "tipo": "chat",
+   "encabezado": "Le escribes:",
+   "avatar_otro": "🤖",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Separa mis correos de hoy en urgente, equipo y archivo. Redacta las respuestas urgentes."
+    },
+    {
+     "de": "otro",
+     "texto": "Te dejé los borradores. Tú los lees y das enviar."
+    }
+   ],
+   "voz": [
+    "Le escribes: separa en urgente, equipo y archivo, y redacta lo urgente.",
+    "Tú lees y das enviar."
+   ]
+  },
+  {
+   "id": "tarea3",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 3,
+   "hechos": [
+    1,
+    2
+   ],
+   "texto": "El reporte, listo\n__antes de la junta__",
+   "voz": "Tres: el reporte, antes de la junta."
+  },
+  {
+   "id": "prompt-reporte",
+   "tipo": "chat",
+   "encabezado": "Le escribes:",
+   "avatar_otro": "🤖",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Con las ventas de esta semana, dime qué se atrasó y qué llevo a la junta."
+    },
+    {
+     "de": "otro",
+     "texto": "Ojo: la cobranza va atrasada. Llévala al primer punto."
+    }
+   ],
+   "voz": [
+    "Le pasas las ventas y le preguntas qué se atrasó.",
+    "Te dice qué llevar a la junta."
+   ]
+  },
+  {
+   "id": "una",
+   "tipo": "foco",
+   "texto": "Esta semana delega **solo una**: la minuta.",
+   "voz": "Esta semana delega solo una: la minuta."
+  },
+  {
+   "id": "llamado",
+   "tipo": "idea",
+   "emoji": "📌",
+   "emoji_tam": "grande",
+   "texto": "Guarda __este reel__:\nlos 3 prompts están aquí",
+   "voz": "Guarda este reel: los tres prompts están aquí."
+  }
+ ]
+}

@@ -52,7 +52,7 @@ la lámina nueva o un elemento más sobre la actual.
 | un testimonio o prueba | captura con el dato encerrado | `prueba` |
 | lo que NO necesitas / lo que SÍ | bloques rojo y verde | `cuadrantes` |
 | una pregunta retórica | 🤔 + la pregunta | `idea` |
-| una objeción del cliente | emoji negado si es «me falta X»; 🤔 si la objeción es una pregunta (EMOJIS.md, objeción) + «Objeción #N» entre el emoji y la frase + la objeción en negrita y entre comillas; la respuesta en la lámina SIGUIENTE | `idea` con `encabezado_pos: "entre"` |
+| una objeción del cliente | emoji negado si es «me falta X»; 🤔 si la objeción es una pregunta (EMOJIS.md, objeción) + «Objeción #N» entre el emoji y la frase + la objeción en negrita y entre comillas; la respuesta en la lámina SIGUIENTE, que DEMUESTRA: su primera lámina no es `idea` (§7, «objeción → respuesta») | `idea` con `encabezado_pos: "entre"` |
 | por qué falla la mayoría | la misma forma con «Razón #N» [34:25, 35:15] | `idea` |
 | credibilidad (años, clientes) [36:10] | la cifra real sobre una foto o captura real | `prueba` u `objeto` |
 | componente numerado «#N» de la oferta [41:10, 41:40] | «#4» + el componente, en blanco | `idea` |
@@ -84,7 +84,8 @@ la lámina nueva o un elemento más sobre la actual.
    subrayan.
 7. **Las cifras siempre con número** y en la unidad que se dice: «$10k al mes», no «diez mil
    mensuales».
-   Un estudio o un dato publicado se cita en `fuente` («Autor, obra (año)», sans gris al pie), en `idea`,
+   Un estudio o un dato publicado se cita en `fuente` («Autor, «obra», medio (año)», sans gris al pie; si solo se abrió
+   una fuente secundaria, «… vía <medio>»; si no se abrió ninguna, el dato no entra), en `idea`,
    `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas` o `linea-tiempo`; nunca en `nota` (LAYOUTS.md,
    «Fuente de un dato o un estudio»).
 8. **Proyecciones al espectador.** Cuando la cuenta promete lo que ganará o conseguirá quien mira
@@ -155,7 +156,11 @@ la lámina nueva o un elemento más sobre la actual.
 - **Las láminas oscuras son solo para revelar la marca o el producto.** Si aparecen antes, o se
   usan para el precio y la lista de lo que incluye, pierden su efecto.
 - **Hay objetos que regresan**: la tabla-marcador y el mapa de pasos se repiten creciendo. Esa
-  repetición le da estructura al video.
+  repetición le da estructura al video. Pero el mapa vuelve cuando cierra un bloque LARGO: en el video vuelve cada 5-6
+  min [17:19 → 23:08 → 28:01]. El mapa entra una vez con el primer paso ya activo (nunca el mapa completo y enseguida el
+  mismo con `activo: 1`); un regreso trae el titular del bloque en `texto` (el reel) o cierra un bloque de 3 láminas y 20 s
+  de voz o más. Si vuelve antes y vacío, es relleno: mapa → cita → mapa → reto → mapa (QA lo avisa; ARCOS «Las
+  plantillas»).
 
 ## 6. Arcos: el de la referencia y los de cada pieza
 
@@ -227,7 +232,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 
 | # | Beat | Minuto | Diseño |
 |---|---|---|---|
-| 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2 (emoji negado si es «me falta X», 🤔 si es una pregunta: EMOJIS.md, objeción), «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita; la respuesta en la lámina siguiente, con un dato real o un paso concreto. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"` |
+| 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2 (emoji negado si es «me falta X», 🤔 si es una pregunta: EMOJIS.md, objeción), «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita. La respuesta es un bloque de 1-3 láminas y la primera DEMUESTRA (tabla «objeción → respuesta», abajo); una `idea` de frase («Absolutamente.», «Imposible.») solo puede ir después, como remate [34:40-34:45]. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"`; la respuesta, otro diseño |
 | 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
 | 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes»). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
 | 3 | Ancla con tu nivel caro real («Quantum… desde $25,000»), opcional | 36:30-36:40 | `cifra` |
@@ -265,18 +270,36 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   "propuesto": true } }` y la lámina dice `**«{{OBJECION_1}}»**`, así sale en `por_confirmar`. Y se introduce sin
   frecuencia: «Objeción número uno: …» o «Quizá estés pensando: …», nunca «la de siempre» ni «la que más oigo» sin un
   dato (QA lo avisa; VOZ-HUMANA.md).
+- **Objeción → respuesta**: después de «Reason #1» la referencia DEMUESTRA con otro diseño [34:30 cuadrantes
+  cuchillo/formón, 35:05 captura, 35:10 la ecuación «You + Specialised AI = Profitable Product», 35:35 el chat, 36:05 los
+  pasos 1-2-3]. Una respuesta en `idea` solo afirma, y dos objeciones con respuesta en `idea` son 4 `idea` seguidas (QA
+  avisa las dos cosas). El diseño sale del tipo de objeción:
+
+  | Objeción | Respuesta | Ejemplo |
+  |---|---|---|
+  | «no tengo tiempo» | `linea-tiempo` o `calendario`: dónde se van los minutos | «Lunes 60 min: la llamada · martes 10 min: el reto» |
+  | «no sé por dónde empezar», «es difícil», «no sé de tecnología» | `flujo` o `pasos` | «Tú + tu hoja = tu agente» [35:10]; los pasos 1-2-3 [36:05] |
+  | «qué le contesto al cliente» | `chat` | la respuesta escrita en la burbuja [35:35] |
+  | «¿funciona?» | `prueba` con `src`/`fuente`, o `cifra` con `fuente` | la captura con el dato encerrado |
+  | «lo puedo hacer solo», «con lo que ya tengo» | `cuadrantes` rojo/verde o `idea` con par de emojis | el cuchillo contra el formón [34:30] |
+
+  QA avisa en `vsl`, `vsl-corto` y `webinar` si la primera lámina de la respuesta es una `idea` sin `fuente`.
 - **Sin prueba real, en este orden** (el beat 6 y el tramo de prueba de un vsl o webinar):
 
   | # | Sustituto | Diseño |
   |---|---|---|
   | a | Demostración del mecanismo con material real del creador: su calendario, su cuenta, su chat | `prueba` con `src`, o `objeto` con `imagen` |
-  | b | Caso propio con números y su `fuente` | `cifra` con `fuente` o `prueba` con `fuente` |
-  | c | **Prueba de mercado**: una nota de prensa o un dato publicado real (INEGI, un estudio, un medio) que respalda la OPORTUNIDAD, no el resultado del producto [11:25 «$250 billion Creator Economy», 11:30 Forbes citando a Goldman Sachs, 12:00 creadores reales con su logo]. Se busca y se abre con WebSearch o WebFetch, **nunca un número de memoria**. En la voz se dice como dato del mercado («según INEGI…»), nunca como caso propio. Su sitio natural es el tramo de «por qué ahora», antes de la revelación; no sustituye el muro de capturas del beat 6 cuando lo hay | `prueba` con la captura del artículo en `src` y su `fuente` (medio y fecha), con el subrayado o el círculo rojo en la frase clave; o `cifra` con `fuente` |
+  | b | Caso propio con números y su `fuente`. Receta: `cifra` con `arriba` «Ana, nutrióloga:», la línea «de 12 a __31 pacientes__ al mes en 8 semanas» y `fuente: "caso real, con permiso"` | `cifra` con `fuente` o `prueba` con `fuente` |
+  | c | **Prueba de mercado**: una nota de prensa o un dato publicado real (INEGI, un estudio, un medio) que respalda la OPORTUNIDAD, no el resultado del producto [11:25 «$250 billion Creator Economy», 11:30 Forbes citando a Goldman Sachs, 12:00 creadores reales con su logo]. Se busca y se abre con WebSearch o WebFetch, **nunca un número de memoria**. En la voz se dice como dato del mercado («según INEGI…»), nunca como caso propio, y la lámina **nombra lo que se midió** («Pagaron el certificado → terminó: 46%», no «Pagando el certificado: 46%»). La `fuente` va como «Autor, «obra», medio (año)»; si solo se abrió una fuente secundaria (la primaria dio 403), «… vía <medio>»; si no se abrió ninguna, el dato no entra. Su sitio natural es el tramo de «por qué ahora», antes de la revelación; no sustituye el muro de capturas del beat 6 cuando lo hay | `prueba` con la captura del artículo en `src` y su `fuente` (medio y fecha), con el subrayado o el círculo rojo en la frase clave; o `cifra` con `fuente` |
   | d | Prueba lógica: la cuenta con la condición en `arriba` (§3.8). La tasa va DENTRO de la condición, dicha como hipótesis («Si te contrata el 0.1-0.3%:»), o con `fuente` (puede ser la misma nota de c). Una tasa escrita en la cuenta sin origen («10 × 20% compran») es una cifra de resultado inventada: QA la deja en borrador («tasa sin origen») y el deck no es final | `cifra` sin `fuente`, con `arriba` que empieza con la condición («Si…», «Cuando…», «Con…») y un número, y un rango en `arriba` o en `lineas` |
   | e | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ con plazo real («30 días»; un `{{GARANTIA_DIAS}}` sin llenar no cuenta) y condición («si…») |
 
-  QA cuenta la prueba de mercado (c) como prueba real (lleva `fuente`) y la lógica (d, sin tasas sueltas) y la
-  garantía (e) como sustitutos para final (qa.json → `prueba`: `real`, `logica` o `garantia`); una captura real sigue siendo mejor. La `a` es `prueba` con `src` u `objeto` con `imagen`; la `b` y la `c`, `cifra` o `prueba` con
+  QA separa la prueba PROPIA (a y b: `prueba` con `src`, `objeto` con `imagen`, o una `fuente` con «caso real» o «con
+  permiso») de la de MERCADO (c: una `cifra`, `grafica` o `prueba` con `fuente` de terceros: año, estudio, medio, «vía»), y
+  cuenta la lógica (d, sin tasas sueltas) y la garantía (e) como sustitutos para final (qa.json → `prueba`: `propia`,
+  `mercado`, `logica` o `garantia`). La de mercado cuenta para final, pero en un vsl o webinar avisa «la única prueba es de
+  mercado»: respalda la oportunidad, no tu resultado; suma un caso propio o una captura si existen. Una captura real sigue
+  siendo lo mejor. La `a` es `prueba` con `src` u `objeto` con `imagen`; la `b` y la `c`, `cifra` o `prueba` con
   `fuente` (si la fuente es un `{{HUECO}}`, queda como dato pendiente y el deck es borrador hasta llenarla).
 
   Si no hay ninguno, el beat se omite. **Un `prueba` hecho solo de capturas `ejemplo: true` nunca ocupa el
@@ -305,6 +328,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   | `vsl`, `vsl-corto`, `webinar` | `ejemplos/vsl-corto/`: gancho, promesa y mecanismo antes del segundo 25, filtro y credibilidad, problema, cómo funciona, prueba, objeción con su respuesta, revelación, stack, precio anclado, garantía, el llamado con qué pasa después, resumen y el llamado otra vez |
   | `propuesta` | `ejemplos/propuesta/`: los 9 bloques de ARCOS.md, con los números del cliente como huecos declarados |
   | `tutorial` con `"clase": true` (clase express) | `ejemplos/clase-express/`: gancho, contrato de tiempo, mapa, dos bloques con su tramo en vivo, tarea y puente |
+  | `reel` | `ejemplos/reel/` (9:16): gancho con hora, el mapa una vez y de vuelta con el titular de cada tarea, el prompt literal en un `chat`, la condición legal en pantalla y un solo llamado |
   | cualquier otra | ARCOS.md, la plantilla de su pieza |
 
   Con los datos que faltan como huecos declarados. El demo (`ejemplos/demo/`) es un catálogo de diseños, no un modelo

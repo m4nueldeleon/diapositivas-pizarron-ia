@@ -79,6 +79,10 @@ ese diseño.
   video, desde 0 (`-1` = el último). `ms_ref` (ms) captura ese paso en ese instante de su animación, no en su estado
   final (la mano ya en la tecla 1, antes de arrastrar [ref_115]: `"paso_ref": 0, "ms_ref": 900`).
 - `anclas`: frases que disparan cada paso en el montaje.
+- `contrato: true`: marca la lámina del **contrato de tiempo** («Te pido los próximos 10 minutos» [2:03]). QA saca de ahí
+  los minutos (del `reloj` o de «los próximos N minutos») y los compara con la voz: más de 30% de diferencia avisa
+  (`qa.json → arco`). Sin la marca, QA lo busca en el primer 25% del deck, en un `objeto` con `reloj` o en una
+  `idea`/`objeto`/`cifra` con «los próximos N minutos»; «en 5 minutos lo configuras» dentro de un paso no es contrato.
 
 ---
 
@@ -140,7 +144,10 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 
 ### Fuente de un dato o un estudio (`idea`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
 `"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
-40 px (36 en 9:16), sin cursiva: **un solo estilo** para citar, «Autor, obra (año)». Aparece con el dato (el paso
+40 px (36 en 9:16), sin cursiva: **un solo estilo** para citar, «Autor, «obra», medio (año)» («Reich y Ruipérez-Valiente,
+«The MOOC pivot», Science (2019)»). Si solo abriste una fuente secundaria (la primaria dio 403), agrega «vía <medio>»; si
+no abriste ninguna, el dato no entra (GUION §7 c). QA la clasifica: con «caso real» o «con permiso» es prueba propia; con
+año, estudio, medio o «vía», de mercado (`qa.json → prueba`). Aparece con el dato (el paso
 del texto, del último nodo o de la última línea de la cifra; en `rejilla`, con el destacado; en `tabla`, `tarjetas` y
 `linea-tiempo`, con su último paso); `fuente_paso` la mueve. Un gancho con un dato publicado lleva su `fuente` en la
 MISMA lámina (la primera vista es muda): QA avisa una `rejilla` que afirma una proporción («54 de 100», puntos
@@ -318,7 +325,11 @@ de la revelación [36:30-36:40]. El precio final, lo que incluye en detalle, la 
   ```json
   { "tipo": "pasos", "iconos": ["🔍", "🛠️", "🚀"], "etiquetas": ["Encontrar", "Construir", "Lanzar"], "activo": 1 }
   ```
-- `activo`: número del paso encendido; los demás quedan al 20% [ref_1040].
+- `activo`: número del paso encendido; los demás quedan al 20% [ref_1040]. El mapa entra una vez con `activo: 1` y
+  vuelve con el titular de su bloque en `texto`; un regreso sin texto tras una o dos láminas es un vaivén (QA lo avisa;
+  ARCOS «Las plantillas»).
+- `emoji_tam` (px) fija el tamaño de los íconos. En 9:16 van a 200 por omisión y la etiqueta y el «Paso N» se ajustan a
+  su columna (con 3 pasos, ~62 px) para que la fila quepa en los 900 px útiles sin encaje (Recetas 9:16).
 - `hechos`: lista de pasos con ✅, por ejemplo `[1, 2]`. La ✅ va siempre a todo color, aunque su
   columna esté atenuada por `activo`: es la señal de avance [28:00-28:05]. La ✅ CUELGA bajo la etiqueta sin alargar
   el mapa: los íconos no se mueven cuando aparece [28:00].
@@ -454,7 +465,8 @@ una celda llega a 3 renglones, el motor baja la letra de 4 en 4 hasta 40 (primer
 Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto en `items` vale como
 `{ "texto": … }`.
 - El ancho sale del ancho útil del formato (1620 px en 16:9, 900 en vertical): hasta 4 tarjetas van
-  en una fila (4 en 16:9 miden ~378 px) y en vertical, con 4 o más, van de 2 en 2.
+  en una fila (4 en 16:9 miden ~378 px). En 9:16, hasta 3 van en UNA columna de 860 px con el rótulo a 64 px (en 3
+  columnas de ~280 el rótulo se partía en 3 renglones); con 4 o más, de 2 en 2.
 - `columnas`, `ancho` (px por tarjeta) y `tam_texto` (px, por omisión 46) ajustan a mano.
 - El emoji va arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia
   abajo [9:25]. Las tarjetas arrancan arriba de la lámina (`anclar`).
@@ -828,6 +840,22 @@ Reels), líneas grises finas, el mes en mayúsculas grises arriba a la izquierda
 - `camara` sin `vivo` queda para los tramos del montaje y los respiros a cámara (~4 s).
 
 ---
+
+## Recetas 9:16 (reel)
+
+Medidas en 1080×1920 (ancho útil 900; arriba y abajo quedan 320 px libres para la barra y el caption de Reels). El
+modelo completo es `ejemplos/reel/`.
+
+| Diseño | Receta |
+|---|---|
+| `pasos` con `iconos` | íconos de 200 (`emoji_tam`), etiqueta ~62 y «Paso N» ~62 con 3 pasos: el motor los ajusta a la columna. Con 4 o más pasos, parte el mapa o usa un `flujo` vertical |
+| `tarjetas` | hasta 3: una columna de 860 con el rótulo a 64 y el emoji a 150 (por omisión); 4 o más: 2 columnas |
+| `flujo` | se apila en vertical; con un `sub` por nodo, baja `emoji_tam` a ~140 para que el último nodo no caiga en los 320 px de abajo |
+| `chat` | 2-3 burbujas; la del prompt (`de: "yo"`) con la instrucción literal y corta (≤ 20 palabras) |
+| `idea` | frase de 2-3 renglones: una línea que llega al borde derecho (x > 940) cae bajo los botones de Reels; parte la frase |
+
+Evita en 9:16: `tabla` de 4+ columnas, `cuadrantes` de 4, `grafica` con muchas barras y `linea-tiempo` con más de 4
+marcas: no caben a lo ancho.
 
 ## Campos finos (para ajustar sin tocar CSS)
 

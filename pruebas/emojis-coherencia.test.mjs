@@ -89,3 +89,19 @@ test('compuestos con el mismo sentido en todos los documentos: si:💸 es $0 de 
   }
   assert.deepEqual(malos, []);
 });
+
+// r5: «la llamada o sesión en vivo» tenía cuatro salidas (📞, 📅, `🎥+🔴`, 📖) y un webinar mezcló dos para lo mismo. Una
+// palabra clave de concepto que sale en dos filas con emojis distintos es una puerta a mezclar: la sesión es 📞.
+test('EMOJIS.md r5: «sesión» vive en una sola fila (📞), 🚨 🗄️ 📥 🚧 tienen fila y 🗑️ no es «archivar»', () => {
+  const filas = filasConcepto(EMOJIS);
+  const conSesion = filas.filter(f => /\bsesi[oó]n/i.test(f.concepto));
+  assert.equal(conSesion.length, 1, conSesion.map(f => f.concepto).join(' | '));
+  assert.ok(conSesion[0].specs.includes('📞'), conSesion[0].specs.join(' '));
+  assert.match(conceptoDe('🚨'), /urgente/);
+  assert.match(conceptoDe('🗄️'), /archivar/);
+  assert.match(conceptoDe('📥'), /bandeja/);
+  assert.match(conceptoDe('🚧'), /obst[aá]culo/);
+  assert.match(conceptoDe('🎤+🔴'), /grabar audio/);
+  assert.doesNotMatch(conceptoDe('🗑️'), /archiv/);
+  assert.match(conceptoDe('📅'), /fecha/);
+});

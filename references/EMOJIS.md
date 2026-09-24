@@ -32,7 +32,7 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 | ingresos recurrentes | `flujo` 🔁 → 💰 | dos nodos, no insignia |
 | crecimiento | 📈 | |
 | caída o pérdida | 📉 | |
-| métricas, datos | 📊 | |
+| métricas, datos, reporte, informe | 📊 | |
 | banco, tu cuenta | 🏦 | |
 | precio, pago, efectivo, oferta | 💵 · 🏷️ solo en Fluent | el 🏷️ de Apple es beige pálido y se pierde |
 | producto | 📦 | |
@@ -84,18 +84,20 @@ el rodeo de usar 🏾.
 | lanzar | 🚀 |
 | automatizar, IA | 🤖 |
 | pocos clics | 👆 (suelto o como nodo de un `flujo`; nunca dentro de un `boton`, donde el cursor ya es la mano. El 🖱️ de Apple es un mouse blanco sobre blanco) |
-| escribir, plan | 📝 |
+| escribir, plan, minuta, notas de una junta | 📝 |
 | tu método, el mapa del sistema | 🗺️ |
 | enviar mensaje, «te escriben» | 📲 (se lee «te llega al celular»; se dibuja en SVG con volumen) · 📩 en Apple |
-| llamada, videollamada, llamada de diagnóstico | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro) |
-| fecha, agenda, reunión agendada | 📅 (en Apple se dibuja en SVG, un calendario SIN fecha: el de Apple imprimía «JUL 17»; en Fluent sale el 3D nativo, que no trae fecha) |
+| llamada, videollamada, llamada de diagnóstico, la llamada o sesión en vivo del programa (1 a 1 o grupal, semanal: «4 llamadas en vivo») | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro). La llamada en sí es 📞 también en el stack; 📅 solo cuando se habla de su fecha u horario |
+| fecha, agenda, horario fijo, la cita («mismo día, misma hora»), una junta o reunión en la agenda | 📅 (la llamada en sí es 📞: 📅 solo para la fecha o el horario; en Apple se dibuja en SVG, un calendario SIN fecha: el de Apple imprimía «JUL 17»; en Fluent sale el 3D nativo, que no trae fecha) |
 | grabar video, hacer contenido | 🎥 [ref_628, «Creating Content»] · 📹 en lámina oscura con Apple (el 🎥 de Apple se hunde en el negro) |
 | orientación, rumbo: «te orientamos», tu plan | 🧭 |
 | aprender | 🧠 |
 | rápido | ⚡ |
 | tiempo, espera | ⏳ · ⏱️ |
 | idea | 💡 |
-| advertencia | ⚠️ |
+| advertencia, cuidado | ⚠️ (lo urgente es 🚨) |
+| urgente, prioridad, alerta que no espera | 🚨 |
+| obstáculo, bloqueo, algo atorado | 🚧 |
 | secreto | 🔒 |
 | regalo, bono | 🎁 |
 
@@ -106,6 +108,8 @@ el rodeo de usar 🏾.
 | varias conversaciones a la vez | una `rejilla` de 📲, o el mismo 📲 con nota «×10»; «conversación» en sí: `📱+💬` si la insignia se ve (si no, 📲) | nunca 👥: se lee «personas» |
 | notificación | 🔔 | |
 | correo | 📧 | |
+| bandeja de entrada, lo que llega y espera | 📥 | pálido en Apple sobre tarjeta (53): mejor en lámina blanca |
+| archivar, el archivo (lo que se guarda, no se tira) | 🗄️ | no 🗑️ (es «borrar»: dice que se tira) ni 🗂️ (pálido en Apple) |
 | anuncio, publicidad | 📣 | |
 | una persona sin rol: un prospecto, un lead, alguien que asiste, un integrante o un vendedor de un equipo | 👤 | la audiencia son 👥 o una `rejilla` de 👤; «N vendedores» = una `rejilla` de 👤 (40 vendedores = `total: 40`); el cliente ya es 🧑‍💼 |
 | atraer prospectos | 🧲 | |
@@ -176,7 +180,8 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 |---|---|---|
 | voz, narrar, la voz en off, podcast | 🎤 · 🗣️ solo con Apple en lámina clara | 🗣️ en Fluent es una silueta negra pesada (y 1% sobre lámina oscura); 🎙️ en Fluent es gris pálido |
 | grabar la pantalla (del celular) | `📱+🔴` | 🖥️ es un monitor de escritorio: úsalo solo si se habla de la computadora |
-| insignia «grabando» (solo como insignia: `🎥+🔴`, `📱+🔴`) | 🔴 | sola no dice nada (ver «Evita») |
+| insignia «grabando» (solo como insignia: `🎥+🔴`, `📱+🔴`, `🎤+🔴`) | 🔴 | sola no dice nada (ver «Evita») |
+| grabar audio: una junta o una llamada (con permiso de todos, y la condición en pantalla) | `🎤+🔴` | 🎤 sola sigue siendo «voz, narrar» |
 | tomas, clips de video, stock | 🎞️ | 🎥 es «grabar video». Pálido en Apple (≈45 en claro y en tarjeta): no lo pongas en tarjeta con Apple |
 | música de fondo | 🎵 | no en lámina oscura (26 en Apple, 33 en Fluent); 🔊 se lee «volumen» y en Fluent es gris |
 | borrar, descartar | 🗑️ | en Fluent es gris (32 en claro, 22 en tarjeta): no en tarjeta ni sobre un cuadrante de color; o tacha el elemento |
@@ -205,8 +210,8 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | estrategia | ♟️ | |
 | la pieza que falta, la solución | 🧩 | |
 | competencia, el rival | 🥊 | |
-| en vivo (sesión, transmisión) | `🎥+🔴` | 🔴 sola no dice nada (en Fluent es una esfera rosa 3D): va como insignia de «grabando» |
-| lección, módulo, sesión del programa | 📖 | 📚 es «recursos, material»; 🎓 el programa completo |
+| transmisión en vivo abierta (live, webinar, directo en redes) | `🎥+🔴` | una llamada o sesión DEL PROGRAMA es 📞. 🔴 sola no dice nada (en Fluent es una esfera rosa 3D): va como insignia de «grabando» |
+| lección, módulo, clase grabada del programa | 📖 | la sesión EN VIVO es 📞; 📚 es «recursos, material»; 🎓 el programa completo |
 | logro, meta cumplida | 🏅 | 🏆 es «el mejor» |
 
 Una persona del equipo sin rol (vendedor, integrante) es 👤, y el equipo 🧑‍🤝‍🧑 (Personas); el cliente sigue siendo 🧑‍💼.
@@ -281,7 +286,7 @@ para una secuencia usa un `flujo`.
 - 👨‍💼 junto a 🧑‍💼: se ven casi iguales en los dos modos. Cliente es 🧑‍💼; experto, 🧑‍🏫.
 - 🤵 para «vendedor»: en Apple es casi igual a 🧑‍💼 (rubio con traje negro). Vendedor es 👤; cliente, 🧑‍💼.
 - 🧑‍✈️ para «líder»: se lee «piloto». Líder es 👑.
-- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», `🎥+🔴`; para voz, 🎤.
+- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», `🎥+🔴` (una transmisión) o 📞 (la sesión del programa); para voz, 🎤.
 - 🔴 sola: un círculo sin significado (en Fluent, una esfera rosa). Va como insignia: `🎥+🔴` en vivo, `📱+🔴` grabar la pantalla.
 - 🤳 para «creador»: en los dos sets es un brazo suelto con el celular, sin persona; se lee «selfie» o «mostrar la
   cara», lo contrario de un deck sin cara. Creador es `🧑+🎥`; sin cara, `👤+🎥`.
@@ -294,7 +299,8 @@ para una secuencia usa un `flujo`.
 - 👥 para «conversaciones»: se lee «personas».
 - 🎫: en Apple sale igual que 🎟️ (el mismo boleto dibujado). Usa 🎟️.
 - 🪪: en Apple imprime «Jo Appleseed». Para «rol» o «perfil», 🎭; para una persona, 👤.
-- 🗂️: beige y pálido en Apple. Para «separar», una `rejilla` con etiquetas.
+- 🗂️: beige y pálido en Apple. Para «separar», una `rejilla` con etiquetas; para «archivar», 🗄️.
+- 🗑️ para «archivar»: se lee «a la basura», lo contrario (y en Fluent es gris, 22 en tarjeta). Usa 🗄️.
 - 🗓️ y 📆: en Apple salen igual que 📅 (el mismo calendario en SVG); en Fluent son 3D y distintos (argollas, espiral). Para «fecha» basta 📅.
 
 ## Parecidos: no los mezcles en un deck

@@ -188,10 +188,17 @@ export function pasos(l, ctx) {
   const colW = l.separacion ?? Math.min(l.iconos ? 630 : 461, Math.floor(ctx.util / Math.max(1, n)));
   const letras = Math.max(0, ...(l.etiquetas || []).map(x => Math.max(0, ...plano(x).split(/\s+/).map(w => [...w].length))));
   const ajusta = (base, piso) => (letras ? Math.max(piso, Math.min(base, Math.floor((colW - 20) / (0.56 * letras)))) : base);
-  const tamIcono = horizontal && n >= 5 ? 150 : 180;
+  // 9:16: la fila (íconos + «Paso N» + etiqueta, sin partir) tiene que caber en el ancho útil SIN encaje, o el encaje
+  // encogía todo y los íconos de 180 quedaban en ~135 px [r5, reel-ia-ceo]. La etiqueta y el prefijo se calculan sobre la
+  // columna; el ícono va a 200 (`emoji_tam` lo fija), nunca más ancho que su columna.
+  const gapV = l.separacion ?? (l.iconos ? 70 : 110);
+  const colV = horizontal ? 0 : Math.floor((ctx.util - (n - 1) * gapV) / Math.max(1, n));
+  const ajustaV = (base, piso, nLetras = letras) => (nLetras ? Math.max(piso, Math.min(base, Math.floor((colV - 10) / (0.56 * nLetras)))) : base);
+  const emojiTam = Number.isFinite(l.emoji_tam) ? l.emoji_tam : null;
+  const tamIcono = emojiTam || (horizontal ? (n >= 5 ? 150 : 180) : Math.min(200, colV));
   const baseEtq = horizontal ? (n <= 3 ? 86 : n === 4 ? 74 : 64) : 86;
-  const tamEtq = l.tam_etiqueta || (horizontal ? ajusta(baseEtq, 44) : 86);
-  const tamPref = horizontal ? Math.round(baseEtq * 0.72) : 62;
+  const tamEtq = l.tam_etiqueta || (horizontal ? ajusta(baseEtq, 44) : ajustaV(86, 44));
+  const tamPref = horizontal ? Math.round(baseEtq * 0.72) : ajustaV(62, 36, `${l.prefijo || 'Paso'} ${n}`.length);
   const tamEtqTecla = l.tam_etiqueta || (horizontal ? ajusta(56, 40) : 56);
   const kt = pasoDe(l, 'texto_paso', rev ? n : 0);
   // La mano entra en el MISMO corte que las teclas y la frase [d_123 1:53.9]; `clic_paso: 1` la separa en otro paso
@@ -366,9 +373,12 @@ export function tarjetas(l, ctx) {
   const items = l.items || [];
   const tamDef = tamEmojiTarjeta(items.length);
   const angosto = ctx.util < 1200;
-  const cols = l.columnas || (angosto && items.length >= 4 ? 2 : items.length <= 4 ? items.length : 3);
-  const tw = Math.min(l.ancho || (items.length <= 3 ? 520 : 480), Math.floor((ctx.util - (cols - 1) * 36) / Math.max(1, cols)));
-  const tt = l.tam_texto && /px$/.test(l.tam_texto) ? `;--tt:${l.tam_texto}` : '';
+  // 9:16: hasta 3 tarjetas van en UNA columna del ancho útil (~860) con el rótulo a 64: en 3 columnas de ~280 el rótulo se
+  // partía en 3 renglones y 60% del lienzo quedaba vacío [r5, reel-ia-ceo «separa»]; con 4 o más, 2 columnas
+  const unaCol = ctx.vertical && items.length <= 3;
+  const cols = l.columnas || (unaCol ? 1 : angosto && items.length >= 4 ? 2 : items.length <= 4 ? items.length : 3);
+  const tw = Math.min(l.ancho || (unaCol ? 860 : items.length <= 3 ? 520 : 480), Math.floor((ctx.util - (cols - 1) * 36) / Math.max(1, cols)));
+  const tt = l.tam_texto && /px$/.test(l.tam_texto) ? `;--tt:${l.tam_texto}` : unaCol && cols === 1 ? ';--tt:64px' : '';
   // Emoji arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia abajo [9:25]
   const html = items.map((it, i) => `<div class="tarjeta ${['v', 'r', 'n'].includes(it.tono) ? 'tono-b' + it.tono : ''}"${ctx.P(i)}>${it.emoji ? ctx.emoji(it.emoji, it.emoji_tam || l.emoji_tam || tamDef) : ''}<div class="rotulo">${marcar(it.texto)}</div></div>`).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}

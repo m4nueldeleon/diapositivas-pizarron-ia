@@ -60,8 +60,20 @@ export function leerFirma(texto) {
   return Object.fromEntries(Object.entries(firma).filter(([, v]) => v));
 }
 
+// Puente de clases: la comunidad y la próxima clase que el creador repite en cada clase. Llenan {{COMUNIDAD}} y
+// {{PROXIMA_CLASE}} por omisión (datosParaDeck). Un valor de ejemplo o vacío no cuenta.
+const RELLENO_DATO = /^(…|\.\.\.|-|tu comunidad|nombre|link|pendiente|por definir|cada lunes 8 pm \(ejemplo\))$/i;
+export function leerPuente(texto) {
+  const t = String(texto || ''), out = {};
+  for (const [clave, etiqueta] of [['COMUNIDAD', 'Comunidad'], ['PROXIMA_CLASE', 'Pr[oó]xima clase']]) {
+    const v = campo(t, etiqueta);
+    if (v && !RELLENO_DATO.test(v)) out[clave] = v;
+  }
+  return out;
+}
+
 export function leerFicha(texto) {
-  return { firma: leerFirma(texto), vetadas: leerVetadas(texto) };
+  return { firma: leerFirma(texto), vetadas: leerVetadas(texto), datos: leerPuente(texto) };
 }
 
 // La primera ficha que exista: { ruta, local (está en la carpeta del deck), firma, vetadas } o null
@@ -76,15 +88,33 @@ export function buscarMarca(dirDeck, { env = process.env } = {}) {
 
 // La firma que se aplica a un deck que no trae «marca» (ausente, no `false`). El logo solo se copia desde la carpeta
 // del deck (regla de seguridad de construir.mjs): el de una ficha global se ignora y se avisa.
+// `ruta`: la ficha de la que salió la firma (solo si se aplicó); `ficha`: la ficha encontrada aunque venga sin firma (null si
+// no existe ninguna), para que el aviso distinga «la ficha no existe» de «la ficha no tiene Texto».
 export function firmaParaDeck(deck, dirDeck, opciones = {}) {
-  if (!deck || deck.marca !== undefined) return { marca: undefined, ruta: null, aviso: null };
   const f = buscarMarca(dirDeck, opciones);
-  if (!f || !f.firma) return { marca: undefined, ruta: f ? f.ruta : null, aviso: null };
+  const ficha = f ? f.ruta : null;
+  if (!deck || deck.marca !== undefined) return { marca: undefined, ruta: null, ficha, aviso: null };
+  if (!f || !f.firma) return { marca: undefined, ruta: null, ficha, aviso: null };
   const { texto, sufijo, logo } = f.firma;
   const conLogo = logo && f.local;
   const marca = conLogo ? { logo } : texto ? { texto, ...(sufijo ? { sufijo } : {}) } : undefined;
   const aviso = logo && !f.local ? `el logo de ${f.ruta} no se copia (solo se copian imágenes de la carpeta del deck): pon el PNG en assets/ del deck y "marca": { "logo": "assets/…" }` : null;
-  return { marca, ruta: marca ? f.ruta : null, aviso };
+  return { marca, ruta: marca ? f.ruta : null, ficha, aviso };
+}
+
+// {{COMUNIDAD}} y {{PROXIMA_CLASE}} desde la ficha: solo si la clave FALTA en `datos` o está declarada pendiente sin valor
+// (`{ "pendiente": true }`). Un valor dado (o propuesto) no se pisa. Devuelve { deck, info } (una línea por dato tomado).
+export function datosParaDeck(deck, dirDeck, opciones = {}) {
+  if (!deck || typeof deck !== 'object') return { deck, info: [] };
+  const f = buscarMarca(dirDeck, opciones);
+  const puente = f && f.datos ? f.datos : {};
+  const datos = deck.datos && typeof deck.datos === 'object' && !Array.isArray(deck.datos) ? deck.datos : {};
+  const usados = JSON.stringify(deck.laminas || []);
+  const llenar = Object.entries(puente).filter(([k]) => usados.includes(`{{${k}}}`) && (datos[k] === undefined
+    || (datos[k] && typeof datos[k] === 'object' && datos[k].pendiente === true && (datos[k].valor == null || String(datos[k].valor).trim() === ''))));
+  if (!llenar.length) return { deck, info: [] };
+  const nuevos = { ...datos, ...Object.fromEntries(llenar) };
+  return { deck: { ...deck, datos: nuevos }, info: llenar.map(([k, v]) => `${k} tomada de ${f.ruta} («${v}»): cópiala a "datos" si esta clase es otro día`) };
 }
 
 // Convierte la ficha de carruseles-virales-ia (otro formato) a la de esta skill: solo la cuenta y las palabras vetadas.
@@ -97,7 +127,7 @@ export function convertirFichaCarrusel(texto) {
 }
 
 // Texto de una ficha nueva con el formato de templates/MI-MARCA.md (lo que setup.sh escribe)
-export function fichaNueva({ texto = '', sufijo = '', logo = '', vetadas = [] } = {}) {
+export function fichaNueva({ texto = '', sufijo = '', logo = '', vetadas = [], comunidad = '', proximaClase = '' } = {}) {
   return `# MI-MARCA — ficha global de Diapositivas Pizarrón IA
 
 La skill la usa cuando la carpeta del deck no trae su propio MI-MARCA.md (SKILL §0.4).
@@ -107,7 +137,22 @@ La skill la usa cuando la carpeta del deck no trae su propio MI-MARCA.md (SKILL 
 - Sufijo chico (opcional): ${sufijo}
 - Logo (opcional; solo se usa si esta ficha está en la carpeta del deck): ${logo}
 
+## Puente de clases (llena {{COMUNIDAD}} y {{PROXIMA_CLASE}} por omisión en tus clases)
+- Comunidad (nombre, palabra clave o link): ${comunidad}
+- Próxima clase (día y hora, p. ej. cada lunes 8 pm): ${proximaClase}
+
 ## Tu voz en las láminas
 - Palabras que nunca usas (en UNA línea, separadas por comas; QA las busca en cada lámina): ${vetadas.join(', ')}
 `;
+}
+
+// La ficha que escribe `setup.sh --solo-ficha --firma …` (sin terminal interactiva: el Bash de Claude). Lanza un error si la
+// firma es un valor de ejemplo («tumarca.com»): nunca queda un relleno como firma. `carrusel`: texto de la ficha de
+// carruseles-virales-ia (solo se toman la cuenta y las vetadas; los flags mandan sobre lo importado).
+export function fichaDesdeOpciones({ firma = '', sufijo = '', logo = '', vetadas = '', comunidad = '', proximaClase = '', carrusel = '' } = {}) {
+  const t = String(firma).trim(), junto = `${t}${sufijo || ''}`.replace(/\s+/g, '');
+  if (t && (RELLENO.test(t) || RELLENO.test(junto))) throw new Error(`«${junto}» es un valor de ejemplo: pon tu @ o tu dominio real, o deja la firma vacía`);
+  const base = carrusel ? leerFicha(convertirFichaCarrusel(carrusel)) : { firma: null, vetadas: [] };
+  const lista = String(vetadas || '').split(',').map(x => x.trim()).filter(Boolean);
+  return fichaNueva({ texto: t || (base.firma && base.firma.texto) || '', sufijo, logo, vetadas: lista.length ? lista : base.vetadas, comunidad, proximaClase });
 }

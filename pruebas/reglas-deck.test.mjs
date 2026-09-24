@@ -403,7 +403,9 @@ test('prueba r4: la cuenta con condición y rango (c) y el 🛡️ con plazo y c
   assert.deepEqual(pruebaDelDeck(vsl), { tipo: 'logica', lamina: 2 });
   assert.ok(!faltaParaFinal(vsl).includes('prueba real'));
   assert.ok(faltaParaFinal({ pieza: 'vsl-corto', laminas: [idea('Hola')] }).includes('prueba real'));
-  assert.deepEqual(pruebaDelDeck({ laminas: [{ tipo: 'cifra', lineas: ['x'], fuente: 'Y (2020)' }] }), { tipo: 'real', lamina: 1 });
+  // un dato publicado de terceros es prueba de MERCADO (cuenta para final, pero avisa en un vsl: r5); un caso propio, PROPIA
+  assert.deepEqual(pruebaDelDeck({ laminas: [{ tipo: 'cifra', lineas: ['x'], fuente: 'Y (2020)' }] }), { tipo: 'mercado', lamina: 1 });
+  assert.deepEqual(pruebaDelDeck({ laminas: [{ tipo: 'cifra', lineas: ['x'], fuente: 'caso real, con permiso' }] }), { tipo: 'propia', lamina: 1 });
 });
 
 test('huecos r4: una captura { hueco } es CAPTURA_N por confirmar; con plantilla: true no; tutorial sin demostración avisa', () => {

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { construirHTML } from './construir.mjs';
 import { cargarPlaywright } from './playwright.mjs';
-import { firmaParaDeck } from './marca.mjs';
+import { firmaParaDeck, datosParaDeck } from './marca.mjs';
 
 // Si el lector de la tubería se va («render.mjs … | head -1»), escribir en stdout daba EPIPE y el proceso moría a
 // media escritura (con hojas.json apuntando a hojas ya borradas). render, qa y video importan este módulo: aquí se
@@ -14,7 +14,7 @@ for (const s of [process.stdout, process.stderr]) s.on('error', e => { if (e.cod
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--notas', '--sin-notas', '--estricto', '--pasos']);
+const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);
@@ -42,12 +42,16 @@ export function prepararSalida(entrada, salida) {
   const { deck: leido, jsonPath, dirDeck } = leerDeck(entrada);
   const dirSalida = path.resolve(salida || path.join(dirDeck, 'salida'));
   const f = firmaParaDeck(leido, dirDeck);
-  const deck = f.marca ? { ...leido, marca: f.marca } : leido;
+  // {{COMUNIDAD}} / {{PROXIMA_CLASE}} de la ficha (puente de clases) cuando el deck no los trae: van también al `crudo`
+  const p = datosParaDeck(leido, dirDeck);
+  const base = p.deck;
+  const deck = f.marca ? { ...base, marca: f.marca } : base;
   const r = construirHTML({ deck, dirDeck, dirSalida, dirSkill: DIR_SKILL });
   const htmlPath = path.join(dirSalida, 'index.html');
   fs.writeFileSync(htmlPath, r.html);
   // `crudo`: el deck.json con los `como` ya resueltos, antes de sustituir `datos` (las reglas leen de ahí los {{MARCADORES}})
-  return { ...r, crudo: { ...leido, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, avisoFirma: f.aviso, avisoReplica: avisoReplica(leido, jsonPath) };
+  return { ...r, crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
+    avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
 }
 
 // Un deck cuyas láminas son TODAS «r<seg>», sin `_cuadro` y fuera de pruebas/replica parece la réplica vieja de

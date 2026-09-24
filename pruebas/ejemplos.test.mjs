@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { revisarDeck, esLlamadoVisible, inicioOferta } from '../scripts/lib/reglas-deck.mjs';
+import { demuestraRespuesta, ensenaComo } from '../scripts/lib/reglas-arco.mjs';
 import { tiemposSecuenciales, duracionTotal } from '../scripts/lib/tiempos.mjs';
 import { esMano, esCampoEmoji, specsDeCampo } from '../scripts/lib/emoji.mjs';
 import { sustituirDatos, validarDatos } from '../scripts/lib/datos.mjs';
@@ -17,9 +18,9 @@ const leer = n => JSON.parse(fs.readFileSync(path.join(RAIZ, 'ejemplos', n, 'dec
 const ejemplos = fs.readdirSync(path.join(RAIZ, 'ejemplos')).filter(n => fs.existsSync(path.join(RAIZ, 'ejemplos', n, 'deck.json')));
 
 test('ejemplos: existe el modelo de venta y ningún deck usa "emoji": "auto"', () => {
-  for (const n of ['vsl-corto', 'demo', 'propuesta', 'clase-express']) assert.ok(ejemplos.includes(n), `falta ejemplos/${n}: ${ejemplos.join(', ')}`);
+  for (const n of ['vsl-corto', 'demo', 'propuesta', 'clase-express', 'reel']) assert.ok(ejemplos.includes(n), `falta ejemplos/${n}: ${ejemplos.join(', ')}`);
   for (const n of ejemplos) assert.ok(['apple', 'fluent'].includes(leer(n).emoji), `${n}: emoji «${leer(n).emoji}»`);
-  for (const n of ['vsl-corto', 'propuesta', 'clase-express']) assert.ok(fs.existsSync(path.join(RAIZ, 'ejemplos', n, 'guion.md')), n);
+  for (const n of ['vsl-corto', 'propuesta', 'clase-express', 'reel']) assert.ok(fs.existsSync(path.join(RAIZ, 'ejemplos', n, 'guion.md')), n);
 });
 
 test('vsl-corto: cero avisos de arco, objeción, llamado, prueba, credibilidad, voz, proyección u oferta; lo que queda son datos', () => {
@@ -32,9 +33,10 @@ test('vsl-corto: cero avisos de arco, objeción, llamado, prueba, credibilidad, 
   const deGuion = r.avisos.filter(a => /llamado|objeci|prueba|credibilidad|antítesis|VOZ-HUMANA|proyecci|garantía|bono|escasez|oferta|arranca|saludo|cámara|qué se vende|mezclan|30 s|frecuente/i.test(a));
   assert.deepEqual(deGuion, []);
   assert.deepEqual(r.faltaParaFinal, []);
-  // la objeción va seguida de su respuesta, y el llamado aparece 2 veces o más
+  // la objeción va seguida de su respuesta, que DEMUESTRA (no es una `idea` que afirma: GUION §2), y el llamado aparece 2
+  // veces o más
   const L = deck.laminas, k = L.findIndex(l => /Objeción #1/.test(l.encabezado || ''));
-  assert.ok(k > 0 && L[k + 1].tipo === 'idea' && !/Objeción/.test(L[k + 1].encabezado || ''));
+  assert.ok(k > 0 && demuestraRespuesta(L[k + 1]) && !/Objeción/.test(L[k + 1].encabezado || ''), L[k + 1].tipo);
   assert.ok(L.filter(esLlamadoVisible).length >= 2);
 });
 
@@ -111,4 +113,23 @@ test('ejemplos: ningún emoji que EMOJIS.md manda evitar, y ningún botón con c
     d.laminas.forEach(l => { if (l.tipo === 'boton' && l.cursor !== 'flecha' && esMano(l.emoji)) malos.push(`${n}/${l.id}: botón con ${l.emoji} y cursor de mano`); });
   }
   assert.deepEqual(malos, []);
+});
+
+// r5: el modelo de reel (9:16) enseña el «cómo» a la vista, entra al mapa una vez y cierra con UN llamado; ningún modelo
+// repite el mapa seguido ni vuelve a él vacío tras una lámina
+test('reel r5: 9:16, 30-60 s, el prompt a la vista, un solo llamado y sin avisos de guion; ningún ejemplo con vaivén de mapa', () => {
+  const { crudo, deck, pasos, r } = preparar('reel');
+  assert.equal(crudo.pieza, 'reel');
+  assert.equal(crudo.formato, '9:16');
+  const d = duracionTotal(deck, pasos);
+  assert.ok(d >= 30 && d <= 60, `dura ${d} s`);
+  assert.deepEqual(r.errores, []);
+  assert.deepEqual(r.avisos, []);
+  assert.deepEqual(r.faltaParaFinal, []);
+  assert.ok(deck.laminas.some(ensenaComo), 'ningún chat con el prompt');
+  assert.equal(deck.laminas.filter(esLlamadoVisible).length, 1);
+  for (const n of ['reel', 'vsl-corto', 'propuesta', 'clase-express']) {
+    const { r: rn } = preparar(n);
+    assert.deepEqual(rn.avisos.filter(a => /mapa repetido|el mapa vuelve|solo afirma|contrato|promete \d/.test(a)), [], n);
+  }
 });

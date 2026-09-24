@@ -79,7 +79,7 @@ Un `deck.json` mínimo:
 ```
 
 Sin `marca`, las láminas toman la firma de tu ficha `MI-MARCA.md` (la de la carpeta del deck o la global
-`~/.config/diapositivas-pizarron-ia/MI-MARCA.md`, que crea `bash scripts/setup.sh`); sin ficha salen sin firma y
+`~/.config/diapositivas-pizarron-ia/MI-MARCA.md`, que crea `bash scripts/setup.sh`, o sin terminal `bash scripts/setup.sh --solo-ficha --firma "@tu_arroba"`); sin ficha salen sin firma y
 `"marca": false` la apaga. Con tu firma real en el deck: `"marca": { "texto": "<tu @ o dominio>" }`
 o `{ "logo": "assets/logo.png" }` (nunca un valor de ejemplo: QA lo marca). Para que QA mida la duración,
 agrega `"pieza"` (`reel`, `tutorial`, `vsl-corto`, `video`, `vsl`, `clase-corta`, `clase`, `webinar`, `propuesta`) y `"duracion_objetivo"` en
@@ -90,7 +90,8 @@ El demo con los 27 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemp
 guion que se copian, cada uno con su `guion.md`: para vender (VSL corto con la promesa antes del segundo 25, la
 objeción antes de la revelación y el mismo llamado dos veces) en [`ejemplos/vsl-corto/`](ejemplos/vsl-corto/guion.md);
 para una propuesta (los 9 bloques) en [`ejemplos/propuesta/`](ejemplos/propuesta/guion.md), y para una clase express
-(tarea y puente) en [`ejemplos/clase-express/`](ejemplos/clase-express/guion.md). `render.mjs --pasos` imprime qué
+(tarea y puente) en [`ejemplos/clase-express/`](ejemplos/clase-express/guion.md), y para un reel 9:16 de «cómo» (el prompt a
+la vista y un solo llamado) en [`ejemplos/reel/`](ejemplos/reel/guion.md). `render.mjs --pasos` imprime qué
 entra en cada paso de cada lámina, sin navegador, para escribir la voz con una frase por paso. `render.mjs --pdf` da `laminas.pdf` (para Keynote) y, en una
 propuesta o un VSL, `laminas-notas.pdf` con la voz como texto, para mandarlo.
 

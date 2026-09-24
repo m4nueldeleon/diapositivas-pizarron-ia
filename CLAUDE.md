@@ -26,11 +26,15 @@ SKILL.md.
   claves que nadie lee, los 9 bloques de la propuesta, escasez/garantía/bonos de la oferta, desglose de un precio,
   promesas de ingreso sin descargo visible, el orden de la oferta en un VSL (ningún llamado antes de la revelación, un
   solo canal de llamado, la oferta medida desde la oscura), la promesa o el mecanismo antes del segundo 30, objeciones
-  con frecuencia inventada, tasas sin origen, sustitutos de prueba d/e de GUION §7 (la prueba de mercado, c, es real: lleva `fuente`), capturas `hueco`
+  con frecuencia inventada, tasas sin origen, sustitutos de prueba d/e de GUION §7 (`origenPrueba`: la prueba PROPIA, a/b, contra la de MERCADO, c, con `fuente` de terceros: cuenta para final pero avisa en un vsl), capturas `hueco`
   por conseguir, tutoriales sin demostración y el cierre de una clase: tarea + puente)
   y la nota (`notaQA`, con tope de BORRADOR: los datos por confirmar NO restan; qa.mjs los pone en `datos_por_confirmar`). `infoEmoji`/`infoFirma` van a `qa.json → info` y NO restan. Son
   funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs` u `oferta-propuesta.test.mjs`. `revisarDeck`
   recibe `crudo` (el deck antes de sustituir `datos`) para saber si un número vino de un `{{MARCADOR}}`.
+- `scripts/lib/reglas-arco.mjs`: el mapa que vuelve (repetido seguido o vacío tras un bloque corto), la respuesta a una
+  objeción que solo afirma, el «cómo» de un reel (`falta_para_final`: «el cómo a la vista»), el contrato de tiempo contra la
+  voz (`"contrato": true` o detectado en el primer 25%) y `arcoDeck` → `qa.json → arco` (contrato, revelación y llamados en %;
+  qa.mjs lo imprime con `lineaArco`). Pruebas en `pruebas/arco-r5.test.mjs`. `render.mjs --qa` corre QA al terminar.
 - `scripts/lib/reglas-venta.mjs`: tasas sin origen, promesas sin descargo visible y el cierre de una clase (tarea +
   puente con su DATO: cuándo o cómo se entra; sin él, `por_confirmar.PUENTE`); reglas-deck.mjs las re-exporta y las suma
   en `revisarDeck`. `estadoQA` (reglas-deck) fija el orden del estado: con errores → borrador → bajo-90 → falta-venta → listo.
@@ -38,15 +42,18 @@ SKILL.md.
   preparar() arma primero las láminas normales y después los focos.
 - `scripts/lib/marca.mjs`: la ficha MI-MARCA.md (firma y palabras vetadas) con UNA cadena de búsqueda (carpeta del
   deck → arriba → `$PIZARRON_MARCA` → `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`). `pipeline.mjs` aplica la
-  firma a un deck sin `marca`; el logo solo se copia si la ficha está en la carpeta del deck.
+  firma a un deck sin `marca`; el logo solo se copia si la ficha está en la carpeta del deck. La ficha guarda también el
+  puente de clases (`leerPuente`): `datosParaDeck` llena `{{COMUNIDAD}}`/`{{PROXIMA_CLASE}}` que falten (o pendientes sin
+  valor) en el deck y el `crudo`. `setup.sh --solo-ficha --firma …` la escribe sin terminal (`fichaDesdeOpciones` rechaza un
+  relleno); `mensajeSinFirma` distingue «la ficha no existe» de «no tiene Texto».
 - `scripts/lib/datos.mjs` sustituye `{{CLAVE}}` con `datos` antes de sanear; lo que falta queda como
   `[CLAVE]`, que `marcar()` pinta como hueco y QA cuenta como pendiente.
 - `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA; con más
   de 20 láminas las pagina (`hoja-01.jpg`…, `hojas.json`). `render.mjs --pdf` usa `scripts/lib/pdf.mjs`: recaptura
   cada lámina sin cursor (una página por lámina; el stack con su remate en una banda) y en propuesta o VSL arma
   `laminas-notas.pdf` con la voz como texto (`pdf.json` lo resume).
-- `ejemplos/vsl-corto/` (venta), `ejemplos/propuesta/` (los 9 bloques) y `ejemplos/clase-express/` (tutorial con
-  `"clase": true`) son los modelos de guion que se copian; `pruebas/ejemplos.test.mjs` exige que no den avisos de guion,
+- `ejemplos/vsl-corto/` (venta), `ejemplos/propuesta/` (los 9 bloques), `ejemplos/clase-express/` (tutorial con
+  `"clase": true`) y `ejemplos/reel/` (9:16, el cómo a la vista) son los modelos de guion que se copian; `pruebas/ejemplos.test.mjs` exige que no den avisos de guion,
   que la revelación del VSL caiga entre el 55 y el 60% y que ningún ejemplo use un emoji de «Evita».
 - `scripts/lib/pasos-mapa.mjs`: qué entra en cada paso, leído del HTML armado (sin navegador). construir.mjs lo devuelve
   como `revela`; lo usan `render.mjs --pasos`, `pasos.json → revela`, `qa.json → mapa_pasos` y el error de voz de QA.

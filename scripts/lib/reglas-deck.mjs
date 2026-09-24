@@ -11,6 +11,8 @@ import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedi
 import { RELLENO, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
 import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
+import { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reelSinComo, reglasContrato, arcoDeck } from './reglas-arco.mjs';
+export { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reglasContrato, arcoDeck, lineaArco, contratoDeTiempo, ensenaComo, prometeComo } from './reglas-arco.mjs';
 export { reglasTasa, reglasPromesa, esPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 
 export const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -357,7 +359,7 @@ export function canalesDeLlamado(deck) {
   return r;
 }
 const OBJECION = /^(objecion|razon)\s*(#|n[.o°º]?)\s*\d/;
-const esObjecion = l => l && l.tipo === 'idea' && OBJECION.test(sinAcentos(plano(String(l.encabezado || ''))).trim());
+export const esObjecion = l => l && l.tipo === 'idea' && OBJECION.test(sinAcentos(plano(String(l.encabezado || ''))).trim());
 const esLaminaOscura = l => l && (l.tipo === 'oscura' || l.oscura === true);
 // Dónde empieza la oferta (para medir en un VSL corto): la revelación oscura; sin oscura, el primer `stack`. Un botón NO
 // es la oferta: un «Aplica aquí» temprano tapaba una revelación tardía (GUION §7).
@@ -393,13 +395,31 @@ export function reglasObjecion(deck) {
 const PIEZAS_VENTA = ['vsl', 'vsl-corto', 'webinar'];
 export const conTexto = v => typeof v === 'string' && v.trim() !== '';
 const capturasDe = l => (Array.isArray(l.capturas) ? l.capturas.filter(c => c && typeof c === 'object') : []);
-export function esPruebaReal(l) {
-  if (!l || typeof l !== 'object') return false;
-  if (l.tipo === 'prueba') return capturasDe(l).some(c => c.ejemplo !== true && !c.hueco && (conTexto(c.src) || conTexto(c.fuente)));
-  if (l.tipo === 'objeto') return conTexto(l.imagen);
-  if (l.tipo === 'cifra') return conTexto(l.fuente);
-  return false;
+// De dónde sale una prueba (GUION §7): PROPIA (a: material real del creador; b: un caso suyo, «caso real, con permiso») o
+// DE MERCADO (c: un dato publicado de terceros, que respalda la OPORTUNIDAD y no el resultado del producto). Una fuente con
+// «caso real», «con permiso» o un hueco pendiente ([FUENTE_CASO]) es propia; con año, «estudio», «encuesta», un medio o
+// «vía …», de mercado; lo demás se toma como propio. Un estudio de MOOCs no prueba que tu comunidad retenga [r5].
+const FUENTE_PROPIA = /caso real|con permiso|captura (de )?(mi|mis|tu|su|nuestr)|llamada de diagnostico|\[[a-z0-9_]+\]/;
+const FUENTE_TERCEROS = /\b(19|20)\d\d\b|estudio|encuesta|informe|reporte|revista|universi|inegi|\bsegun\b|\bvia\b|journal|science|forbes|harvard|banco|instituto|oms\b|ocde|statista|mckinsey|gartner/;
+export function origenFuente(f) {
+  const t = sinAcentos(plano(String(f || '')));
+  if (!t.trim()) return null;
+  if (FUENTE_PROPIA.test(t)) return 'propia';
+  return FUENTE_TERCEROS.test(t) ? 'mercado' : 'propia';
 }
+// 'propia' | 'mercado' | null (no es prueba real)
+export function origenPrueba(l) {
+  if (!l || typeof l !== 'object') return null;
+  if (l.tipo === 'prueba') {
+    const reales = capturasDe(l).filter(c => c.ejemplo !== true && !c.hueco && (conTexto(c.src) || conTexto(c.fuente)));
+    if (!reales.length) return null;
+    return reales.some(c => !conTexto(c.fuente) || origenFuente(c.fuente) === 'propia') ? 'propia' : 'mercado';
+  }
+  if (l.tipo === 'objeto') return conTexto(l.imagen) ? 'propia' : null;
+  if (l.tipo === 'cifra' || l.tipo === 'grafica') return conTexto(l.fuente) ? origenFuente(l.fuente) : null;
+  return null;
+}
+export const esPruebaReal = l => origenPrueba(l) !== null;
 // Capturas `{ hueco }` sin `plantilla: true`: un recuadro vacío a la vista es una captura POR CONSEGUIR (el deck es
 // borrador hasta tenerla; qa.mjs la pone en por_confirmar como CAPTURA_N). Con `plantilla: true` el hueco es el lugar
 // de la captura del espectador y se dibuja con marco a mano. Basta un hueco suelto junto a una captura real.
@@ -447,10 +467,15 @@ export function sustitutoPrueba(l) {
   }
   return null;
 }
-// La prueba del deck: la real primero; si no, el primer sustituto d o e (la c, prueba de mercado, lleva `fuente`: ya es real). null si no hay ninguno.
+// La prueba del deck: la propia primero (a, b), luego la de mercado (c, con `fuente` de terceros), luego el primer
+// sustituto d o e. { tipo: 'propia' | 'mercado' | 'logica' | 'garantia', lamina } o null. `mercado` cuenta para final,
+// pero en un vsl o webinar avisa: respalda la oportunidad, no el resultado (reglasCredibilidad).
+export const PRUEBA_REAL = ['propia', 'mercado'];
 export function pruebaDelDeck(deck) {
-  const i = deck.laminas.findIndex(esPruebaReal);
-  if (i >= 0) return { tipo: 'real', lamina: i + 1 };
+  for (const tipo of PRUEBA_REAL) {
+    const i = deck.laminas.findIndex(l => origenPrueba(l) === tipo);
+    if (i >= 0) return { tipo, lamina: i + 1 };
+  }
   const j = deck.laminas.findIndex(l => sustitutoPrueba(l));
   return j >= 0 ? { tipo: sustitutoPrueba(deck.laminas[j]), lamina: j + 1 } : null;
 }
@@ -477,7 +502,8 @@ export function reglasCredibilidad(deck) {
   }
   if (!PIEZAS_VENTA.includes(p)) return { errores: [], avisos };
   const pr = pruebaDelDeck(deck);
-  if (pr && pr.tipo !== 'real') {
+  if (pr && pr.tipo === 'mercado') avisos.push(`la única prueba es de mercado (${nombre(deck, pr.lamina - 1)}): respalda la oportunidad, no tu resultado; si existe, suma un caso propio (b: \`cifra\` con \`fuente: "caso real, con permiso"\`) o una captura (a); si no, la garantía de primeros casos (e). Y que la lámina nombre lo que se midió («Pagaron el certificado → terminó: 46%») (GUION §7)`);
+  if (pr && !PRUEBA_REAL.includes(pr.tipo)) {
     L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; la prueba del deck es el sustituto de la lámina ${pr.lamina} (GUION §7)`); });
   } else if (!pr) {
     avisos.push(`sin prueba real en el ${p}: pide 1-3 capturas con permiso o usa un sustituto de GUION §7 (demostración con material real, caso con números y «fuente», dato de mercado publicado con «fuente» (búscalo, no de memoria), prueba lógica con la tasa en la condición o con «fuente», primeros casos con garantía medible)`);
@@ -589,6 +615,8 @@ export function faltaParaFinal(deck) {
     if (!hayObjecionAntes(deck)) falta.push('objeción antes del llamado');
     if (llamadosVisibles(deck) < 2) falta.push('2º llamado visible');
   }
+  // un reel que promete un «cómo» y no lo enseña a la vista no es final (ARCOS §Reel)
+  if (reelSinComo(deck)) falta.push('el cómo a la vista');
   if ([...PIEZAS_VENTA, 'propuesta'].includes(p) && !cierraConLlamado(deck)) falta.push('llamado final');
   if (p === 'propuesta' && !hayInversion(deck)) falta.push('inversión');
   return falta;
@@ -840,11 +868,19 @@ export function infoEmoji(crudo) {
   return `emoji sin fijar (${e ? '"auto"' : 'sin el campo'}): el mismo deck sale en Apple en una Mac y en Fluent en Linux; fija "emoji": "apple" o "fluent" (SKILL §3, EMOJIS.md «Qué set usar»)`;
 }
 // Sin firma: dónde se llena la ficha global (marca.mjs). "marca": false es a propósito y no se menciona.
-export function infoFirma(crudo, { aplicada = null, rutaGlobal = '~/.config/diapositivas-pizarron-ia/MI-MARCA.md' } = {}) {
+// `ficha`: la ruta de la ficha que se encontró (aunque venga sin firma), o null si no existe ninguna.
+export function infoFirma(crudo, { aplicada = null, rutaGlobal = '~/.config/diapositivas-pizarron-ia/MI-MARCA.md', ficha } = {}) {
   if (!crudo || crudo.marca === false) return null;
   if (aplicada) return `firma tomada de ${aplicada}: cópiala a "marca" en deck.json para que el deck salga igual en otra máquina (SKILL §0.4)`;
   if (crudo.marca && typeof crudo.marca === 'object') return null;
-  return `va sin firma: llena «Texto» en ${rutaGlobal} (o corre bash scripts/setup.sh) y sale en todos tus decks; pon "marca": false si es a propósito (propuesta con la marca del cliente)`;
+  return mensajeSinFirma({ ficha, rutaGlobal });
+}
+// El mismo mensaje en render y QA: sin ficha, el comando que la crea (Bash sin terminal incluido); con ficha sin firma,
+// qué campo llenar. `ficha === undefined` (no se sabe) cae en el mensaje de la ficha global.
+export function mensajeSinFirma({ ficha, rutaGlobal = '~/.config/diapositivas-pizarron-ia/MI-MARCA.md' } = {}) {
+  const apagar = '; pon "marca": false si es a propósito (propuesta con la marca del cliente)';
+  if (ficha) return `va sin firma: la ficha ${ficha} no tiene «Texto» ni «Logo»; llénalo y sale en todos tus decks${apagar}`;
+  return `va sin firma: la ficha no existe; créala con bash scripts/setup.sh --solo-ficha --firma "@tu_arroba" (crea ${rutaGlobal})${apagar}`;
 }
 
 // Nota de QA: −12 por error y −3 por aviso. Con datos por confirmar, el deck es BORRADOR y la nota no pasa de
@@ -871,7 +907,8 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
     reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
-    reglasDemostracion(deck), tasa, promesa, cierre];
+    reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck),
+    reglasContrato(deck, pasos)];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
@@ -882,5 +919,6 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
       motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
     faltaParaFinal: faltaParaFinal(deck),
     prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,
+    arco: arcoDeck(deck, pasos),
   };
 }
