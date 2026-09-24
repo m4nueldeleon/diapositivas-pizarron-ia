@@ -72,6 +72,13 @@ test('precio: un costo calculado con Si, Pongamos o Con y ventas/facturación no
   assert.deepEqual(reglasAnclaPrecio({ pieza: 'vsl', laminas: [diagnostico] }).avisos, []);
 });
 
+test('precio: una cuenta del problema (línea con =) sin precio marcado no es el ancla aunque diga «en la calle»', () => {
+  const cuenta = { id: 'cuenta', tipo: 'cifra', arriba: 'Si facturas $40-60 mil al mes:', lineas: ['Cobras a 45 días = 1.5 meses', '1.5 × $40-60 mil = __$60-90 mil__'], voz: ['Si facturas cuarenta a sesenta mil y cobras a mes y medio,', 'traes de sesenta a noventa mil pesos en la calle.'] };
+  assert.deepEqual(reglasAnclaPrecio({ pieza: 'vsl-corto', laminas: [cuenta] }).avisos, []);
+  const precio = { id: 'precio', tipo: 'cifra', lineas: [{ texto: 'En la calle hoy: {g:$60-90 mil}', tam: '64px' }, { texto: 'Cobra Primero: __{{PRECIO}}__', tam: '120px' }] };
+  assert.equal(reglasAnclaPrecio({ pieza: 'vsl-corto', laminas: [cuenta, precio] }).avisos.length, 1);
+});
+
 test('precio: la línea grande usa el tamaño efectivo de cifra, heredado o predeterminado', () => {
   const revisar = campos => reglasAnclaPrecio({ pieza: 'vsl', laminas: [{ tipo: 'cifra', voz: 'Tienes cuentas por cobrar', ...campos }] }).avisos;
   assert.equal(revisar({ lineas: [{ texto: 'Programa $800' }] }).length, 1);

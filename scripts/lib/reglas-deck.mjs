@@ -80,7 +80,8 @@ function muestraPrecio(l) {
     // Mismos tamaños que cifra(): una línea a 140; varias a 84 y su resultado a 100.
     const predeterminado = lineas.length === 1 ? '140px' : i === lineas.length - 1 ? '100px' : '84px';
     const grande = parseFloat(linea?.tam || l.tam || predeterminado) >= 100;
-    return grande && DINERO_PRECIO.test(plano(t));
+    // Una cuenta («1.5 × $40 mil = $60 mil») dimensiona el problema; sin precio marcado no es el ancla.
+    return grande && !plano(t).includes('=') && DINERO_PRECIO.test(plano(t));
   });
 }
 export function reglasAnclaPrecio(deck, { crudo } = {}) {
