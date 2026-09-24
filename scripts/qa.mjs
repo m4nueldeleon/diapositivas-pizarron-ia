@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { subrayadosCruzan } from './lib/medidas-subrayados.mjs';
 import { infoConceptos } from './lib/emoji-diccionario.mjs';
 import { RE_PALABRA } from './lib/markup.mjs';
 // qa.mjs — revisa el deck renderizado con reglas que cuentan, no que opinan. Nota 0-100.
@@ -56,7 +57,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
-import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
+import { BAJO_CONTRASTE, HALO_INSUFICIENTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable, PISOS } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
 import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, lineaArco } from './lib/reglas-deck.mjs';
@@ -73,8 +74,8 @@ try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.erro
 const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, revela = [], avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, fichaMarca, avisoFirma, infoDatosFicha = [] } = prep;
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
-await page.addScriptTag({ content: inyectable() });
-const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
+await page.addScriptTag({ content: inyectable() + `;window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
+const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, HALO_INSUFICIENTE, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
 
 const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, datosMuestra, enVivo]) => {
   const out = [];
@@ -149,7 +150,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
 
   window.PZ.lams.forEach((lam, i) => {
     const n = window.PZ.pasos(lam), L = lam.getBoundingClientRect();
-    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], info: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [] };
+    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], info: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [], contrasteReportado: [] };
     // La `camara` normal se proyecta en negro: nada que revisar. El tramo en vivo (`vivo: true`) SÍ lo ve el público minutos
     // enteros: se revisa lo que se proyecta (.captura-vivo), con las mismas reglas (palabras, pendientes, desborde, letra)
     if (lam.dataset.tipo === 'camara' && !lam.dataset.vivo) { out.push(r); return; }
@@ -157,6 +158,15 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
     for (let p = 0; p < n; p++) {
       window.PZ.mostrar(lam, p, Infinity);
       const E = m => r.errores.push(`paso ${p + 1}: ${m}`), A = m => r.avisos.push(`paso ${p + 1}: ${m}`);
+      window.subrayadosCruzan(lam).forEach(A);
+      if (document.body.classList.contains('sala')) {
+        const identificables = '.lz-pasos [style*="opacity"], .pasos-letras .pendiente, .rejilla .apagado, .rejilla .apagada, .calendario .dia.apagado, :scope > .clon';
+        for (const e of lam.querySelectorAll(identificables)) {
+          if (!visible(e) || (e.closest('.clon') && !e.matches('.clon'))) continue;
+          const op = opac(e);
+          if (op < .35 - .001) E(`elemento identificable apagado al ${Math.round(op * 100)} % en sala: usa var(--apagado) o una opacidad efectiva mínima de 35 %`);
+        }
+      }
       if (enVivo) for (const qr of lam.querySelectorAll('.codigo-qr')) {
         if (!visible(qr)) continue;
         const zona = Number(qr.dataset.zonaQuieta), modulos = Number(qr.dataset.modulos);
@@ -487,7 +497,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       const fondo = oscura ? 'oscura' : e.closest('.tarjeta, .cuadro, .bento-lleno, .calendario') ? 'tarjeta' : 'claro';
       e.querySelectorAll(':scope > .emo-txt, :scope > img, :scope > .insignia > img, :scope > .insignia > .emo-txt').forEach(g => {
         const ch = String(g.tagName === 'IMG' ? g.getAttribute('alt') : g.textContent).replace(/\uFE0F/g, '');
-        sets.forEach(x => { const s2 = bajo(ch, x, fondo); if (s2) flojos[x].add(`${ch} → ${s2}`); const d = (CT.DIVERGE[x] || {})[ch]; if (d) cambia.add(`${ch} en ${x} → ${d}`); });
+        sets.forEach(x => { const resuelto = oscura && g.parentElement === e && e.classList.contains('hundido') && !CT.HALO_INSUFICIENTE.includes(ch); const s2 = resuelto ? '' : bajo(ch, x, fondo); if (s2) { flojos[x].add(`${ch} → ${s2}`); if (x === modoEmoji) r.contrasteReportado.push(ch); } const d = (CT.DIVERGE[x] || {})[ch]; if (d) cambia.add(`${ch} en ${x} → ${d}`); });
       });
     });
     // Fondo REAL de cada emoji (el primer ancestro con color o degradado): sobre las piezas de color del stack, los
@@ -496,6 +506,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
     const neutro = c => [[255, 255, 255], [243, 243, 243], [228, 228, 228], [11, 11, 14]].some(n => n.every((v, j) => Math.abs(v - c[j]) <= 8));
     const fondoReal = el => {
       for (let a = el.parentElement; a && a.nodeType === 1; a = a.parentElement) {
+        if (a === lam && oscura) return [[11, 11, 14]];
         const cs = getComputedStyle(a);
         const bi = /gradient/.test(cs.backgroundImage) ? colores(cs.backgroundImage).map(c => c.slice(0, 3)) : [];
         if (bi.length) return bi;
@@ -515,7 +526,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
           const tipo = g.tagName === 'IMG' ? 'img' : 'txt';
           const ch = String(tipo === 'img' ? g.getAttribute('alt') : g.textContent).replace(/\uFE0F/g, '');
           const enTabla = ((CT.BAJO[modoEmoji] || {})[fondoN === 'oscura' ? 'oscura' : 'claro'] || {})[ch] || (((CT.MEDIDO[modoEmoji] || {})[fondoN]) || {})[ch] != null || (CT.OK[modoEmoji] || []).includes(ch);
-          if (!ch || enTabla) return;
+          if (!ch || enTabla || (oscura && g.parentElement === e && e.classList.contains('hundido') && !CT.HALO_INSUFICIENTE.includes(ch))) return;
           r.medir.push({ tipo, ch, src: tipo === 'img' ? g.getAttribute('src') : '', svg: '', fondos, neutro: true, fondoN });
         });
         return;
@@ -749,6 +760,10 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       lam.querySelectorAll('svg text').forEach(t => { if (!fueraClon(t) || !visible(t)) return; for (const { segment } of seg.segment(t.textContent)) if (esE(segment)) en.add(segment); });
       if (en.size) AF(`emoji dentro de un texto de gráfica, línea de tiempo o flecha (${[...en].join(' ')}): sale con la fuente del sistema, no en Fluent; ponlo en el campo emoji, en la nota o en el nodo`);
     }
+    for (const img of lam.querySelectorAll('img[data-recorte]')) {
+      if (img.dataset.recorteError) AF(`no se pudo comprobar el fondo de la imagen: ${img.dataset.recorteError}; usa un PNG local con transparencia`);
+      else if (img.dataset.recorteOpaco === 'true') AF(img.dataset.recorte === 'anfitrion' ? 'la imagen de anfitrion no tiene alfa útil: aporta un PNG recortado real con transparencia' : 'se verá como rectángulo de foto: quítale el fondo o usa `foto`');
+    }
     r.mano = lam.querySelectorAll('.capa-mano path, .nota, .tabla, .sello, .t-mano').length;
     r.enfasis = lam.querySelectorAll('[data-sub], mark').length;
     [...lam.querySelectorAll('img')].forEach(im => { if (!im.complete || !im.naturalWidth) r.errores.push(`imagen sin cargar: ${im.getAttribute('src')}`); });
@@ -788,9 +803,9 @@ porLamina.forEach(r => {
   if (r.palabras > 35) errores.push(`${n}: ${r.palabras} palabras a la vista; el estilo pide una idea por lámina (≤ 22)`);
   else if (r.palabras > 22) avis.push(`${n}: ${r.palabras} palabras a la vista (ideal ≤ 22)`);
   if (r.enfasis > 2) avis.push(`${n}: ${r.enfasis} énfasis (subrayado/resaltador); uno por lámina, dos como máximo`);
-  const flojos = contrasteColor.filter(m => m.i === r.i && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : m.oscuro ? UMBRAL_OSCURA : UMBRAL_COLOR));
+  const flojos = contrasteColor.filter(m => m.i === r.i && !r.contrasteReportado.includes(m.ch) && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : m.oscuro ? UMBRAL_OSCURA : UMBRAL_COLOR));
   // fuera de la tabla medida, sobre blanco, tarjeta u oscura: el umbral de la tabla neutra (30 en la oscura)
-  const flojosN = contrasteColor.filter(m => m.i === r.i && m.neutro && m.pct != null && m.pct < (m.fondoN === 'oscura' ? UMBRAL_OSCURA : CONTRASTE.U));
+  const flojosN = contrasteColor.filter(m => m.i === r.i && !r.contrasteReportado.includes(m.ch) && m.neutro && m.pct != null && m.pct < (m.fondoN === 'oscura' ? UMBRAL_OSCURA : CONTRASTE.U));
   if (flojosN.length) avis.push(`${n}: emoji fuera de la tabla medida que casi no se ve en ${modoRender} sobre ${flojosN[0].fondoN === 'oscura' ? 'la lámina oscura' : flojosN[0].fondoN === 'tarjeta' ? 'la tarjeta' : 'blanco'}: ${flojosN.map(m => `${m.ch} (${m.pct}%)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cámbialo (EMOJIS.md)`);
   if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });

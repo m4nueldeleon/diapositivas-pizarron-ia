@@ -38,7 +38,7 @@ const MARCAS = /\b(TikTok|Seller Center|Instagram|WhatsApp|YouTube|Shopify|Merca
 export function reglasLogos(deck) {
   const avisos = [];
   deck.laminas.forEach((l, i) => {
-    const items = [...(l.nodos || []), ...(l.items || []), ...(l.tipo === 'pasos' ? (l.iconos || []).map((x, k) => typeof x === 'string' ? { emoji: x, etiqueta: l.etiquetas?.[k] } : { ...x, etiqueta: l.etiquetas?.[k] }) : [])];
+    const items = [...(l.nodos || []), ...(l.items || []), ...(l.tipo === 'pasos' ? (l.iconos || []).map((x, k) => typeof x === 'string' ? { emoji: x, imagen: l.logos?.[k], etiqueta: l.etiquetas?.[k] } : { ...x, imagen: l.logos?.[k] || x.imagen, etiqueta: l.etiquetas?.[k] }) : [])];
     for (const it of items) {
       if (!it || typeof it !== 'object' || !it.emoji || it.imagen) continue;
       const t = plano(it.etiqueta || it.texto || '');

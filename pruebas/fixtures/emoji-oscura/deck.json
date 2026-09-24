@@ -1,0 +1,13 @@
+{
+  "emoji": "apple",
+  "marca": false,
+  "laminas": [
+    {
+      "id": "curso-ejemplo",
+      "tipo": "lista",
+      "oscura": true,
+      "encabezado": "Programa de ejemplo",
+      "items": [{ "emoji": "🎓", "texto": "Aprende a organizar tus ideas" }]
+    }
+  ]
+}

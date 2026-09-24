@@ -1,3 +1,4 @@
+import { avisosProcedencia } from './imagenes.mjs';
 import { reglasVariantes } from './variantes.mjs';
 import { reglasQr } from './reglas-qr.mjs';
 export { reglasQr } from './reglas-qr.mjs';
@@ -986,6 +987,12 @@ export function reglasPresentacion(deck, pasos = []) {
   if (deck.sala && deck.formato === '9:16') avisos.push('sala se ignora en vertical: usa 16:9 para proyección en sala');
   deck.laminas.forEach((l, i) => {
     const n = pasos[i] || (Array.isArray(l.voz) ? l.voz.length : 1);
+    if (deck.sala && deck.formato !== '9:16') {
+      if (l.tipo === 'calendario' && (l.dias?.length ?? l.n ?? 14) > 14) errores.push(`${nombre(deck, i)}: el calendario en sala admite máximo 14 días (2 semanas); divídelo en varias láminas sin reducir las celdas`);
+      if (l.tipo === 'meses' && l.celdas?.length > 6) errores.push(`${nombre(deck, i)}: en sala caben máximo 6 meses; divide la fila en varias láminas sin reducir sus celdas`);
+    }
+    if (l.tipo === 'prueba' && l.capturas?.length === 1 && l.capturas[0].hueco && l.capturas[0].plantilla === true && !l.capturas[0].src && !l.capturas[0].post && /\b(real|prueba|resultado)\b/i.test(l.encabezado || '')) avisos.push(`${nombre(deck, i)}: la única captura es un hueco de plantilla, pero el encabezado promete una prueba o resultado real; añade la captura o presenta el marco como tutorial`);
+    avisos.push(...avisosProcedencia(l).map(a => `${nombre(deck, i)}: ${a}`));
     for (const campo of ['accion', 'si_falla']) if (Array.isArray(l[campo]) && l[campo].length !== n) errores.push(`${nombre(deck, i)}: ${campo} tiene ${l[campo].length} entradas para ${n} pasos; alinea una entrada por paso`);
     if (deck.en_vivo && (l.tipo !== 'camara' || l.vivo === true)) {
       const vacios = Array.from({ length: n }, (_, k) => Array.isArray(l.voz) ? l.voz[k] : k === 0 ? l.voz : '').filter(v => !String(v || '').trim()).length;

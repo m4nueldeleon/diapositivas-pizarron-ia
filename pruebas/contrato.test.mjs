@@ -7,12 +7,15 @@ import fs from 'node:fs';
 
 const tipos = Object.keys(LAYOUTS);
 
-test('el demo es válido y usa los 29 diseños', () => {
+// `foto` y `anfitrion` piden una imagen real o de IA aportada por el usuario: en la vitrina serían relleno
+// (AGENTS: nunca placeholders). Se cubren en pruebas/imagenes-r6.test.mjs.
+const CON_IMAGEN_DEL_USUARIO = ['foto', 'anfitrion'];
+test('el demo es válido y usa los 31 diseños salvo los que piden imagen del usuario', () => {
   const deck = JSON.parse(fs.readFileSync(new URL('../ejemplos/demo/deck.json', import.meta.url)));
   assert.deepEqual(validarDeck(deck, tipos), []);
-  assert.equal(tipos.length, 29);
+  assert.equal(tipos.length, 31);
   const usados = new Set(deck.laminas.map(l => l.tipo));
-  assert.deepEqual(tipos.filter(t => !usados.has(t)), []);
+  assert.deepEqual(tipos.filter(t => !usados.has(t) && !CON_IMAGEN_DEL_USUARIO.includes(t)), []);
 });
 
 test('detecta errores con mensajes útiles', () => {

@@ -2,6 +2,7 @@
 // Cada diseño devuelve el HTML interior del lienzo. Los pasos de revelado se asignan con ctx.P(k):
 // el paso 0 es lo que se ve al cortar a la lámina; cada paso siguiente suma UN elemento.
 import { marcar, escapar, texto, nota, fuente, bloque, pasoDe, estrellas, rotuloProcedencia, imagenConHueco } from './comun.mjs';
+import { imagenRecortada } from './imagenes.mjs';
 import { tamTexto, palabras, plano } from './markup.mjs';
 
 // Etiqueta corta (≤ 3 palabras): no se parte en dos renglones («La / detecta», «Paso / 2»). Si con eso la fila
@@ -130,7 +131,7 @@ export function flujo(l, ctx) {
   const signos = [];
   const html = nodos.map((nd, i) => {
     const k = i === 0 ? 0 : i;
-    const vis = nd.imagen ? imagenConHueco(ctx, nd.imagen, nd.alto || 300, 'display:block')
+    const vis = nd.imagen ? imagenRecortada(ctx, nd.imagen, nd.alto || 300, 'nodo')
       : Number.isInteger(nd.cantidad) && nd.cantidad > 1 ? pilaCantidad(ctx, nd.emoji, nd.cantidad, tamE) : ctx.emoji(nd.emoji, tamE);
     const sg = i > 0 ? signoDe(i) : '';
     if (sg) signos.push(`<div class="signo" data-signo="${i}"${ctx.P(k)} style="--ts:${Math.round(tamE * 0.45)}px">${escapar(sg)}</div>`);
@@ -182,16 +183,21 @@ export function pasos(l, ctx) {
     const columna = Math.floor(ancho / n), largoLetra = Math.max(1, ...l.letras.map(x => [...String(x)].length));
     const tam = Math.min(ctx.vertical ? 100 : 130, Math.floor((columna - 20) / (largoLetra * .65)));
     const riel = l.letras.map((letra, i) => `<div class="riel-letra${activo === i + 1 ? ' activa' : activo && i + 1 > activo ? ' pendiente' : ''}" style="font-size:${tam}px"${activo === i + 1 ? ' data-circulo' : ''}>${escapar(letra)}</div>`).join('');
-    const iconos = (l.iconos || []).map((icono, i) => {
+    // `letras` solo admite letras y dígitos (contrato), así que va directo en la expresión; la glosa «R · Rol» no se duplica.
+    const iconos = l.letras.map((letra, i) => {
+      if (activo && activo !== i + 1) return '';
+      const icono = (l.iconos || [])[i], logo = (l.logos || [])[i];
       const etiqueta = (l.etiquetas || [])[i] || '', largo = Math.max(1, ...plano(etiqueta).split(/\s+/).map(t => t.length));
       const et = Math.max(30, Math.min(ctx.vertical ? 52 : 70, Math.floor((columna - 16) / (largo * .55))));
-      const emo = icono?.imagen ? imagenConHueco(ctx, icono.imagen, Math.min(150, columna - 24)) : ctx.emoji(icono?.emoji || icono, Math.min(150, columna - 24));
+      const tamIcono = activo ? 220 : Math.min(150, columna - 24);
+      const emo = logo || icono?.imagen ? imagenConHueco(ctx, logo || icono.imagen, tamIcono) : icono ? ctx.emoji(icono?.emoji || icono, tamIcono) : '';
       const k = l.revelar === 'pasos' && !activo ? i : 0;
-      return `<div class="pila letra-concepto${activo && i + 1 > activo ? ' pendiente' : ''}"${ctx.P(k)}${ctx.A('k' + i)}>${emo}<div class="rotulo-paso" style="font-size:${et}px">${marcar(etiqueta)}</div></div>`;
+      return `<div class="pila letra-concepto"${ctx.P(k)}${ctx.A('k' + i)}>${emo}<div class="rotulo-paso" style="font-size:${activo ? 76 : et}px;font-weight:700">${marcar(activo && !new RegExp(`^\\s*${letra}\\s*·`, 'iu').test(plano(etiqueta)) ? `${letra} · ${etiqueta}` : etiqueta)}</div></div>`;
     }).join('');
     const kt = pasoDe(l, 'texto_paso', l.revelar === 'pasos' && !activo ? n : 0);
-    return `<div class="pila pasos-letras" style="--letras-n:${n};width:${ancho}px"><div class="riel-letras"${ctx.P(0)}>${riel}</div><div class="letras-conceptos">${iconos}</div>${texto(ctx, l.texto, 'medio mt-m', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
+    return `<div class="pila pasos-letras" style="--letras-n:${n};width:${ancho}px"><div class="riel-letras"${ctx.P(0)}>${riel}</div><div class="letras-conceptos${activo ? ' concepto-activo' : ''}">${iconos}</div>${texto(ctx, l.texto, 'medio mt-m', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
   }
+  if (l.logos?.length) return pasos({ ...l, logos: undefined, iconos: Array.from({ length: l.n || Math.max(l.logos.length, l.iconos?.length || 0) }, (_, i) => l.logos[i] ? { imagen: l.logos[i] } : l.iconos?.[i] || '' ) }, ctx);
   const n = l.n || (l.iconos ? l.iconos.length : 3);
   const activo = l.activo || 0;
   const hechos = new Set(l.hechos || []);
@@ -373,12 +379,24 @@ export function relojSVG(txt, ancho) {
 export function objeto(l, ctx) {
   const vis = l.reloj && RE_RELOJ.test(l.reloj) ? relojSVG(l.reloj, ctx.vertical ? 460 : 600)
     : l.imagen
-      ? imagenConHueco(ctx, l.imagen, l.alto || 520, 'display:block;filter:drop-shadow(0 26px 30px rgba(0,0,0,.14))')
+      ? imagenRecortada(ctx, l.imagen, l.alto || 520, 'objeto')
       : ctx.emoji(l.emoji || '📦', l.emoji_tam || 'heroe');
   return `<div class="pila"><div${ctx.P(0)}${ctx.A('objeto')}>${vis}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto) + ' mt-m', pasoDe(l, 'texto_paso', 0))}
+    ${l.logos?.length ? `<div class="objeto-logos"${ctx.P(pasoDe(l, 'texto_paso', 0))}>${l.logos.map(src => imagenConHueco(ctx, src, 40)).join('')}</div>` : ''}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', 0) + 1), 'mt-s')}
     ${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', 0))}${l.imagen ? rotuloProcedencia(l.procedencia) : ''}</div>`;
+}
+
+// FOTO — imagen completa con velo blanco; conserva la frase y el revelado del pizarrón.
+export function foto(l, ctx) {
+  const k = pasoDe(l, 'texto_paso', 0);
+  return `<div class="foto-completa velo-${l.velo === 'banda' ? 'banda' : 'blanco'}"><img class="foto-fondo" src="${ctx.img(l.imagen)}" alt=""${ctx.P(0)}><div class="foto-velo"></div><div class="foto-contenido">${texto(ctx, l.texto, 'medio', k)}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', k))}${rotuloProcedencia(l.procedencia)}</div></div>`;
+}
+
+// ANFITRIÓN — retrato recortado aportado por el usuario. El demo utiliza una silueta declarada como ejemplo.
+export function anfitrion(l, ctx) {
+  return `<div class="anfitrion lado-${l.lado === 'izq' ? 'izq' : 'der'}"><div class="anfitrion-retrato"${ctx.P(0)}>${imagenRecortada(ctx, l.imagen, 950, 'anfitrion')}</div><div class="anfitrion-contenido">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0))}${rotuloProcedencia(l.procedencia)}</div></div>`;
 }
 
 // TARJETAS — criterios o métricas en tarjetas gris suave con emoji. Una por paso.
@@ -389,6 +407,7 @@ export function objeto(l, ctx) {
 export const tamEmojiTarjeta = n => (n <= 3 ? 150 : n === 4 ? 130 : 104);
 export function tarjetas(l, ctx) {
   const items = l.items || [];
+  if (l.variante === 'logos') return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}<div class="tarjetas-logos${l.columnas === 2 ? ' dos-columnas' : ''}">${items.map((it, i) => `<div${ctx.P(i)}>${imagenConHueco(ctx, it.imagen, 140)}${it.texto ? `<div class="rotulo">${marcar(it.texto)}</div>` : ''}</div>`).join('')}</div>${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, items.length - 1)))}</div>`;
   const tamDef = tamEmojiTarjeta(items.length);
   const angosto = ctx.util < 1200;
   // 9:16: hasta 3 tarjetas van en UNA columna del ancho útil (~860) con el rótulo a 64: en 3 columnas de ~280 el rótulo se
@@ -406,7 +425,7 @@ export function tarjetas(l, ctx) {
 
 // OSCURA — revelación de producto u oferta: fondo negro con brillo violeta. Rompe el blanco a propósito.
 export function oscura(l, ctx) {
-  const logo = l.imagen ? imagenConHueco(ctx, l.imagen, l.alto || 150) : (l.emoji ? ctx.emoji(l.emoji, l.emoji_tam || 150) : '');
+  const logo = l.imagen ? imagenRecortada(ctx, l.imagen, l.alto || 150, 'oscura') : (l.emoji ? ctx.emoji(l.emoji, l.emoji_tam || 150) : '');
   return `<div class="pila">${logo ? `<div${ctx.P(0)}>${logo}</div>` : ''}
     ${l.titulo ? `<div class="titulo-marca"${ctx.P(0)} style="${logo ? 'margin-top:30px' : ''}">${marcar(l.titulo)}</div>` : ''}
     ${texto(ctx, l.texto, 'chico mt-m', pasoDe(l, 'texto_paso', 0))}

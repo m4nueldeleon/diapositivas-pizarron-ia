@@ -96,10 +96,12 @@ test('comparar r4: un deck.json ajeno junto a los cuadros se ignora con aviso (n
 
 // ---------- ronda 3: la tinta a mano entra completa en el corte (modo seco) ----------
 import { prepararSalida, abrir } from '../scripts/lib/pipeline.mjs';
-async function conDeckT(deck, fn) {
+import { subrayadosCruzan } from '../scripts/lib/medidas-subrayados.mjs';
+async function conDeckT(deck, fn, css = '') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-tinta-'));
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify(deck));
   const p = prepararSalida(dir, path.join(dir, 'salida'));
+  if (css) fs.writeFileSync(p.htmlPath, fs.readFileSync(p.htmlPath, 'utf8').replace('</head>', `<style>${css}</style></head>`));
   const { browser, page } = await abrir(p.htmlPath, p.W, p.H);
   try { return await fn(page); } finally { await browser.close(); }
 }
@@ -136,7 +138,7 @@ test('suave: el subrayado sigue dibujándose (t=0 → oculto)', { timeout: 120_0
   });
 });
 
-test('subrayado: plumón de 5.5 px en arco suave (flecha de 0.8-1.2% del ancho) que remata antes de la última letra', { timeout: 120_000 }, async () => {
+test('subrayado: plumón de 4–6 px bajo los descendentes, arco ascendente limitado a 0.06 em', { timeout: 120_000 }, async () => {
   await conDeckT(deckTinta(), async page => {
     const g = await page.evaluate(() => {
       const a = window.PZ.lams[0], pth = a.querySelector(':scope > .capa-mano path[data-clase="subrayado"]');
@@ -146,10 +148,66 @@ test('subrayado: plumón de 5.5 px en arco suave (flecha de 0.8-1.2% del ancho) 
       const p0 = pts[0], p1 = pts[n], ancho = p1.x - p0.x;
       // flecha: distancia máxima de la curva a la cuerda
       const flecha = Math.max(...pts.map(p => Math.abs((p1.y - p0.y) * p.x - (p1.x - p0.x) * p.y + p1.x * p0.y - p1.y * p0.x) / Math.hypot(p1.y - p0.y, p1.x - p0.x)));
-      return { grosor: +pth.getAttribute('stroke-width'), x0: p0.x, x1: p1.x, izq: R.left - L.left, der: R.right - L.left, w: R.width, flecha, ancho };
+      return { grosor: +pth.getAttribute('stroke-width'), x0: p0.x, x1: p1.x, izq: R.left - L.left, der: R.right - L.left, w: R.width, flecha, ancho, em: +pth.dataset.em };
     });
-    assert.equal(g.grosor, 5.5);
+    assert.ok(g.grosor >= 4 && g.grosor <= 6, JSON.stringify(g));
     assert.ok(g.x0 > g.izq && g.x1 < g.der - g.w * 0.025, JSON.stringify(g));
-    assert.ok(g.flecha >= g.w * 0.006 && g.flecha <= g.w * 0.014, JSON.stringify(g));
+    assert.ok(g.flecha > 0 && g.flecha <= Math.min(g.w * 0.005, g.em * 0.06) + 0.02, JSON.stringify(g));
+  });
+});
+
+const fixtureSubrayados = JSON.parse(fs.readFileSync(new URL('./fixtures/subrayados/deck.json', import.meta.url), 'utf8'));
+
+test('subrayado: g/p/q/y, renglón largo a 75 px, varios renglones y hueco con borde conservan base y espacio', { timeout: 120_000 }, async () => {
+  await conDeckT(fixtureSubrayados, async page => {
+    await page.addScriptTag({ content: `window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
+    const resultado = await page.evaluate(() => window.PZ.lams.map(lam => {
+      const L = lam.getBoundingClientRect(), s = L.width / lam.offsetWidth;
+      const huecos = [...lam.querySelectorAll('.hueco')].map(e => e.getBoundingClientRect());
+      const trazos = [...lam.querySelectorAll('path[data-clase="subrayado"]')].map(p => {
+        const largo = p.getTotalLength(), n = Math.ceil(largo / 6);
+        const puntos = Array.from({ length: n + 1 }, (_, i) => p.getPointAtLength(largo * i / n));
+        const inicio = puntos[0], fin = puntos[n], centro = p.getPointAtLength(largo / 2);
+        return { base: +p.dataset.base, em: +p.dataset.em, ancho: fin.x - inicio.x,
+          minimo: Math.min(...puntos.map(q => q.y)), arco: (inicio.y + fin.y) / 2 - centro.y,
+          dentroHueco: puntos.some(q => huecos.some(h => q.x * s + L.left >= h.left && q.x * s + L.left <= h.right && q.y * s + L.top >= h.top && q.y * s + L.top <= h.bottom)) };
+      });
+      return { trazos, avisos: window.subrayadosCruzan(lam) };
+    }));
+    assert.equal(resultado[3].trazos.length, 2, 'un trazo por renglón');
+    assert.ok(resultado[1].trazos[0].ancho > 1200, 'la regresión incluye un renglón largo');
+    for (const fila of resultado) {
+      assert.ok(fila.trazos.length, JSON.stringify(fila));
+      assert.deepEqual(fila.avisos, []);
+      for (const p of fila.trazos) {
+        assert.ok(Math.abs(p.em - 75) < 0.1, JSON.stringify(p));
+        assert.ok(p.minimo >= p.base + p.em * 0.12, JSON.stringify(p));
+        assert.ok(p.arco > 0 && p.arco <= p.em * 0.06 + 0.03, JSON.stringify(p));
+        assert.equal(p.dentroHueco, false, JSON.stringify(p));
+      }
+    }
+  }, '.hueco { display:inline-block; border:3px dashed currentColor; padding:.08em .15em; } .t { max-width: 1800px; }');
+});
+
+test('QA avisa si el path vuelve al cálculo viejo y si invade otro renglón o la caja del hueco', { timeout: 120_000 }, async () => {
+  await conDeckT(fixtureSubrayados, async page => {
+    await page.addScriptTag({ content: `window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
+    const avisos = await page.evaluate(() => {
+      const salida = [];
+      for (const [i, caso] of [[0, 'viejo'], [2, 'hueco'], [3, 'renglon']]) {
+        const lam = window.PZ.lams[i], p = lam.querySelector('path[data-clase="subrayado"]');
+        const L = lam.getBoundingClientRect(), rango = document.createRange(); rango.selectNodeContents(lam.querySelector('[data-sub]'));
+        const rs = [...rango.getClientRects()].filter(r => r.width > 4), b = rs[0];
+        let x0 = +p.dataset.x0, x1 = +p.dataset.x1, y = b.top - L.top + b.height * 0.93;
+        if (caso === 'hueco') { const h = lam.querySelector('.hueco').getBoundingClientRect(); x0 = h.left - L.left; x1 = h.right - L.left; y = h.bottom - L.top - 2; }
+        if (caso === 'renglon') y = rs[rs.length - 1].top - L.top + 8;
+        // Solo se reemplaza la geometría SVG producida: el runtime permanece intacto.
+        const sag = caso === 'viejo' ? (x1 - x0) * 0.01 : 0;
+        p.setAttribute('d', `M${x0} ${y} Q${(x0 + x1) / 2} ${y - 2 * sag} ${x1} ${y}`);
+        salida.push(window.subrayadosCruzan(lam));
+      }
+      return salida;
+    });
+    avisos.forEach(a => { assert.equal(a.length, 1); assert.match(a[0], /el subrayado cruza las letras de “.+”: sepáralo/); });
   });
 });

@@ -105,3 +105,19 @@ test('EMOJIS.md r5: «sesión» vive en una sola fila (📞), 🚨 🗄️ 📥 
   assert.doesNotMatch(conceptoDe('🗑️'), /archiv/);
   assert.match(conceptoDe('📅'), /fecha/);
 });
+
+test('r6: compuestos del diccionario usan el spec completo; una base inventada sigue avisando', async () => {
+  const { infoIconos } = await import('../scripts/lib/reglas-deck.mjs');
+  const compuestos = filasConcepto(EMOJIS).flatMap(f => f.specs).filter(s => s.includes('+'));
+  for (const emoji of [...compuestos, '🧑+🎥']) assert.equal(infoIconos({ laminas: [{ tipo: 'idea', emoji }] }), null, emoji);
+  assert.match(infoIconos({ laminas: [{ tipo: 'idea', emoji: '🦩+🎥' }] }), /🦩/);
+});
+
+test('r6: conceptos de negocio en México sin logos genéricos ni identificación confundida con rol', () => {
+  for (const [emoji, concepto] of [['🛍️', /tienda/], ['🔁', /suscripción/], ['⌨️', /prompt/], ['🏠', /casa/], ['🏪', /tienda/], ['🪪', /identificación.*INE.*pasaporte/], ['🧾', /factura.*comprobante/]]) {
+    assert.match(conceptoDe(emoji), concepto, emoji);
+  }
+  assert.equal(conceptoDe('🏬'), null);
+  assert.doesNotMatch(conceptoDe('📱'), /WhatsApp/);
+  assert.match(conceptoDe('no:⌨️'), /sin programar/);
+});

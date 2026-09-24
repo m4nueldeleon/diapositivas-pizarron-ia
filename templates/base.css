@@ -602,11 +602,15 @@ body.hoja { display: flex; flex-direction: column; gap: 30px; padding: 30px; ali
 .lamina.oscura > .anotacion.tono-r { color: #ff4d57; }
 .lamina.oscura > .anotacion.tono-n { color: #ffffff; }
 
-/* Sala explícita: el fondo del foco conserva su opacidad de escenografía. */
+/* Sala explícita: lo apagado sigue siendo identificable con proyector. */
 body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; --t-pie: 44px; --t-vivo: 64px; --t-sub: 56px; --t-pastilla: 56px; }
 .sala .nota:not(.foco-frase .nota) { font-size: max(var(--tn, var(--t-nota)), var(--t-nota)); }
 .sala .rejilla .apagado, .sala .rejilla.multitud .celda.apagada { opacity: var(--apagado); }
 .sala .sub-etiqueta { font-size: 56px; }
+.sala .calendario .dia.apagado { opacity: var(--apagado); }
+.sala .calendario .dia.apagado.tinte { color: var(--tinta) !important; }
+.sala .calendario .dia.apagado small, .sala .calendario .dia.apagado span { opacity: 1; }
+.sala .mes-nombre { font-size: 44px; }
 
 .procedencia { position: absolute; right: 32px; bottom: 24px; font: 400 34px/1.2 var(--sans); color: #555; text-align: right; }
 .sala .procedencia { font-size: 44px; }
@@ -635,7 +639,7 @@ body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; 
 .riel-letras,.letras-conceptos { display:grid; grid-template-columns:repeat(var(--letras-n),minmax(0,1fr)); width:100%; justify-items:center; }
 .riel-letras { border-bottom:4px solid #b9b9b9; padding-bottom:28px; margin-bottom:64px; }
 .riel-letra { font-weight:700; line-height:1.1; padding:8px 18px; color:var(--tinta); }
-.pasos-letras .pendiente { opacity:var(--apagado); }
+.pasos-letras .pendiente { opacity: .35; }   /* riel de siglas: pendientes en gris claro, identificables en video y en sala */
 .letra-concepto { width:100%; gap:26px; text-align:center; }
 .letra-concepto .rotulo-paso { font-weight:700; line-height:1.1; overflow-wrap:anywhere; }
 .vineta-letra { font-size:1.15em; min-width:1.1em; color:var(--tinta); }
@@ -663,3 +667,56 @@ body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; 
 .codigo-qr { display:block;width:100%;height:auto;filter:none!important;box-shadow:none!important;background:#fff; }
 .qr-rotulo { font-family:var(--mano);font-size:72px;color:var(--rojo);text-align:center;line-height:1.15;margin-top:14px; }
 .f-vertical .con-qr { grid-template-columns:1fr;gap:28px;justify-items:center; }
+
+/* Los glifos oscuros necesitan luz propia solo en la revelación oscura. */
+.lamina.oscura .emo.hundido > img, .lamina.oscura .emo.hundido > .emo-txt {
+  filter: drop-shadow(0 0 calc(var(--s) * .012) rgb(255 255 255 / .9)) drop-shadow(0 0 calc(var(--s) * .09) rgb(255 255 255 / .5));
+}
+
+
+/* Fotografía a sangre solo con velo; tipografía y fuente reutilizan los tokens del pizarrón. */
+.lienzo.lz-foto, .lienzo.lz-anfitrion { padding: 0; }
+.foto-completa, .anfitrion { position: relative; width: var(--W); height: var(--H); }
+.foto-fondo, .foto-velo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.foto-fondo { object-fit: cover; }
+.foto-velo { background: rgb(255 255 255 / .72); }
+.foto-contenido { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--margen-v) var(--margen-h); }
+.velo-banda .foto-velo { top: 56%; height: 44%; background: rgb(255 255 255 / .96); }
+.velo-banda .foto-contenido { top: 56%; padding-top: 32px; padding-bottom: 78px; }
+.foto-completa .procedencia, .anfitrion .procedencia { position: static; margin-top: 24px; }
+.anfitrion-retrato { position: absolute; bottom: 0; right: 0; width: 48%; height: 92%; }
+.anfitrion-retrato > img { width: 100% !important; height: 100% !important; display: block; object-fit: contain; object-position: right bottom; }
+.anfitrion-contenido { position: absolute; left: 7%; top: 18%; width: 45%; height: 60%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.anfitrion-contenido .t { max-width: 100%; }
+.anfitrion.lado-izq .anfitrion-retrato { right: auto; left: 0; }
+.anfitrion.lado-izq .anfitrion-retrato > img { object-position: left bottom; }
+.anfitrion.lado-izq .anfitrion-contenido { left: auto; right: 7%; }
+.lz-objeto img.imagen-recortada { filter: drop-shadow(0 26px 30px rgb(0 0 0 / .14)); }
+.objeto-logos { display: flex; gap: 36px; justify-content: center; margin-top: 26px; }
+body.sala .objeto-logos img { height: 52px !important; }
+.letras-conceptos.concepto-activo { display: flex; justify-content: center; width: 100%; }
+.letras-conceptos.concepto-activo .letra-concepto { gap: 22px; }
+.tarjetas-logos { display: grid; grid-auto-flow: column; gap: 70px; align-items: center; }
+.tarjetas-logos > div { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.tarjetas-logos img { max-width: 240px; object-fit: contain; }
+/* el rótulo de un logo es texto secundario que se lee: ≥ 48 px en video, 56 en sala */
+.tarjetas-logos .rotulo { font-size: 52px; color: var(--tinta); text-align: center; }
+.sala .tarjetas-logos .rotulo { font-size: 56px; }
+.tarjetas-logos.dos-columnas { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); }
+.pantallas { gap: 0; padding: 0 0 80px; }
+.pantallas .captura { transform: translateY(calc(var(--pantalla-i) * 36px)); overflow: hidden; }
+.pantallas .captura > img { border-radius: 0 0 22px 22px; max-width: 680px; max-height: 470px; }
+.pantallas .captura:only-child > img { max-width: 1200px; max-height: 620px; }
+.barra-ventana { display: flex; gap: 12px; padding: 18px 24px; background: #eee; }
+.barra-ventana i { width: 16px; height: 16px; border-radius: 50%; background: #999; }
+.pantallas .captura > .fuente { margin: 0; padding: 20px 28px; }
+.f-vertical .anfitrion-retrato { width: 92%; height: 58%; }
+.f-vertical .anfitrion-contenido, .f-vertical .anfitrion.lado-izq .anfitrion-contenido { top: 17%; left: 9%; right: auto; width: 82%; height: 26%; }
+.f-vertical .foto-contenido { padding: 320px 90px; }
+.f-vertical .velo-banda .foto-velo { top: 48%; height: 52%; }
+.f-vertical .velo-banda .foto-contenido { top: 48%; padding: 48px 90px 320px; }
+.f-vertical .pantallas { flex-direction: column; gap: 30px; }
+.f-vertical .pantallas .captura + .captura { margin-left: 0; }
+.f-vertical .pantallas .captura { transform: none; }
+.f-vertical .pantallas .captura > img { max-width: 840px; max-height: 300px; }
+.f-vertical .tarjetas-logos { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); gap: 60px; }

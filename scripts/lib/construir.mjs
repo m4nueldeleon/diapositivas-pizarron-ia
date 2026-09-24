@@ -1,5 +1,6 @@
 // construir.mjs — deck.json → index.html autocontenido (fuentes, emojis e imágenes copiados a la salida).
 import fs from 'node:fs';
+import { revisarRecortes } from './imagenes.mjs';
 import { bloqueQr } from './qr.mjs';
 import path from 'node:path';
 import { Emojis, DEFS_GLOBALES } from './emoji.mjs';
@@ -14,7 +15,7 @@ import { describirPasos } from './pasos-mapa.mjs';
 
 export const LAYOUTS = {
   idea: T.idea, lista: T.lista, flujo: T.flujo, pasos: T.pasos, bifurcacion: T.bifurcacion, cifra: T.cifra,
-  cita: T.cita, objeto: T.objeto, tarjetas: T.tarjetas, oscura: T.oscura, cuadrantes: T.cuadrantes,
+  foto: T.foto, anfitrion: T.anfitrion, cita: T.cita, objeto: T.objeto, tarjetas: T.tarjetas, oscura: T.oscura, cuadrantes: T.cuadrantes,
   tabla: D.tabla, grafica: D.grafica, 'linea-tiempo': D.lineaTiempo, medidor: D.medidor, opciones: D.opciones,
   rejilla: D.rejilla, prueba: D.prueba, chat: D.chat, reparto: D.reparto, calendario: D.calendario,
   boton: D.boton, circulos: D.circulos, stack: D.stack, calificacion: D.calificacion, llamada: D.llamada, meses: D.meses,
@@ -141,6 +142,8 @@ function anclaArriba(l) {
   if (l.anclar === 'centro') return false;
   if (l.anclar === 'arriba') return true;
   if (!['lista', 'tarjetas'].includes(l.tipo) || l.revelar === 'todo') return false;
+  // la fila de logos es una sola fila: crecer desde arriba dejaba media lámina vacía
+  if (l.tipo === 'tarjetas' && l.variante === 'logos') return false;
   // Los pilares de la marca (lista sobre la oscura) y la lista que vuelve con uno activo van centrados, como en 37:40 y
   // 39:45: la que vuelve entra entera, y si la primera arrancara arriba el regreso saltaría
   if (l.tipo === 'lista' && (l.oscura || l.activo || (Array.isArray(l.hechos) && l.hechos.length) || l.como)) return false;
@@ -223,7 +226,7 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
     let pasos = a.pasos;
     if (l.tipo === 'foco') {
       const prev = armadas[i - 1];
-      const op = Number.isFinite(l.opacidad) ? l.opacidad : 0.2;
+      const op = Number.isFinite(l.opacidad) ? l.opacidad : 'var(--apagado)';
       // data-op-fija: el autor puso la opacidad; runtime.js no la baja aunque la frase no encuentre hueco
       const fondo = prev ? `<div class="escena clon"${Number.isFinite(l.opacidad) ? ' data-op-fija="1"' : ''} style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
       // El sello y las anotaciones de la lámina anterior (sus `extras`) NO se arman aquí: runtime.js (copiarExtrasAlClon)
@@ -236,8 +239,8 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
     const claseFondo = a.oscura && ['azul', 'negro'].includes(l.fondo) ? ` fondo-${l.fondo}` : '';
     const vivo = l.tipo === 'camara' && l.vivo === true;
     return `<section class="lamina escena${a.oscura ? ' oscura' + claseFondo : ''}" data-i="${i}" data-tipo="${tipo}" data-id="${escapar(l.id || tipo)}" data-pasos="${pasos}"${a.clic ? ` data-clic='${escapar(a.clic)}'` : ''}${vivo ? ` data-vivo="1" data-dur="${duracionVivo(l)}"` : ''}>
-  ${em.enTexto(cuerpo)}
-  <svg class="capa-mano"></svg>${em.enTexto(a.extras)}
+  ${a.oscura ? em.enOscura(em.enTexto(cuerpo)) : em.enTexto(cuerpo)}
+  <svg class="capa-mano"></svg>${a.oscura ? em.enOscura(em.enTexto(a.extras)) : em.enTexto(a.extras)}
   ${l.tipo === 'camara' ? `<div class="lienzo"><div class="nota" style="color:#999">🎥 ${escapar(l.nota || l.texto || 'A cámara')}</div></div>` : ''}
   ${vivo ? em.enTexto(bloqueVivo(l, em)) : ''}
   ${marca && l.firma !== false && l.tipo !== 'camara' ? marca : ''}
@@ -249,6 +252,8 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
   const css = fs.readFileSync(path.join(dirSkill, 'templates', 'base.css'), 'utf8');
   // runtime.js lleva adentro la colocación del sello (runtime-sello.js), en el mismo ámbito
   const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8')
+    .replace('/*@@RECORTES@@*/', () => revisarRecortes.toString())
+    .replace('/*@@EMOJIS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-emojis.js'), 'utf8'))
     .replace('/*@@SELLO@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-sello.js'), 'utf8'));
   const presentador = fs.readFileSync(path.join(dirSkill, 'templates', 'presentador.js'), 'utf8');
   const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO};--grano-suave:${GRANO_SUAVE}}`;

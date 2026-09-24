@@ -27,8 +27,8 @@ function reglasBandas(l, crudo, donde) {
 function reglasLetras(l, donde) {
   const errores = [];
   if (l.tipo === 'pasos' && Array.isArray(l.letras)) {
-    if (l.letras.length !== l.iconos?.length || l.letras.length !== l.etiquetas?.length) errores.push(`${donde}: letras, iconos y etiquetas deben tener la misma longitud`);
-    const emojis = (l.iconos || []).map(x => typeof x === 'string' ? x : x.emoji).filter(Boolean).map(x => x.replace(/\uFE0F/g, ''));
+    if (l.letras.length !== Math.max(l.iconos?.length || 0, l.logos?.length || 0) || l.letras.length !== l.etiquetas?.length) errores.push(`${donde}: letras, iconos y etiquetas deben tener la misma longitud`);
+    const emojis = (l.iconos || []).filter((x, i) => !l.logos?.[i]).map(x => typeof x === 'string' ? x : x.emoji).filter(Boolean).map(x => x.replace(/\uFE0F/g, ''));
     if (new Set(emojis).size !== emojis.length) errores.push(`${donde}: no repitas emojis en los pasos con letras; cada letra representa un concepto`);
   }
   if (l.tipo === 'lista' && l.vineta === 'letras' && (!Array.isArray(l.letras) || l.letras.length !== l.items?.length)) errores.push(`${donde}: vineta: "letras" exige una letra por ítem en letras`);

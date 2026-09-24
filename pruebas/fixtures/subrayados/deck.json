@@ -1,0 +1,10 @@
+{
+  "emoji": "apple",
+  "marca": false,
+  "laminas": [
+    { "id": "descendentes", "tipo": "idea", "texto": "__pagar lo que quieras gastar__", "tam_texto": "75px" },
+    { "id": "renglon-largo", "tipo": "idea", "texto": "__pagar lo que quieras gastar para seguir jugando__", "tam_texto": "75px" },
+    { "id": "hueco", "tipo": "idea", "texto": "__pagar {{HUECO}} y seguir__", "tam_texto": "75px" },
+    { "id": "dos-renglones", "tipo": "idea", "texto": "__pagar lo que quieras\ngastar y seguir jugando__", "tam_texto": "75px" }
+  ]
+}

@@ -598,11 +598,16 @@
    "tipo": "prueba",
    "capturas": [
     {
-     "hueco": "Tu primera captura va aquí",
-     "plantilla": true
+     "post": {
+      "texto": [
+       "Este es el formato de una nota de práctica.",
+       "Escribe aquí qué intentaste y qué aprendiste."
+      ]
+     },
+     "ejemplo": true
     }
    ],
-   "encabezado": "Tu prueba real, con permiso:"
+   "encabezado": "Así se ve una prueba:"
   },
   {
    "id": "plan14",

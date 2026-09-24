@@ -182,3 +182,11 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Porqué**: en una conferencia real hecha con esta skill, los tamaños, la persona gramatical, la sincronía
   pantalla-voz y los QR sumaron la mayoría de los hallazgos y fueron lo último en cerrarse. Toda heurística nueva
   es aviso y omite lo ambiguo: un falso error enseña a ignorar el QA.
+
+## 2026-09-24 · Legibilidad, imágenes y tinta (ronda 6)
+
+- **Procedencia del criterio:** una presentación presencial permitió comprobar el piso nominal de nota a mano de 72 px, pie de 44 px y apagado de 0.35. Se generaliza sin conservar nombres, datos ni material del evento. Sala es explícita: una clase por Internet conserva el perfil de video.
+- **Regla:** el calendario se divide después de dos semanas y la fila de meses después de seis celdas. El foco respeta el apagado de sala y QA mide opacidad efectiva.
+- **Tinta:** medir la línea base de cada nodo mantiene el subrayado debajo de g/p/q/y; el arco sube levemente y tiene un tope que evita invadir letras o huecos.
+- **Imágenes:** una fotografía opaca necesita foto a sangre con velo; la sombra de objeto solo se aplica al recorte. Los ejemplos visuales se rotulan y nunca acreditan resultados.
+- **Íconos:** los conceptos de tienda, identificación y factura deben tener un glifo inequívoco; la oscura resuelve glifos hundidos con halo sin medir el halo como parte del emoji.

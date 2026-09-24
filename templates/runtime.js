@@ -29,12 +29,23 @@
   // hijos: el span de un ítem de lista, el emoji o un <b> anidado daban rayas de más) y se unen por renglón.
   function rectsTexto(el, lam) {
     const L = lam.getBoundingClientRect(), s = escala(lam), rs = [];
+    const ctx = document.createElement('canvas').getContext('2d');
     const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
       acceptNode: n => (/\S/.test(n.nodeValue) && !(n.parentElement && n.parentElement.closest('.emo')) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
     });
     for (let n; (n = tw.nextNode());) {
+      const cs = getComputedStyle(n.parentElement); ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; // cs.font sale vacío en Chromium con ciertas propiedades tipográficas
+      const m = ctx.measureText('Hg');
+      let zoom = 1;
+      for (let p = n.parentElement; p && p !== lam; p = p.parentElement) zoom *= parseFloat(getComputedStyle(p).zoom) || 1;
+      const em = parseFloat(cs.fontSize) * zoom;
+      const asc = (m.fontBoundingBoxAscent ?? parseFloat(cs.fontSize) * 0.8) * zoom;
+      const desc = (m.fontBoundingBoxDescent ?? parseFloat(cs.fontSize) * 0.2) * zoom;
       const rg = document.createRange(); rg.selectNodeContents(n);
-      [...rg.getClientRects()].filter(r => r.width > 4).forEach(r => rs.push({ x: (r.left - L.left) / s, y: (r.top - L.top) / s, w: r.width / s, h: r.height / s }));
+      [...rg.getClientRects()].filter(r => r.width > 4).forEach(r => rs.push({
+        x: (r.left - L.left) / s, y: (r.top - L.top) / s, w: r.width / s, h: r.height / s,
+        base: (r.top - L.top + (r.height - (asc + desc) * s) / 2) / s + asc, em, asc,
+      }));
     }
     rs.sort((a, b) => a.y - b.y || a.x - b.x);
     const grupos = [];
@@ -44,6 +55,7 @@
       if (!g) { grupos.push({ ...r }); return; }
       const x1 = Math.max(g.x + g.w, r.x + r.w), y1 = Math.max(g.y + g.h, r.y + r.h);
       g.x = Math.min(g.x, r.x); g.y = Math.min(g.y, r.y); g.w = x1 - g.x; g.h = y1 - g.y;
+      g.base = Math.max(g.base, r.base); g.em = Math.max(g.em, r.em); g.asc = Math.max(g.asc, r.asc);
     });
     return grupos;
   }
@@ -357,14 +369,24 @@
   // ---------- marcas sobre texto e imágenes ----------
   const pasoDe = e => +((e.closest('[data-p]') || {}).dataset || {}).p || 0;
   function subrayados(esc, lam, svg, r) {
-    // Subrayado [ref_10]: plumón de ~5.5 px en un arco suave (flecha de 0.8-1.2% del ancho), que arranca un poco a la
-    // derecha del inicio (1-2%) y remata ANTES de la última letra (3-5%); arranque y remate varían ±2% por renglón
+    // Bajo los descendentes [ref_10, m_1060], con arco hacia arriba y flecha limitada también por el tamaño de letra.
+    // La línea base se mide en el texto real, incluso dentro de un hueco con borde o padding.
     dentro(esc, '[data-sub]').forEach(el => rectsTexto(el, lam).forEach(b => {
-      const y = b.y + b.h * 0.93, w = b.w;
+      const w = b.w, ancho = clamp(0.055 * b.em, 4, 6);
       const x0 = b.x + w * (0.01 + r() * 0.01), x1 = b.x + w * (1 - 0.03 - r() * 0.02);
-      const sag = w * (0.008 + r() * 0.004), y1 = y - 2 + (r() - 0.5) * 3;
-      const pts = cuadratica([x0, y + 1], [x1, y1], [(x0 + x1) / 2, (y + 1 + y1) / 2 - 2 * sag], 12);
-      trazo(svg, suave(pts), { color: C.rojo, ancho: 5.5, p: pasoDe(el), dur: 280, clase: 'subrayado' });
+      const cola = 2 + r() * 2;
+      const huecos = [...el.querySelectorAll('.hueco'), ...(el.closest('.hueco') ? [el.closest('.hueco')] : [])]
+        .map(h => caja(h, lam)).filter(h => h.x < x1 && h.x + h.w > x0 && h.y < b.y + b.h && h.y + h.h > b.y);
+      const suelo = Math.max(b.base + b.em * 0.12 + ancho / 2, ...huecos.map(h => h.y + h.h + ancho / 2 + 2));
+      const siguiente = rectsTexto(el.parentElement, lam).find(q => q.base > b.base + b.em * 0.5 && q.x < x1 && q.x + q.w > x0);
+      const techo = siguiente ? siguiente.base - siguiente.asc - ancho / 2 - 2 : Infinity;
+      const sag = Math.min(w * 0.005, b.em * 0.06, Math.max(0.1, techo - suelo - cola));
+      const tope = techo - sag - cola;
+      const yBase = Math.max(suelo, Math.min(b.base + b.em * 0.2, tope));
+      const y0 = yBase + sag, y1 = y0 + cola;
+      const d = `M${x0} ${y0} Q${(x0 + x1) / 2} ${(y0 + y1) / 2 - 2 * sag} ${x1} ${y1}`;
+      const p = trazo(svg, d, { color: C.rojo, ancho, p: pasoDe(el), dur: 280, clase: 'subrayado' });
+      Object.assign(p.dataset, { base: b.base, em: b.em, texto: el.textContent.trim(), x0: b.x, x1: b.x + b.w });
     }));
     dentro(esc, '[data-tachar]').forEach(el => {
       const p = el.dataset.tacharP != null ? +el.dataset.tacharP : pasoDe(el);
@@ -620,6 +642,8 @@
   }
 
   function encajar(lam) {
+    // En sala se divide el calendario o la fila de meses; no se achican sus celdas.
+    if (document.body.classList.contains('sala') && ['calendario', 'meses'].includes(lam.dataset.tipo)) return;
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
       const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes') || h.classList.contains('sangre')) return;
       const cs = getComputedStyle(lz), s = escala(lam);
@@ -668,7 +692,7 @@
       lam.dataset.focoMovido = '1';
     } else {
       lam.dataset.focoSobreFondo = '1';
-      if (!clon.dataset.opFija) clon.style.opacity = '0.1';
+      if (!clon.dataset.opFija) clon.style.opacity = document.body.classList.contains('sala') ? 'var(--apagado)' : '0.1';
     }
   }
 
@@ -820,10 +844,15 @@
     return m;
   };
 
+  /*@@RECORTES@@*/
+  /*@@EMOJIS@@*/
+
   // ---------- arranque ----------
   async function preparar() {
     try { await document.fonts.ready; } catch (e) {}
     await Promise.all([...document.images].map(i => (i.complete ? null : new Promise(res => { i.onload = i.onerror = res; }))));
+    revisarRecortes();
+    await prepararHalos();
     const lams = [...document.querySelectorAll('.lamina')];
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     // Una lámina con un error no tumba al resto: se avisa y se sigue

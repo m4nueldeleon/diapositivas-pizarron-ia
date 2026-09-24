@@ -11,7 +11,7 @@ Gadzhi.
 
 ## Qué hace
 
-- **29 diseños** (27 de lámina más `foco` y `camara`): idea, lista, flujo, sistema de pasos 1-2-3,
+- **31 diseños** (29 de lámina más `foco` y `camara`): idea, lista, flujo, sistema de pasos 1-2-3,
   bifurcación, audiencia en círculos, tabla-marcador escrita a mano, gráficas, línea de tiempo,
   medidor, rejillas de cantidad, meses que pasan a valores, chat, capturas de prueba con el dato
   encerrado, reparto, calendario de fases, calificación con estrellas, botón con cursor, la
@@ -88,7 +88,7 @@ agrega `"pieza"` (`reel`, `tutorial`, `vsl-corto`, `video`, `vsl`, `clase-corta`
 minutos ([`references/ARCOS.md`](references/ARCOS.md)).
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
-El demo con los 29 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). Los modelos de
+El demo con 29 de los 31 diseños (un catálogo; `foto` y `anfitrion` necesitan una imagen real o de IA que aporta el usuario, y se prueban en `pruebas/`), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). Los modelos de
 guion que se copian, cada uno con su `guion.md`: para vender (VSL corto con la promesa antes del segundo 25, la
 objeción antes de la revelación y el mismo llamado dos veces) en [`ejemplos/vsl-corto/`](ejemplos/vsl-corto/guion.md);
 para una propuesta (los 9 bloques) en [`ejemplos/propuesta/`](ejemplos/propuesta/guion.md), y para una clase express

@@ -223,6 +223,7 @@ const TIENDA = OBJ('<rect x="2.5" y="8.7" width="19" height="13.3" rx="1.2" fill
 const GLIFOS_SVG = {
   '📱': CELULAR, '📲': CELULAR_ENTRA, '📄': DOCUMENTO, '📃': DOCUMENTO, '💬': BURBUJA, '🗨': BURBUJA, '🎟': BOLETO,
   '🧾': RECIBO, '🏪': TIENDA,
+  '➕': '<svg class="signo-mas" viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>',
   '❌': EQUIS, '✖': EQUIS, '✅': PALOMITA, '☑': PALOMITA, '✔': PALOMITA,
   '👤': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}${SIL(0)}</svg>`,
   '👥': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}<g opacity=".75">${SIL(5.2, 0.8)}</g>${SIL(-2.4, 0.86)}</svg>`,
@@ -230,7 +231,7 @@ const GLIFOS_SVG = {
 // Solo en apple: el nativo imprime texto (el calendario con «JUL 17», el boleto «ADMIT ONE»). En fluent el 3D nativo no
 // trae texto y se usa (si el CDN falla, cae a este SVG). En apple también se cambian DENTRO del texto (EN_TEXTO_APPLE).
 const GLIFOS_SVG_APPLE = { '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO, '🎫': BOLETO, '🪪': CREDENCIAL };
-const EN_TEXTO_APPLE = new Set([...Object.keys(GLIFOS_SVG_APPLE), '🎟', '🧾', '🏪']);
+const EN_TEXTO_APPLE = new Set([...Object.keys(GLIFOS_SVG_APPLE), '🎟', '🧾', '🏪', '➕']);
 export const TODOS_GLIFOS_SVG = { ...GLIFOS_SVG, ...GLIFOS_SVG_APPLE };   // pruebas: geometría de cada glifo
 const sinSel = ch => String(ch || '').replace(/️/g, '');
 // El SVG que se dibuja para ese emoji en ese set ('' si sale del set)
@@ -329,6 +330,19 @@ export class Emojis {
     return `<span class="emo ${escapar(extra)}" style="--s:${tamCss}" data-e="${encodeURIComponent(String(spec).trim())}">${base}${izq}${der}</span>`;
   }
 
+  // Solo se aplica al contenido de una lámina oscura. La medida es del glifo sin halo.
+  enOscura(html) {
+    return String(html).replace(/<span class="emo\b([^\"]*)"([^>]*\bdata-e="([^\"]*)"[^>]*)>/g, (todo, clases, atributos, spec) => {
+      const { base } = analizarCompuesto(decodeURIComponent(spec));
+      if (necesitaHalo(base, this.modo)) return /\bhundido\b/.test(clases) ? todo : `<span class="emo${clases} hundido"${atributos}>`;
+      if (glifoSVG(base, this.modo) || HALO_INSUFICIENTE.includes(sinSel(base)) || contrasteMedido()[this.modo]?.oscura?.[sinSel(base)] != null) return todo;
+      const rel = this.modo === 'fluent' ? resolverFluent(base, this.dirSalida) : '';
+      // La imagen local se vuelve data URL para medir sin contaminar el canvas de un HTML file://.
+      const src = rel ? ` data-halo-src="data:image/webp;base64,${fs.readFileSync(path.join(this.dirSalida, rel)).toString('base64')}"` : '';
+      return `<span class="emo${clases}"${atributos} data-halo-medir="${UMBRAL_OSCURA}"${src}>`;
+    });
+  }
+
   // Emojis escritos DENTRO del texto (burbujas, etiquetas, tarjetas…). En modo fluent se cambian por la
   // imagen 3D, para que la lámina use una sola familia de emojis; en apple el HTML sale idéntico, salvo los
   // calendarios y boletos (EN_TEXTO_APPLE), que se dibujan sin la fecha ni el texto en inglés.
@@ -352,7 +366,7 @@ export class Emojis {
       for (const { segment: g } of segmentador.segment(t)) {
         const f = formaEmoji(g);
         const toca = f && (!apple || EN_TEXTO_APPLE.has(f.replace(/\uFE0F/g, '')));
-        out += toca ? `<span class="emo en-texto" style="--s:1.15em">${this.glifo(f)}</span>` : g;
+        out += toca ? `<span class="emo en-texto" style="--s:1.15em" data-e="${encodeURIComponent(f)}">${this.glifo(f)}</span>` : g;
       }
       return out;
     }).join('');
@@ -404,14 +418,22 @@ export const TEXTO_IMPRESO = {
 // y distintos (liso, con argollas, con espiral; boleto rosa y amarillo), así que ahí no se confunden. 📄 📃 son el mismo
 // SVG en los dos sets, y 💬 🗨 la misma burbuja.
 export const PARECIDOS = {
-  apple: [['🧑‍💼', '👨‍💼'], ['🧑‍💼', '🤵'], ['📅', '🗓', '📆'], ['🎟', '🎫'], ['📄', '📃'], ['💬', '🗨']],
-  fluent: [['🏦', '🏛'], ['🧑‍💼', '👨‍💼'], ['📄', '📃'], ['💬', '🗨']],
+  apple: [['🏢', '🏬'], ['🧑‍💼', '👨‍💼'], ['🧑‍💼', '🤵'], ['📅', '🗓', '📆'], ['🎟', '🎫'], ['📄', '📃'], ['💬', '🗨']],
+  fluent: [['🏢', '🏬'], ['🏦', '🏛'], ['🧑‍💼', '👨‍💼'], ['📄', '📃'], ['💬', '🗨']],
 };
 let medidas = null;
 export function contrasteMedido() {
   if (medidas) return medidas;
   try { medidas = JSON.parse(fs.readFileSync(new URL('./contraste-emojis.json', import.meta.url), 'utf8')); } catch { medidas = { apple: {}, fluent: {} }; }
   return medidas;
+}
+// El gris plano no gana un contorno reconocible con halo; ➕ ya tiene SVG que hereda blanco en oscura.
+export const HALO_INSUFICIENTE = ['➕', '➖', '➗', '✖', '⚫', '◼', '🔗', '🔊', '🔉', '🔈'];
+export function necesitaHalo(ch, modo) {
+  const k = sinSel(ch);
+  if (glifoSVG(k, modo) || HALO_INSUFICIENTE.includes(k)) return false;
+  const medida = contrasteMedido()[modo]?.oscura?.[k];
+  return medida != null && medida < UMBRAL_OSCURA;
 }
 // Sustituto sugerido si el emoji es de bajo contraste en ese set y fondo ('claro' | 'tarjeta' | 'oscura'); ''
 // si se ve bien. Un emoji medido bajo el umbral sin sustituto en la tabla devuelve '?' (elige otro).

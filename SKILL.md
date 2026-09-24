@@ -85,7 +85,7 @@ deducir.
    cambias la pieza en silencio. No fuerces
    `duracion_objetivo` sobre una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas
    cosas; más de 60% en tramos es error aunque sea en vivo).
-6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 29 diseños y sus campos) y
+6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 31 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
@@ -136,7 +136,9 @@ En la fase 2 entrega la lista de láminas + `conceptos` (emoji → concepto cort
    `fuente` (real, con permiso) o `ejemplo: true` (maqueta con sello, sin cifras). Las proyecciones al
    espectador llevan la condición con número y rangos (GUION §3.8).
 10. **Marcas con su logo real**, nunca dibujadas ni hechas con emoji. Si falta, usa `imagen: "{{LOGO_X}}"`: queda
-    como caja punteada y dato por confirmar hasta poner el archivo oficial en `datos`.
+    como caja punteada y dato por confirmar hasta poner el archivo oficial en `datos`. Decláralo con
+    `"datos": { "LOGO_X": { "pendiente": true, "motivo": "falta el archivo oficial" } }`: el deck queda en borrador.
+    Nombrar una marca solo en el texto no exige logo; asignarle un ícono sí.
 
 ## 3. Comandos
 
@@ -178,7 +180,7 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
     Zoom lleva `sala: false`; el perfil de sala es opt-in y no se aplica en 9:16;
   - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
     `{ "valor": …, "propuesto": true }` (LAYOUTS.md, «Datos que se llenan una vez»).
-- `ejemplos/demo/deck.json` es el **catálogo** de los 29 diseños, no un modelo de guion. El modelo que se copia
+- `ejemplos/demo/deck.json` es el **catálogo** de los diseños (todos salvo `foto` y `anfitrion`, que piden imagen del usuario), no un modelo de guion. El modelo que se copia
   (deck.json + guion.md) depende de la pieza:
 
   | Pieza | Modelo |

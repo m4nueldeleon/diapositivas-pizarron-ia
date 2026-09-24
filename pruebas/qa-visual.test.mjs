@@ -305,3 +305,52 @@ test('QA r5: un hueco declarado no esconde los errores: estado «con errores», 
   const e = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts', 'qa.mjs'), dir, '--salida', tmp()], { encoding: 'utf8' });
   assert.equal(e.status, 1);
 });
+
+test('QA r6: la lista oscura con 🎓 tiene halo y no duplica el aviso de contraste', { timeout: 120_000 }, () => {
+  const p = prepararSalida(fx('emoji-oscura'), tmp());
+  const html = fs.readFileSync(p.htmlPath, 'utf8');
+  assert.match(html, /class="emo[^\"]*hundido/);
+  const r = qa(fx('emoji-oscura'));
+  const contraste = r.avisos.filter(a => /emoji.*(?:contraste|casi no se ve|se pierde)/.test(a));
+  assert.ok(contraste.length <= 1, contraste.join('\n'));
+  assert.ok(!r.avisos.some(a => /fondo de color.*🎓/.test(a)), r.avisos.join('\n'));
+});
+
+test('sala: foco, mapa, rejilla y calendario conservan el piso; video mantiene sus opacidades', async () => {
+  const laminas = [
+    { tipo: 'pasos', iconos: ['💡', '🤖'], activo: 1 },
+    { tipo: 'foco', texto: 'Una idea', anclar: 'centro' },
+    { tipo: 'rejilla', total: 4, columnas: 2, emoji: '📦', destacar: [0], apagar_resto: true },
+    { tipo: 'calendario', n: 7, fases: [{ nombre: 'Ejemplo', desde: 1, hasta: 2, color: 'verde' }], fase_activa: 1 },
+  ];
+  for (const sala of [false, true]) await conDeck({ sala, marca: false, emoji: 'apple', laminas }, async page => {
+    const r = await page.evaluate(() => {
+      const op = sel => Number(getComputedStyle(document.querySelector(sel)).opacity);
+      return { mapa: op('.lz-pasos [style*="opacity"]'), foco: op('.clon'), rejilla: op('.rejilla .apagado'), calendario: op('.calendario .dia.apagado:not(.tinte)') };
+    });
+    assert.equal(r.mapa, sala ? .35 : .2);
+    assert.equal(r.foco, sala ? .35 : .2);
+    assert.equal(r.rejilla, sala ? .35 : .25);
+    assert.equal(r.calendario, sala ? .35 : .3);
+  });
+});
+
+test('QA sala: opacidad explícita baja produce error y plantilla engañosa solo aviso', () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ sala: true, marca: false, emoji: 'apple', laminas: [
+    { tipo: 'idea', texto: 'Una idea' }, { tipo: 'foco', texto: 'Otra idea', opacidad: .2 },
+    { tipo: 'prueba', encabezado: 'Prueba real', capturas: [{ hueco: 'Tu captura', plantilla: true }] },
+  ] }));
+  const r = qa(dir);
+  assert.ok(r.errores.some(x => /opacidad efectiva mínima de 35/.test(x)), r.errores.join('\n'));
+  assert.ok(r.avisos.some(x => /única captura.*plantilla/.test(x)), r.avisos.join('\n'));
+});
+
+test('QA r6: imagen opaca en objeto, oscura y nodo avisa una vez; foto y captura requieren procedencia o fuente', { timeout: 120_000 }, () => {
+  const r = qa(fx('imagenes-r6'));
+  for (const id of ['objeto-opaco', 'oscura-opaca', 'nodo-opaco']) {
+    assert.equal(r.avisos.filter(a => a.includes(id) && /rectángulo de foto/.test(a)).length, 1, id);
+  }
+  assert.ok(r.avisos.some(a => /fuente-ausente.*procedencia.*fuente/.test(a)));
+  assert.ok(r.avisos.some(a => /foto-sin-procedencia.*procedencia.*fuente/.test(a)));
+});

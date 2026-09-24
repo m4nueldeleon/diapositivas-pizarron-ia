@@ -31,6 +31,13 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
 | **La voz del profesor** (sans) | Geométrica humanista: Figtree, la alternativa libre más cercana | La frase de la lámina, en regular, con la frase clave en **negrita**. |
 | **La mano del profesor** (manuscrita) | Marcador delgado inclinado: Caveat, casi idéntica | Notas al margen, tablas, anotaciones y llaves. |
 
+| Rol | Video 16:9 | Sala 16:9 |
+|---|---|---|
+| Frase | 68–90 px según longitud | Piso 72 px |
+| Nota a mano | 60–64 px | 88 px; piso medido 72 px |
+| Fuente / pie | 40 / 36 px | 44 px |
+| Apagado identificable | 20 % [ref_1040] | 35 % |
+
 - Tamaños medidos en un lienzo de 1920×1080:
   - Frase normal: **84 a 90 px** (la frase de 14 palabras de c_0250 da un renglón de 78 px de
     alto y ~1490 de ancho = Figtree 84). Frases de 16 a 25 palabras: 76 px. Solo por encima de
@@ -112,7 +119,7 @@ El emoji no decora: **nombra**. Estilo 3D brillante de Apple. En máquinas sin M
 - **Teclas numéricas 1️⃣ 2️⃣ 3️⃣** unidas por una ruta punteada son el «sistema de 3 pasos», con
   la frase ~240 px debajo [ref_115]. La ruta solo existe con las teclas; el mapa con íconos
   (🔍 🛠️ 🚀) no lleva ruta [16:40, 28:00]. La imagen vuelve en cada sección con el paso activo
-  encendido, los demás al 20% y la ✅ bajo los completados **a todo color**: es la señal de
+  encendido, los demás al 20 % en video [ref_1040], 35 % en sala y la ✅ bajo los completados **a todo color**: es la señal de
   avance. Funciona como mapa del video. En el deck, el objeto que vuelve se declara una vez y se reúsa con
   `como` (LAYOUTS.md): la imagen es la misma porque ES la misma.
 
@@ -176,6 +183,8 @@ Reglas:
    es otra cosa; si se usa para todo, deja de avisar (QA avisa una lista con ✅, una tabla, un stack
    o tarjetas en oscura).
 
+Foto a sangre solo con velo blanco o banda blanca; nunca foto suelta en rectángulo. El diseño `foto` conserva la frase, el revelado y un único énfasis rojo. La fuente y la procedencia se declaran; `anfitrion` usa un PNG recortado real aportado por el usuario (nunca una silueta ni un dibujo de relleno en algo entregable).
+
 ## 7. Movimiento: casi nada, y siempre con propósito
 
 - **Corte seco**: sin transiciones. La lámina aparece.
@@ -190,12 +199,14 @@ Reglas:
      y termina de dedo sobre la última tecla. En `pasos` es el comportamiento por omisión con `clic`
      (`arrastre: false` lo apaga).
   3. El **sello** cae con golpe y un temblor.
-  4. **Foco**: la lámina anterior queda al 20% y encima aparece una frase manuscrita.
+  4. **Foco**: la lámina anterior queda al 20 % en video [ref_1040], 35 % en sala y encima aparece una frase manuscrita.
 - Los trazos a mano (subrayado, flechas, llaves, elipses, ✕) entran completos con su elemento, en el mismo cuadro
   del corte [ráfagas k_underline 0:41.2, c_alcancia 1:44.5, f_flechas 7:30.1]. Solo crece la ruta punteada que
   arrastra la mano [d_123 1:55.6-1:55.9]. El dibujado progresivo existe solo en modo `suave`.
-- El subrayado es un plumón de ~5.5 px en un arco suave (sube y baja ~1% del ancho), que arranca un poco a la
-  derecha del inicio del texto y remata antes de la última letra [ref_10].
+- El subrayado va bajo los descendentes: centro ≈ línea base + 0.2 em (ref_10, m_1060); arco suave hacia arriba
+  ≤0.5 % del ancho y ≤0.06 em; nunca cruza g/p/q/y ni la caja de un hueco; afina la cola (m_1790).
+  El plumón mide 4–6 px, arranca un poco a la derecha del texto y remata antes de la última letra,
+  con la punta final 2–4 px más baja. La base se mide en el texto, también dentro de un hueco con padding.
 
 **Por qué funciona:** el revelado por acumulación es el principio de segmentación. Un elemento
 por frase reduce la carga cognitiva y además crea contigüidad temporal: la imagen aparece en el
@@ -217,22 +228,22 @@ instante en que se dice su palabra. Por eso el video se siente rápido sin senti
 El video original es 16:9. En vertical el lienzo mide 1080×1920: con los tamaños de 16:9 el contenido
 ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 
-| Pieza | 16:9 | 9:16 |
-|---|---|---|
-| texto compacto / chico / medio / grande / enorme | 68 / 76 / 84 / 90 / 120 px | 72 / 78 / 88 / 100 / 140 px |
-| nota manuscrita | 64 px | 80 px |
-| frase de foco (protagonista, a mano) | 88 px (84 con más de 14 palabras) | 96 px (88) |
-| texto secundario que se lee (sub, dato, %, post) | ≥ 48 px | ≥ 44 px |
-| burbuja de chat | 54 px | 58 px, hasta 820 px de ancho |
-| emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 |
-| lista | 58-72 px | ×1.2 |
-| rótulo gris | 56 px | 60 px |
-| margen de arriba y de abajo | 100 px | 320 px |
-| firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara |
-| tabla-marcador | columnas iguales, 50 / 44 px; con `converger`, las flechas terminan en UNA punta a ~20 px del primer renglón de la pregunta (≥ 68 px) [7:30] | filas de 220 px como máximo, vacías de 80 px, columnas según su palabra más larga, letra hasta 62 / 56 px según ancho y alto (piso 38 / 34); con `converger`, la pregunta va DEBAJO de la tabla (≥ 80 px) y las flechas bajan a una sola punta |
-| gráfica | 1500×660 con etiqueta lateral | 940×1000, la banda arriba y dentro |
-| línea de tiempo | letra 56 / 84 px | ×1.35 de letra y alturas |
-| botón y opciones | tamaño base | ×1.6 y ×1.45 |
+| Pieza | 16:9 | 9:16 | Sala 16:9 |
+|---|---|---|---|
+| texto compacto / chico / medio / grande / enorme | 68 / 76 / 84 / 90 / 120 px | 72 / 78 / 88 / 100 / 140 px | Piso 72 px |
+| nota manuscrita | 64 px | 80 px | 88 px (piso 72) |
+| frase de foco (protagonista, a mano) | 88 px (84 con más de 14 palabras) | 96 px (88) | 88 px (piso 72) |
+| texto secundario que se lee (sub, dato, %, post) | ≥ 48 px | ≥ 44 px | Piso 56 px |
+| burbuja de chat | 54 px | 58 px, hasta 820 px de ancho | Piso 72 px |
+| emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 | Igual que 16:9 |
+| lista | 58-72 px | ×1.2 | Piso 72 px |
+| rótulo gris | 56 px | 60 px | 64 px |
+| margen de arriba y de abajo | 100 px | 320 px | 100 px |
+| firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara | Igual que 16:9 |
+| tabla-marcador | columnas iguales, 50 / 44 px; con `converger`, las flechas terminan en UNA punta a ~20 px del primer renglón de la pregunta (≥ 68 px) [7:30] | filas de 220 px como máximo, vacías de 80 px, columnas según su palabra más larga, letra hasta 62 / 56 px según ancho y alto (piso 38 / 34); con `converger`, la pregunta va DEBAJO de la tabla (≥ 80 px) y las flechas bajan a una sola punta | Piso 56 px en celdas; 72 en frase |
+| gráfica | 1500×660 con etiqueta lateral | 940×1000, la banda arriba y dentro | Piso 56 px en etiquetas |
+| línea de tiempo | letra 56 / 84 px | ×1.35 de letra y alturas | Piso 56 px en etiquetas |
+| botón y opciones | tamaño base | ×1.6 y ×1.45 | Piso 72 px |
 
 **Zona segura de Reels**: arriba, la barra de Reels (~220 px); los ~320 px de abajo los tapan el caption y los botones, y la columna de
 botones ocupa unos 140 px a la derecha de la franja baja. QA avisa si algo entra ahí, y si una lámina
@@ -260,13 +271,13 @@ Solo se activa con `sala: true` o `{ "distancia_m": número positivo }`. En vivo
 | Nota manuscrita | 64 px | 88 px (piso 72) |
 | Fuente / pie | 40 / 36 px | 44 px |
 | Subtítulo / pastilla | 42 / 50 px | 56 px |
-| Fondo del foco | 20 % | 20 % (o `opacidad` explícita) |
+| Fondo del foco | 20 % | 35 % (salvo `opacidad` explícita; QA comprueba el piso) |
 
 QA usa pisos de sala en tamaño nominal a 1920, medido en el render (con el encaje): principal 72, nota a mano 72,
 secundario 56, fuente 44 y rótulo gris («Paso 1», encabezado) 34 px. Bajar del piso es error: parte la lámina o sube
 `tam_texto`. El perfil de video conserva sus umbrales. Medido con una clase real en sala: el mapa apagado al 35 %
 se identifica sin competir con el paso activo; lo que el motor no agranda solo (etiquetas de flujo, listas y cuentas
-de 60-66 px) sale como error para que se decida. En 9:16 no se aplica sala.
+de 60-66 px) sale como error para que se decida. En 9:16 no se aplica sala. Calendario: máximo 14 días; meses: máximo 6 celdas. No se reducen para caber: se dividen; QA da error al exceder el límite o bajar de 35 % de opacidad efectiva.
 
 QA avisa runs `{v:…}` sin cifra, moneda, porcentaje, sí/ok/✓ o verbo de resultado (ganar, entrar, vender, cerrar,
 lograr). `{r:…}` pide una cifra negativa, no/✕, pérdida explícita o señal conectada (flecha, llave o subrayado).

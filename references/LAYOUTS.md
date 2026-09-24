@@ -4,7 +4,7 @@ Cada lámina de `deck.json` es un objeto con `tipo` más sus campos. Todo texto 
 [markup](#marcas-de-texto). Entre corchetes va el momento del video de referencia donde aparece
 ese diseño.
 
-Son **29 diseños**: 27 de lámina (texto e ideas, procesos y relaciones, datos, interfaz y prueba) y 2 especiales,
+Son **31 diseños**: 29 de lámina (texto e ideas, procesos y relaciones, datos, interfaz y prueba) y 2 especiales,
 `foco` y `camara`. `ejemplos/demo/deck.json` los usa todos.
 
 **Campos del deck** (arriba de `laminas`)
@@ -239,6 +239,10 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
   «= __$500 al día en ventas__» sí es promesa y sigue las reglas de arriba.
 
 ### `objeto` — foto real recortada o emoji gigante  ·  [1:40, 23:20]
+
+- `logos: ["assets/logo-propio.png"]` añade una fila bajo el texto, en su mismo paso: 40 px de alto en video,
+  52 px en sala. No añade precio ni una tarjeta. La sombra solo se aplica al comprobar transparencia:
+  una imagen con cuatro esquinas opacas genera aviso («quítale el fondo o usa `foto`»).
 ```json
 { "tipo": "objeto", "imagen": "assets/alcancia.png", "alto": 520, "texto": "Tus ahorros" }
 ```
@@ -344,7 +348,7 @@ etiquetas reducen su tamaño para caber. Un regreso con `como` conserva las tres
   ```json
   { "tipo": "pasos", "iconos": ["🔍", "🛠️", "🚀"], "etiquetas": ["Encontrar", "Construir", "Lanzar"], "activo": 1 }
   ```
-- `activo`: número del paso encendido; los demás quedan al 20% [ref_1040]. El mapa entra una vez con `activo: 1` y
+- `activo`: número del paso encendido; los demás quedan al 20 % en video [ref_1040], 35 % en sala. El mapa entra una vez con `activo: 1` y
   vuelve con el titular de su bloque en `texto`; un regreso sin texto tras una o dos láminas es un vaivén (QA lo avisa;
   ARCOS «Las plantillas»).
 - `emoji_tam` (px) fija el tamaño de los íconos. En 9:16 van a 200 por omisión y la etiqueta y el «Paso N» se ajustan a
@@ -478,6 +482,10 @@ una celda llega a 3 renglones, el motor baja la letra de 4 en 4 hasta 40 (primer
 - `ancho_etiqueta`: fracción del ancho para la columna de etiquetas (0.155 en 16:9, 0.24 en 9:16).
 
 ### `tarjetas` — criterios o métricas, una por paso  ·  [5:00, 9:25]
+
+La variante `variante: "logos"` usa `items: [{ "imagen": "assets/logo-propio.png", "texto": "Proyecto" }]`:
+fila de 3-5 imágenes, sin caja ni emoji; `columnas: 2` exige exactamente cuatro para una rejilla 2×2.
+Cada logo se revela en su paso. Usa únicamente los logos aportados por el usuario; en ejemplos, dibujos propios.
 ```json
 { "tipo": "tarjetas", "encabezado": "Las 6 métricas:", "items": [{ "emoji": "💵", "texto": "Ganancia por venta" }] }
 ```
@@ -638,6 +646,7 @@ fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las es
   [4:10], usa `idea` con `estrellas`.
 
 ### `calendario` — días en tarjetas con fases de color  ·  [28:45 → 29:20]
+En sala: máximo 14 días (2 semanas), sin reducción automática; divide los calendarios largos. QA da error si excede ese límite.
 ```json
 { "tipo": "calendario", "titulo": "Calendario de 14 días", "fase_activa": 2, "n": 14,
   "fases": [{ "nombre": "Fase 1", "sub": "Calentamiento", "desde": 1, "hasta": 3, "color": "amarillo" },
@@ -717,6 +726,14 @@ hasta que lo llenes; así una variable de la lección nunca se confunde con un d
   `sello_pos` en un chat: el sello cae sobre lo que haya en esa zona (un avatar tapado es error de QA).
 
 ### `prueba` — capturas reales, con el dato encerrado  ·  [0:35, 15:45, 19:30]
+
+- `fuente` y `fuente_paso` en la lámina imprimen el crédito con la clase `.fuente` existente; cada captura con `src`
+  puede llevar su propia `fuente`. `procedencia` en la lámina sirve para todas sus capturas. Si no hay ninguna
+  procedencia ni fuente para una captura con `src`, QA avisa: declara si es real, IA o ejemplo.
+- `variante: "pantallas"`: entre 1 y 3 capturas con `src`, cada una con barra de ventana de tres puntos,
+  escalonadas sobre el fondo blanco o con `oscura: true`. No cambia sus pasos ni sus créditos.
+- Un antes/después en `prueba` compara **capturas**. Para comparar conceptos usa `idea` con
+  `emoji: ["no:…", "si:…"]` y `apagar_emoji`.
 ```json
 { "tipo": "prueba", "capturas": [
   { "src": "assets/captura.png", "circulo": [62, 40, 30, 12], "tachar": [[5, 3, 25, 6]] } ] }
@@ -825,6 +842,7 @@ Reels), líneas grises finas, el mes en mayúsculas grises arriba a la izquierda
 - `valores_paso: N`: en el paso N cada celda cambia sus emojis por su valor, sin mover la rejilla (16:45 → 16:50).
   Con `valores_paso: 0` se ven los valores desde el corte (útil en una lámina que vuelve con `"como"`).
 - `revelar: "celdas"` las revela de una en una; por omisión entran todas. `columnas` cambia el ancho de la rejilla.
+- En sala el máximo es 6 meses: QA da error si se excede y no se reduce el tamaño para hacerlos caber.
 - Más de 16 celdas ya no se leen (QA avisa). Anclas: `m0`, `m1`…
 
 ## Especiales
@@ -835,7 +853,7 @@ Reels), líneas grises finas, el mes en mayúsculas grises arriba a la izquierda
 ```
 - La frase de foco es la PROTAGONISTA, no una nota al margen: Caveat a 88 px en 16:9 (84 si pasa de 14
   palabras; 96 / 88 en 9:16) y hasta ~1560 px de ancho, como en el cuadro 15:20. `tam` la cambia.
-- `opacidad`: por omisión 0.2.
+- `opacidad`: por omisión 0.2 en video y `var(--apagado)` (0.35) en sala; el valor explícito prevalece y QA comprueba el piso de sala.
 - La frase va **centrada** y es la protagonista: en la referencia [15:20–15:23, h_pill] cruza el fondo atenuado a
   ~10–15%, incluso encima de texto («Your bank account.» queda debajo). Si choca con un renglón del fondo, solo se
   mueve a un hueco entre renglones que quede a **≤ 120 px del centro** (con 48 px de aire); si no lo hay, se queda
@@ -973,6 +991,10 @@ confunden (una prueba construye cada uno y compara con esta tabla):
 | `idea` con `sello` | 2 | el texto (aunque sean 2 renglones) en el paso 1; el sello, un paso extra |
 | `flujo` de 3 nodos con `texto` | 3 | un nodo por paso; el `texto` entra con el ÚLTIMO (`texto_paso: 0` lo sube) |
 | `lista` de 3 ítems | 3 | el encabezado con el primer ítem; un ítem por paso |
+| `foto` | 1 por omisión | imagen, velo y frase juntos; `texto_paso` separa la frase y `fuente_paso` el crédito |
+| `anfitrion` | 1 por omisión | retrato y texto juntos; `texto_paso` separa el texto |
+| `prueba` con `variante: "pantallas"` | N | una captura con barra por paso; la fuente general entra con la última, salvo `fuente_paso` |
+| `tarjetas` con `variante: "logos"` | N | un logo por paso, sin caja |
 
 - Una `anotacion` sin `paso` y el `sello` sin `sello_paso` suman un paso al final.
 - Los campos `*_paso` (`texto_paso`, `nota_paso`, `clic_paso`, `sello_paso`…) y los `desde`/`hasta` de una línea de
@@ -1117,7 +1139,7 @@ se centran en un ancho máximo de 800 px para dejar libre la franja de botones. 
 ### Logos por confirmar
 
 `imagen: "{{LOGO_X}}"` admite sustitución desde `datos` en nodos de flujo, objeto, stack y oscura.
-En pasos, `iconos` admite `{ "imagen": "{{LOGO_X}}" }` junto a emojis de texto. Sin valor se dibuja una caja
+En pasos, `logos: ["{{LOGO_X}}", ""]` es un arreglo paralelo a `iconos`: una ruta reemplaza ese ícono y una cadena vacía conserva el emoji. Se hereda con `como`. `iconos` admite `{ "imagen": "{{LOGO_X}}" }` junto a emojis de texto. Sin valor se dibuja una caja
 punteada del tamaño del ícono con el marcador resaltado, y entra en `por_confirmar`. Con valor `assets/x.png`
 se copia y pinta el archivo mediante las mismas reglas de imágenes locales. Otros huecos en `imagen` no se sustituyen.
 `lista` admite `fuente` y `fuente_paso`; por omisión la referencia gris entra con el último ítem (0 en un mapa activo).
@@ -1134,3 +1156,30 @@ normalizados duplicados y añade información sobre emojis usados sin declarar. 
 En vivo, cada módulo debe medir al menos 10 px en un lienzo de 1920 px; el motor propone 12 px. QA mide el tamaño pintado, rechaza dominios de relleno y avisa si la URL supera unos 30 caracteres. Usa una URL corta, estable y real; nunca proyectes un QR que no lleve a nada. En video, QA recuerda mostrar la URL corta porque el espectador suele usar el mismo teléfono.
 
 Receta de cierre en vivo: `lista` con el resumen a la izquierda, `qr` a la derecha y rótulo «escanéalo». La voz del último paso da tiempo para entrar. Si no usas QR, muestra una URL de al menos 64 px o una palabra clave. Pedir «escanea», «QR» o «tómenle foto» sin código es error.
+
+### `foto` — fotografía a sangre con velo blanco
+
+```json
+{ "tipo": "foto", "imagen": "assets/escena-propia.png", "velo": "blanco",
+  "texto": "Un espacio para __pensar__", "procedencia": "ejemplo",
+  "fuente": "Ilustración propia · ejemplo ficticio" }
+```
+
+`imagen` y `texto` son obligatorios. `velo` pertenece a una lista cerrada: `"blanco"` por omisión
+(opacidad 0.72, como 36:10), o `"banda"` (franja blanca inferior, como 39:50). La imagen llena el lienzo
+con `object-fit: cover`; nunca se presenta como un rectángulo suelto. La frase usa la letra y el revelado
+habituales; conserva un único énfasis rojo. `texto_paso`, `fuente` y `fuente_paso` reutilizan sus contratos.
+`procedencia` acepta `"real"`, `"ia"` o `"ejemplo"`; QA avisa cuando faltan tanto procedencia como fuente.
+
+### `anfitrion` — retrato recortado junto a una frase
+
+```json
+{ "tipo": "anfitrion", "imagen": "assets/retrato.png", "lado": "der",
+  "texto": "Tu explicación\n__va contigo__", "texto_paso": 1, "procedencia": "real" }
+```
+
+`imagen` (PNG con alfa) y `texto` son obligatorios. El retrato lo aporta el usuario: foto real a color,
+nunca una persona generada ni gris. `lado: "izq" | "der"` lo pega al borde lateral e inferior (derecha
+por omisión); no añade emoji. En 9:16 la foto queda abajo y el texto arriba. QA avisa si las cuatro esquinas
+son opacas: recorta el fondo. El demo no los incluye: una foto o un retrato de relleno sería un placeholder. Las pruebas usan una silueta propia, rotulada
+con `procedencia: "ejemplo"`; esa excepción didáctica no representa a una persona real.

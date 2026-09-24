@@ -105,3 +105,44 @@ test('B5 revisión: etiquetas relacionadas y pérdidas negadas no generan ruido'
   for (const texto of ['No vas a perder dinero', 'No volverás a perder dinero', 'Sin perder dinero']) assert.deepEqual(avisos([{ tipo: 'idea', emoji: '💰', texto }]), [], texto);
   assert.equal(infoConceptos({ conceptos: { '💰': 'dinero' }, laminas: [{ tipo: 'idea', emoji: ' 💰 ' }] }), null);
 });
+
+test('r6: halo de oscura automático sin alterar el HTML claro; ➕ hereda el blanco del lienzo', async () => {
+  const { necesitaHalo } = await import('../scripts/lib/emoji.mjs');
+  for (const modo of ['apple', 'fluent']) {
+    const em = new Emojis({ modo });
+    for (const emoji of ['🎓', '♟️', '🎵']) {
+      assert.equal(necesitaHalo(emoji, modo), true, `${modo}: ${emoji}`);
+      // La salida Apple permite comprobar la marca sin red; la clasificación sí usa ambos sets.
+      const html = new Emojis({ modo: 'apple' }).html(emoji);
+      assert.doesNotMatch(html, /hundido/);
+      assert.match(em.enOscura(html), /class="emo[^\"]*hundido/);
+    }
+    assert.equal(necesitaHalo('➕', modo), false);
+    assert.match(glifoSVG('➕', modo), /stroke="currentColor"/);
+  }
+});
+
+test('r6: el glifo sin tabla se marca para medición en vivo; el SVG y el gris plano no', () => {
+  const em = new Emojis({ modo: 'apple' });
+  assert.match(em.enOscura(em.html('🦩')), /data-halo-medir="30"/);
+  for (const emoji of ['➕', '🔈']) assert.doesNotMatch(em.enOscura(em.html(emoji)), /data-halo-medir|hundido/);
+});
+
+test('r6: la medición en vivo usa píxeles del glifo sin filtro, activa halo oscuro y conserva el claro', async () => {
+  const { runInNewContext } = await import('node:vm');
+  const medir = async rgba => {
+    const resultado = { clases: [], avisos: [] };
+    const elemento = { dataset: { haloMedir: '30' }, querySelector: () => ({ textContent: '🦩' }),
+      classList: { toggle: (clase, valor) => resultado.clases.push([clase, valor]) } };
+    const ctx = { clearRect() {}, fillText() {}, getImageData: () => ({ data: new Uint8ClampedArray(rgba) }) };
+    const contexto = { document: { querySelectorAll: () => [elemento], createElement: () => ({ getContext: () => ctx }) },
+      getComputedStyle: () => ({ fontFamily: 'Apple Color Emoji' }), avisos: resultado.avisos };
+    await runInNewContext(leerRuntime() + '\nprepararHalos();', contexto);
+    return { ...resultado, contraste: elemento.dataset.haloContraste };
+  };
+  const leerRuntime = () => fs.readFileSync(path.join(RAIZ, 'templates/runtime-emojis.js'), 'utf8');
+  assert.deepEqual(await medir([11, 11, 14, 255]), { clases: [['hundido', true]], avisos: [], contraste: 0 });
+  assert.deepEqual(await medir([255, 255, 255, 255]), { clases: [['hundido', false]], avisos: [], contraste: 100 });
+  const vacio = await medir([0, 0, 0, 0]);
+  assert.match(vacio.avisos[0], /no produjo píxeles opacos.*EMOJIS/);
+});

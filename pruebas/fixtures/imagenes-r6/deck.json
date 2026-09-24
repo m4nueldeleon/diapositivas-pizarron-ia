@@ -1,0 +1,43 @@
+{
+  "marca": false,
+  "emoji": "apple",
+  "laminas": [
+    {
+      "id": "objeto-opaco",
+      "tipo": "objeto",
+      "imagen": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAmUlEQVR4nO3QMREAIBDAsFeCF2zg3wfIyECH7L3O2uf+bHSA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AHaAyWSgZbCxKkRAAAAAElFTkSuQmCC",
+      "texto": "Objeto de ejemplo"
+    },
+    {
+      "id": "oscura-opaca",
+      "tipo": "oscura",
+      "imagen": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAmUlEQVR4nO3QMREAIBDAsFeCF2zg3wfIyECH7L3O2uf+bHSA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AHaAyWSgZbCxKkRAAAAAElFTkSuQmCC",
+      "texto": "Proyecto de ejemplo"
+    },
+    {
+      "id": "nodo-opaco",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "imagen": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAmUlEQVR4nO3QMREAIBDAsFeCF2zg3wfIyECH7L3O2uf+bHSA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AHaAyWSgZbCxKkRAAAAAElFTkSuQmCC",
+          "etiqueta": "Inicio"
+        }
+      ]
+    },
+    {
+      "id": "fuente-ausente",
+      "tipo": "prueba",
+      "capturas": [
+        {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAmUlEQVR4nO3QMREAIBDAsFeCF2zg3wfIyECH7L3O2uf+bHSA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AHaAyWSgZbCxKkRAAAAAElFTkSuQmCC"
+        }
+      ]
+    },
+    {
+      "id": "foto-sin-procedencia",
+      "tipo": "foto",
+      "imagen": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAmUlEQVR4nO3QMREAIBDAsFeCF2zg3wfIyECH7L3O2uf+bHSA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AFaA3SA1gAdoDVAB2gN0AHaAyWSgZbCxKkRAAAAAElFTkSuQmCC",
+      "texto": "Un fondo de ejemplo"
+    }
+  ]
+}

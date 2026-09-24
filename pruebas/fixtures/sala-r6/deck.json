@@ -1,0 +1,11 @@
+{
+  "marca": false,
+  "emoji": "apple",
+  "sala": true,
+  "laminas": [
+    { "id": "frase", "tipo": "idea", "texto": "Cobra __antes__ de empezar" },
+    { "id": "mapa", "tipo": "pasos", "n": 3, "iconos": ["💬", "💰", "📅"], "etiquetas": ["Ofreces", "Cobras", "Agendas"], "activo": 1 },
+    { "id": "foco", "tipo": "foco", "texto": "Primero, la oferta." },
+    { "id": "lista", "tipo": "lista", "items": [{ "emoji": "✅", "texto": "Un precio" }, { "emoji": "✅", "texto": "Una fecha" }] }
+  ]
+}

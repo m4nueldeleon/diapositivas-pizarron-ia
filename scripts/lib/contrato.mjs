@@ -18,7 +18,7 @@ const REQUERIDOS = {
   cifra: ['lineas|valor'], cita: ['texto'], objeto: ['imagen|emoji|reloj'], tarjetas: ['items'], oscura: ['titulo|texto|imagen|emoji'],
   cuadrantes: ['items'], tabla: ['columnas', 'filas'], grafica: [], 'linea-tiempo': ['marcas'], medidor: [], opciones: ['items'], rejilla: ['total'],
   prueba: ['capturas'], chat: ['mensajes'], reparto: ['total'], calendario: [], boton: ['boton'], circulos: [], camara: [], foco: ['texto|nota'],
-  stack: ['items'], calificacion: ['filas'], llamada: ['otros|yo'], meses: ['celdas'],
+  stack: ['items'], calificacion: ['filas'], llamada: ['otros|yo'], meses: ['celdas'], foto: ['imagen', 'texto'], anfitrion: ['imagen', 'texto'],
 };
 const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barras', 'marcas', 'tramos', 'partes', 'dias', 'fases',
   'anotaciones', 'capturas', 'mensajes', 'lineas', 'iconos', 'etiquetas', 'destacar', 'hechos', 'anclas', 'flechas', 'celdas', 'retornos', 'bandas', 'leyenda', 'letras'];
@@ -41,15 +41,17 @@ export const CAMPOS = {
   lista: ['letras', 'qr', 'fuente', 'fuente_paso', 'items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'alinear', 'encabezado', 'nota', 'nota_paso', 'activo', 'hechos'],
   flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'retornos', 'aparte', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota',
     'nota_paso', 'fuente', 'fuente_paso'],
-  pasos: ['letras', 'n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'emoji_tam', 'texto', 'texto_paso',
+  pasos: ['logos', 'letras', 'n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'emoji_tam', 'texto', 'texto_paso',
     'tam_texto', 'nota', 'nota_paso',
     // internos (los pone resolverComo → marcarGrupos; empiezan con «_» y el autor no los escribe)
     '_grupo_texto', '_grupo_nota', '_grupo_hechos'],
   bifurcacion: ['origen', 'ramas', 'llave', 'separacion', 'tam_texto', 'emoji_tam'],
   cifra: ['procedencia', 'lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'fuente_paso', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
   cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
-  objeto: ['procedencia', 'fuente', 'fuente_paso', 'imagen', 'alto', 'emoji', 'emoji_tam', 'reloj', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'emoji_tam', 'encabezado', 'nota', 'nota_paso', 'fuente', 'fuente_paso'],
+  objeto: ['logos', 'procedencia', 'fuente', 'fuente_paso', 'imagen', 'alto', 'emoji', 'emoji_tam', 'reloj', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
+  foto: ['imagen', 'texto', 'texto_paso', 'velo', 'procedencia', 'fuente', 'fuente_paso'],
+  anfitrion: ['imagen', 'lado', 'texto', 'texto_paso', 'procedencia'],
+  tarjetas: ['variante', 'items', 'columnas', 'ancho', 'tam_texto', 'emoji_tam', 'encabezado', 'nota', 'nota_paso', 'fuente', 'fuente_paso'],
   oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cuadrantes: ['items', 'columnas'],
   tabla: ['columnas', 'filas', 'vacias', 'fijas', 'esquina', 'ancho_etiqueta', 'converger', 'fuente', 'fuente_paso'],
@@ -62,7 +64,7 @@ export const CAMPOS = {
     'tono_destacado', 'anotacion', 'anotacion_paso', 'etiqueta_destacado', 'flecha_etiqueta', 'destacado_paso', 'emoji_etiqueta', 'encabezado', 'encabezado_estilo',
     'multitud', 'nota_destacado', 'nota_destacado_paso',
     'texto', 'texto_paso', 'fuente', 'fuente_paso'],
-  prueba: ['capturas', 'encabezado', 'encabezado_estilo', 'texto', 'texto_paso'],
+  prueba: ['variante', 'procedencia', 'fuente', 'fuente_paso', 'capturas', 'encabezado', 'encabezado_estilo', 'texto', 'texto_paso'],
   chat: ['guion', 'mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro', 'avatar_tam'],
   reparto: ['total', 'partes', 'separacion', 'titulo'],
   calendario: ['fases', 'fase_activa', 'color', 'dias', 'n', 'columnas', 'palabra_dia', 'anotaciones', 'titulo', 'rango'],
@@ -84,7 +86,7 @@ export const CAMPOS = {
 // nunca id, voz, revelar, activo, hechos, fase_activa, texto, notas ni marcas. Lo que trae la hija gana. La madre va
 // ANTES; se permiten cadenas (A ← B ← C). Devuelve una copia: el deck original no se toca.
 export const CAMPOS_OBJETO = {
-  pasos: ['letras', 'n', 'iconos', 'etiquetas', 'prefijo', 'sobre', 'ruta', 'separacion', 'tam_etiqueta', 'emoji_tam'],
+  pasos: ['logos', 'letras', 'n', 'iconos', 'etiquetas', 'prefijo', 'sobre', 'ruta', 'separacion', 'tam_etiqueta', 'emoji_tam'],
   calendario: ['titulo', 'dias', 'fases', 'n', 'columnas', 'palabra_dia', 'color', 'rango'],
   tabla: ['esquina', 'columnas', 'filas', 'ancho_etiqueta', 'vacias'],
   // los pilares del producto que vuelven con uno activo [37:40 → 39:45]
@@ -185,7 +187,7 @@ export function camposDesconocidos(l, i) {
 // Qué debe llevar cada elemento de las listas. Texto suelto = se normaliza en sanearDeck.
 const ELEMENTOS = {
   'lista.items': { claves: ['texto', 'emoji'], texto: true },
-  'tarjetas.items': { claves: ['texto', 'emoji'], texto: true },
+  'tarjetas.items': { claves: ['texto', 'emoji', 'imagen'], texto: true },
   'chat.mensajes': { claves: ['texto'], texto: true },   // + hora, de, avatar
   'cuadrantes.items': { claves: ['texto', 'emoji'], texto: true },
   'flujo.nodos': { claves: ['emoji', 'imagen', 'etiqueta', 'sub'], texto: true },   // + cantidad (1-20), tarjeta, normal
@@ -260,7 +262,7 @@ function revisarCalendario(l, n, e) {
 // `activo` y `hechos` cuentan desde 1; `destacar` (rejilla) y `elegida` (opciones) desde 0.
 function revisarRangos(l, n, e) {
   if (l.tipo === 'pasos') {
-    const N = Number(l.n) || (Array.isArray(l.iconos) ? l.iconos.length : 3);
+    const N = l.letras?.length || Number(l.n) || Math.max(l.iconos?.length || 0, l.logos?.length || 0) || 3;
     if (Number.isFinite(Number(l.activo)) && Number(l.activo) > N) e.push(`${n} (pasos): activo ${l.activo} y hay ${N} pasos (se cuentan desde 1)`);
     (Array.isArray(l.hechos) ? l.hechos : []).forEach(h => { if (typeof h === 'number' && (h < 1 || h > N)) e.push(`${n} (pasos): hechos incluye ${h} y hay ${N} pasos (se cuentan desde 1: 1..${N})`); });
   }
@@ -363,6 +365,11 @@ export function validarDeck(deck, tipos) {
     if (l.tipo === 'prueba' && Array.isArray(l.capturas)) l.capturas.forEach((c, j) => {
       if (c && typeof c === 'object' && c.plantilla != null && (c.plantilla !== true || !c.hueco)) e.push(`${n} (prueba): capturas[${j}].plantilla es true y va con «hueco» (el lugar para la captura del espectador)`);
     });
+    if (['foto', 'anfitrion'].includes(l.tipo) && l.imagen != null && typeof l.imagen !== 'string') e.push(`${n} (${l.tipo}): «imagen» debe ser una ruta PNG/JPG local`);
+    if (l.tipo === 'anfitrion' && typeof l.imagen === 'string' && !/\.png(?:\?.*)?$|^data:image\/png;/i.test(l.imagen)) e.push(`${n} (anfitrion): usa un PNG recortado con transparencia, aportado por el usuario`);
+    if (l.tipo === 'anfitrion' && l.procedencia === 'ia') e.push(`${n} (anfitrion): el retrato debe ser real y aportado por el usuario; no uses una persona generada con IA`);
+    if (l.tipo === 'prueba' && l.variante === 'pantallas' && (!Array.isArray(l.capturas) || l.capturas.length > 3 || l.capturas.some(c => !c?.src))) e.push(`${n} (prueba): «pantallas» requiere entre 1 y 3 capturas con src`);
+    if (l.tipo === 'tarjetas' && l.variante === 'logos' && (!Array.isArray(l.items) || l.items.length < 3 || l.items.length > 5 || l.items.some(it => !it?.imagen || it.emoji) || (l.columnas === 2 && l.items.length !== 4))) e.push(`${n} (tarjetas): «logos» requiere de 3 a 5 imágenes sin emoji, o 4 imágenes con columnas: 2`);
     if (l.tipo === 'objeto' && l.reloj != null && !(typeof l.reloj === 'string' && /^\d{1,2}:\d{2}$/.test(l.reloj))) e.push(`${n} (objeto): «reloj» va como "MM:SS" o "H:MM" ("10:00", "33:00")`);
     if (l.tipo === 'llamada' && l.otros != null) {
       const ok = typeof l.otros === 'string' || (Array.isArray(l.otros) && l.otros.every(o => typeof o === 'string' || (o && typeof o === 'object' && !Array.isArray(o))));
@@ -386,6 +393,7 @@ const COLORES = new Set(['amarillo', 'azul', 'verde', 'rojo']);
 // color de una pieza del stack a sangre (tarjeta de producto) [42:30]
 const COLORES_STACK = new Set(['morado', 'marino', 'naranja', 'verde', 'azul', 'negro']);
 const ENUMS = {
+  velo: ['blanco', 'banda'],
   procedencia: ['real', 'ia', 'ejemplo'], excepcion_persona: ['titulo-formula', 'cita', 'a-si-mismo', 'a-la-ia'],
   cursor: ['mano', 'flecha'], flecha: ['recta', 'arco', 'arco-negro', 'ninguna'], estilo: ['recta', 'arco', 'arco-negro'],
   encabezado_pos: ['arriba', 'entre'], encabezado_estilo: ['rotulo', 'frase'], anclar: ['arriba', 'centro'], fondo: ['violeta', 'azul', 'negro'],
@@ -429,6 +437,10 @@ function sanearObjeto(o, ruta, avisos, tipo) {
     // un número fuera de rango se recorta, pero nunca en silencio (un calendario de 28 días salía con 12)
     const recorte = rango => y => avisos.push(`${ruta}.${k}: ${v} → ${ent(rango, y)}, fuera de rango (${rango[0]}-${rango[1]})`);
     const ent = (rango, y) => (rango[2] ? Math.round(y) : y);
+    if (k === 'variante') { if ((tipo === 'prueba' && v === 'pantallas') || (tipo === 'tarjetas' && v === 'logos')) r[k] = v; else aviso(); continue; }
+    if (k === 'lado' && tipo === 'anfitrion' && !ruta.includes('anotaciones')) { if (['izq', 'der'].includes(v)) r[k] = v; else aviso(); continue; }
+    if (k === 'logos') { if (Array.isArray(v) && v.every(x => typeof x === 'string' && (tipo === 'pasos' || x.trim()))) r[k] = [...v]; else aviso(); continue; }
+    if (['imagen', 'src', 'fuente'].includes(k) && !ruta.includes('post')) { if (typeof v === 'string') r[k] = v; else aviso(); continue; }
     if (k === 'letras') { if (Array.isArray(v) && v.every(x => typeof x === 'string' && /^[\p{L}\p{N}]{1,3}$/u.test(x))) r[k] = [...v]; else aviso(); continue; }
     if (k === 'qr') { if (validarQr(v)) aviso(); else r[k] = { url: new URL(v.url).href, ...(v.rotulo ? { rotulo: v.rotulo } : {}) }; continue; }
     if (k.endsWith('_paso') || k === 'paso') { const x = num(v, [0, 200, 1], recorte([0, 200, 1])); if (x === undefined) aviso(); else r[k] = x; continue; }

@@ -1,6 +1,7 @@
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
 import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas, rotuloProcedencia, imagenConHueco } from './comun.mjs';
+import { imagenRecortada } from './imagenes.mjs';
 import { unirGuiones, plano, palabras } from './markup.mjs';
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
@@ -478,14 +479,14 @@ function marcoMano(w, h, semilla) {
   const R = 34, pts = [];
   const lado = (x0, y0, x1, y1) => { const n = Math.max(2, Math.round(Math.hypot(x1 - x0, y1 - y0) / 90)); for (let i = 0; i < n; i++) pts.push([x0 + (x1 - x0) * i / n + r(), y0 + (y1 - y0) * i / n + r()]); };
   lado(R, 4, w - R, 4); pts.push([w - 6, R * 0.35]); lado(w - 4, R, w - 4, h - R); pts.push([w - R * 0.35, h - 6]);
-  lado(w - R, h - 4, R, h - 4); pts.push([6, h - R * 0.35]); lado(4, h - R, 4, R); pts.push([R * 0.35, 6]); pts.push([R + 26, 2]);
+  lado(w - R, h - 4, R, h - 4); pts.push([6, h - R * 0.35]); lado(4, h - R, 4, R); pts.push([R * 0.35, 6]); pts.push([...pts[0]]);
   const d = 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L');
   return `<svg class="marco-mano" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--tinta)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
 export function prueba(l, ctx) {
   const caps = l.capturas || [];
   const html = caps.map((c, i) => {
-    const giro = caps.length > 1 ? `transform:rotate(${[-1.5, 1.2, -0.8][i % 3]}deg);z-index:${i + 1}` : '';
+    const giro = l.variante === 'pantallas' ? `--pantalla-i:${i};z-index:${i + 1}` : caps.length > 1 ? `transform:rotate(${[-1.5, 1.2, -0.8][i % 3]}deg);z-index:${i + 1}` : '';
     const k = ctx.P(l.revelar === 'todo' ? 0 : i);
     // `plantilla: true`: el hueco es A PROPÓSITO (el espectador pone la suya): marco a mano y el deck puede ser final.
     // Sin plantilla es una captura por conseguir: recuadro punteado y QA deja el deck en borrador (CAPTURA_N).
@@ -504,10 +505,10 @@ export function prueba(l, ctx) {
       dentro = `<img src="${ctx.img(c.src)}" alt=""${extra} style="${Number.isFinite(c.alto) ? `max-height:${c.alto}px` : ''}">`;
     }
     const fuente = c.ejemplo !== true && typeof c.fuente === 'string' && c.fuente.trim() ? `<div class="fuente">${escapar(c.fuente)}</div>` : '';
-    return `<div class="captura"${k}${aCap} style="${giro}">${dentro}${aCirc}${fuente}${rotuloProcedencia(c.procedencia)}</div>`;
+    return `<div class="captura"${k}${aCap} style="${giro}">${l.variante === 'pantallas' ? '<div class="barra-ventana" aria-hidden="true"><i></i><i></i><i></i></div>' : ''}${dentro}${aCirc}${fuente}${rotuloProcedencia(c.procedencia)}</div>`;
   }).join('');
-  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="pruebas">${html}</div>
-    ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}</div>`;
+  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="pruebas${l.variante === 'pantallas' ? ' pantallas' : ''}">${html}</div>
+    ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, caps.length - 1)))}${rotuloProcedencia(l.procedencia)}</div>`;
 }
 
 // CHAT — burbujas estilo mensaje: tú en azul a la derecha, los demás en gris medio a la izquierda.
@@ -831,7 +832,7 @@ function stackSangre(l, ctx) {
     usados.push(color);
     const clase = color ? `c-${color}` : TONO_PIEZA[it.tono];
     const span = [it.doble ? 'grid-column:span 2' : '', it.alto === 2 ? 'grid-row:span 2' : ''].filter(Boolean).join(';');
-    const vis = it.imagen ? imagenConHueco(ctx, it.imagen, tamE) : it.emoji ? ctx.emoji(it.emoji, tamE) : '';
+    const vis = it.imagen ? imagenRecortada(ctx, it.imagen, tamE, 'item') : it.emoji ? ctx.emoji(it.emoji, tamE) : '';
     return `<div class="bento"${span ? ` style="${span}"` : ''}${ctx.A('s' + i)}><div class="bento-lleno ${clase}"${ctx.P(i + 1)}>${vis}${it.texto ? `<span class="b-texto">${marcar(it.texto)}</span>` : ''}${it.sub ? `<span class="b-sub">${marcar(it.sub)}</span>` : ''}</div></div>`;
   }).join('');
   const kRem = pasoDe(l, 'remate_paso', items.length + 1);
@@ -858,7 +859,7 @@ function stackPila(l, ctx) {
   // que los íconos de una columna queden en la misma x (centrar el grupo ícono + texto los desalineaba)
   const ico = ctx.vertical ? 84 : 96;
   const piezas = items.map((it, i) => {
-    const vis = it.imagen ? imagenConHueco(ctx, it.imagen, ctx.vertical ? 80 : 96) : it.emoji ? ctx.emoji(it.emoji, ico) : '';
+    const vis = it.imagen ? imagenRecortada(ctx, it.imagen, ctx.vertical ? 80 : 96, 'item') : it.emoji ? ctx.emoji(it.emoji, ico) : '';
     const clase = COLOR_PIEZA.includes(it.color) ? `c-${it.color}` : TONO_PIEZA[it.tono] || '';
     const cuerpo = `${it.texto ? `<span class="b-texto">${marcar(it.texto)}</span>` : ''}${it.sub ? `<span class="b-sub">${marcar(it.sub)}</span>` : ''}`;
     return `<div class="bento"${it.doble ? ' style="grid-column:span 2"' : ''}${ctx.A('s' + i)}><div class="bento-lleno${vis ? ' con-ico' : ''} ${clase}"${ctx.P(i + 1)}>${vis}${cuerpo ? `<div class="b-cuerpo">${cuerpo}</div>` : ''}</div></div>`;

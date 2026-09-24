@@ -40,13 +40,14 @@ varias etiquetas cortas; es información para revisar el sentido, no una penaliz
 |---|---|---|
 | dinero, ganancia | 💰 | bolsa: el más usado |
 | dinero que se va, gasto | 💸 | billetes con alas |
+| suscripción, membresía, pago recurrente | 🔁 | suelto; los ingresos recurrentes se dibujan con el flujo siguiente |
 | ingresos recurrentes | `flujo` 🔁 → 💰 | dos nodos, no insignia |
 | crecimiento | 📈 | |
 | caída o pérdida | 📉 | |
 | métricas, datos, reporte, informe | 📊 | |
 | banco, tu cuenta | 🏦 | |
 | precio, pago, efectivo, oferta | 💵 · 🏷️ solo en Fluent | el 🏷️ de Apple es beige pálido y se pierde |
-| comprobante, recibo | 🧾 | SVG blanco con borde dentado, renglones grises y total verde; sin texto impreso en los dos sets |
+| factura, comprobante, recibo | 🧾 | SVG blanco con borde dentado, renglones grises y total verde; sin texto impreso en los dos sets |
 | producto | 📦 | |
 | producto digital (ebook, plantilla) | 💻 · 📘 | el curso o programa es 🎓 |
 | alianza, trato, socio | 🤝 | como en la referencia: «1 Partnership» [10:30], «Partner» (ref_1040). La venta cerrada es `si:🤝` o 💵: 🤝 solo, sin marca, no es venta |
@@ -116,7 +117,7 @@ el rodeo de usar 🏾.
 ## Ventas y marketing
 | Concepto | Emoji | Notas |
 |---|---|---|
-| celular, WhatsApp sin logo | 📱 | se dibuja igual en los dos modos (el de Fluent era una tableta morada) |
+| celular | 📱 | se dibuja igual en los dos modos; si representa WhatsApp, usa su logo real o un hueco de logo declarado (SKILL, regla 10) |
 | varias conversaciones a la vez | una `rejilla` de 📲, o el mismo 📲 con nota «×10»; «conversación» en sí: `📱+💬` si la insignia se ve (si no, 📲) | nunca 👥: se lee «personas» |
 | notificación | 🔔 | |
 | correo | 📧 | |
@@ -133,7 +134,9 @@ el rodeo de usar 🏾.
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
 | página web, en línea, en la nube | 🌐 | ☁️ es pálido en los dos sets |
 | compra en línea, carrito | 🛒 | |
-| tienda o negocio local | 🏠 o 🏬 o 🏪 | 🏪 se dibuja en SVG con toldo verde y azul, ventanal y puerta; sin letrero ni tinta roja |
+| tienda (en línea o local) | 🛍️ | 🛒 sigue siendo compra en línea o carrito |
+| casa, desde casa, bienes raíces | 🏠 | |
+| tienda o negocio local | 🏪 | glifo propio con toldo verde y azul, ventanal y puerta; sin letrero ni tinta roja |
 | pago con tarjeta | 💳 | |
 | firmar o inscribirse: contrato, registro, inscripción | ✍️ | el registro no es 📝 («escribir, plan») ni 🧲 («atraer prospectos») |
 
@@ -166,8 +169,10 @@ Separar en cuentas: una `rejilla` de 🐷 o de 💰 con etiquetas, no 🗂️ (b
 | probar, experimentar | 🧪 | |
 | queja, cliente molesto | 😠 | |
 | pregunta difícil | 🌶️ | |
+| prompt, lo que le escribes a la IA | ⌨️ | con el prefijo `no:⌨️` sigue siendo «sin programar» |
 | sin programar, sin código, «no sé de tecnología» | `no:⌨️` | 💻 es «producto digital» y 🧑‍💻 es «tú»; la objeción «No sé nada de tecnología» también es `no:⌨️` |
-| rol, perfil, personaje | 🎭 · 🪪 | 🪪 es una credencial azul con retrato y renglones sin nombre: SVG en Apple, nativa en Fluent |
+| rol, perfil, personaje | 🎭 | |
+| identificación, INE, pasaporte | 🪪 | credencial azul con retrato y renglones sin nombre: SVG en Apple, nativa en Fluent |
 | documento, base de conocimiento, instrucciones | 📄 | se dibuja en SVG igual en los dos sets (hoja con degradado y sombra, renglones gris pizarra, esquina azul): la hoja de los dos sets sale pálida. 📋 es «tarea» |
 
 ## Eventos
@@ -296,7 +301,8 @@ para una secuencia usa un `flujo`.
 - Emojis ambiguos o de doble sentido, como 🍆 o 🍑.
 - Banderas para hablar de idiomas: usa 🗣️ solo en Apple; en Fluent, 🌐.
 - Encadenar 3 o más emojis en una frase: para eso existe `flujo`.
-- Logos de marcas hechos con emoji. Para una marca real se usa su **logo real** como `imagen`.
+- Logos de marcas hechos con emoji. Para representar una marca se usa su **logo real** como `imagen`; si falta, `imagen: "{{LOGO_X}}"` con `datos.LOGO_X: { "pendiente": true, "motivo": "falta el archivo oficial" }`. Nombrar una marca solo en el texto no exige logo.
+- 🏬: se lee edificio de oficinas, igual a 🏢; tienda es 🛍️.
 - 👨‍💼 junto a 🧑‍💼: se ven casi iguales en los dos modos. Cliente es 🧑‍💼; experto, 🧑‍🏫.
 - 🤵 para «vendedor»: en Apple es casi igual a 🧑‍💼 (rubio con traje negro). Vendedor es 👤; cliente, 🧑‍💼.
 - 🧑‍✈️ para «líder»: se lee «piloto». Líder es 👑.
@@ -323,6 +329,7 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 
 | Set | Grupo | Qué hacer |
 |---|---|---|
+| los dos | 🏢 🏬 | empresa es 🏢; tienda es 🛍️ o 🏪 |
 | los dos | 🧑‍💼 👨‍💼 | cliente es 🧑‍💼; experto, 🧑‍🏫 |
 | Apple | 🧑‍💼 🤵 | cliente es 🧑‍💼; vendedor, 👤 |
 | Apple | 📅 🗓️ 📆 · 🎟️ 🎫 | se dibujan con el mismo SVG: usa el primero (en Fluent salen nativos y distintos entre sí) |
@@ -377,7 +384,7 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 | los dos | claro | 🤍 🏳️ | ❤️ · 🚩 |
 | Apple | oscura | 📞 💲 🎥 | ☎️ · 💵 · 📹 (el mismo «grabar video») |
 | Fluent | oscura | 🗣️ 🎥 | 🎤 · 📹 |
-| los dos | oscura | 🎓 ♟️ 🎵 ➕ (se hunden en el negro: 2-19 con 3:1) | sin sustituto con el mismo concepto: QA avisa «elige otro»; en la oscura va la revelación, no un ícono de concepto |
+| los dos | oscura | 🎓 ♟️ 🎵 (se hunden en el negro: 2-19 con 3:1) | se dibujan con halo blanco (clase `hundido`, automática); ➕ va en SVG blanco. QA mide el glifo sin halo y evita avisos duplicados |
 | Fluent | blanco, tarjeta | 🔊 🗑️ 🔗 (grises: 22-40, pasan el umbral pero se ven apagados) | música → 🎵 · borrar → tacha el elemento · link → la flecha roja al `boton`, o 🌐 si es «la página» |
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se
