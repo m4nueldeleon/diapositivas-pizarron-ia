@@ -1,7 +1,7 @@
 {
  "titulo": "Demo — Diapositivas Pizarrón IA",
  "formato": "16:9",
- "emoji": "auto",
+ "emoji": "apple",
  "animacion": "seco",
  "piel": "🏻",
  "laminas": [
@@ -443,7 +443,20 @@
   {
    "id": "elige",
    "tipo": "opciones",
-   "items": [{ "texto": "FÁCIL", "tono": "v" }, { "texto": "MEDIO", "tono": "n" }, { "texto": "DIFÍCIL", "tono": "r" }],
+   "items": [
+    {
+     "texto": "FÁCIL",
+     "tono": "v"
+    },
+    {
+     "texto": "MEDIO",
+     "tono": "n"
+    },
+    {
+     "texto": "DIFÍCIL",
+     "tono": "r"
+    }
+   ],
    "elegida": 2
   },
   {
@@ -709,11 +722,22 @@
   {
    "id": "objecion",
    "tipo": "idea",
-   "emoji": "no:💻",
+   "emoji": "no:⌨️",
    "encabezado": "Objeción #1",
    "encabezado_pos": "entre",
    "texto": "**«No sé nada de tecnología»**",
    "voz": "La primera objeción: no sé nada de tecnología"
+  },
+  {
+   "id": "respuesta",
+   "tipo": "idea",
+   "emoji": "si:🤖",
+   "texto": "No hace falta programar:\n**le escribes al agente lo que quieres**",
+   "nota": "Paso 1: copias la plantilla y cambias tu nombre",
+   "voz": [
+    "No necesitas saber programar: le escribes al agente lo que quieres.",
+    "Paso uno: copias la plantilla y le cambias tu nombre."
+   ]
   },
   {
    "id": "remate",
@@ -731,7 +755,7 @@
    "tipo": "objeto",
    "emoji": "🎯",
    "texto": "Enfócate en __un solo__ resultado.",
-   "nota": "Lo demás es ruido."
+   "nota": "Una oferta, un público, 30 días."
   },
   {
    "id": "oferta",
@@ -796,6 +820,15 @@
     "Una recepcionista te cuesta nueve mil al mes",
     "tu agente, mil quinientos"
    ]
+  },
+  {
+   "id": "llamado",
+   "tipo": "boton",
+   "boton": "Aplica aquí",
+   "emoji": "👆",
+   "texto": "**2 minutos** de preguntas y te llega la invitación a la llamada",
+   "llamado": true,
+   "voz": "Clic en aplica aquí: dos minutos y te llega la invitación."
   }
  ]
 }

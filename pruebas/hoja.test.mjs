@@ -81,7 +81,7 @@ test('cuadros clave: una lámina con clave da dos cuadros (el clave primero) con
   assert.match(h.html, />2 · incluye</);
 });
 
-test('render --finales: el stack a sangre con remate sale lleno en la hoja y en el PDF, no solo el remate', { timeout: 180_000 }, () => {
+test('render --finales: el stack a sangre con remate sale lleno en la hoja (dos cuadros) y en el PDF en una sola página', { timeout: 180_000 }, () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-clave-'));
   const laminas = [
     { tipo: 'idea', id: 'antes', emoji: '💡', texto: 'Lo que **incluye**' },
@@ -93,7 +93,10 @@ test('render --finales: el stack a sangre con remate sale lleno en la hoja y en 
   const man = JSON.parse(fs.readFileSync(path.join(sal, 'pasos.json'), 'utf8')).filter(m => m.lamina === 1);
   assert.deepEqual(man.map(m => [m.paso, !!m.clave]), [[3, true], [4, false]], 'el paso con las 3 piezas y el del remate');
   const pdf = fs.readFileSync(path.join(sal, 'laminas.pdf'));
-  assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length, 3);
+  // el PDF da UNA página por lámina: el stack lleno con su remate en una banda (lib/pdf.mjs)
+  assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length, 2);
+  const info = JSON.parse(fs.readFileSync(path.join(sal, 'pdf.json'), 'utf8'));
+  assert.deepEqual([info.paginas, info.laminas, info.cursores_visibles, info.notas], [2, [1, 2], 0, false]);
 });
 
 // Regresión r3: `render.mjs … | head -1` moría con EPIPE a media escritura y dejaba un hojas.json viejo apuntando a
@@ -113,4 +116,26 @@ test('render con la salida en una tubería cerrada (| head -1): termina y hojas.
   fs.writeFileSync(path.join(sal, 'hojas.json'), JSON.stringify({ hojas: [{ archivo: 'hoja-09.jpg' }], pasos: [] }));
   execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--salida', sal, '--finales', '--sin-hoja'], { stdio: 'pipe' });
   assert.ok(!fs.existsSync(path.join(sal, 'hojas.json')));
+});
+
+// Una propuesta que se manda: laminas-notas.pdf lleva la voz como TEXTO (se busca y se copia), por omisión en la pieza
+test('render --pdf en una propuesta: laminas-notas.pdf con la voz como texto; --sin-notas no lo genera', { timeout: 180_000 }, t => {
+  const pdftotext = spawnSync('pdftotext', ['-v']);
+  if (pdftotext.error) { t.skip('sin pdftotext'); return; }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-notas-'));
+  const laminas = [
+    { tipo: 'idea', id: 'hoy', emoji: '💡', texto: 'Hoy: **40 vendedores**', voz: 'Hoy tienes cuarenta vendedores sin método común.' },
+    { tipo: 'boton', id: 'firma', boton: 'Firmar', texto: 'Arrancamos el **lunes 6**', llamado: true, voz: 'Firmas y arrancamos el lunes seis.' },
+  ];
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', pieza: 'propuesta', marca: false, laminas }));
+  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--finales', '--pdf', '--sin-hoja'], { stdio: 'pipe' });
+  const sal = path.join(dir, 'salida');
+  const texto = spawnSync('pdftotext', [path.join(sal, 'laminas-notas.pdf'), '-'], { encoding: 'utf8' }).stdout;
+  assert.match(texto.replace(/\s+/g, ' '), /cuarenta vendedores sin método común/);
+  assert.match(texto.replace(/\s+/g, ' '), /arrancamos el lunes seis/);
+  const info = JSON.parse(fs.readFileSync(path.join(sal, 'pdf.json'), 'utf8'));
+  assert.deepEqual([info.paginas, info.notas, info.cursores_visibles], [2, true, 0]);
+  fs.rmSync(path.join(sal, 'laminas-notas.pdf'));
+  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--finales', '--pdf', '--sin-notas', '--sin-hoja'], { stdio: 'pipe' });
+  assert.ok(!fs.existsSync(path.join(sal, 'laminas-notas.pdf')));
 });

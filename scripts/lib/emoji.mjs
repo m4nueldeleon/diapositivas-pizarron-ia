@@ -347,7 +347,7 @@ export const TEXTO_IMPRESO = {
 // y distintos (liso, con argollas, con espiral; boleto rosa y amarillo), así que ahí no se confunden. 📄 📃 son el mismo
 // SVG en los dos sets, y 💬 🗨 la misma burbuja.
 export const PARECIDOS = {
-  apple: [['🧑‍💼', '👨‍💼'], ['📅', '🗓', '📆'], ['🎟', '🎫'], ['📄', '📃'], ['💬', '🗨']],
+  apple: [['🧑‍💼', '👨‍💼'], ['🧑‍💼', '🤵'], ['📅', '🗓', '📆'], ['🎟', '🎫'], ['📄', '📃'], ['💬', '🗨']],
   fluent: [['🏦', '🏛'], ['🧑‍💼', '👨‍💼'], ['📄', '📃'], ['💬', '🗨']],
 };
 let medidas = null;

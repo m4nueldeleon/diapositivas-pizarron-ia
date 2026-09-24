@@ -1,6 +1,8 @@
 # MI-MARCA — ficha para Diapositivas Pizarrón IA
 
-Copia este archivo a tu carpeta de trabajo y llénalo. Claude lo lee antes de cada deck.
+Llénalo una vez. Claude, render y QA lo buscan en este orden y usan el primero que exista: la carpeta del deck →
+la de arriba → `$PIZARRON_MARCA` → `~/.config/diapositivas-pizarron-ia/MI-MARCA.md` (la ficha global que crea
+`bash scripts/setup.sh`: con ella todos tus decks salen con tu firma).
 
 ## Firma (abajo a la derecha, en cada lámina)
 Déjala vacía si no tienes marca: las láminas saldrán sin firma. **Nunca pongas un valor de ejemplo.**
@@ -11,7 +13,7 @@ Déjala vacía si no tienes marca: las láminas saldrán sin firma. **Nunca pong
 ## Valores por omisión
 - Formato: `16:9`, o `9:16` para reels
 - Idioma: español
-- Emojis: `auto`
+- Emojis: `apple` (PNG o video exportados en Mac) o `fluent` (Linux, VPS, nube, o HTML que se abre en otros equipos)
 - Animación: `seco`
 - Tono de piel de las personas (`piel`): `🏻`, como el video (o el tuyo: 🏼 🏽 🏾 🏿; `ninguno` las deja amarillas)
 
@@ -40,6 +42,11 @@ al deck.
 - Garantía (plazo y condición):
 - Bonos:
 - Cupos o fecha límite reales:
+
+Cada dato de la oferta va en `"datos"` del deck con su clave, y en el texto como `{{CLAVE}}`: `PRECIO`,
+`GARANTIA_DIAS` («30»), `GARANTIA_CONDICION` («si aplicas los 6 módulos y no…»), `BONO_1`, `BONO_2`…, `CUPOS`,
+`FECHA_LIMITE`, y en una propuesta `FECHA` (arranque) y `VIGENCIA`. Lo que aún no está se declara
+`{ "pendiente": true, "motivo": "…" }`; nunca `propuesto` (LAYOUTS.md, «Datos que se llenan una vez»).
 - Llamado (palabra clave y canal: WhatsApp, link o DM):
 - Credenciales o pruebas con permiso:
 

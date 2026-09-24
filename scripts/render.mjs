@@ -4,12 +4,14 @@
 //              + salida/hoja-pasos.jpg (todos los pasos, una fila por lámina: el orden del revelado)
 //              + salida/pasos.json (manifiesto para video y QA) + salida/hojas.json (qué hojas hay y qué láminas cubren)
 //
-//   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales] [--pdf]
+//   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales]
+//                           [--pdf [--notas | --sin-notas]]
 //
 //   --finales   solo el último paso de cada lámina (para revisar rápido; no genera hoja-pasos.jpg)
-//   --pdf       además, salida/laminas.pdf: una página por lámina (su último paso), del tamaño del formato. Para
-//               mandar una propuesta o un VSL como documento, o llevarlo a Keynote o Google Slides. Las `camara` no
-//               tienen página.
+//   --pdf       además, salida/laminas.pdf: una página por lámina (su último paso, sin la mano del cursor), del tamaño
+//               del formato, para Keynote o Google Slides; un `stack` a sangre sale en UNA página con su remate en una
+//               banda. Las `camara` no tienen página. En `propuesta`, `vsl` y `vsl-corto` (o con --notas) también
+//               salida/laminas-notas.pdf: la lámina y su voz como texto, para mandarlo como documento. --sin-notas lo apaga.
 // Con más de 20 láminas la hoja se pagina: hoja-01.jpg, hoja-02.jpg… (20 láminas cada una) y hoja-pasos-01.jpg…
 // (10 filas cada una). hoja.jpg y hoja-pasos.jpg quedan como copia de la PRIMERA página, con el encabezado
 // «hoja 1/N — revisa TODAS»: la revisión visual recorre todas.
@@ -19,15 +21,19 @@ import { pathToFileURL } from 'node:url';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina, archivoPagina, POR_HOJA, FILAS_POR_HOJA } from './lib/hoja.mjs';
 import { duracionTotal, mmss } from './lib/tiempos.mjs';
+import { rutaGlobal } from './lib/marca.mjs';
+import { exportarPdf, conNotas } from './lib/pdf.mjs';
 
 const { opt, flag, pos } = argumentos(process.argv);
-const escapeAttr = t => String(t).replace(/[&"<>]/g, c => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[c]));
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos } = prep;
 const auto = !prep.crudo.emoji || prep.crudo.emoji === 'auto' ? ` (auto → ${modoEmoji} en esta máquina; fluent en Linux: fija "emoji" en el deck)` : '';
 console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji}${auto} · voz ~${mmss(duracionTotal(deck, pasos))})`);
 avisosBuild.forEach(a => console.warn('⚠ ' + a));
+if (prep.firmaDe) console.log(`Firma tomada de ${prep.firmaDe}`);
+else if (prep.crudo.marca === undefined) console.log(`ℹ Va sin firma: llena «Texto» en ${rutaGlobal()} (o bash scripts/setup.sh); "marca": false la apaga a propósito`);
+if (prep.avisoFirma) console.warn('⚠ ' + prep.avisoFirma);
 if (flag('--solo-html')) process.exit(0);
 
 const escala = Number(opt('--escala', 1));
@@ -103,22 +109,13 @@ if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
   if (paginas.length > 1) console.log(`⚠ ${paginas.length} hojas de finales (${hojas.hojas.map(x => `${x.archivo}: ${x.desde}-${x.hasta}`).join(' · ')}): la revisión visual recorre TODAS, no solo hoja.jpg`);
 }
 
-// PDF: una página por cuadro de la hoja (el último paso de cada lámina y sus pasos clave; las `camara` no tienen página)
+// PDF para mandar (lib/pdf.mjs): una página por lámina sin cursor, el stack con su remate en una página, y en
+// propuesta o VSL además laminas-notas.pdf con la voz como texto
 if (flag('--pdf')) {
-  const finales = cuadros.filter(c => c.archivo);
-  if (!finales.length) console.warn('⚠ --pdf: no hay láminas con imagen');
-  else {
-    const hp = path.join(dirSalida, '.pdf.html');
-    fs.writeFileSync(hp, `<!doctype html><meta charset="utf-8"><style>@page{size:${W}px ${H}px;margin:0}html,body{margin:0;padding:0}
-img{display:block;width:${W}px;height:${H}px;break-after:page}img:last-child{break-after:auto}</style>${finales.map(c => `<img src="${escapeAttr(c.archivo)}">`).join('')}`);
-    const p3 = await browser.newPage();
-    await p3.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
-    const destino = path.join(dirSalida, 'laminas.pdf');
-    await p3.pdf({ path: destino, width: `${W}px`, height: `${H}px`, printBackground: true, preferCSSPageSize: true });
-    await p3.close();
-    fs.unlinkSync(hp);
-    console.log(`PDF → ${destino} (${finales.length} páginas)`);
-  }
+  const notas = conNotas(deck.pieza, { notas: flag('--notas'), sinNotas: flag('--sin-notas') });
+  const r = await exportarPdf({ browser, page, deck, dirSalida, W, H, notas });
+  if (r.paginas) console.log(`PDF → ${path.join(dirSalida, 'laminas.pdf')} (${r.paginas} páginas, una por lámina)${r.notas ? ` + laminas-notas.pdf (la lámina y su voz como texto)` : ''}`);
+  r.avisos.forEach(a => console.warn('⚠ ' + a));
 }
 if (errores.length) console.error('✗ errores de la página:\n  ' + errores.join('\n  '));
 await browser.close();

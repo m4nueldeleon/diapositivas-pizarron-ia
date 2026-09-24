@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { construirHTML } from './construir.mjs';
 import { cargarPlaywright } from './playwright.mjs';
+import { firmaParaDeck } from './marca.mjs';
 
 // Si el lector de la tubería se va («render.mjs … | head -1»), escribir en stdout daba EPIPE y el proceso moría a
 // media escritura (con hojas.json apuntando a hojas ya borradas). render, qa y video importan este módulo: aquí se
@@ -13,7 +14,7 @@ for (const s of [process.stdout, process.stderr]) s.on('error', e => { if (e.cod
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--estricto']);
+const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--notas', '--sin-notas', '--estricto']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);
@@ -34,13 +35,18 @@ export function leerDeck(entrada) {
   return { deck, jsonPath, dirDeck: path.dirname(jsonPath) };
 }
 
+// Un deck SIN «marca» (ausente, no `false`) toma la firma de la ficha MI-MARCA.md (marca.mjs: carpeta del deck → la de
+// arriba → $PIZARRON_MARCA → ~/.config/diapositivas-pizarron-ia/MI-MARCA.md). `crudo` sigue siendo el deck.json tal cual;
+// `firmaDe` dice de qué ficha salió la firma (render y QA lo imprimen).
 export function prepararSalida(entrada, salida) {
-  const { deck, jsonPath, dirDeck } = leerDeck(entrada);
+  const { deck: leido, jsonPath, dirDeck } = leerDeck(entrada);
   const dirSalida = path.resolve(salida || path.join(dirDeck, 'salida'));
+  const f = firmaParaDeck(leido, dirDeck);
+  const deck = f.marca ? { ...leido, marca: f.marca } : leido;
   const r = construirHTML({ deck, dirDeck, dirSalida, dirSkill: DIR_SKILL });
   const htmlPath = path.join(dirSalida, 'index.html');
   fs.writeFileSync(htmlPath, r.html);
-  return { ...r, crudo: deck, jsonPath, dirDeck, dirSalida, htmlPath };
+  return { ...r, crudo: leido, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, avisoFirma: f.aviso };
 }
 
 export async function abrir(htmlPath, W, H, { escala = 1, modo = 'render' } = {}) {

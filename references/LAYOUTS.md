@@ -88,9 +88,10 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   frase [34:25 «Reason #1»].
 - **Objeción o «Razón #N»** [34:25, 35:15] — una forma para todas las del deck:
   ```json
-  { "tipo": "idea", "emoji": "no:💻", "encabezado": "Objeción #1", "encabezado_pos": "entre",
+  { "tipo": "idea", "emoji": "no:⌨️", "encabezado": "Objeción #1", "encabezado_pos": "entre",
     "texto": "**«No sé nada de tecnología»**" }
   ```
+  El emoji es lo que dice que le falta, negado (EMOJIS.md, «Compuestos útiles»: suelto, `no:X` es la objeción).
   La respuesta va en la lámina siguiente (`idea` con `si:…` o `lista` con `vineta: "check"`); con
   contraste, pregunta → «Sí.» → «Pero…» en láminas de una frase [34:35-34:45]. Nunca dentro del
   `encabezado` de una lista ni pegada al texto de un `boton` (QA lo avisa).
@@ -172,6 +173,22 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
     { "texto": "Una recepcionista: {g:$9,000 al mes}", "tam": "64px", "peso": 500 },
     { "texto": "Tu agente: __$1,500 al mes__", "tam": "120px", "peso": 800 } ] }
   ```
+- **Inversión anclada** (propuesta, ARCOS.md bloque 7): tres líneas-objeto. Arriba, en gris, el costo de no hacer
+  nada en la MISMA unidad y periodo que la inversión, con los números del cliente (de la llamada de diagnóstico,
+  como `{{…}}` en `datos`); en medio, la inversión grande; abajo, el desglose por persona, por día o en quincenas
+  (MI-MARCA, «Formato de los pagos»). QA avisa si la inversión de una propuesta no trae ese costo en la misma
+  lámina o en la anterior:
+  ```json
+  { "tipo": "cifra", "lineas": [
+    { "texto": "Hoy: {g:{{HORAS_PERDIDAS}} h × {{COSTO_HORA}} = {{COSTO_MES}} al mes}", "tam": "60px", "peso": 500 },
+    { "texto": "Inversión: __{{PRECIO}}__", "tam": "120px", "peso": 800 },
+    { "texto": "{{PRECIO}} ÷ 40 vendedores = __{{PRECIO_POR_PERSONA}} por vendedor__", "tam": "60px", "peso": 500 } ],
+    "voz": ["Hoy se les van {{HORAS_PERDIDAS}} horas al mes: {{COSTO_MES}}.", "La inversión es {{PRECIO}}.", "Por vendedor, {{PRECIO_POR_PERSONA}}."] }
+  ```
+  Con `"datos": { "HORAS_PERDIDAS": { "pendiente": true, "motivo": "sale de la llamada de diagnóstico" }, … }` si
+  aún no hay llamada. **Desglose de un precio** («$3,000 ÷ 30 días = __$100 al día__») no es una proyección: una
+  línea que divide un monto o el precio y un total que termina en «por/al/cada + unidad» no pide condición ni rango.
+  «= __$500 al día en ventas__» sí es promesa y sigue las reglas de arriba.
 
 ### `objeto` — foto real recortada o emoji gigante  ·  [1:40, 23:20]
 ```json
@@ -512,8 +529,13 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
   sangre (QA avisa); si hace falta, va en la lámina anterior.
 - `sangre: false` (y el 9:16) usa la pila de casillas grises con el rótulo, el remate y el `total` debajo.
 - `remate_paso` y `nota_paso` mueven el cierre.
-- Como el remate tapa las piezas, la hoja, el PDF y `--finales` sacan DOS cuadros de esta lámina: el stack
-  lleno («N · id · paso K») y el remate («N · id»). Revisa los dos.
+- **Bonos** (solo si la oferta los tiene, GUION §7 beat 7b): van AL FINAL del stack, después de las piezas base, cada
+  uno con `sub: "Bono #N"` (la píldora) y su nombre desde `datos`:
+  `{ "emoji": "🎁", "texto": "{{BONO_1}}", "sub": "Bono #1" }`. QA avisa un bono sin `{{BONO_N}}` o antes de una pieza
+  base. No hay diseño ni cinta de bono aparte: la referencia no los tiene.
+- Como el remate tapa las piezas, la hoja y `--finales` sacan DOS cuadros de esta lámina: el stack
+  lleno («N · id · paso K») y el remate («N · id»). Revisa los dos. El PDF (`--pdf`) da UNA página: el stack lleno
+  y el remate en una banda debajo.
 
 ## Especiales
 
@@ -626,6 +648,11 @@ texto y se llena UNA vez en `datos`, arriba del deck:
   ```
   Precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios y resultados **nunca** se
   proponen (es error de contrato): van como hueco `{{CLAVE}}`. Un comentario `_datos` no cuenta.
+- **Hueco a propósito**: `"PRECIO": { "pendiente": true, "motivo": "lo define dirección el lunes" }` se pinta como
+  `[PRECIO]`, pero QA lo cuenta como aviso y deja el deck en borrador (no como error de olvido).
+- **Claves de la oferta** (MI-MARCA, «Oferta»): `PRECIO`, `GARANTIA_DIAS`, `GARANTIA_CONDICION`, `BONO_1`, `BONO_2`…,
+  `CUPOS`, `FECHA_LIMITE`, `FECHA`, `VIGENCIA`. «Quedan {{CUPOS}} lugares» con su dato es escasez real; «Quedan solo 3
+  lugares» o «solo hoy» escritos a mano son error de QA (GUION §7, beat 8).
 - El `[x]` en minúsculas dentro de un `chat` es otra cosa: lo que el usuario personaliza en el mensaje
   (`[nombre]`), no un dato pendiente.
 

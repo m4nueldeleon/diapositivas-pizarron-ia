@@ -102,7 +102,7 @@ En Fluent, si el tono no existe en el set, sale la forma sin tono.
 | notificación | 🔔 | |
 | correo | 📧 | |
 | anuncio, publicidad | 📣 | |
-| una persona: un prospecto, un lead, alguien que asiste | 👤 | la audiencia son 👥 o una `rejilla` de 👤; el cliente ya es 🧑‍💼 |
+| una persona sin rol: un prospecto, un lead, alguien que asiste, un integrante o un vendedor de un equipo | 👤 | la audiencia son 👥 o una `rejilla` de 👤; «N vendedores» = una `rejilla` de 👤 (40 vendedores = `total: 40`); el cliente ya es 🧑‍💼 |
 | atraer prospectos | 🧲 | |
 | seguimiento, recordatorio | ⏰ | |
 | objeción | el emoji de lo que dice que le falta, negado: «No tengo dinero» → `no:💰` | la receta de GUION §2; 🙅‍♂️ es «sin mostrar la cara» |
@@ -133,7 +133,7 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 | Concepto | Emoji | Notas |
 |---|---|---|
 | impuestos, SAT, gobierno | 🏛️ | en `fluent` es el mismo edificio gris de columnas que 🏦: en un deck con los dos, el banco va con su logo real o con 💳 (QA avisa el par) |
-| repartir, calcular | 🧮 | |
+| repartir, calcular · lógica, razón | 🧮 | «compra con emoción, justifica con lógica»: la lógica es 🧮 |
 | operación del negocio (lo que cuesta operar) | 🧰 | rojo y saturado en los dos sets; el gasto suelto sigue siendo 💸 |
 
 Separar en cuentas: una `rejilla` de 🐷 o de 💰 con etiquetas, no 🗂️ (beige y pálido en Apple).
@@ -144,7 +144,7 @@ Separar en cuentas: una `rejilla` de 🐷 o de 💰 con etiquetas, no 🗂️ (b
 | probar, experimentar | 🧪 | |
 | queja, cliente molesto | 😠 | |
 | pregunta difícil | 🌶️ | |
-| sin programar, sin código | `no:⌨️` | 💻 es «producto digital» y 🧑‍💻 es «tú» |
+| sin programar, sin código, «no sé de tecnología» | `no:⌨️` | 💻 es «producto digital» y 🧑‍💻 es «tú»; la objeción «No sé nada de tecnología» también es `no:⌨️` |
 | rol, perfil, personaje | 🎭 | 🪪 imprime «Jo Appleseed» en Apple |
 | documento, base de conocimiento, instrucciones | 📄 | se dibuja en SVG igual en los dos sets (hoja con degradado y sombra, renglones gris pizarra, esquina azul): la hoja de los dos sets sale pálida. 📋 es «tarea» |
 
@@ -163,7 +163,32 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | compartir | 📤 | |
 | comentar una palabra | 💬 | se dibuja en SVG igual en los dos sets: burbuja azul con tres puntos (la de Fluent era lila casi blanca y la de Apple se perdía en la tarjeta). 📲 es «te llega al celular», no «comenta» |
 | seguir la cuenta | ➕ | 🔔 ya es notificación |
-| me gusta | ❤️ | |
+| me gusta · emoción, lo que se siente | ❤️ | en un deck, un solo sentido: o «me gusta» (reel) o «emoción» (clase de ventas), nunca los dos |
+
+## Psicología y decisión
+| Concepto | Emoji | Notas |
+|---|---|---|
+| dolor, cansancio: el «hoy» | 😩 | el par antes/después es `["😩", "😌"]` en una `idea` |
+| alivio: el «después» | 😌 | |
+| miedo | 😰 | |
+| comparar, decidir | ⚖️ | |
+| truco, ilusión, «parece magia» | 🪄 | |
+| estudio, investigación | 🔬 | la cita del estudio va en `fuente` (LAYOUTS.md) |
+
+«Emoción» es ❤️ y «lógica» es 🧮 (sus filas, arriba): no se duplican aquí.
+
+## Empresa y equipo
+| Concepto | Emoji | Notas |
+|---|---|---|
+| líder, dueño, director | 👑 | no 🧑‍✈️ (se lee «piloto») |
+| estrategia | ♟️ | |
+| la pieza que falta, la solución | 🧩 | |
+| competencia, el rival | 🥊 | |
+| en vivo (sesión, transmisión) | 🔴 | |
+| lección, módulo, sesión del programa | 📖 | 📚 es «recursos, material»; 🎓 el programa completo |
+| logro, meta cumplida | 🏅 | 🏆 es «el mejor» |
+
+Una persona del equipo sin rol (vendedor, integrante) es 👤, y el equipo 🧑‍🤝‍🧑 (Personas); el cliente sigue siendo 🧑‍💼.
 
 ## Reacciones (la lámina «pregunta»)
 | Concepto | Emoji |
@@ -182,7 +207,15 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 - ⭐ calificación (se ve bien en fila: ⭐⭐⭐⭐⭐).
 
 ## Compuestos útiles
-La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**. El prefijo pone ❌ o ✅ abajo a la
+La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**.
+
+**El prefijo dice lo mismo en todo el deck** [ref_628]:
+- En `cuadrantes` va con el tono: `si:` en verde («esto sí, esto basta») y `no:` en rojo («esto no lo necesitas»).
+- Suelto, en una `idea` con «Objeción #N», `no:X` es la objeción «me falta X» (la receta de Ventas, «objeción»).
+- Un beneficio «sin X» («sin perder tiempo», «sin invertir») va con `no:X` en un cuadrante ROJO de lo que no
+  necesitas, o con el emoji positivo (⚡ rápido, `si:💸` $0 de capital); nunca con `no:X` suelto, que se lee como
+  la objeción.
+ El prefijo pone ❌ o ✅ abajo a la
 izquierda y la insignia va abajo a la derecha; pueden ir juntos (`no:🧑‍⚕️+💰`). Tres partes
 (`🤖+💬+✅`), un prefijo inventado (`nop:`) o un «+» sin emoji a un lado son error de contrato:
 para una secuencia usa un `flujo`.
@@ -194,12 +227,12 @@ para una secuencia usa un `flujo`.
 | `🧑‍💻+💰` | tú ganando |
 | `📱+🔥` | contenido viral |
 | `no:🎥` | sin grabar video |
-| `no:💸` | sin invertir |
+| `si:💸` | $0 de capital, sin invertir (cuadrante verde) [10:20] |
 | `si:🤝` | trato o venta cerrada |
 | `si:✍️` | contrato firmado, inscripción hecha |
 | `📱+👥` | los contactos de tu teléfono |
 | `🌙+☀️` | disponible 24/7 (🌙 sola es «de noche») |
-| `no:⏳` | sin perder tiempo |
+| `no:⏳` | «No tengo tiempo» (objeción); «rápido, sin perder tiempo» es ⚡ |
 | `no:🧑‍⚕️+💰` | ganar como médico sin serlo |
 
 ## Emojis dentro del texto y modo Fluent
@@ -221,6 +254,9 @@ para una secuencia usa un `flujo`.
 - Encadenar 3 o más emojis en una frase: para eso existe `flujo`.
 - Logos de marcas hechos con emoji. Para una marca real se usa su **logo real** como `imagen`.
 - 👨‍💼 junto a 🧑‍💼: se ven casi iguales en los dos modos. Cliente es 🧑‍💼; experto, 🧑‍🏫.
+- 🤵 para «vendedor»: en Apple es casi igual a 🧑‍💼 (rubio con traje negro). Vendedor es 👤; cliente, 🧑‍💼.
+- 🧑‍✈️ para «líder»: se lee «piloto». Líder es 👑.
+- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», 🔴.
 - 👨‍👩‍👧‍👦 para equipo: en Apple es un mosaico gris de siluetas. Usa 🧑‍🤝‍🧑.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.
@@ -238,6 +274,7 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 | Set | Grupo | Qué hacer |
 |---|---|---|
 | los dos | 🧑‍💼 👨‍💼 | cliente es 🧑‍💼; experto, 🧑‍🏫 |
+| Apple | 🧑‍💼 🤵 | cliente es 🧑‍💼; vendedor, 👤 |
 | Apple | 📅 🗓️ 📆 · 🎟️ 🎫 | se dibujan con el mismo SVG: usa el primero (en Fluent salen nativos y distintos entre sí) |
 | los dos | 📄 📃 · 💬 🗨️ | se dibujan con el mismo SVG: usa el primero |
 | Fluent | 🏦 🏛️ | el mismo edificio gris: impuestos 🏛️ y el banco con su logo o 💳 |

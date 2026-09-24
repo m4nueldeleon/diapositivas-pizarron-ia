@@ -37,7 +37,7 @@ también en vivo.
 | `vsl` | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | el 25-30% final (GUION §7) | 2 o más |
 | `clase` (en vivo) | 40-60 min | el guion completo en beats, más tramos en vivo con `dur` | 500-900 + tramos | 220-400 | sin oscuras; puente al siguiente paso | al final: comunidad, próxima clase o invitación suave |
 | `webinar` | 60-90 min | el arco completo de la referencia, estirado | 1,000-1,600 + tramos | 450-700 | ~20% final, oscura solo la revelación | 3 o más |
-| `propuesta` | 5-20 min | 800-3,200 | 100-400 | 45-180 | inversión + siguiente paso | 1 |
+| `propuesta` | 3-20 min (corta: 3-8 min, 20-60 láminas); normalmente `en_vivo` | 480-3,200 | 60-400 | 20-180 | inversión anclada + garantía o condición de salida + siguiente paso con vigencia | 1 |
 | `tutorial` | 3-8 min | 500-1,300 | 60-160 | 25-70 | ninguna | 1 |
 | `vsl-corto` | 3-6 min | 480-970 | 60-125 | 25-55 | desde el 55-60%, 1 objeción antes | 2 |
 | `clase-corta` (taller) | 15-30 min | el guion en beats, más tramos en vivo con `dur` | 200-450 + tramos | 90-200 | sin oscuras; puente al siguiente paso | al final |
@@ -76,9 +76,17 @@ la voz (y los `dur`) y:
   MAYÚSCULAS («Comenta ==DOBLE==», «Escríbeme **CITA** por WhatsApp», «Manda INFO al…»), «este/tu + algo»
   («Guarda este reel», «Agenda tu llamada») o un canal. `llamado: true` queda para lo que no empieza con verbo
   (una flecha al link). Una palabra suelta en la voz («WhatsApp», «aparta») no cuenta;
-- en `propuesta`, avisa si no hay lámina de inversión (un monto, «inversión» o `{{PRECIO}}`) o si no cierra con
-  el siguiente paso (un llamado, o un `flujo`/`pasos` con «firmas», «agenda», «arrancamos»…); la credibilidad
-  (años, clientes o casos) es un aviso suave y no se le piden capturas;
+- en `propuesta` (los 9 bloques de abajo), avisa si no hay lámina de inversión (un monto, «inversión» o
+  `{{PRECIO}}`), si no cierra con el siguiente paso (un llamado, o un `flujo`/`pasos` con «firmas», «agenda»,
+  «arrancamos»…), si la inversión no trae el costo de no hacer nada en la misma lámina o en la anterior, si no hay
+  una lista «No incluye», si no aparece fecha o vigencia, si no dice qué pasa si no funciona (garantía, condición de
+  salida o riesgos), si no dice quién la imparte con una cifra SUYA (años, clientes, empresas, «desde 20XX»: «40
+  personas» del cliente no cuenta), si no trae un caso o una prueba, y si los números del cliente salen de
+  «Pongamos que…» sin `fuente` ni `{{…}}`. No se le piden capturas;
+- en cualquier pieza, es **error** la escasez o urgencia escrita a mano («solo hoy», «Quedan solo 3 lugares»,
+  «cierra mañana»): va con `{{CUPOS}}` o `{{FECHA_LIMITE}}` y su dato real (lo tachado o negado no cuenta, porque
+  enseña lo que no se hace); avisa una garantía sin plazo ni condición («Garantía total», «Sin riesgo») y un bono del
+  `stack` sin `{{BONO_N}}` o antes de las piezas base (GUION §7);
 - en `vsl`, `vsl-corto` y `webinar`, avisa si no hay ninguna objeción («Objeción #N» o «Razón #N») antes del
   llamado de la oferta, si no hay ninguna prueba real o la única es una maqueta, y si antes de la revelación no
   aparece una cifra de credibilidad (GUION §7).
@@ -138,6 +146,8 @@ El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
    veces o más.
 
 ### Tutorial (3-8 min)
+También es la pieza de una **clase de menos de 15 min** («clase express»): en vez del siguiente paso suelto, cierra
+con una tarea con objeto y el puente a la comunidad o la próxima clase (QA revisa el cierre). No hay pieza aparte.
 1. El resultado a la vista en los primeros 10 s, o el error en vivo.
 2. El mapa 1-2-3 si son 3 pasos o más.
 3. Los pasos, uno por bloque, cada uno con su demostración (captura real o `camara` corta).
@@ -159,10 +169,23 @@ El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
    `vivo: true`).
 3. Tarea con objeto y puente al siguiente paso. Sin láminas oscuras.
 
-### Propuesta
-1. Diagnóstico: dónde está hoy, con sus números.
-2. Costo de no hacer nada.
-3. La solución y cómo funciona.
-4. Alcance: qué incluye y qué no.
-5. Inversión (con `{{PRECIO}}` si aún no está cerrada).
-6. Siguiente paso con fecha.
+### Propuesta (3-20 min; la corta, 3-8 min y 20-60 láminas, se presenta en vivo con conversación)
+Nueve bloques. Se reenvía a directores que no estuvieron en la junta: el porqué va en la `voz` y se manda con
+`laminas-notas.pdf` (`render.mjs --pdf`).
+1. **Diagnóstico con los números del cliente**: vienen de la llamada de diagnóstico, con `fuente: "llamada de
+   diagnóstico"` o como `{{CLAVE}}` en `"datos"` (pendiente si aún no hay llamada), o «se mide en la semana 1».
+   Nunca «Pongamos que cada vendedor pierde 1-2 h»: la excepción de GUION §3.8 d es para clases y VSL.
+2. **Costo de no hacer nada, en dinero u horas y con sus números**: «{{HORAS_PERDIDAS}} h × {{COSTO_HORA}} =
+   {{COSTO_MES}} al mes». Es el ancla de la inversión.
+3. **Solución y cómo funciona**, con una demostración si la hay (`chat`, `prueba` con material real, `boton`).
+4. **Quién la imparte y prueba**: una cifra real de años, clientes o eventos («desde 2016, 23,000 clientes»), o un
+   caso parecido al suyo con números y `fuente`. Si no hay, un sustituto de GUION §7 («Sin prueba real, en este
+   orden»). Nunca inventada: sin dato, `{{CLIENTES}}` o `{{CASO}}` declarados como pendientes.
+5. **Metas medibles**: «de {{HOY}} a …, medido en la semana N» (`cifra`, `linea-tiempo` o `tarjetas`).
+6. **Alcance**: qué incluye (`stack` o `lista` ✅) y qué NO incluye (`lista` con encabezado «No incluye»).
+7. **Inversión anclada**: una `cifra` con el costo del bloque 2 arriba y en gris, `{{PRECIO}}` grande y el desglose
+   por persona, por día o en quincenas (LAYOUTS.md, `cifra`, «Inversión anclada»).
+8. **Garantía o condición de salida** con plazo y condición medible (`idea` 🛡️ o `cifra` + `pasos`); si no la hay,
+   «riesgos y cómo se cuidan».
+9. **Siguiente paso con {{FECHA}} y vigencia {{VIGENCIA}}**: `flujo` «Firmas → Agendamos → Arrancamos» y la lámina
+   del llamado con `"llamado": true`. Sin la regla de 2 llamados ni la de objeciones (se conversan en vivo).

@@ -31,16 +31,24 @@ deducir.
    **[references/VOZ-HUMANA.md](references/VOZ-HUMANA.md)** (las fórmulas de IA que no van).
 3. Lee **[LECCIONES.md](LECCIONES.md)**: las correcciones que ya hizo el usuario, que mandan
    sobre todo lo demás.
-4. Busca `MI-MARCA.md` en la carpeta de trabajo, con la firma, el formato y el idioma. Si no
-   existe, usa `templates/MI-MARCA.md` y los valores por omisión: sin firma, 16:9, español.
-   **Si no hay MI-MARCA.md, o su firma está vacía, OMITE la clave `marca` en deck.json.** Nunca copies
+4. Busca `MI-MARCA.md`, con la firma, el formato, el idioma y las palabras vetadas. La cadena es la misma que usan
+   render y QA (`scripts/lib/marca.mjs`), y gana la primera que exista: la carpeta del deck → la de arriba →
+   `$PIZARRON_MARCA` → la ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md` (la crea
+   `bash scripts/setup.sh`). Si ninguna existe, usa los valores por omisión: sin firma, 16:9, español.
+   Si el deck no trae `marca`, render toma la firma de esa ficha y lo dice («Firma tomada de …»); cópiala a
+   `marca` en deck.json para que salga igual en otra máquina. `"marca": false` la apaga (una propuesta con la
+   marca del cliente). **Si no hay ficha, o su firma está vacía, OMITE la clave `marca`.** Nunca copies
    un valor de ejemplo («tumarca.com» es error de QA). Al entregar, avisa en una línea: «Va sin firma:
-   dame tu @, tu dominio o tu logo (PNG sin fondo) y la agrego».
+   dame tu @, tu dominio o tu logo (PNG sin fondo) y la agrego», o que llene la ficha global.
+   **Lo que diseñas tú y lo que confirma el cliente**: el contenido (el programa, los módulos, las sesiones, el
+   orden) lo escribes normal; los datos de la oferta (precio, fechas, cupos, garantía, bonos, cifras del cliente)
+   van como hueco `{{CLAVE}}` hasta que alguien los confirme.
    Si el deck lleva oferta, toma sus datos de la sección «Oferta» de MI-MARCA o del guion. Si faltan
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
    usuario prefiere dejarlos para después, escribe `{{PRECIO}}` en el texto y declara el hueco:
    `"datos": { "PRECIO": { "pendiente": true, "motivo": "lo define dirección" } }`. Sale como hueco amarillo
-   `[PRECIO]`, QA lo cuenta como aviso y el deck queda en borrador. Un `{{CLAVE}}` sin declarar es error.
+   `[PRECIO]`, QA lo cuenta como aviso y el deck queda en borrador. Un `{{CLAVE}}` sin valor ni declaración es
+   error («pregúntaselo al usuario»).
    **Si la pieza es `vsl`, `vsl-corto`, `webinar` o `propuesta`, esa misma pregunta única incluye la prueba**:
    ¿qué cifra real te respalda (años, clientes, eventos, alumnos) y tienes 1-3 capturas o fotos con permiso?
    Llénalo en «Credenciales o pruebas con permiso» de MI-MARCA. Nunca se inventan: sin prueba real se usa un
@@ -116,7 +124,8 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 S=~/.claude/skills/diapositivas-pizarron-ia
 node $S/scripts/render.mjs mi-video             # PNG por paso + presentador + hoja
 node $S/scripts/render.mjs mi-video --finales   # solo el último paso de cada lámina (revisión rápida)
-node $S/scripts/render.mjs mi-video --finales --pdf   # + salida/laminas.pdf (una página por lámina)
+node $S/scripts/render.mjs mi-video --finales --pdf   # + laminas.pdf (una página por lámina, para Keynote)
+                                                     #   y en propuesta o VSL laminas-notas.pdf (lámina + su voz)
 node $S/scripts/qa.mjs mi-video                 # nota 0-100
 node $S/scripts/video.mjs mi-video              # salida/laminas.mp4 con animaciones
 node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json   # montaje sincronizado
@@ -135,7 +144,7 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
     mini: el más fiel a la referencia) o `"fluent"` (Fluent 3D, MIT: se renderiza en Linux, un VPS o la nube,
     o el HTML se abre en otros equipos). `auto` (apple en Mac, fluent en lo demás) queda solo como respaldo
     heredado: el mismo deck cambia de familia según la máquina, y QA revisa los dos sets (EMOJIS.md, «Qué
-    set usar»);
+    set usar»). Sin fijar, QA lo dice en `qa.json → info` (no resta nota);
   - `animacion`: `seco`, como la referencia, o `suave`, que añade notas que se escriben solas y
     emojis que brotan;
   - `piel`: `🏻` (como el video), `🏼`, `🏽`, `🏾`, `🏿` o `ninguno`: el tono que reciben las personas sin tono
@@ -147,19 +156,24 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md);
   - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
     `{ "valor": …, "propuesto": true }` (LAYOUTS.md, «Datos que se llenan una vez»).
-- El demo con los 27 diseños está en `ejemplos/demo/deck.json`.
+- `ejemplos/demo/deck.json` es el **catálogo** de los 27 diseños, no un modelo de guion. El modelo que se copia para
+  un VSL, un webinar o cualquier oferta es **`ejemplos/vsl-corto/`** (deck.json + guion.md): arco completo, objeción
+  con respuesta, prueba, garantía y el llamado dos veces, con los datos que faltan como huecos declarados.
 
 ## 4. Qué entregar al usuario
 
 - La ruta del presentador y de TODAS las hojas (`hojas.json`), la nota de QA y la duración estimada de la
   voz contra la de la pieza.
-- Si `qa.json` trae `pendientes` o `por_confirmar` (`estado: "borrador"`, nota con tope de 90), lístalos (el
-  dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén llenos o confirmados en
-  `"datos"` (sin `propuesto`).
+- Si `qa.json` trae `pendientes` sin declarar, son errores (`estado: "con errores"`): pregunta esos datos. Los
+  huecos declarados (`"pendiente": true`) y los datos propuestos van en `por_confirmar` (`estado: "borrador"`, nota
+  con tope de 90). Lístalos (el dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén
+  llenos o confirmados en `"datos"` (sin `propuesto` ni `pendiente`).
 - Si QA avisa «sin prueba real» o «credibilidad sin cifra», dilo en una línea («Va sin prueba real: mándame 1-3
   capturas con permiso y reemplazo la lámina N») y no llames «final» al deck. Solo `estado: "listo"` es final;
   con `bajo-90` o `falta-venta`, di qué trae `falta_para_final`.
-- En una `propuesta` o un `vsl`, o cuando el deck se va a mandar, entrega también `laminas.pdf` (`--pdf`). Si el
+- Una `propuesta` o un VSL que se manda lleva **`laminas-notas.pdf`** (`--pdf`; la lámina y su voz como texto, para
+  quien no estuvo en la junta). `laminas.pdf`, sin notas, es para llevarlo a Keynote o Slides (`--pdf --sin-notas`
+  en esas piezas, `--pdf` en las demás). Si el PDF lleva un `[DATO]` pendiente, no lo llames final. Si el
   presentador se va a abrir en una PC que no es Mac, renderiza con `"emoji": "fluent"` y dilo.
 - Lo que el usuario debe saber va en tu mensaje o en `qa.json`, nunca en una clave `_marca` o `_datos` del deck
   (nadie la lee; QA la avisa).

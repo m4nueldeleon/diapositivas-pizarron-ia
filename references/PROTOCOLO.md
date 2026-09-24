@@ -23,7 +23,9 @@ sustituyen beats.
 
 ## 1. Ficha de marca
 
-Lee `MI-MARCA.md` en la carpeta de trabajo. Si no existe, cópialo de `templates/MI-MARCA.md`. De
+Lee `MI-MARCA.md`: la primera que exista entre la carpeta del deck, la de arriba, `$PIZARRON_MARCA` y la
+ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md` (`bash scripts/setup.sh` la crea; render y QA usan la
+misma cadena, `scripts/lib/marca.mjs`, y un deck sin `marca` toma la firma de ahí). De
 ahí salen la firma o logo, el formato por omisión, la paleta de emojis, el idioma y las «Palabras que
 nunca usas» (QA las lee). **Sin ficha, o con la firma vacía, omite `marca` en el deck**: las láminas
 salen sin firma. Nunca copies un valor de ejemplo («tumarca.com»): QA lo marca como error. Al entregar,
@@ -156,7 +158,8 @@ node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /pr
 | Ensayar o presentar con notas | `salida/index.html?modo=orador`, o la tecla O desde el presentador | vista de ensayo sincronizada |
 | Insertar en su editor | `render.mjs` | `salida/laminas/NN-id-P.png`, un PNG por paso |
 | Las láminas como video | `node scripts/video.mjs mi-video` | `salida/laminas.mp4` con micro-animaciones |
-| Mandarlo como documento (propuesta, VSL) o llevarlo a Keynote o Slides | `render.mjs --finales --pdf` | `salida/laminas.pdf`, una página por lámina |
+| Mandarlo como documento (propuesta, VSL) | `render.mjs --finales --pdf --notas` (en `propuesta`, `vsl` y `vsl-corto` ya va por omisión) | `salida/laminas-notas.pdf`: una hoja por lámina con su voz como texto |
+| Llevarlo a Keynote o Slides | `render.mjs --finales --pdf` (`--sin-notas` en propuesta o VSL) | `salida/laminas.pdf`: una página por lámina, sin cursor; el stack con su remate en una página |
 | Video montado sobre su grabación | ver §6 | `salida/montaje.mp4` + `cortes.csv` |
 
 Teclas del presentador:

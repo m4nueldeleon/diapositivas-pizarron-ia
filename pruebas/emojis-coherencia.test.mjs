@@ -89,3 +89,22 @@ test('los grupos de PARECIDOS de emoji.mjs están documentados en EMOJIS.md', ()
   const dic = new Set(emojisDe(EMOJIS.split('## Parecidos')[1] || ''));
   for (const set of Object.values(PARECIDOS)) for (const g of set) for (const e of g) assert.ok(dic.has(sinSel(e)), `${e} no está en la tabla «Parecidos»`);
 });
+
+test('compuestos con el mismo sentido en todos los documentos: si:💸 es $0 de capital, no:⏳ es la objeción, nada de no:💻', () => {
+  const filas = filasConcepto(EMOJIS);
+  const de = sp => (filas.find(f => f.specs.includes(sinSel(sp))) || {}).concepto || '';
+  assert.match(de('si:💸'), /capital/);
+  assert.equal(de('no:💸'), '', 'no:💸 ya no es «sin invertir»: se leía como la objeción «no tengo dinero»');
+  assert.match(de('no:⏳'), /no tengo tiempo|objeci/i);
+  assert.match(de('no:⌨️'), /tecnolog/);
+  // los documentos y los ejemplos: ningún no:💻 y cada prefijo sobre un emoji del diccionario
+  const dic = new Set(emojisDe(EMOJIS));
+  const textos = [...fs.readdirSync(path.join(RAIZ, 'references')).filter(f => f.endsWith('.md')).map(f => [f, leer(`references/${f}`)]),
+    ...fs.readdirSync(path.join(RAIZ, 'ejemplos')).filter(n => fs.existsSync(path.join(RAIZ, 'ejemplos', n, 'deck.json'))).map(n => [n, leer(`ejemplos/${n}/deck.json`)])];
+  const malos = [];
+  for (const [f, t] of textos) {
+    if (/no:💻/.test(t)) malos.push(`${f}: no:💻 (usa no:⌨️)`);
+    for (const m of t.matchAll(/\b(?:no|si):(\p{RGI_Emoji})/gv)) if (!dic.has(sinSel(m[1]))) malos.push(`${f}: ${m[0]} no está en EMOJIS.md`);
+  }
+  assert.deepEqual(malos, []);
+});

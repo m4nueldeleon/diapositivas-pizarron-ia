@@ -50,7 +50,7 @@ export const PIEZAS = {
   vsl: { min: 8, max: 20, nombre: 'VSL' },
   clase: { min: 40, max: 60, nombre: 'clase' },
   webinar: { min: 60, max: 90, nombre: 'webinar' },
-  propuesta: { min: 5, max: 20, nombre: 'propuesta' },
+  propuesta: { min: 3, max: 20, nombre: 'propuesta' },   // corta (3-8 min, 20-60 láminas) o larga en vivo
   // piezas cortas con arco propio (ARCOS.md): no son el arco largo comprimido
   tutorial: { min: 3, max: 8, nombre: 'tutorial' },
   'vsl-corto': { min: 3, max: 6, nombre: 'VSL corto' },

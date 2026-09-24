@@ -4,12 +4,11 @@
 // son funciones puras para probarlas rápido (pruebas/reglas-deck.test.mjs).
 //
 // Todas devuelven { errores: [], avisos: [] } con mensajes accionables que citan la referencia o el archivo.
-import fs from 'node:fs';
-import path from 'node:path';
 import { plano } from './markup.mjs';
 import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
 import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo } from './emoji.mjs';
+import { RELLENO, buscarMarca } from './marca.mjs';
 
 const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const nombre = (deck, i) => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
@@ -35,7 +34,6 @@ export function textosVisibles(l) {
 const vozDe = l => (Array.isArray(l.voz) ? l.voz.join(' ') : typeof l.voz === 'string' ? l.voz : '');
 
 // ---------- firma ----------
-const RELLENO = /^(tu ?marca(\.com)?|@?tu_?usuario|@?tu ?arroba|tu ?dominio(\.com)?|<.*>|ejemplo|marca|nombre)$/i;
 export function reglasFirma(deck) {
   const m = deck.marca && typeof deck.marca === 'object' ? deck.marca : null;
   if (!m || !m.texto) return { errores: [], avisos: [] };
@@ -125,15 +123,11 @@ const FORMULAS = [
 ];
 const ANTITESIS = /\bno (es|son|te falta|cierra|le vendes|vendes|necesitas|se trata)\b[^.!?]*[.:,;/]\s*\S/;
 
-// «Palabras que nunca usas: a, b, c» de MI-MARCA.md (en la carpeta del deck o la de arriba)
-export function palabrasProhibidas(dirDeck) {
-  for (const d of [dirDeck, path.dirname(dirDeck || '.')]) {
-    const f = d && path.join(d, 'MI-MARCA.md');
-    if (!f || !fs.existsSync(f)) continue;
-    const m = fs.readFileSync(f, 'utf8').match(/^\s*-?\s*Palabras que nunca usas(?:\s*\([^)\n]*\))?:[ \t]*(.*)$/im);
-    return m ? m[1].split(',').map(x => x.replace(/[`*«»"]/g, '').trim()).filter(Boolean) : [];
-  }
-  return [];
+// «Palabras que nunca usas» de la ficha MI-MARCA.md: la misma cadena de búsqueda que la firma (marca.mjs:
+// carpeta del deck → la de arriba → $PIZARRON_MARCA → ~/.config/diapositivas-pizarron-ia/MI-MARCA.md)
+export function palabrasProhibidas(dirDeck, opciones) {
+  const f = buscarMarca(dirDeck, opciones);
+  return f ? f.vetadas : [];
 }
 
 export function reglasVoz(deck, prohibidas = []) {
@@ -155,13 +149,26 @@ export function reglasVoz(deck, prohibidas = []) {
 const PROMESA = /=[^=]*__[^_]*([$%]|client|venta|platica|alumn|lead)[^_]*__/i;
 // Un rango en algún punto de la cuenta: «10-20%», «de 5 a 10», «entre $3 y $5»
 const RANGO = /\d[\d,.]*\s*(%|k|mil)?\s*[-–]\s*\$?\d|\bde\s+\$?\d[\d,.]*\s*(%|k|mil|millones)?\s+a\s+\$?\d|\bentre\s+\$?\d/i;
+// Desglose de un precio («$3,000 ÷ 30 días = __$100 al día__», «{{PRECIO}} ÷ 40 vendedores = __$2,500 por vendedor__»):
+// dividir lo que cuesta no promete nada. Solo es desglose si se cumplen LAS DOS: (a) una línea anterior, o la misma
+// antes del «=», divide (÷ o /) y empieza con un monto o con el precio; (b) el total subrayado termina en «por/al/cada
+// + unidad». «= __$500 al día en ventas__» sigue siendo una promesa. No hay bandera manual: sería un escape.
+const EMPIEZA_MONTO = /^\s*(\{\{\s*precio[^}]*\}\}|\[precio[^\]]*\]|\$\s*\d|\d)/;
+const UNIDAD_FINAL = /\b(por|al|a la|cada)\s+(dia|semana|mes|ano|persona|vendedor|alumno|quincena|pago|sesion|participante|usuario|integrante|colaborador|hora|clase|modulo)(e?s)?\s*$/;
+export function esDesglose(lineas, total) {
+  const k = lineas.indexOf(total);
+  const antes = [...lineas.slice(0, k), total.split('=')[0]].map(x => sinAcentos(plano(x)));
+  const divide = antes.some(x => /[÷/]/.test(x) && EMPIEZA_MONTO.test(x));
+  const sub = (total.match(/__([^_]+)__/) || [])[1] || '';
+  return divide && UNIDAD_FINAL.test(sinAcentos(plano(sub)).replace(/[.!]+$/, ''));
+}
 export function reglasProyeccion(deck) {
   const avisos = [];
   deck.laminas.forEach((l, i) => {
     if (l.tipo !== 'cifra' || l.fuente) return;
     const lineas = (l.lineas || (l.valor ? [l.valor] : [])).map(x => (x && typeof x === 'object' ? x.texto : x)).filter(x => typeof x === 'string');
     const total = lineas.find(x => PROMESA.test(sinAcentos(x)));
-    if (!total) return;
+    if (!total || esDesglose(lineas, total)) return;
     const arriba = plano(l.arriba || '');
     if (!arriba || !/\d/.test(arriba) || /^(supuestos?|ejemplo)\s*:?$/i.test(arriba)) {
       avisos.push(`${nombre(deck, i)}: la cuenta subraya un total («${plano(total).slice(0, 40)}») sin condición: escribe en «arriba» la condición con número («Si mandas 10 mensajes al día:») y usa rangos (GUION §3.8). Si es un dato publicado (tamaño de un mercado), pon «fuente»`);
@@ -262,6 +269,9 @@ export function hayObjecionAntes(deck) {
 // Propuesta: la lámina de inversión (un monto, «inversión» o el hueco del precio)
 const MONTO = /[$€]|\b(mxn|usd)\b|\d[\d,.]*\s*(mil|k)\b|invers|\[precio\]|\{\{\s*precio/i;
 export const hayInversion = deck => deck.laminas.some(l => ['cifra', 'idea', 'stack', 'oscura', 'tabla', 'tarjetas', 'lista'].includes(l.tipo) && MONTO.test(sinAcentos(textosCrudos(l).join(' '))));
+// La lámina de inversión en sí (no un costo del diagnóstico): dice «inversión» o lleva el precio
+const INVERSION = /invers|\[precio|\{\{\s*precio/i;
+const esInversion = l => l && ['cifra', 'idea'].includes(l.tipo) && INVERSION.test(sinAcentos(textosCrudos(l).join(' ')));
 export function reglasArco(deck) {
   const avisos = [], p = deck.pieza;
   const L = deck.laminas;
@@ -303,7 +313,13 @@ export function esPruebaReal(l) {
   if (l.tipo === 'cifra') return conTexto(l.fuente);
   return false;
 }
-const CIFRA_CREDIBILIDAD = /\b\d[\d,.]*\s*\+?\s*(anos|clientes|alumnos|estudiantes|eventos|empresas|negocios|personas|asistentes|casos|proyectos)\b|\bdesde (19|20)\d\d\b/;
+// El número puede ser un hueco declarado («Más de [CLIENTES] clientes»): el lugar de la cifra existe y QA lo cuenta
+// como dato pendiente aparte (borrador hasta llenarlo), no como «sin credibilidad».
+const NUM_O_HUECO = '(\\d[\\d,.]*|\\[[a-z0-9_]+\\])';
+const CIFRA_CREDIBILIDAD = new RegExp(`${NUM_O_HUECO}\\s*\\+?\\s*(anos|clientes|alumnos|estudiantes|eventos|empresas|negocios|personas|asistentes|casos|proyectos)\\b|\\bdesde (19|20)\\d\\d\\b`);
+// En una propuesta «40 personas» es el equipo del CLIENTE: la credibilidad es del proveedor (años, clientes, empresas,
+// eventos, casos, personas YA capacitadas) o su «desde 20XX».
+const CIFRA_PROVEEDOR = new RegExp(`\\bdesde (19|20)\\d\\d\\b|${NUM_O_HUECO}\\s*\\+?\\s*(anos|clientes|empresas|alumnos|egresados|graduados|eventos|casos|proyectos|generaciones)\\b|${NUM_O_HUECO}\\s*\\+?\\s*(personas|vendedores|equipos|lideres)\\s+(ya\\s+)?(capacitad|formad|entrenad|atendid)`);
 // Predicados que usan los avisos y faltaParaFinal (la misma condición, sin comparar textos de mensajes)
 export const hayPruebaReal = deck => deck.laminas.some(esPruebaReal);
 const soloMaqueta = l => { const cs = capturasDe(l); return l.tipo === 'prueba' && cs.some(c => c.ejemplo === true) && cs.every(c => c.ejemplo === true || c.hueco); };
@@ -312,11 +328,19 @@ export function hayCifraCredibilidad(deck) {
   const fin = osc >= 0 ? osc : Math.ceil(L.length * 0.6);
   return L.slice(0, fin).some(l => CIFRA_CREDIBILIDAD.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
 }
+// Propuesta, bloque 4 (ARCOS.md): quién la imparte con una cifra suya, antes de la inversión, y un caso o una prueba
+export function hayCredencialProveedor(deck) {
+  const L = deck.laminas, inv = L.findIndex(esInversion);
+  return L.slice(0, inv >= 0 ? inv : L.length).some(l => CIFRA_PROVEEDOR.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
+}
+// Un caso: una prueba real, cualquier lámina con `fuente` o el hueco declarado de un caso ([CASO…])
+export const hayCaso = deck => hayPruebaReal(deck) || deck.laminas.some(l => conTexto(l.fuente) || /\[CASO[A-Z0-9_]*\]/.test(textosVisibles(l).join(' ')));
 export function reglasCredibilidad(deck) {
   const avisos = [], p = deck.pieza, L = deck.laminas;
-  // la propuesta no lleva capturas: solo el aviso suave de credibilidad (años, clientes o casos)
+  // la propuesta no lleva muro de capturas: bloque 4 de ARCOS (quién la imparte y un caso). Avisos orientativos.
   if (p === 'propuesta') {
-    if (!hayCifraCredibilidad(deck)) avisos.push('credibilidad sin cifra en la propuesta: di años, clientes o casos reales parecidos al suyo antes de la inversión; si no los hay, omítelo, no lo inventes');
+    if (!hayCredencialProveedor(deck)) avisos.push('la propuesta no dice quién la imparte con una cifra suya (años, clientes, empresas, «desde 20XX»): va antes de la inversión (ARCOS.md, propuesta, bloque 4). «40 personas» del cliente no cuenta. Si no hay cifra real, un sustituto de GUION §7; nunca inventada');
+    if (!hayCaso(deck)) avisos.push('la propuesta no trae un caso ni una prueba: un caso parecido al suyo con números y «fuente», o `{{CASO}}` declarado como pendiente; sin caso real, un sustituto de GUION §7 (ARCOS.md, propuesta, bloque 4)');
     return { errores: [], avisos };
   }
   if (!PIEZAS_VENTA.includes(p)) return { errores: [], avisos };
@@ -326,6 +350,92 @@ export function reglasCredibilidad(deck) {
   }
   if (!hayCifraCredibilidad(deck)) avisos.push(`credibilidad sin cifra: di años, clientes o eventos reales antes de la revelación (GUION §7, beat 2: «desde 2016, más de 23,000 clientes»); si no los hay, omítelo, no lo inventes`);
   return { errores: [], avisos };
+}
+
+// ---------- propuesta: el arco de 9 bloques (ARCOS.md, Propuesta) ----------
+// Avisos orientativos (una propuesta real puede no tener garantía; entonces dice cómo se cuidan los riesgos). Las
+// láminas crudas (antes de sustituir `datos`) dicen si un número del cliente vino de un {{MARCADOR}}.
+const NO_INCLUYE = /(^|\s)no incluye\b/;
+const MESES = 'enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre';
+const VIGENCIA = new RegExp(`\\{\\{\\s*(fecha|vigencia)|\\[(fecha|vigencia)|vigente hasta|vigencia|valida hasta|\\b\\d{1,2} de (${MESES})\\b|\\b\\d{1,2}/\\d{1,2}(/\\d{2,4})?\\b|\\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo) \\d{1,2}\\b`);
+const SALIDA = /garant|si no .{0,60}(devolv|reembols|cobr)|condicion de salida|riesgos?\b|puedes (cancelar|salir)|sin penalizacion/;
+const COSTO = /[$€]|\b(mxn|usd)\b|\[costo|\{\{\s*costo|\bcosto|\bcuesta|\bpierde|\bperdid|\bperdemos|\bpierden/;
+const SUPUESTO = /^\s*(pongamos|supongamos|imaginemos|digamos) que\b/;
+const todoTexto = l => sinAcentos([...textosVisibles(l), vozDe(l)].join(' / '));
+export function reglasPropuesta(deck, { crudo } = {}) {
+  const avisos = [];
+  if (deck.pieza !== 'propuesta') return { errores: [], avisos };
+  const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
+  if (!L.some(l => textosVisibles(l).some(t => NO_INCLUYE.test(sinAcentos(t))))) avisos.push('la propuesta no dice qué NO incluye: una `lista` con encabezado «No incluye» evita el malentendido al firmar (ARCOS.md, propuesta, bloque 6)');
+  if (!L.some(l => VIGENCIA.test(todoTexto(l)))) avisos.push('la propuesta no trae fecha ni vigencia: el siguiente paso lleva {{FECHA}} de arranque y «vigente hasta {{VIGENCIA}}» (ARCOS.md, propuesta, bloque 9)');
+  if (!L.some(l => SALIDA.test(todoTexto(l)))) avisos.push('la propuesta no dice qué pasa si no funciona: una garantía con plazo y condición medible, una condición de salida o «riesgos y cómo se cuidan» (ARCOS.md, propuesta, bloque 8)');
+  // Inversión anclada: el costo de no hacer nada, en dinero, en la misma lámina o en la anterior
+  const inv = L.findIndex(esInversion);
+  if (inv >= 0) {
+    const previa = L.slice(0, inv).reverse().find(l => l.tipo !== 'camara');
+    const lineas = textosVisibles(L[inv]).filter(t => !INVERSION.test(sinAcentos(t)));
+    if (!lineas.some(t => COSTO.test(sinAcentos(t))) && !(previa && COSTO.test(sinAcentos(textosVisibles(previa).join(' '))))) {
+      avisos.push(`${nombre(deck, inv)}: la inversión sale sin ancla: arriba, en gris, el costo de no hacer nada en la misma unidad y periodo («Hoy: {{HORAS_PERDIDAS}} h × {{COSTO_HORA}} = {{COSTO_MES}} al mes»), o ese costo en la lámina anterior (ARCOS.md, propuesta, bloque 7; LAYOUTS.md, «Inversión anclada»)`);
+    }
+  }
+  // Los números del cliente vienen de la llamada de diagnóstico, no de «Pongamos que…»
+  L.forEach((l, i) => {
+    if (!['cifra', 'rejilla', 'grafica'].includes(l.tipo) || conTexto(l.fuente)) return;
+    const voz = Array.isArray(l.voz) ? l.voz : [vozDe(l)];
+    if (!voz.some(v => SUPUESTO.test(sinAcentos(v)))) return;
+    if (/\{\{/.test(JSON.stringify(C[i] || {}))) return;
+    avisos.push(`${nombre(deck, i)}: los números del cliente salen de «Pongamos que…»: en una propuesta vienen de la llamada de diagnóstico, con \`fuente: "llamada de diagnóstico"\` o como {{MARCADOR}} declarado en "datos" (ARCOS.md, propuesta, bloque 1; la excepción de GUION §3.8 d es para clases y VSL)`);
+  });
+  return { errores: [], avisos };
+}
+
+// ---------- oferta: escasez, garantía y bonos (GUION §7, beats 7b, 8 y la garantía) ----------
+// Todo dato de oferta es real. Se lee el deck CRUDO: «Quedan {{CUPOS}} lugares» con su dato no es escasez inventada,
+// y «Quedan solo 3 lugares» escrito a mano sí. Lo tachado (~~…~~, `tachado: true`) y la lámina con emoji negado
+// enseñan lo que NO se hace (neuroventas: «~~Precio especial solo hoy~~»): ahí no se marca.
+// «precio especial» solo cuenta con plazo («precio especial hasta el viernes»): «precio especial por volumen» de una
+// propuesta B2B no es urgencia
+const ESCASEZ = /solo hoy|precio especial (solo )?(hoy|por hoy|esta semana|este mes|hasta|por tiempo)|quedan (solo )?\d+|ultimos? \d+ (lugares|cupos)|cierra (hoy|manana)|oferta termina/;
+const PLAZO_GARANTIA = /\d+\s*(dias|semanas|meses|anos)\b|\{\{\s*garantia|\[garantia/;
+const CONDICION = /\bsi\b|\bcondicion|\bsiempre que\b|\bcuando\b/;
+const negada = l => [].concat(l.emoji || []).some(e => typeof e === 'string' && /^no:/.test(e.trim()));
+// Textos crudos de una lámina sin lo tachado; `tachada` dice si la lámina enseña algo tachado
+function textosSinTachar(l) {
+  const out = [];
+  let tachada = false;
+  const ir = (x, k) => {
+    if (k && noVisible(k) && k !== 'voz') return;
+    if (typeof x === 'string') { if (/~~/.test(x)) tachada = true; const t = x.replace(/~~[\s\S]*?~~/g, ' '); if (t.trim()) out.push(t); }
+    else if (Array.isArray(x)) x.forEach(y => ir(y, k === 'voz' ? 'voz' : null));
+    else if (x && typeof x === 'object') { if (x.tachado === true) { tachada = true; return; } Object.entries(x).forEach(([kk, v]) => ir(v, kk)); }
+  };
+  ir(l, null);
+  return { textos: out, tachada };
+}
+export function reglasOferta(deck, { crudo } = {}) {
+  const errores = [], avisos = [];
+  const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
+  C.forEach((l, i) => {
+    if (!l || typeof l !== 'object' || l.tipo === 'camara' || negada(l)) return;
+    const { textos, tachada } = textosSinTachar(l);
+    const vistos = tachada ? textos.filter(t => !vozDe(l).includes(t)) : textos;   // con algo tachado, la voz lo explica
+    const txt = sinAcentos(vistos.map(t => plano(t)).join(' / '));
+    const m = txt.match(ESCASEZ);
+    if (m) errores.push(`${nombre(deck, i)}: «${m[0]}» es escasez o urgencia sin dato confirmado: usa {{CUPOS}} o {{FECHA_LIMITE}} con su valor real en "datos", o quítala (GUION §7, beat 8)`);
+    const todo = sinAcentos(textos.map(t => plano(t)).join(' / '));
+    const escudo = [].concat(l.emoji || []).some(e => typeof e === 'string' && e.includes('🛡'));
+    if ((/garantia/.test(todo) || (escudo && /sin riesgo|\btotal\b/.test(todo))) && !PLAZO_GARANTIA.test(todo) && !CONDICION.test(todo)) {
+      avisos.push(`${nombre(deck, i)}: garantía sin plazo ni condición medible: di cuántos días ({{GARANTIA_DIAS}}), qué tiene que pasar ({{GARANTIA_CONDICION}}) y cómo se reclama; «total» o «sin riesgo» no dicen nada (GUION §7, garantía)`);
+    }
+    if (l.tipo === 'stack' && Array.isArray(l.items)) {
+      const esBono = it => it && typeof it === 'object' && /\bbono\b/i.test(sinAcentos(JSON.stringify([it.texto, it.sub])));
+      const sinDato = l.items.filter(it => esBono(it) && !/\{\{\s*BONO/.test(JSON.stringify(it)));
+      if (sinDato.length) avisos.push(`${nombre(deck, i)}: ${sinDato.length === 1 ? 'el bono' : `${sinDato.length} bonos`} sin dato (${sinDato.map(it => `«${plano(String(it.texto || it.sub || '')).slice(0, 30)}»`).join(', ')}): cada bono se nombra con {{BONO_N}} confirmado en "datos" y va con \`sub: "Bono #N"\` (GUION §7, beat 7b)`);
+      const primero = l.items.findIndex(esBono);
+      if (primero >= 0 && l.items.slice(primero).some(it => !esBono(it))) avisos.push(`${nombre(deck, i)}: un bono va antes de una pieza base: los bonos van al final del stack (GUION §7, beat 7b)`);
+    }
+  });
+  return { errores, avisos };
 }
 
 // ---------- ¿qué le falta a una pieza de venta para llamarse final? (SKILL §6) ----------
@@ -521,6 +631,22 @@ export function reglasClaves(deck) {
   return { errores: [], avisos };
 }
 
+// ---------- información que NO resta nota (qa.json → info) ----------
+// El set de emojis sin fijar: el mismo deck sale en Apple en una Mac y en Fluent en Linux (SKILL §3). Es un consejo,
+// no un defecto: los decks heredados con `auto` no bajan de nota.
+export function infoEmoji(crudo) {
+  const e = crudo && crudo.emoji;
+  if (e === 'apple' || e === 'fluent') return null;
+  return `emoji sin fijar (${e ? '"auto"' : 'sin el campo'}): el mismo deck sale en Apple en una Mac y en Fluent en Linux; fija "emoji": "apple" o "fluent" (SKILL §3, EMOJIS.md «Qué set usar»)`;
+}
+// Sin firma: dónde se llena la ficha global (marca.mjs). "marca": false es a propósito y no se menciona.
+export function infoFirma(crudo, { aplicada = null, rutaGlobal = '~/.config/diapositivas-pizarron-ia/MI-MARCA.md' } = {}) {
+  if (!crudo || crudo.marca === false) return null;
+  if (aplicada) return `firma tomada de ${aplicada}: cópiala a "marca" en deck.json para que el deck salga igual en otra máquina (SKILL §0.4)`;
+  if (crudo.marca && typeof crudo.marca === 'object') return null;
+  return `va sin firma: llena «Texto» en ${rutaGlobal} (o corre bash scripts/setup.sh) y sale en todos tus decks; pon "marca": false si es a propósito (propuesta con la marca del cliente)`;
+}
+
 // Nota de QA: −12 por error y −3 por aviso. Con datos propuestos sin confirmar, el deck es BORRADOR y la nota
 // no pasa de TOPE_BORRADOR: un VSL con el nombre del programa inventado nunca sale como final.
 export const TOPE_BORRADOR = 90;
@@ -530,11 +656,12 @@ export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
 }
 
 // Todas juntas
-export function revisarDeck(deck, pasos, { dirDeck } = {}) {
+// `crudo`: el deck antes de sustituir `datos` (qa.mjs lo pasa); dice si un número vino de un {{MARCADOR}}
+export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
   const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck);
-  const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck)),
+  const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
-    reglasClaves(deck), reglasFuente(deck), ritmo, propia];
+    reglasClaves(deck), reglasFuente(deck), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo })];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),

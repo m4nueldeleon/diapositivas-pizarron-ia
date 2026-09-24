@@ -78,13 +78,18 @@ Un `deck.json` mínimo:
 }
 ```
 
-Sin `marca`, las láminas salen sin firma. Con tu firma real: `"marca": { "texto": "<tu @ o dominio>" }`
+Sin `marca`, las láminas toman la firma de tu ficha `MI-MARCA.md` (la de la carpeta del deck o la global
+`~/.config/diapositivas-pizarron-ia/MI-MARCA.md`, que crea `bash scripts/setup.sh`); sin ficha salen sin firma y
+`"marca": false` la apaga. Con tu firma real en el deck: `"marca": { "texto": "<tu @ o dominio>" }`
 o `{ "logo": "assets/logo.png" }` (nunca un valor de ejemplo: QA lo marca). Para que QA mida la duración,
 agrega `"pieza"` (`reel`, `video`, `vsl`, `clase`, `webinar`, `propuesta`) y `"duracion_objetivo"` en
 minutos ([`references/ARCOS.md`](references/ARCOS.md)).
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
-El demo con los 27 diseños, en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json).
+El demo con los 27 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). El modelo de
+guion para vender (VSL corto con objeción, prueba, garantía y el llamado dos veces) está en
+[`ejemplos/vsl-corto/`](ejemplos/vsl-corto/guion.md). `render.mjs --pdf` da `laminas.pdf` (para Keynote) y, en una
+propuesta o un VSL, `laminas-notas.pdf` con la voz como texto, para mandarlo.
 
 ### Montaje sobre tu grabación
 

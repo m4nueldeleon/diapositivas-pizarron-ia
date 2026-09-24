@@ -53,7 +53,8 @@ import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck, notaQA, TOPE_BORRADOR } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, TOPE_BORRADOR, infoEmoji, infoFirma } from './lib/reglas-deck.mjs';
+import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
 
@@ -62,7 +63,7 @@ const NOTA_FINAL = 90;   // SKILL §6: 90 o más y cero errores
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato } = prep;
+const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, avisoFirma } = prep;
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
@@ -574,7 +575,11 @@ Object.entries(pendientes).forEach(([t, ls]) => {
   if (Object.hasOwn(declarados, k)) {
     porConfirmar[k] = { valor: '', laminas: ls, motivo: declarados[k].motivo, pendiente: true };
     avis.push(`dato pendiente a propósito ${t} (${declarados[k].motivo}) en ${enLaminas(ls)}: el deck es borrador hasta llenarlo`);
-  } else errores.push(`dato pendiente ${t} en ${enLaminas(ls)}: llénalo en "datos" (${k}) y escribe {{${k}}} en el texto; si se deja a propósito, decláralo: { "pendiente": true, "motivo": "…" }`);
+  } else {
+    // El texto puede traer ya {{CLAVE}} (el deck la escribió bien y falta el valor) o un [CLAVE] a mano
+    const yaMarcada = JSON.stringify(crudo.laminas || []).includes(`{{${k}}}`);
+    errores.push(`dato pendiente ${t} en ${enLaminas(ls)}: pregúntaselo al usuario y ponlo en "datos": { "${k}": "…" }${yaMarcada ? '' : ` (en el texto va como {{${k}}})`}; no se inventa. Si se deja a propósito, decláralo: "${k}": { "pendiente": true, "motivo": "…" }`);
+  }
 });
 // Datos PROPUESTOS ({ "valor", "propuesto": true }): se pintan, pero el deck no es final hasta confirmarlos
 Object.entries(propuestos).forEach(([k, ls]) => {
@@ -595,7 +600,7 @@ deck.laminas.forEach((l, i) => {
 // Reglas del deck.json (sin navegador): firma de relleno, duración de la pieza, apertura, voz, proyecciones,
 // posts de maqueta y llamado (scripts/lib/reglas-deck.mjs)
 // El deck crudo trae «datos» (CASO_PROPIO, ENTREGABLE confirmados); las láminas son las ya sustituidas
-const delDeck = revisarDeck({ ...deck, datos: crudo.datos }, pasos, { dirDeck });
+const delDeck = revisarDeck({ ...deck, datos: crudo.datos }, pasos, { dirDeck, crudo });
 errores.push(...delDeck.errores);
 avis.push(...delDeck.avisos);
 // Resultado propio o entregable prometido sin confirmar: BORRADOR, igual que un dato propuesto
@@ -638,8 +643,10 @@ const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDec
 // (o corre con --estricto): «listo» es el ÚNICO estado que se entrega como final (SKILL §6).
 const falta = delDeck.faltaParaFinal || [];
 const estado = borrador ? 'borrador' : errores.length ? 'con errores' : nota < NOTA_FINAL ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
+// Información que NO resta nota: el set de emojis sin fijar y la firma (de dónde salió o dónde se llena)
+const info = [infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal() }), avisoFirma].filter(Boolean);
 const informe = { nota, estado, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
-  avisos: avis, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
+  avisos: avis, info, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
@@ -649,6 +656,7 @@ else {
   errores.forEach(e => console.log('  ✗ ' + e));
   avis.forEach(e => console.log('  ⚠ ' + e));
   if (!errores.length && !avis.length) console.log('  ✓ sin hallazgos');
+  info.forEach(e => console.log('  ℹ ' + e));
   if (estado !== 'listo') console.log(`ESTADO: ${estado}${falta.length ? ` / falta-venta: ${falta.join(', ')}` : ''}`);
 }
 // Código de salida: 1 con errores; con --estricto, 3 si no hay errores pero el estado no es «listo»

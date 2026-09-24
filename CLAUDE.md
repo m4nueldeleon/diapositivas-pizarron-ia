@@ -21,12 +21,20 @@ SKILL.md.
 - `scripts/lib/reglas-deck.mjs`: reglas de QA que se leen en el deck.json sin navegador (firma de
   relleno, duración de la pieza y peso de los tramos en vivo, apertura, voz humana, proyecciones, posts de
   maqueta, llamado, prueba real y credibilidad, objeciones, descargos en pantalla, coherencia emoji↔concepto,
-  claves que nadie lee) y la nota (`notaQA`, con tope de BORRADOR). Son funciones puras: su prueba va en
-  `pruebas/reglas-deck.test.mjs`.
+  claves que nadie lee, los 9 bloques de la propuesta, escasez/garantía/bonos de la oferta, desglose de un precio)
+  y la nota (`notaQA`, con tope de BORRADOR). `infoEmoji`/`infoFirma` van a `qa.json → info` y NO restan. Son
+  funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs` u `oferta-propuesta.test.mjs`. `revisarDeck`
+  recibe `crudo` (el deck antes de sustituir `datos`) para saber si un número vino de un `{{MARCADOR}}`.
+- `scripts/lib/marca.mjs`: la ficha MI-MARCA.md (firma y palabras vetadas) con UNA cadena de búsqueda (carpeta del
+  deck → arriba → `$PIZARRON_MARCA` → `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`). `pipeline.mjs` aplica la
+  firma a un deck sin `marca`; el logo solo se copia si la ficha está en la carpeta del deck.
 - `scripts/lib/datos.mjs` sustituye `{{CLAVE}}` con `datos` antes de sanear; lo que falta queda como
   `[CLAVE]`, que `marcar()` pinta como hueco y QA cuenta como pendiente.
 - `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA; con más
-  de 20 láminas las pagina (`hoja-01.jpg`…, `hojas.json`). `render.mjs --pdf` arma `laminas.pdf`.
+  de 20 láminas las pagina (`hoja-01.jpg`…, `hojas.json`). `render.mjs --pdf` usa `scripts/lib/pdf.mjs`: recaptura
+  cada lámina sin cursor (una página por lámina; el stack con su remate en una banda) y en propuesta o VSL arma
+  `laminas-notas.pdf` con la voz como texto (`pdf.json` lo resume).
+- `ejemplos/vsl-corto/` es el modelo de guion de venta; `pruebas/ejemplos.test.mjs` exige que no dé avisos de guion.
 - `templates/presentador.js` es el presentador en vivo y la vista de ensayo (`?modo=orador`), sobre
   `window.PZ`. Lee la voz del `<script class="guion">` que `construir.mjs` mete en cada lámina. Las dos
   ventanas se siguen por `postMessage` (ventana ↔ opener; BroadcastChannel no cruza documentos `file://` en

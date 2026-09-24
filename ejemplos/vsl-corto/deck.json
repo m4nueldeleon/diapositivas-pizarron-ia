@@ -1,0 +1,524 @@
+{
+ "titulo": "Agenda Llena — VSL corto de ejemplo",
+ "formato": "16:9",
+ "emoji": "apple",
+ "animacion": "seco",
+ "piel": "🏻",
+ "pieza": "vsl-corto",
+ "_comentario": "Modelo de VSL corto (3-6 min) que cumple GUION §7. Los datos de la oferta que nadie ha confirmado van como huecos declarados en «datos» (pendiente): QA deja el deck en BORRADOR hasta llenarlos. Copia el arco, no las cifras.",
+ "datos": {
+  "PRODUCTO": {
+   "valor": "Agenda Llena",
+   "propuesto": true
+  },
+  "CLIENTES": {
+   "pendiente": true,
+   "motivo": "cifra real de negocios atendidos: la da quien vende"
+  },
+  "CASO_NEGOCIO": {
+   "pendiente": true,
+   "motivo": "un cliente real con permiso (nombre del negocio)"
+  },
+  "CASO_ANTES": {
+   "pendiente": true,
+   "motivo": "citas por semana antes, del caso real"
+  },
+  "CASO_DESPUES": {
+   "pendiente": true,
+   "motivo": "citas por semana después, del caso real"
+  },
+  "FUENTE_CASO": {
+   "pendiente": true,
+   "motivo": "de dónde sale el caso (captura de su agenda, con permiso)"
+  },
+  "BONO_1": {
+   "pendiente": true,
+   "motivo": "solo si la oferta trae bono"
+  },
+  "PRECIO_ANCLA": {
+   "pendiente": true,
+   "motivo": "algo real que el público ya paga (sueldo de una recepcionista)"
+  },
+  "PRECIO": {
+   "pendiente": true,
+   "motivo": "lo define quien vende"
+  },
+  "GARANTIA_DIAS": {
+   "pendiente": true,
+   "motivo": "plazo real de la garantía"
+  },
+  "GARANTIA_CONDICION": {
+   "pendiente": true,
+   "motivo": "condición medible de la garantía"
+  }
+ },
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "chat",
+   "sello": "Tarde",
+   "sello_sobre": "m1",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "11:40 pm",
+     "texto": "¿Tienes cita mañana temprano?"
+    },
+    {
+     "de": "yo",
+     "hora": "9:05 am",
+     "texto": "¡Buen día! Sí, a las 10"
+    }
+   ],
+   "voz": [
+    "Once cuarenta de la noche: te piden una cita.",
+    "Contestas a las nueve de la mañana.",
+    "Para entonces ya agendó con otro."
+   ]
+  },
+  {
+   "id": "costo",
+   "tipo": "idea",
+   "emoji": "no:📅",
+   "texto": "Cada mensaje que contestas tarde\nes **una cita que se va**",
+   "nota": "Y casi todos escriben de noche",
+   "voz": [
+    "Cada mensaje que contestas tarde es una cita que se va.",
+    "Y casi todos escriben de noche, cuando ya cerraste."
+   ]
+  },
+  {
+   "id": "cuenta",
+   "tipo": "cifra",
+   "arriba": "Si te escriben 10 personas de noche:",
+   "lineas": [
+    "10 × 30-50% se van con otro",
+    "= __3-5 citas perdidas por noche__"
+   ],
+   "voz": [
+    "Pongamos que te escriben diez de noche: tres a cinco se van.",
+    "Son de tres a cinco citas perdidas cada noche."
+   ]
+  },
+  {
+   "id": "intentos",
+   "tipo": "lista",
+   "encabezado": "Lo que ya intentaste:",
+   "vineta": "x",
+   "items": [
+    "Contestar **de madrugada**",
+    "Un bot de **menú 1, 2, 3**",
+    "Pagar a alguien **de noche**"
+   ],
+   "voz": [
+    "Contestar de madrugada, y no duermes.",
+    "Un bot de menú uno, dos, tres, que nadie usa.",
+    "Pagarle a alguien de noche, que no alcanza."
+   ]
+  },
+  {
+   "id": "dolor",
+   "tipo": "idea",
+   "emoji": "😩",
+   "texto": "Si contestas todo tú,\n**tu negocio cierra cuando duermes**",
+   "voz": "Si contestas todo tú, tu negocio cierra cuando duermes."
+  },
+  {
+   "id": "quien",
+   "tipo": "idea",
+   "emoji": "🧑‍💼",
+   "texto": "Más de **{{CLIENTES}} negocios**\nya agendan así",
+   "voz": [
+    "Más de {{CLIENTES}} negocios ya agendan así.",
+    "Contestan de noche sin desvelarse."
+   ],
+   "nota": "Contestan de noche sin desvelarse"
+  },
+  {
+   "id": "paraquien",
+   "tipo": "lista",
+   "encabezado": "Es para ti si:",
+   "vineta": "check",
+   "items": [
+    "Vives de **citas**",
+    "Te escriben **por WhatsApp**",
+    "Hoy contestas **tú**"
+   ],
+   "voz": [
+    "Es para ti si vives de citas: consultorio, salón, taller.",
+    "Si tus clientes te escriben por WhatsApp.",
+    "Y si hoy contestas tú, a cualquier hora."
+   ]
+  },
+  {
+   "id": "mecanismo",
+   "tipo": "idea",
+   "emoji": "🤖+📅",
+   "texto": "Lo llamo la __«Agenda en automático»__",
+   "voz": "A esto le llamo la agenda en automático."
+  },
+  {
+   "id": "mapa",
+   "tipo": "pasos",
+   "iconos": [
+    "📲",
+    "🤖",
+    "📅"
+   ],
+   "etiquetas": [
+    "Te escriben",
+    "Contesta",
+    "Agenda"
+   ],
+   "activo": 1,
+   "voz": "Son tres pasos. Primero: te escriben."
+  },
+  {
+   "id": "mapa-2b",
+   "tipo": "pasos",
+   "iconos": [
+    "📲",
+    "🤖",
+    "📅"
+   ],
+   "etiquetas": [
+    "Te escriben",
+    "Contesta",
+    "Agenda"
+   ],
+   "activo": 2,
+   "hechos": [
+    1
+   ],
+   "voz": "Paso dos: tu agente contesta, en el mismo minuto.",
+   "nota": "En el mismo minuto"
+  },
+  {
+   "id": "contesta",
+   "tipo": "chat",
+   "avatar_yo": "🤖",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "11:40 pm",
+     "texto": "¿Tienes cita mañana temprano?"
+    },
+    {
+     "de": "yo",
+     "hora": "11:40 pm",
+     "texto": "¡Sí! Tengo 9:00 o 10:30, ¿cuál te aparto?"
+    }
+   ],
+   "voz": [
+    "El mismo mensaje, a la misma hora.",
+    "Tu agente contesta en ese minuto con tus horarios."
+   ]
+  },
+  {
+   "id": "califica",
+   "tipo": "chat",
+   "avatar_yo": "🤖",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "¿Es tu primera vez con nosotros?"
+    },
+    {
+     "de": "otro",
+     "texto": "Sí, me recomendó una amiga"
+    },
+    {
+     "de": "yo",
+     "texto": "¡Qué gusto! Te aparto 30 minutos para la valoración"
+    }
+   ],
+   "voz": [
+    "Luego te hace las preguntas que tú harías.",
+    "Si es cliente nuevo,",
+    "le aparta el tiempo que necesita."
+   ]
+  },
+  {
+   "id": "mapa-2",
+   "tipo": "pasos",
+   "iconos": [
+    "📲",
+    "🤖",
+    "📅"
+   ],
+   "etiquetas": [
+    "Te escriben",
+    "Contesta",
+    "Agenda"
+   ],
+   "activo": 3,
+   "hechos": [
+    1,
+    2
+   ],
+   "voz": "Y el paso tres: la cita queda en tu calendario."
+  },
+  {
+   "id": "agenda",
+   "tipo": "idea",
+   "emoji": "📅",
+   "texto": "La cita cae **sola** en tu calendario",
+   "nota": "Y a ti te llega el aviso",
+   "voz": [
+    "La cita cae sola en tu calendario.",
+    "Y a ti te llega el aviso al celular."
+   ]
+  },
+  {
+   "id": "recuerda",
+   "tipo": "chat",
+   "avatar_yo": "🤖",
+   "mensajes": [
+    {
+     "de": "yo",
+     "hora": "9:00 am",
+     "texto": "Hola, te recuerdo tu cita de mañana a las 10:00"
+    }
+   ],
+   "voz": [
+    "Y un día antes, le recuerda su cita.",
+    "Sin que tú muevas un dedo."
+   ],
+   "sello": "Solo",
+   "sello_sobre": "m0"
+  },
+  {
+   "id": "hueco",
+   "tipo": "idea",
+   "emoji": "🪑",
+   "texto": "Si alguien cancela,\n**ofrece el hueco** a quien esperaba",
+   "voz": [
+    "Y si alguien cancela, le ofrece ese hueco a quien estaba esperando."
+   ]
+  },
+  {
+   "id": "flujo",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "📲",
+     "etiqueta": "Mensaje"
+    },
+    {
+     "emoji": "🤖",
+     "etiqueta": "Tu agente"
+    },
+    {
+     "emoji": "📅",
+     "etiqueta": "Cita"
+    }
+   ],
+   "voz": [
+    "Llega el mensaje,",
+    "tu agente lo contesta",
+    "y la cita queda puesta."
+   ]
+  },
+  {
+   "id": "caso",
+   "tipo": "cifra",
+   "arriba": "{{CASO_NEGOCIO}}, en 30 días:",
+   "lineas": [
+    "{{CASO_ANTES}} citas por semana",
+    "→ **{{CASO_DESPUES}} citas por semana**"
+   ],
+   "fuente": "{{FUENTE_CASO}}",
+   "voz": [
+    "Un caso real: {{CASO_NEGOCIO}} tenía {{CASO_ANTES}} citas por semana.",
+    "Treinta días después, {{CASO_DESPUES}}."
+   ]
+  },
+  {
+   "id": "llamado-1",
+   "tipo": "idea",
+   "emoji": "📲",
+   "texto": "Escríbeme **CITA** por WhatsApp",
+   "nota": "Y agendamos una llamada de diagnóstico",
+   "llamado": true,
+   "voz": [
+    "Si lo quieres para tu negocio, escríbeme CITA por WhatsApp.",
+    "Y agendamos una llamada de diagnóstico."
+   ]
+  },
+  {
+   "id": "objecion",
+   "tipo": "idea",
+   "emoji": "no:⌨️",
+   "encabezado": "Objeción #1",
+   "encabezado_pos": "entre",
+   "texto": "**«No sé nada de tecnología»**",
+   "voz": "La objeción que más oigo: no sé nada de tecnología."
+  },
+  {
+   "id": "respuesta",
+   "tipo": "idea",
+   "emoji": "si:📄",
+   "texto": "Llenas **una hoja**\ncon tus horarios y tus precios",
+   "nota": "El agente lo lee de ahí",
+   "voz": [
+    "No programas nada: llenas una hoja con tus horarios y tus precios.",
+    "El agente lo lee de ahí."
+   ]
+  },
+  {
+   "id": "revelacion",
+   "tipo": "oscura",
+   "emoji": "🚀",
+   "titulo": "{{PRODUCTO}}",
+   "texto": "Tu agente de citas, configurado contigo",
+   "voz": "Por eso armé {{PRODUCTO}}."
+  },
+  {
+   "id": "incluye",
+   "tipo": "stack",
+   "items": [
+    {
+     "emoji": "🤖",
+     "texto": "Tu agente de citas",
+     "doble": true
+    },
+    {
+     "emoji": "📄",
+     "texto": "La hoja de tu negocio"
+    },
+    {
+     "emoji": "🧑‍🏫",
+     "texto": "Configuración contigo"
+    },
+    {
+     "emoji": "📚",
+     "texto": "Las 6 clases"
+    },
+    {
+     "emoji": "🎁",
+     "texto": "{{BONO_1}}",
+     "sub": "Bono #1"
+    }
+   ],
+   "remate": "Hecho **contigo**",
+   "voz": [
+    "Esto es lo que te llevas.",
+    "Tu agente de citas,",
+    "la hoja de tu negocio,",
+    "la configuración conmigo,",
+    "las seis clases",
+    "y un bono.",
+    "Y lo dejamos funcionando contigo."
+   ]
+  },
+  {
+   "id": "pregunta",
+   "tipo": "idea",
+   "emoji": "🤔",
+   "texto": "¿Ves cómo **ya no dependes**\nde contestar tú?",
+   "voz": "¿Ves cómo ya no dependes de contestar tú?"
+  },
+  {
+   "id": "precio",
+   "tipo": "cifra",
+   "lineas": [
+    {
+     "texto": "Una recepcionista: {g:{{PRECIO_ANCLA}} al mes}",
+     "tam": "64px",
+     "peso": 500
+    },
+    {
+     "texto": "{{PRODUCTO}}: __{{PRECIO}}__",
+     "tam": "120px",
+     "peso": 800
+    }
+   ],
+   "voz": [
+    "Una recepcionista te cuesta {{PRECIO_ANCLA}} al mes.",
+    "{{PRODUCTO}} cuesta {{PRECIO}}."
+   ]
+  },
+  {
+   "id": "garantia",
+   "tipo": "idea",
+   "emoji": "🛡️",
+   "texto": "Garantía de **{{GARANTIA_DIAS}} días**",
+   "nota": "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero",
+   "voz": [
+    "Tienes {{GARANTIA_DIAS}} días de garantía.",
+    "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero."
+   ]
+  },
+  {
+   "id": "reclama",
+   "tipo": "pasos",
+   "iconos": [
+    "📲",
+    "🔍",
+    "💵"
+   ],
+   "etiquetas": [
+    "Me escribes",
+    "Revisamos",
+    "Te devuelvo"
+   ],
+   "activo": 1,
+   "voz": "Para reclamarla me escribes, revisamos tu agenda y te devuelvo el pago."
+  },
+  {
+   "id": "llamado-2",
+   "tipo": "boton",
+   "boton": "Aplica aquí",
+   "emoji": "👆",
+   "texto": "Contestas **3 preguntas**\ny te llega la invitación",
+   "llamado": true,
+   "voz": "Da clic en aplica aquí: tres preguntas y te llega la invitación."
+  },
+  {
+   "id": "despues",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "👆",
+     "etiqueta": "Aplicas"
+    },
+    {
+     "emoji": "📞",
+     "etiqueta": "Llamada"
+    },
+    {
+     "emoji": "🚀",
+     "etiqueta": "Arrancas"
+    }
+   ],
+   "voz": [
+    "Aplicas,",
+    "hablamos en una llamada",
+    "y si es para ti, arrancas esa semana."
+   ]
+  },
+  {
+   "id": "ahora",
+   "tipo": "idea",
+   "emoji": "📉",
+   "texto": "Cada noche sin contestar:\n**3-5 citas** que se van",
+   "nota": "Esta noche también",
+   "voz": [
+    "Cada noche que no contestas se van de tres a cinco citas.",
+    "Y esta noche también te van a escribir."
+   ]
+  },
+  {
+   "id": "cierre",
+   "tipo": "idea",
+   "emoji": "📲",
+   "texto": "Escríbeme **CITA** por WhatsApp",
+   "nota": "Hoy en la noche alguien te va a escribir",
+   "llamado": true,
+   "voz": [
+    "Escríbeme CITA por WhatsApp.",
+    "Hoy en la noche alguien te va a escribir."
+   ]
+  }
+ ]
+}

@@ -39,6 +39,29 @@ for par in "Figtree.ttf|figtree/Figtree%5Bwght%5D.ttf" "Figtree-Italic.ttf|figtr
   if [ -s "$FUENTES/$n" ]; then ok "$n"; elif curl -fsSL "$B/$r" -o "$FUENTES/$n"; then ok "$n (descargada)"; else mal "no pude bajar $n"; fi
 done
 
+echo "▶ Ficha de marca global (firma y palabras vetadas para todos tus decks)"
+FICHA="$HOME/.config/diapositivas-pizarron-ia/MI-MARCA.md"
+CARRUSEL="${PIZARRON_IMPORTAR:-}"
+if [ -f "$FICHA" ]; then ok "$FICHA"
+elif [ ! -t 0 ]; then echo "  · sin terminal interactiva: crea $FICHA con el formato de templates/MI-MARCA.md (o corre este script en una terminal)"
+else
+  printf "  ¿La creo ahora? Tres preguntas (s/N): "; read -r R
+  if [ "${R:-n}" = "s" ] || [ "${R:-n}" = "S" ]; then
+    printf "  ¿Importar de la ficha de carruseles-virales-ia? Ruta de su MI-MARCA.md (vacío = no): "; read -r CARRUSEL
+    mkdir -p "$(dirname "$FICHA")"
+    if [ -n "$CARRUSEL" ] && [ -f "$CARRUSEL" ]; then
+      # Se CONVIERTE: solo la cuenta como firma y las palabras vetadas en una línea; nada de reglas de carrusel
+      node --input-type=module -e "import fs from 'node:fs'; import { convertirFichaCarrusel } from '$AQUI/scripts/lib/marca.mjs'; fs.writeFileSync(process.argv[1], convertirFichaCarrusel(fs.readFileSync(process.argv[2], 'utf8')));" "$FICHA" "$CARRUSEL"
+    else
+      printf "  1/3 Tu @ o tu dominio (la firma; vacío = sin firma): "; read -r T
+      printf "  2/3 Logo (ruta a un PNG sin fondo; vacío = sin logo): "; read -r LOGO
+      printf "  3/3 Palabras que nunca usas (separadas por comas): "; read -r V
+      node --input-type=module -e "import fs from 'node:fs'; import { fichaNueva } from '$AQUI/scripts/lib/marca.mjs'; fs.writeFileSync(process.argv[1], fichaNueva({ texto: process.argv[2], logo: process.argv[3], vetadas: process.argv[4].split(',').map(x => x.trim()).filter(Boolean) }));" "$FICHA" "$T" "$LOGO" "$V"
+    fi
+    chmod 600 "$FICHA"; ok "creada: $FICHA"; echo "  · revísala:"; sed 's/^/      /' "$FICHA"
+  else echo "  · omitida: las láminas salen sin firma hasta que exista $FICHA"; fi
+fi
+
 echo "▶ Prueba de humo"
 if node "$AQUI/scripts/render.mjs" "$AQUI/ejemplos/demo" --finales --sin-hoja --salida "${TMPDIR:-/tmp}/pizarron-prueba" >/dev/null 2>&1; then ok "el demo se renderiza"; else mal "el demo no se renderizó: corre node scripts/render.mjs ejemplos/demo para ver el error"; fi
 echo "Listo."

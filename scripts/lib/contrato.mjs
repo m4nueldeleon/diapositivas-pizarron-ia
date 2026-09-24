@@ -174,7 +174,7 @@ export function validarDeck(deck, tipos) {
   if (!deck || typeof deck !== 'object') return ['deck.json no es un objeto'];
   if (!Array.isArray(deck.laminas) || !deck.laminas.length) return ['falta «laminas» (una lista con al menos una lámina)'];
   if (deck.formato && !['16:9', '9:16', '1:1', '4:5'].includes(deck.formato)) e.push(`formato «${deck.formato}» no existe (usa 16:9, 9:16, 1:1 o 4:5)`);
-  if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe (usa auto, apple o fluent)`);
+  if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe: usa "apple" (Mac, lo más fiel) o "fluent" (Linux, nube, HTML compartido); "auto" solo en decks heredados`);
   if (deck.piel != null && !['🏻', '🏼', '🏽', '🏾', '🏿', 'ninguno'].includes(deck.piel)) e.push(`piel «${deck.piel}» no existe (usa 🏻, 🏼, 🏽, 🏾, 🏿 o "ninguno")`);
   e.push(...validarDatos(deck.datos));
   // `libre` vale null (sin rango): se valida que la clave EXISTA, sin tomar claves del prototipo («toString»)

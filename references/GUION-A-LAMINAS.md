@@ -60,6 +60,7 @@ la lámina nueva o un elemento más sobre la actual.
 | lo que incluye la oferta, el stack que crece [42:30] | bento que se llena pieza por pieza | `stack`, `tarjetas` o `rejilla` |
 | qué pasa después del clic [43:35-43:50] | flecha roja al link, «2 minutos», la invitación del calendario | `boton` o `calendario` |
 | el precio | ancla real chica y gris → precio grande (una línea por paso) | `cifra` con líneas-objeto |
+| desglose del precio («son $100 al día», «4 quincenas de…») | «precio ÷ unidad = __monto por unidad__», sin `arriba` obligatorio: dividir un precio no es una proyección | `cifra` |
 | cupos o lista de espera (solo si son reales) [43:15-43:30] | rejilla con el color de los ocupados en un paso posterior + la fuente | `rejilla` + `destacado_paso` |
 | antes / después | en UNA lámina: bloques rojo y verde, o el par de emojis | `cuadrantes` o `idea` con par |
 | una fila de conceptos sin causa→efecto | nodos numerados sin flechas [19:15] | `flujo` + `flecha: "ninguna"` |
@@ -104,7 +105,13 @@ la lámina nueva o un elemento más sobre la actual.
      «hipotético» o «ilustrativo». La nota a mano lleva la consecuencia («Y el 17 pides prestado»), como pide
      el punto 9. El carácter ilustrativo queda en `_comentario` para quien edite el deck. Si la cifra es un
      dato real publicado, lleva `fuente`; si es una proyección al espectador, siguen a) a c). Las maquetas
-     de `prueba` (`ejemplo: true`) sí llevan su sello EJEMPLO: son otra cosa.
+     de `prueba` (`ejemplo: true`) sí llevan su sello EJEMPLO: son otra cosa. **En una propuesta no aplica**: los
+     números del cliente vienen de la llamada de diagnóstico (`fuente` o `{{CLAVE}}` en `datos`), no de «Pongamos
+     que…» (ARCOS.md, propuesta, bloque 1).
+   - e) **Dividir un precio no es una proyección**: «$3,000 ÷ 30 días = __$100 al día__» o «{{PRECIO}} ÷ 40
+     vendedores = __$2,500 por vendedor__» no piden condición ni rango. QA lo reconoce cuando una línea divide un
+     monto o el precio y el total termina en «por/al/cada + unidad»; «= __$500 al día en ventas__» sigue siendo
+     promesa.
    QA avisa cuando una `cifra` subraya un total de dinero, % o clientes y `arriba` no trae número, y
    también cuando la cuenta no trae NINGÚN rango (§3.8 b); cuando un descargo («de ejemplo», «Ejemplo:»,
    «hipotético») va en pantalla fuera de una `prueba`, y cuando la voz repite que es un ejemplo en más de dos
@@ -218,7 +225,8 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` |
 | 6 | Prueba real: el muro de capturas (con `src` o `fuente`). Sin prueba real, un sustituto de la tabla de abajo; nunca una maqueta `ejemplo: true` | 42:00 | `prueba` |
 | 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el «✓ Hecho contigo» es el remate, en su propio corte [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
-| 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera | 43:00-43:30 | `rejilla` + `destacado_paso` |
+| 7b | **Bonos** (solo si la oferta los tiene): en el MISMO `stack`, después de las piezas base, cada uno con `sub: "Bono #N"` y su nombre desde `{{BONO_N}}` (LAYOUTS.md, `stack`). No hay diseño de bono aparte: la referencia no los tiene | — | `stack` |
+| 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera, o una fecha límite (`calendario` con el día marcado). Siempre desde `{{CUPOS}}` o `{{FECHA_LIMITE}}` con su dato real: «solo hoy», «Quedan solo 3 lugares» escritos a mano son error de QA | 43:00-43:30 | `rejilla` + `destacado_paso`, o `calendario` |
 | 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🧭 |
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
@@ -249,7 +257,16 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   temprano.
 - **Precio, formas de pago y garantía NO están en la referencia**: su llamado es aplicar y agendar una
   llamada, y el único precio es el ancla del nivel caro. Se agregan solo si la oferta tiene precio
-  público: el precio con `cifra` (el ancla es algo real que el público ya vio, nunca un «Valor»
-  inventado; el tachado es opcional) y la garantía en una `idea` 🛡️ con plazo, **condición medible** y
-  cómo se reclama. Los datos que falten van con `{{PRECIO}}` en el texto y `"datos"` en el deck
+  público: el precio con `cifra` (el ancla es algo real que el público ya vio: el precio anterior real, o el costo
+  de no hacer nada ya calculado en el deck; nunca un «Valor» inventado; el tachado es opcional) y la garantía con
+  diseños que ya existen: una `cifra` con el plazo («{{GARANTIA_DIAS}} días») y la condición medible en `arriba`
+  («Si aplicas los 6 módulos y no…»), y después `pasos` con cómo se reclama. «Garantía total» o «sin riesgo» sin plazo
+  ni condición no dicen nada (QA avisa). Los datos que falten van con `{{PRECIO}}` en el texto y `"datos"` en el deck
   (LAYOUTS.md, «Datos que se llenan una vez»): QA los lista como pendientes.
+- **El modelo que se copia** para un VSL, un webinar o cualquier oferta es `ejemplos/vsl-corto/` (deck.json + guion.md):
+  gancho, credibilidad, mecanismo, prueba, objeción con su respuesta, revelación, stack, precio anclado, garantía y el
+  llamado dos veces, con los datos que faltan como huecos declarados. El demo (`ejemplos/demo/`) es un catálogo de
+  diseños, no un modelo de guion.
+- **Propuesta**: su arco son los 9 bloques de ARCOS.md (diagnóstico con sus números, costo, solución, quién la imparte
+  y un caso, metas, alcance con «No incluye», inversión anclada, garantía o condición de salida, siguiente paso con
+  fecha y vigencia). Sin prueba real, los sustitutos de arriba; nunca inventada.
