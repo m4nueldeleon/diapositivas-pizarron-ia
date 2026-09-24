@@ -16,8 +16,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { argumentos, DIR_SKILL } from './lib/pipeline.mjs';
-import { cargarPlaywright } from './lib/playwright.mjs';
+import { argumentos, DIR_SKILL, lanzarChromium } from './lib/pipeline.mjs';
 import { resolverFluent, BAJO_CONTRASTE, formaEmoji, TODOS_GLIFOS_SVG, DEFS_GLOBALES } from './lib/emoji.mjs';
 import { puntuarGlifo, pctRojo, svgAutonomo } from './lib/contraste-color.mjs';
 
@@ -54,8 +53,7 @@ for (const e of lista) {
   if (rel) fluent[clave(e)] = 'data:image/webp;base64,' + fs.readFileSync(path.join(tmp, rel)).toString('base64');
 }
 
-const { chromium } = cargarPlaywright(DIR_SKILL);
-const browser = await chromium.launch();
+const browser = await lanzarChromium();
 const page = await browser.newPage();
 await page.addScriptTag({ content: `window.puntuarGlifo = ${puntuarGlifo.toString()}; window.pctRojo = ${pctRojo.toString()};` });
 // Los glifos que la skill dibuja en SVG (📱 🎟 📄…) también se miden en rojo: no pasan por el set

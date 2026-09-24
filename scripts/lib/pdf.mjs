@@ -26,6 +26,16 @@ export function vozPlana(l) {
   return v.map(x => String(x).replace(/\s+/g, ' ').trim()).filter(Boolean);
 }
 
+// Notas para el ponente: conserva voz, acción y respaldo junto al paso al que pertenecen.
+export function notasPlanas(l) {
+  const campos = [l.voz, l.accion, l.si_falla];
+  const n = Math.max(1, ...campos.map(v => Array.isArray(v) ? v.length : 1));
+  return Array.from({ length: n }, (_, k) => [notaPaso(l.voz, k),
+    ...[['ACCIÓN', l.accion], ['SI FALLA', l.si_falla]].map(([nombre, valor]) => {
+      const texto = notaPaso(valor, k, true); return texto ? `${nombre}: ${texto}` : '';
+    })].filter(Boolean).join('\n')).filter(Boolean);
+}
+
 // Datos pendientes a la vista o en la voz ([PRECIO]…): el PDF no se manda como final con ellos
 export function pendientesDe(paginas) {
   const s = new Set();
@@ -52,12 +62,12 @@ export function htmlNotas(paginas, { W, H, titulo = '' }) {
   const alto = Math.round(W * 1.414), m = Math.round(W * 0.06);
   const pag = p => `<section class="h"><div class="n">${escapar(`${p.n} · ${p.id}`)}${titulo ? ` — ${escapar(titulo)}` : ''}</div>
 <img class="lam" src="${escapar(p.img)}" style="height:${Math.round((W - 2 * m) * H / W)}px">${p.banda ? `<img class="banda" src="${escapar(p.banda)}">` : ''}
-<div class="voz">${p.voz.length ? p.voz.map(v => `<p>${escapar(v)}</p>`).join('') : '<p class="sin">(sin voz)</p>'}</div></section>`;
+<div class="voz">${(p.notas || p.voz).length ? (p.notas || p.voz).map(v => `<p>${escapar(v)}</p>`).join('') : '<p class="sin">(sin voz)</p>'}</div></section>`;
   return `<!doctype html><meta charset="utf-8"><style>${FUENTES}@page{size:${W}px ${alto}px;margin:0}html,body{margin:0;padding:0;background:#fff}
 .h{width:${W}px;height:${alto}px;box-sizing:border-box;padding:${m}px;break-after:page;overflow:hidden;font-family:'Figtree',system-ui,sans-serif;color:#1d1d1d}
 .h:last-child{break-after:auto}.n{font:600 34px 'Figtree',system-ui;color:#8a8a8a;margin-bottom:24px}
 .lam{display:block;width:${W - 2 * m}px;border:2px solid #e6e6e6}.banda{display:block;max-width:${Math.round((W - 2 * m) * 0.8)}px;max-height:260px;margin:18px auto 0}
-.voz{margin-top:48px;font-size:46px;line-height:1.45;font-weight:400}.voz p{margin:0 0 22px}.sin{color:#9a9a9a}</style>${paginas.map(pag).join('')}`;
+.voz{margin-top:48px;font-size:46px;line-height:1.45;font-weight:400}.voz p{margin:0 0 22px;white-space:pre-line}.sin{color:#9a9a9a}</style>${paginas.map(pag).join('')}`;
 }
 
 // Captura las páginas desde el presentador ya abierto (window.PZ), sin cursor ni onda
@@ -79,7 +89,7 @@ export async function capturarPaginas(page, deck, dir) {
       await lams[i].screenshot({ path: img, type: 'png' });
       const textos = await page.evaluate(k => (window.PZ.lams[k].querySelector('.vivo-pres') || {}).innerText || '', i);
       await page.evaluate(k => window.PZ.lams[k].classList.remove('captura-vivo'), i);
-      paginas.push({ n: i + 1, id: l.id || 'vivo', voz: vozPlana(l), img, textos });
+      paginas.push({ n: i + 1, id: l.id || 'vivo', voz: vozPlana(l), notas: notasPlanas(l), img, textos });
       continue;
     }
     const n = await page.evaluate(k => window.PZ.pasos(window.PZ.lams[k]), i);
@@ -88,7 +98,7 @@ export async function capturarPaginas(page, deck, dir) {
       return v.length ? Math.min(...v) : null;
     }, i);
     const base = path.join(dir, `${String(i + 1).padStart(2, '0')}`);
-    const p = { n: i + 1, id: l.id || l.tipo, voz: vozPlana(l), img: `${base}.png` };
+    const p = { n: i + 1, id: l.id || l.tipo, voz: vozPlana(l), notas: notasPlanas(l), img: `${base}.png` };
     const conBanda = clave != null && clave >= 0 && clave < n - 1;
     await page.evaluate(([k, q]) => window.PZ.mostrar(window.PZ.lams[k], q, Infinity), [i, conBanda ? clave : n - 1]);
     cursores += await page.evaluate(k => [...window.PZ.lams[k].querySelectorAll('.cursor,.onda,.cal-cursor')].filter(c => getComputedStyle(c).display !== 'none').length, i);

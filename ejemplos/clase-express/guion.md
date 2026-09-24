@@ -6,7 +6,7 @@ son dos beats obligatorios, la tarea con objeto y el puente a la próxima clase 
 3 últimas láminas (ARCOS.md, «Tutorial»).
 
 - Los tramos en vivo son `camara` con `"vivo": true` y `dur` (30 s cada uno aquí): cuentan en la duración, pero no
-  sustituyen beats. QA avisa desde 40% del tiempo en tramos.
+  sustituyen beats. Cada ejercicio incluye `accion` y `si_falla` para el ponente. QA avisa desde 40% del tiempo en tramos.
 - El único dato por confirmar es `{{PROXIMA_CLASE}}` (día y hora reales).
 
 | # | Beat | Láminas | Qué enseña |
@@ -17,4 +17,4 @@ son dos beats obligatorios, la tarea con objeto y el puente a la próxima clase 
 | 4 | Bloque 1: encontrar | 6-9 | la regla, el filtro («En tu WhatsApp:») y el ejercicio en vivo (`camara` con `vivo`) |
 | 5 | Bloque 2: escribir | 10-17 | lo que no funciona tachado (`tachar_despues`: 3 ítems = 6 pasos), la regla en `foco`, la fórmula en `flujo` con signos, el ejemplo en `chat` y el segundo ejercicio |
 | 6 | Bloque 3: mandar | 18-23 | cuándo, qué pasa si contesta y si no, y los errores comunes |
-| 7 | Resumen, **tarea con objeto** y **puente** | 24-26 | «Tu tarea: manda tus 3 mensajes hoy» y «Próxima clase: {{PROXIMA_CLASE}}», los dos a la vista |
+| 7 | Resumen, **tarea con objeto** y **puente** | 24-26 | «Tu tarea: manda tus 3 mensajes hoy» y «Próxima clase: {{PROXIMA_CLASE}}», los dos a la vista; la tarea marca `paga` hacia el chat del gancho |

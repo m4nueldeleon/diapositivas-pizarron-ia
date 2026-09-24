@@ -160,3 +160,19 @@ export function reglasContrato(deck, pasos) {
   }
   return { errores: [], avisos };
 }
+
+// El objeto del primer 20 % vuelve durante el último 25 %: un solo pago basta por deck.
+const PIEZAS_PAGO = new Set(['vsl', 'vsl-corto', 'webinar', 'clase', 'clase-corta', 'reel']);
+export function reglasPagoGancho(deck) {
+  const avisos = [], L = deck.laminas || [];
+  if ((!PIEZAS_PAGO.has(deck.pieza) && deck.clase !== true) || !L.length) return { errores: [], avisos };
+  const limiteGancho = Math.max(1, Math.ceil(L.length * 0.2));
+  const inicioCierre = Math.floor(L.length * 0.75);
+  const indice = id => typeof id === 'string' ? L.findIndex(l => l.id === id) : -1;
+  const apuntaGancho = id => indice(id) >= 0 && indice(id) < limiteGancho;
+  L.forEach((l, i) => {
+    if (l.paga != null && !apuntaGancho(l.paga)) avisos.push(`${nombre(deck, i)}: paga apunta fuera del primer 20 % o a un id inexistente; usa el id del objeto del gancho (ARCOS.md, siembra y pago)`);
+  });
+  if (!L.slice(inicioCierre).some(l => apuntaGancho(l.paga) || apuntaGancho(l.como))) avisos.push('falta el pago del gancho: en el último 25 % retoma un objeto del primer 20 % con paga o como, el mismo diseño y emoji, resuelto o reafirmado (ARCOS.md, siembra y pago; GUION §6)');
+  return { errores: [], avisos };
+}

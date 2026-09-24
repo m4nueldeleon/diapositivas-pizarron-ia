@@ -103,12 +103,12 @@
    "encabezado": "Hoy vemos:",
    "vineta": "check",
    "items": [
-    "Lo que nos **diste**",
+    "Lo que nos **dieron**",
     "Cómo lo **resolvemos**",
     "**Inversión** y arranque"
    ],
    "voz": [
-    "Hoy vemos tres cosas: lo que nos diste en la llamada,",
+    "Hoy vemos tres cosas: lo que nos dieron en la llamada,",
     "cómo lo resolvemos",
     "y la inversión con la fecha de arranque."
    ]
@@ -116,7 +116,7 @@
   {
    "id": "diagnostico",
    "tipo": "cifra",
-   "arriba": "Lo que nos diste en la llamada:",
+   "arriba": "Lo que nos dieron en la llamada:",
    "lineas": [
     "{{VENDEDORES}} vendedores",
     "{{HORAS_PERDIDAS}} h a la semana",
@@ -124,7 +124,7 @@
    ],
    "fuente": "Llamada de diagnóstico",
    "voz": [
-    "En la llamada nos diste tus números: tus vendedores,",
+    "En la llamada nos dieron sus números: sus vendedores,",
     "las horas que cada uno pasa en chats que no cierran,",
     "y eso suma estas horas al mes."
    ]
@@ -143,10 +143,10 @@
    "id": "mismas",
    "tipo": "idea",
    "emoji": "😩",
-   "texto": "Tus vendedores contestan\n**las mismas preguntas** todo el día",
+   "texto": "Sus vendedores contestan\n**las mismas preguntas** todo el día",
    "nota": "Precio, horario, formas de pago",
    "voz": [
-    "Tus vendedores contestan las mismas preguntas todo el día.",
+    "Sus vendedores contestan las mismas preguntas todo el día.",
     "Precio, horario, formas de pago."
    ]
   },
@@ -159,8 +159,8 @@
     "Son __{{COSTO_MES}} al mes__"
    ],
    "voz": [
-    "Esas horas, por lo que te cuesta cada hora,",
-    "es lo que hoy te cuesta no hacer nada."
+    "Esas horas, por lo que les cuesta cada hora,",
+    "es lo que hoy les cuesta no hacer nada."
    ]
   },
   {
@@ -176,7 +176,7 @@
    "id": "mapa",
    "tipo": "pasos",
    "iconos": [
-    "📚",
+    "📖",
     "🤖",
     "📊"
    ],
@@ -186,12 +186,12 @@
     "Medimos"
    ],
    "activo": 1,
-   "voz": "La solución tiene tres partes. Primero: tu equipo aprende."
+   "voz": "La solución tiene tres partes. Primero: su equipo aprende."
   },
   {
    "id": "sesiones",
    "tipo": "idea",
-   "emoji": "📚",
+   "emoji": "📞",
    "texto": "8 sesiones en vivo,\n**una por semana**",
    "nota": "Con sus chats, no con ejemplos",
    "voz": [
@@ -218,7 +218,8 @@
    "voz": [
     "Así contesta un vendedor con su agente,",
     "en el mismo minuto, también de noche."
-   ]
+   ],
+   "excepcion_persona": "uno-a-uno"
   },
   {
    "id": "mapa-2",
@@ -249,9 +250,9 @@
     }
    ],
    "voz": [
-    "Te escriben,",
+    "Les escriben,",
     "el agente propone la respuesta",
-    "y tu vendedor la revisa y la envía."
+    "y su vendedor la revisa y la envía."
    ]
   },
   {
@@ -309,7 +310,7 @@
    ],
    "fuente": "{{FUENTE_CASO}}",
    "voz": [
-    "Un caso parecido al tuyo: {{CASO}}.",
+    "Un caso parecido al suyo: {{CASO}}.",
     "Pasó de {{CASO_ANTES}} a {{CASO_DESPUES}} ventas al mes."
    ]
   },
@@ -383,12 +384,12 @@
    "vineta": "x",
    "items": [
     "Licencias **de software**",
-    "Integración **con tu CRM**",
+    "Integración **con su CRM**",
     "Contratar **personal**"
    ],
    "voz": [
     "No incluye las licencias de software,",
-    "ni la integración con tu CRM,",
+    "ni la integración con su CRM,",
     "ni contratar personal."
    ]
   },
@@ -408,7 +409,7 @@
     }
    ],
    "voz": [
-    "Hoy pierdes esto cada mes.",
+    "Hoy pierden esto cada mes.",
     "La inversión es esta."
    ]
   },
@@ -416,18 +417,18 @@
    "id": "salida",
    "tipo": "idea",
    "emoji": "🛡️",
-   "texto": "Si en la semana {{SEMANA_SALIDA}} no hay avance,\n**cancelas sin penalización**",
+   "texto": "Si en la semana {{SEMANA_SALIDA}} no hay avance,\n**cancelan sin penalización**",
    "voz": [
-    "Si en esa semana no medimos avance, cancelas sin penalización."
+    "Si en esa semana no medimos avance, cancelan sin penalización."
    ]
   },
   {
    "id": "pregunta",
    "tipo": "idea",
    "emoji": "🤔",
-   "texto": "¿Tiene sentido\n**para tu equipo**?",
+   "texto": "¿Tiene sentido\n**para su equipo**?",
    "voz": [
-    "¿Tiene sentido para tu equipo? Te escucho antes de seguir."
+    "¿Tiene sentido para su equipo? Los escucho antes de seguir."
    ]
   },
   {
@@ -437,7 +438,7 @@
    "nodos": [
     {
      "emoji": "✍️",
-     "etiqueta": "Firmas"
+     "etiqueta": "Firman"
     },
     {
      "emoji": "📅",
@@ -449,7 +450,7 @@
     }
    ],
    "voz": [
-    "Firmas,",
+    "Firman,",
     "agendamos la primera sesión",
     "y arrancamos."
    ]
@@ -465,5 +466,6 @@
     "La propuesta está vigente hasta este día."
    ]
   }
- ]
+ ],
+ "persona": "ustedes"
 }

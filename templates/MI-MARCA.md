@@ -25,6 +25,13 @@ dato que el deck ya trae, o que declara pendiente con su valor, no se pisa. Si u
 - Animación: `seco`
 - Tono de piel de las personas (`piel`): `🏻`, como el video (o el tuyo: 🏼 🏽 🏾 🏿; `ninguno` las deja amarillas)
 
+## Trato y reglas del cliente
+Congela esta ficha ANTES del guion y pásala a cada revisor desde la ronda 1.
+- Persona (`tu` / `ustedes`; frente a una sala, `ustedes`):
+- Grafías que se respetan:
+- Títulos-fórmula que se respetan (`persona_excepciones` si cambian el trato):
+- Prohibiciones:
+
 ## Tu voz en las láminas
 - Palabras que usas siempre (el vocabulario de tu método):
 - Palabras que nunca usas (en UNA línea, separadas por comas; QA las busca en cada lámina):
@@ -62,8 +69,7 @@ Cada dato de la oferta va en `"datos"` del deck con su clave, y en el texto como
 - Símbolo de moneda (sí / no):
 - Peso de la letra del precio (regular / negrita):
 - Formato de los pagos (p. ej. «4 quincenas de …»):
-- El ancla es algo que el público ya vio (la alternativa cara, un sueldo, tu nivel superior), nunca un
-  «Valor» inventado. Se escribe con `cifra` y líneas-objeto (LAYOUTS.md).
+- El ancla es dinero que el espectador PAGA o PIERDE, en la misma unidad y periodo que el precio: alternativa cara, sueldo, nivel superior, costo de financiarse o lo que nunca cobra, con fuente. Nunca un saldo que sí llegará (cuentas por cobrar, «en la calle», facturación o ventas brutas). Si el dinero llega tarde, ancla con su costo: {{TASA_…}} en `datos` con fuente, u horas de cobranza × {{COSTO_HORA}}. Un total calculado en una `cifra` «Si…» sigue permitido si es un costo. Contraejemplo inválido: «En la calle hoy: $60-90 mil» → «[producto]: [precio]». Se escribe con `cifra` y líneas-objeto (LAYOUTS.md, «Precio con ancla»).
 
 ## Pruebas disponibles (solo reales y con permiso)
 - Carpeta de capturas: `assets/pruebas/`

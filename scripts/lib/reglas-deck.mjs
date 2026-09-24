@@ -7,7 +7,7 @@ export { reglasEstilo, reglasLogos } from './reglas-estilo.mjs';
 import { reglasAritmetica } from './aritmetica.mjs';
 export { reglasAritmetica } from './aritmetica.mjs';
 import { reglasSincronia, reglasPersona } from './sincronia.mjs';
-export { reglasSincronia, reglasPersona } from './sincronia.mjs';
+export { reglasSincronia, reglasPersona, infoPersona } from './sincronia.mjs';
 // reglas-deck.mjs — reglas de QA que se leen en el deck.json (sin navegador): duración de la pieza, apertura,
 // voz, proyecciones, pruebas de maqueta, prueba real y credibilidad, objeciones, descargos en pantalla, firma de
 // relleno, llamado, coherencia emoji↔concepto y claves que nadie lee. qa.mjs las suma a sus hallazgos; aquí
@@ -21,15 +21,15 @@ import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedi
 import { RELLENO, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
 import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
-import { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reelSinComo, reglasContrato, arcoDeck } from './reglas-arco.mjs';
-export { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reglasContrato, arcoDeck, lineaArco, contratoDeTiempo, ensenaComo, prometeComo } from './reglas-arco.mjs';
+import { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reelSinComo, reglasContrato, reglasPagoGancho, arcoDeck } from './reglas-arco.mjs';
+export { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reglasContrato, reglasPagoGancho, arcoDeck, lineaArco, contratoDeTiempo, ensenaComo, prometeComo } from './reglas-arco.mjs';
 export { reglasTasa, reglasPromesa, esPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 
 export const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 export const nombre = (deck, i) => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
 
 // Campos que no son texto a la vista: ahí no se buscan frases
-const NO_VISIBLE = new Set(['tipo', 'id', 'voz', 'accion', 'si_falla', 'procedencia', 'excepcion_persona', 'anclas', 'ancla', 'emoji', 'iconos', 'sobre', 'centro', 'imagen', 'src', 'logo', 'clic',
+const NO_VISIBLE = new Set(['tipo', 'id', 'como', 'paga', 'voz', 'accion', 'si_falla', 'procedencia', 'excepcion_persona', 'anclas', 'ancla', 'emoji', 'iconos', 'sobre', 'centro', 'imagen', 'src', 'logo', 'clic',
   'url', 'cursor', 'revelar', 'fondo', 'sello_sobre', 'sello_pos', 'anclar', 'color', 'estilo', 'flecha', 'de', 'a', 'forma', 'grafica', 'lado',
   'encabezado_pos', 'encabezado_estilo', 'posicion', 'fuente']);
 const noVisible = k => NO_VISIBLE.has(k) || /^(emoji_|avatar|tono|tam)/.test(k);
@@ -47,6 +47,53 @@ export function textosVisibles(l) {
   return out;
 }
 const vozDe = l => (Array.isArray(l.voz) ? l.voz.join(' ') : typeof l.voz === 'string' ? l.voz : '');
+
+// ---------- apoyo privado del ponente (PROTOCOLO, presentación en vivo) ----------
+const notasDe = valor => Array.isArray(valor) ? valor : [valor || ''];
+const notaDelPaso = (valor, paso) => Array.isArray(valor) ? valor[paso] : valor;
+const tieneNota = valor => typeof valor === 'string' && Boolean(valor.trim());
+export function reglasNotasPonente(deck, pasos = []) {
+  const avisos = [];
+  deck.laminas.forEach((l, i) => {
+    const acciones = notasDe(l.accion), respaldos = notasDe(l.si_falla);
+    const total = Math.max(1, pasos[i] || 0, acciones.length, respaldos.length, Array.isArray(l.voz) ? l.voz.length : 1);
+    for (let paso = 0; paso < total; paso++) {
+      if (tieneNota(notaDelPaso(l.si_falla, paso)) && !tieneNota(notaDelPaso(l.accion, paso))) avisos.push(`${nombre(deck, i)}, paso ${paso + 1}: si_falla sin accion; escribe qué haces antes de indicar el respaldo (PROTOCOLO, presentación en vivo)`);
+    }
+    if (deck.en_vivo !== true && [...acciones, ...respaldos].some(tieneNota)) avisos.push(`${nombre(deck, i)}: accion/si_falla son notas del ponente y en video no se ven; declara en_vivo: true si presentarás o lleva la explicación necesaria a la voz (PROTOCOLO, presentación en vivo)`);
+    if (deck.en_vivo === true && l.tipo === 'camara' && l.vivo === true && !respaldos.some(tieneNota)) avisos.push(`${nombre(deck, i)}: el tramo vivo no tiene si_falla; añade el respaldo de la página, documento o internet (LAYOUTS, camara/vivo)`);
+  });
+  return { errores: [], avisos };
+}
+
+// ---------- precio: el ancla debe ser un costo, no un saldo pendiente ----------
+const SALDO_PENDIENTE = /\b(en la calle|por cobrar|te deben|cuentas por cobrar)\b/;
+const MARCADOR_PRECIO = /\{\{\s*PRECIO\s*\}\}|\[PRECIO\]/i;
+const DINERO_PRECIO = /[$€]|\b(?:MXN|USD|pesos|euros|dolares)\b/i;
+function muestraPrecio(l) {
+  const textos = [...textosVisibles(l), vozDe(l)].join(' ');
+  if (MARCADOR_PRECIO.test(textos)) return true;
+  if (l.tipo !== 'cifra') return false;
+  const lineas = l.lineas || (l.valor ? [l.valor] : []);
+  return lineas.some((linea, i) => {
+    const t = typeof linea === 'string' ? linea : linea?.texto || '';
+    // Mismos tamaños que cifra(): una línea a 140; varias a 84 y su resultado a 100.
+    const predeterminado = lineas.length === 1 ? '140px' : i === lineas.length - 1 ? '100px' : '84px';
+    const grande = parseFloat(linea?.tam || l.tam || predeterminado) >= 100;
+    return grande && DINERO_PRECIO.test(plano(t));
+  });
+}
+export function reglasAnclaPrecio(deck, { crudo } = {}) {
+  const avisos = [];
+  if (!['vsl', 'vsl-corto', 'webinar'].includes(deck.pieza)) return { errores: [], avisos };
+  deck.laminas.forEach((l, i) => {
+    const original = crudo?.laminas?.[i] || l;
+    if (!muestraPrecio(l) && !muestraPrecio(original)) return;
+    const texto = sinAcentos([...textosVisibles(l), vozDe(l)].join(' '));
+    if (SALDO_PENDIENTE.test(texto)) avisos.push(`${nombre(deck, i)}: el ancla es dinero que sí llegará, no un costo; ancla con lo que cuesta esperar (financiamiento u horas de cobranza) — LAYOUTS, Precio con ancla`);
+  });
+  return { errores: [], avisos };
+}
 
 // ---------- firma ----------
 export function reglasFirma(deck) {
@@ -723,8 +770,57 @@ export function infoIconos(deck) {
   }))];
   return fuera.length ? `emojis fuera del diccionario (${fuera.join(' ')}): usa uno de EMOJIS.md o agrégalo con su concepto; revisa en qa.json → iconos que cada lámina diga el concepto de su emoji` : null;
 }
+
+// Solo rótulos con un concepto inequívoco: una frase narrativa o la categoría de una gráfica no define
+// el significado del emoji. Los casos ambiguos siguen visibles en inventarioIconos para revisión humana.
+const CONCEPTOS_ROTULOS = [
+  ['tiempo', /\b(tiempo|horas?|reloj|espera)\b/],
+  ['dinero', /\b(dinero|capital|ganancia|ganancias|precio|precios|sueldo|costo|costos|paga|pagar)\b/],
+  ['crecimiento', /\b(crece|crecer|crecimiento|escala|escalar)\b/],
+  ['inversión bursátil', /\b(trading|bolsa|acciones bursatiles)\b/],
+  ['aprendizaje', /\b(aprenden|aprender|aprendizaje|estudiar|clases|curso|cursos|sesiones)\b/],
+  ['personas', /\b(equipo|audiencia|grupo|comunidad|personas|gente)\b/],
+  ['llamada', /\b(llamada|llamadas|videollamada|llamar)\b/],
+  ['mensaje', /\b(chat|chats|mensaje|mensajes|correo|correos|whatsapp|contesta|contestados|mandalos)\b/],
+  ['fecha', /\b(fecha|fechas|agenda|agendamos|agendada|agendadas|calendario|cita|citas)\b/],
+  ['IA', /\b(ia|agente|agentes|inteligencia artificial)\b/],
+  ['escritura', /\b(escribir|escribes|escritura|apunte|apuntes|anotar)\b/],
+  ['documento', /\b(documento|documentos|hoja|hojas|plantilla|plantillas)\b/],
+  ['alianza', /\b(alianza|alianzas|aliarte|socio|socios)\b/],
+  ['producto', /\b(producto|productos|entrega|paquete|paquetes)\b/],
+  ['arranque', /\b(arranca|arrancas|arrancar|arranque|empieza|empezar)\b/],
+];
+function conceptoRotulo(texto) {
+  const t = sinAcentos(texto);
+  if (t.split(/\s+/).length > 6 || /\{\{|\[|\blo llamo\b|\bse llama\b/.test(t)) return null;
+  const conceptos = CONCEPTOS_ROTULOS.filter(([, patron]) => patron.test(t));
+  if (conceptos.length === 1) return conceptos[0][0];
+  // Una etiqueta de una sola palabra también nombra el concepto sin interpretar una oración.
+  return conceptos.length === 0 && /^[a-z]{4,}$/.test(t.trim()) ? t.trim() : null;
+}
+// Dos rótulos de una palabra con la misma raíz («venta»/«ventas», «cliente»/«clientes») son el mismo concepto.
+const mismoConcepto = (a, b) => a === b || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5));
+export function reglasConceptosIconos(deck) {
+  const avisos = [], anteriores = new Map(), reportados = new Set();
+  deck.laminas.forEach((l, i) => {
+    if (['mapa', 'pasos', 'grafica'].includes(l.tipo) || l.como || l.paga) return;
+    for (const e of emojisDeLamina(l)) {
+      if (/^avatar|^vineta$/.test(e.campo)) continue;
+      const concepto = conceptoRotulo(e.texto);
+      if (!concepto) continue;
+      const previo = (anteriores.get(e.base) || []).find(p => !mismoConcepto(p.concepto, concepto) && sinAcentos(p.texto) !== sinAcentos(e.texto));
+      if (previo && !reportados.has(e.base)) {
+        const negado = (previo.prefijo === 'no') !== (e.prefijo === 'no');
+        avisos.push(`${nombre(deck, i)}: coherencia emoji↔concepto: ${e.base} nombra «${concepto}» y «${previo.concepto}» en la ${nombre(deck, previo.i)}${negado ? '; aparece negado con no: y afirmado en otro concepto' : ''}; usa un emoji distinto para cada concepto (EMOJIS.md, «un emoji = un concepto»)`);
+        reportados.add(e.base);
+      }
+      anteriores.set(e.base, [...(anteriores.get(e.base) || []), { ...e, concepto, i }]);
+    }
+  });
+  return { errores: [], avisos };
+}
 export function reglasIconos(deck) {
-  const avisos = [], L = deck.laminas;
+  const avisos = [...reglasConceptosIconos(deck).avisos], L = deck.laminas;
   const usos = L.map(emojisDeLamina);
   const usados = new Set(usos.flat().flatMap(e => [e.base, e.insignia]).filter(Boolean));
   // a) dos emojis que se ven casi iguales en el set del deck (con auto, en cualquiera de los dos)
@@ -931,7 +1027,7 @@ export function reglasFuente(deck, { crudo } = {}) {
 // ---------- claves del deck que nadie lee ----------
 // `_datos`, `_marca`, `_duracion`: un aviso de entrega escondido en el deck no llega al usuario. Lo que el
 // usuario debe saber va en qa.json (datos propuestos, firma, duración) o en el mensaje de entrega.
-const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'conceptos', 'clase', 'datos', 'laminas', 'piel', '_comentario']);
+const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'datos', 'laminas', 'piel', '_comentario']);
 export function reglasClaves(deck) {
   const avisos = [];
   Object.keys(deck).filter(k => !CLAVES_DECK.has(k)).forEach(k => avisos.push(k.startsWith('_')
@@ -1011,7 +1107,7 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [] } 
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
     reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
-    reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck),
+    reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck), reglasPagoGancho(deck), reglasNotasPonente(deck, pasos), reglasAnclaPrecio(deck, { crudo }),
     reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo })];
   return {
     errores: partes.flatMap(p => p.errores),

@@ -24,7 +24,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
+import { argumentos, prepararSalida, abrir, ErrorNavegador } from './lib/pipeline.mjs';
 import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina, archivoPagina, POR_HOJA, FILAS_POR_HOJA } from './lib/hoja.mjs';
 import { duracionTotal, duracionPaso, mmss } from './lib/tiempos.mjs';
 import { palabras } from './lib/markup.mjs';
@@ -33,6 +33,7 @@ import { exportarPdf, exportarPdfPasos, conNotas } from './lib/pdf.mjs';
 import { duracionVivo } from './lib/construir.mjs';
 import { mensajeSinFirma } from './lib/reglas-deck.mjs';
 
+try {
 const { opt, flag, pos } = argumentos(process.argv);
 if (flag('--pdf-pasos') && flag('--finales')) { console.error('✗ --pdf-pasos es incompatible con --finales: exporta todos los pasos o solo los finales'); process.exit(2); }
 if (flag('--pdf-pasos') && flag('--pasos')) console.warn('⚠ --pasos solo imprime el mapa y sale antes del navegador; quita --pasos para generar laminas-pasos.pdf');
@@ -65,11 +66,12 @@ if (flag('--solo-html')) process.exit(0);
 
 const escala = Number(opt('--escala', 1));
 const soloFinales = flag('--finales');
-const dirPng = path.join(dirSalida, 'laminas');
-fs.rmSync(dirPng, { recursive: true, force: true });
-fs.mkdirSync(dirPng, { recursive: true });
-
+// Primero arranca Chromium. Los archivos anteriores sobreviven a cualquier fallo de captura.
 const { browser, page, errores, avisos } = await abrir(htmlPath, W, H, { escala });
+const temporal = fs.mkdtempSync(path.join(dirSalida, '.render-'));
+const dirPng = path.join(temporal, 'laminas');
+fs.mkdirSync(dirPng, { recursive: true });
+try {
 avisos.forEach(a => console.warn('⚠ ' + a));
 const manifiesto = [];
 const lams = await page.$$('section.lamina');
@@ -97,53 +99,58 @@ for (let i = 0; i < lams.length; i++) {
     manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}`, revela: (revela[i] || [])[p] || [], ...(claves.has(p) ? { clave: true } : {}) });
   }
 }
-fs.writeFileSync(path.join(dirSalida, 'pasos.json'), JSON.stringify(manifiesto, null, 2));
-console.log(`PNG → ${dirPng} (${manifiesto.filter(m => m.archivo).length} imágenes de ${lams.length} láminas)`);
+fs.writeFileSync(path.join(temporal, 'pasos.json'), JSON.stringify(manifiesto, null, 2));
+console.log(`PNG → ${path.join(dirSalida, 'laminas')} (${manifiesto.filter(m => m.archivo).length} imágenes de ${lams.length} láminas)`);
 
 // Captura de una hoja de contacto (HTML temporal junto a los PNG)
 async function capturar(html, ancho, destino) {
-  const hp = path.join(dirSalida, '.hoja.html');
+  const hp = path.join(temporal, '.hoja.html');
   fs.writeFileSync(hp, html);
   const p2 = await browser.newPage({ viewport: { width: ancho, height: 400 } });
   await p2.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
   await p2.screenshot({ path: destino, type: 'jpeg', quality: 82, fullPage: true });
   await p2.close();
   fs.unlinkSync(hp);
-  console.log(`Hoja → ${destino}`);
+  console.log(`Hoja → ${path.join(dirSalida, path.basename(destino))}`);
 }
 const cuadros = cuadrosHoja(manifiesto);
-// hojas.json solo existe si TODAS las hojas que lista se capturaron: el de un render anterior se borra primero y el
-// nuevo se escribe al final, de un golpe (tmp + rename). Así nunca apunta a hojas borradas o de otro render.
-const hojasJson = path.join(dirSalida, 'hojas.json');
-fs.rmSync(hojasJson, { force: true });
+// El manifiesto se prepara junto a las capturas nuevas y se publica al terminar todas las hojas.
+const hojasJson = path.join(temporal, 'hojas.json');
 if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
-  // las páginas de un render anterior más largo no se quedan
-  fs.readdirSync(dirSalida).filter(f => /^hoja(-pasos)?(-\d+)?\.jpg$/.test(f)).forEach(f => fs.rmSync(path.join(dirSalida, f), { force: true }));
-  const hojas = { hojas: [], pasos: [] };
+  const hojas = { hojas: [], pasos: [], invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha };
   const total = deck.laminas.length;
   const paginas = paginar(cuadros, POR_HOJA);
   for (let k = 0; k < paginas.length; k++) {
-    const h = htmlHoja(paginas[k], { W, H, titulo: tituloPagina(paginas[k], k, paginas.length, total) });
+    const h = htmlHoja(paginas[k], { W, H, sello: prep.evidencia.sello, titulo: tituloPagina(paginas[k], k, paginas.length, total) });
     const archivo = archivoPagina('hoja', k, paginas.length);
-    await capturar(h.html, h.cols * (h.ancho + 18) + 18, path.join(dirSalida, archivo));
+    await capturar(h.html, h.cols * (h.ancho + 18) + 18, path.join(temporal, archivo));
     hojas.hojas.push({ archivo, desde: paginas[k][0].n, hasta: paginas[k][paginas[k].length - 1].n });
   }
-  if (paginas.length > 1) fs.copyFileSync(path.join(dirSalida, archivoPagina('hoja', 0, paginas.length)), path.join(dirSalida, 'hoja.jpg'));
+  if (paginas.length > 1) fs.copyFileSync(path.join(temporal, archivoPagina('hoja', 0, paginas.length)), path.join(temporal, 'hoja.jpg'));
   const filas = filasPasos(manifiesto);
   if (!soloFinales && filas.length) {
     const pp = paginar(filas, FILAS_POR_HOJA);
     for (let k = 0; k < pp.length; k++) {
-      const hp = htmlHojaPasos(pp[k], { W, H, titulo: tituloPagina(pp[k], k, pp.length, total) });
+      const hp = htmlHojaPasos(pp[k], { W, H, sello: prep.evidencia.sello, titulo: tituloPagina(pp[k], k, pp.length, total) });
       const archivo = archivoPagina('hoja-pasos', k, pp.length);
-      await capturar(hp.html, hp.anchoTotal, path.join(dirSalida, archivo));
+      await capturar(hp.html, hp.anchoTotal, path.join(temporal, archivo));
       hojas.pasos.push({ archivo, desde: pp[k][0].n, hasta: pp[k][pp[k].length - 1].n });
     }
-    if (pp.length > 1) fs.copyFileSync(path.join(dirSalida, archivoPagina('hoja-pasos', 0, pp.length)), path.join(dirSalida, 'hoja-pasos.jpg'));
+    if (pp.length > 1) fs.copyFileSync(path.join(temporal, archivoPagina('hoja-pasos', 0, pp.length)), path.join(temporal, 'hoja-pasos.jpg'));
   }
   fs.writeFileSync(hojasJson + '.tmp', JSON.stringify(hojas, null, 2));
   fs.renameSync(hojasJson + '.tmp', hojasJson);
   if (paginas.length > 1) console.log(`⚠ ${paginas.length} hojas de finales (${hojas.hojas.map(x => `${x.archivo}: ${x.desde}-${x.hasta}`).join(' · ')}): la revisión visual recorre TODAS, no solo hoja.jpg`);
 }
+
+// Publica únicamente después de capturar todas las hojas y todos los pasos.
+fs.readdirSync(dirSalida).filter(f => f === 'laminas' || f === 'pasos.json' || f === 'hojas.json' || /^hoja(-pasos)?(-\d+)?\.jpg$/.test(f))
+  .forEach(f => fs.rmSync(path.join(dirSalida, f), { recursive: true, force: true }));
+for (const archivo of fs.readdirSync(temporal)) fs.renameSync(path.join(temporal, archivo), path.join(dirSalida, archivo));
+} catch (error) {
+  await browser.close();
+  throw error;
+} finally { fs.rmSync(temporal, { recursive: true, force: true }); }
 
 // PDF para mandar (lib/pdf.mjs): una página por lámina sin cursor, el stack con su remate en una página, y en
 // propuesta o VSL además laminas-notas.pdf con la voz como texto
@@ -169,3 +176,9 @@ if (flag('--qa')) {
   process.exit(errores.length ? 1 : q.status ?? 1);
 }
 process.exit(errores.length ? 1 : 0);
+
+} catch (error) {
+  if (!(error instanceof ErrorNavegador)) throw error;
+  console.error('✗ ' + error.message);
+  process.exit(4);
+}

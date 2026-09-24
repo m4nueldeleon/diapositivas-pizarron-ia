@@ -140,7 +140,9 @@
     "Busca «precio»",
     "Anota 3 nombres"
    ],
-   "voz": "Treinta segundos: busca tres chats y anota los nombres."
+   "voz": "Treinta segundos: busca tres chats y anota los nombres.",
+   "accion": "Abre WhatsApp y muestra cómo buscar «precio» sin proyectar conversaciones privadas.",
+   "si_falla": "Si no abre la aplicación, pide anotar tres contactos de memoria y continuar en papel."
   },
   {
    "id": "mapa-2",
@@ -267,7 +269,9 @@
     "Lo que preguntó",
     "Una fecha"
    ],
-   "voz": "Treinta segundos: escribe tus tres mensajes con la fórmula."
+   "voz": "Treinta segundos: escribe tus tres mensajes con la fórmula.",
+   "accion": "Deja la fórmula visible y acompaña la escritura de los tres mensajes.",
+   "si_falla": "Si no hay conexión, pide escribir los mensajes en una nota local y enviarlos después."
   },
   {
    "id": "mapa-3",
@@ -377,7 +381,8 @@
    "voz": [
     "Tu tarea: manda tus tres mensajes hoy.",
     "Y en la próxima clase me cuentas cuántos contestaron."
-   ]
+   ],
+   "paga": "gancho"
   },
   {
    "id": "puente",
@@ -390,5 +395,6 @@
     "Vemos qué contestar cuando te dicen que está caro."
    ]
   }
- ]
+ ],
+ "persona": "tu"
 }

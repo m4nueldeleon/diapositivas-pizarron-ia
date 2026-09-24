@@ -13,6 +13,7 @@ Son **31 diseños**: 29 de lámina (texto e ideas, procesos y relaciones, datos,
   heredado: cambia de set según la máquina y QA revisa los dos; ver EMOJIS.md, «Qué set usar»), `animacion`
   (`seco`, `suave`), `idioma`, `piel` (🏻…🏿 o `ninguno`: el tono de piel de las personas; EMOJIS.md, «Personas»).
 - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
+  `marca.posicion: "arriba" | "abajo"` coloca la firma; `firma: false` la oculta por lámina.
   **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
   «@tuusuario», «<…>») es error de QA.
 - `pieza`: `reel`, `tutorial` (2-8 min), `vsl-corto` (3-6 min), `clase-corta` (15-30 min), `video`, `vsl`,
@@ -23,6 +24,7 @@ Son **31 diseños**: 29 de lámina (texto e ideas, procesos y relaciones, datos,
   sea en vivo. `qa.json → duracion` separa `laminas` y `camara`.
 - Cualquier otra clave de primer nivel se ignora y QA la avisa, también las que empiezan con `_` (`_marca`,
   `_datos`): un aviso de entrega escondido en el deck no lo lee nadie. Solo `_comentario` queda libre.
+- `persona: "tu" | "ustedes"`: trato de pantalla y voz. `persona_excepciones: ["frase que se conserva"]` excluye esas frases del QA de persona, sin distinguir mayúsculas ni acentos.
 - `datos`: ver [Datos que se llenan una vez](#datos-que-se-llenan-una-vez).
 
 **Campos que acepta cualquier lámina**
@@ -30,6 +32,7 @@ Son **31 diseños**: 29 de lámina (texto e ideas, procesos y relaciones, datos,
 - `id`: nombre corto para los archivos y los cortes.
 - `voz`: lo que se dice. Puede ser un texto o una lista con un texto por paso; sirve para
   tiempos, anclas y QA.
+- `paga: "<id>"`: retoma el gancho al cerrar; el id debe existir (si falta, QA avisa). Ver GUION §6.
 - `dur`: segundos por paso, como número o como lista.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
 - `sello`: texto de sello de goma que cae en un paso extra. Es una etiqueta blanca OPACA con doble
@@ -152,7 +155,7 @@ en negrita, sin convertirlas en emojis; `como` conserva el mapa y sus letras.
   `"como": "<id>"` (hereda `items`, `encabezado`, `tam_texto`, `separacion` y `vineta`). Una lista con `activo`,
   `hechos`, `como` u `oscura` va centrada. Ejemplo en `oscura`.
 
-### Fuente de un dato o un estudio (`idea`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
+### Fuente de un dato o un estudio (`idea`, `lista`, `objeto`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
 `"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
 40 px (36 en 9:16), sin cursiva: **un solo estilo** para citar, «Autor, «obra», medio (año)» («Reich y Ruipérez-Valiente,
 «The MOOC pivot», Science (2019)»). Si solo abriste una fuente secundaria (la primaria dio 403), agrega «vía <medio>»; si
@@ -210,12 +213,11 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
   últimos 100 mensajes) o se declaran pendientes; con eso, el total sale en rango. Una tasa escrita a mano en la
   cuenta, sin `fuente` ni `{{TASA_…}}`, es «tasa sin origen» (aviso y borrador).
 - `fuente`: de dónde sale un dato publicado (el tamaño de un mercado); sale en sans gris de 40 px al pie y exime
-  la cuenta del aviso de proyección. Es la misma `fuente` de `idea`, `flujo`, `grafica` y `cita` (ver «Fuente de
+  la cuenta del aviso de proyección. Es la misma `fuente` de `idea`, `lista`, `objeto`, `flujo`, `grafica` y `cita` (ver «Fuente de
   un dato o un estudio»).
 - `[[palabra]]` pone una palabra en letra de mano dentro de la ecuación: `100-250 [[ventas]] × $100`.
-- Cada línea puede ser un objeto `{ "texto", "tam", "peso", "tono" }` para jerarquizar. **Precio con
-  ancla** — el ancla es algo real que el público ya vio (la columna cara de la tabla, un sueldo, tu
-  nivel superior), chica y gris; el precio, grande y abajo. Nunca un «Valor» inventado:
+- Cada línea puede ser un objeto `{ "texto", "tam", "peso", "tono" }` para jerarquizar. **Precio con ancla** — El ancla es dinero que el espectador PAGA o PIERDE, en la misma unidad y periodo que el precio: alternativa cara, sueldo, nivel superior, costo de financiarse o lo que nunca cobra, con fuente. Nunca un saldo que sí llegará (cuentas por cobrar, «en la calle», facturación o ventas brutas). Si el dinero llega tarde, ancla con su costo: {{TASA_…}} en `datos` con fuente, u horas de cobranza × {{COSTO_HORA}}. Un total calculado en una `cifra` «Si…» sigue permitido si es un costo. Contraejemplo inválido: «En la calle hoy: $60-90 mil» → «[producto]: [precio]».
+  El ancla va chica y gris; el precio, grande y abajo:
   ```json
   { "tipo": "cifra", "lineas": [
     { "texto": "Una recepcionista: {g:$9,000 al mes}", "tam": "64px", "peso": 500 },
@@ -432,10 +434,12 @@ láminas siguientes los reusan con `"como": "<id>"`: heredan solo los campos del
 ```
 - Se heredan: `pasos` → `n`, `iconos`, `etiquetas`, `prefijo`, `sobre`, `ruta`, `separacion`, `tam_etiqueta`; `calendario` →
   `titulo`, `dias`, `fases`, `n`, `columnas`, `palabra_dia`, `color`, `rango`; `tabla` → `esquina`, `columnas`, `filas`,
-  `ancho_etiqueta`, `vacias`. Nunca `id`, `voz`, `revelar`, `activo`, `hechos`, `fase_activa`, `texto`, notas ni sello.
+  `ancho_etiqueta`, `vacias`; `lista` → su mapa y letras; `meses` → su rejilla;
+  `chat` → `encabezado`, `encabezado_estilo`, `avatar_yo`, `avatar_otro`, `avatar_tam`, `sello`, `sello_sobre`, `sello_pos`, `sello_paso` (los mensajes los trae la hija);
+  `idea` → `emoji`, `emoji_tam`; `prueba` → `capturas`. Nunca `id`, `voz`, `revelar`, `activo`, `hechos`, `fase_activa`, `texto` ni notas; el sello solo se hereda en `chat`.
 - Lo que trae la lámina gana (`{ "tipo": "calendario", "como": "plan", "fase_activa": 2 }`). La madre va antes; se
   permiten cadenas. Es error un `como` a un id que no existe, que va después, a sí misma o de otro diseño; `como` solo
-  existe en `pasos`, `calendario` y `tabla`. QA avisa cuando una lámina repite a mano el objeto de otra.
+  existe en `pasos`, `calendario`, `tabla`, `lista`, `meses`, `chat`, `idea` y `prueba`. QA avisa cuando una lámina repite a mano el objeto de otra.
 
 ### `tabla` — la tabla-marcador escrita a mano  ·  [5:25 → 10:05]
 El recurso estrella: se llena columna por columna a lo largo de varias láminas. `converger: { "columna", "texto",
@@ -771,8 +775,7 @@ hasta que lo llenes; así una variable de la lección nunca se confunde con un d
 `boton` (el texto del botón) es obligatorio. `cursor` acepta `mano` (por omisión) o `flecha`.
 - **Pasos: 1.** El botón, su `texto` y el cursor que llega y aprieta entran en el paso 0 (`clic_paso` y `texto_paso`
   valen 0 por omisión): la `voz` lleva UN texto. `clic_paso: 1` separa el clic en un segundo paso.
-- Con `cursor: "mano"` (por omisión) el `emoji` del botón no puede ser una mano (👆 👉 ✍️): el cursor ya señala y se
-  verían dos manos [23:15, 38:15]. Va un objeto (📝 🤖 🚀 📞); QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
+- El botón lleva el emoji de lo que da el clic: 📞 llamada, 🎟️ lugar, 🚀 arrancar, 🤖 la herramienta; 📝 solo si el clic es escribir (y es pálido: 30/28 %). Nunca una mano (👆 ✍️ 👉) en el botón: con el cursor de mano se ven dos manos [23:15, 38:15]; QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
 
 ### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:50]
 En 16:9 va **a sangre**: el bento llena la lámina de borde a borde (18 px de margen), las casillas vacías
@@ -874,6 +877,8 @@ Reels), líneas grises finas, el mes en mayúsculas grises arriba a la izquierda
 - Acepta su propio `sello`.
 
 ### `camara` — tramo a cámara (en el montaje se ve tu grabación)
+
+En vivo, todo tramo que dependa de una página, documento o internet lleva `si_falla`: la acción de respaldo concreta en las notas del ponente. Usa `accion` para la operación principal.
 ```json
 { "tipo": "camara", "voz": "Déjame contarte cómo empecé", "dur": 4 }
 ```
@@ -944,7 +949,7 @@ marcas: no caben a lo ancho.
 | `oscura: true` | cualquiera | Pinta esa lámina con el fondo oscuro de la oferta. |
 | `sello_sobre`, `sello_pos`, `clic_pos` | cualquiera | Mueven el sello y la punta del cursor (ver arriba). |
 | `anotaciones` | cualquiera | Notas a mano con gancho hacia un ancla, o una flecha que entra desde el borde (ver «Anotaciones con flecha»). |
-| `como` | pasos, calendario, tabla | Reusa el objeto de otra lámina (ver «El objeto que vuelve»). |
+| `como` | pasos, calendario, tabla, lista, meses, chat, idea, prueba | Reusa el objeto de otra lámina (ver «El objeto que vuelve»). |
 
 ### Anotaciones con flecha (cualquier diseño)  ·  [15:00, 28:35, 2:40, 11:20, 36:45]
 El video pone notas rojas a mano con su gancho sobre casi cualquier recurso: una captura con su dato encerrado, un
@@ -1083,12 +1088,11 @@ Un solo «+». Tres partes o un prefijo que no sea `no:`/`si:` es error de contr
 ## Presentación, procedencia y QA de voz
 
 Campos del deck: `sala` es `true`, `false` o `{ "distancia_m": 15 }`; nunca se deduce de `en_vivo`.
-En 9:16 se ignora con aviso. `persona` acepta `"tu"` o `"ustedes"`; sin ella QA solo avisa una contradicción
-entre pantalla y voz en el mismo paso. Por lámina, `excepcion_persona`: `"titulo-formula"`, `"cita"`,
-`"a-si-mismo"` o `"a-la-ia"` documenta el cambio intencional.
+En 9:16 se ignora con aviso. `persona` acepta `"tu"` o `"ustedes"`; pantalla y voz contradictorias en el mismo paso son error incluso sin declararla. En vivo, QA pide declararla; sin `en_vivo` asume `tu` con aviso suave. Por lámina, `excepcion_persona`: `"titulo-formula"`, `"cita"`,
+`"a-si-mismo"`, `"a-la-ia"` o `"uno-a-uno"` documenta el cambio intencional. `persona_excepciones` en el deck conserva frases concretas.
 
 Campos comunes `accion` y `si_falla`: texto común o arreglo con una entrada por paso. Se muestran solamente en
-`notas-por-paso.md`, banda N y vista O del presentador, nunca sobre la lámina. `credibilidad: true` declara una
+`notas-por-paso.md`, PDF con notas, banda N y vista O del presentador (también junto a la consigna de `vivo`), nunca sobre la lámina, PNG, video ni montaje. QA avisa `si_falla` sin `accion` en el mismo paso, notas sin `en_vivo: true` y `camara` con `vivo` sin respaldo. `credibilidad: true` declara una
 lámina de credibilidad explícita. `--pdf-pasos` recaptura todos los pasos sin cursor ni onda; cámaras sin `vivo`
 no generan página, cámaras con `vivo: true` generan su consigna. El stack conserva sus pasos a sangre.
 

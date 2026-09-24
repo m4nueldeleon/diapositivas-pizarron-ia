@@ -15,7 +15,11 @@ AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FUENTES="$AQUI/assets/fonts"
 ok() { echo "  ✓ $*"; }; mal() { echo "  ✗ $*"; }
 
-FIRMA=""; SUFIJO=""; LOGO=""; VETADAS=""; COMUNIDAD=""; PROXIMA=""; IMPORTAR=""; SOLO_FICHA=0; FORZAR=0; CON_FICHA=0
+FIRMA="${PIZARRON_FIRMA:-}"; SUFIJO="${PIZARRON_SUFIJO:-}"; LOGO="${PIZARRON_LOGO:-}"
+VETADAS="${PIZARRON_VETADAS:-}"; COMUNIDAD="${PIZARRON_COMUNIDAD:-}"; PROXIMA="${PIZARRON_PROXIMA_CLASE:-}"
+IMPORTAR=""; SOLO_FICHA=0; FORZAR=0; CON_FICHA=0
+if [ -n "$FIRMA$SUFIJO$LOGO$VETADAS$COMUNIDAD$PROXIMA" ]; then CON_FICHA=1; fi
+TTY=""; if [ -t 0 ]; then TTY=/dev/stdin; elif (exec </dev/tty) 2>/dev/null; then TTY=/dev/tty; fi
 valor() { if [ $# -lt 2 ] || [ "${2#--}" != "$2" ]; then echo "✗ $1 necesita un valor" >&2; exit 2; fi; }
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -85,20 +89,22 @@ if [ "$CON_FICHA" = 1 ]; then
     chmod 600 "$FICHA"; ok "creada: $FICHA"; sed 's/^/      /' "$FICHA"
   fi
 elif [ -f "$FICHA" ]; then ok "$FICHA"
-elif [ ! -t 0 ]; then echo "  · sin terminal interactiva: créala con bash scripts/setup.sh --solo-ficha --firma \"@tu_arroba\" [--proxima-clase \"cada lunes 8 pm\"] [--comunidad \"…\"]"
+elif [ -z "$TTY" ]; then echo "  · sin terminal interactiva: créala con bash scripts/setup.sh --solo-ficha --firma \"@tu_arroba\" [--proxima-clase \"cada lunes 8 pm\"] [--comunidad \"…\"]"
 else
-  printf "  ¿La creo ahora? Tres preguntas (s/N): "; read -r R
+  printf "  ¿La creo ahora? Cinco preguntas (s/N): "; read -r R <"$TTY" || R=""
   if [ "${R:-n}" = "s" ] || [ "${R:-n}" = "S" ]; then
-    printf "  ¿Importar de la ficha de carruseles-virales-ia? Ruta de su MI-MARCA.md (vacío = no): "; read -r CARRUSEL
+    printf "  ¿Importar de la ficha de carruseles-virales-ia? Ruta de su MI-MARCA.md (vacío = no): "; read -r CARRUSEL <"$TTY" || CARRUSEL=""
     mkdir -p "$(dirname "$FICHA")"
     if [ -n "$CARRUSEL" ] && [ -f "$CARRUSEL" ]; then
       # Se CONVIERTE: solo la cuenta como firma y las palabras vetadas en una línea; nada de reglas de carrusel
       node --input-type=module -e "import fs from 'node:fs'; import { convertirFichaCarrusel } from '$AQUI/scripts/lib/marca.mjs'; fs.writeFileSync(process.argv[1], convertirFichaCarrusel(fs.readFileSync(process.argv[2], 'utf8')));" "$FICHA" "$CARRUSEL"
     else
-      printf "  1/3 Tu @ o tu dominio (la firma; vacío = sin firma): "; read -r T
-      printf "  2/3 Logo (ruta a un PNG sin fondo; vacío = sin logo): "; read -r LOGO
-      printf "  3/3 Palabras que nunca usas (separadas por comas): "; read -r V
-      node --input-type=module -e "import fs from 'node:fs'; import { fichaNueva } from '$AQUI/scripts/lib/marca.mjs'; fs.writeFileSync(process.argv[1], fichaNueva({ texto: process.argv[2], logo: process.argv[3], vetadas: process.argv[4].split(',').map(x => x.trim()).filter(Boolean) }));" "$FICHA" "$T" "$LOGO" "$V"
+      printf "  1/5 Tu @ o tu dominio (la firma; vacío = sin firma): "; read -r T <"$TTY" || T=""
+      printf "  2/5 Logo (ruta a un PNG sin fondo; vacío = sin logo): "; read -r LOGO <"$TTY" || LOGO=""
+      printf "  3/5 Palabras que nunca usas (separadas por comas): "; read -r V <"$TTY" || V=""
+      printf "  4/5 Comunidad (nombre, palabra clave o link; vacío = después): "; read -r COMUNIDAD <"$TTY" || COMUNIDAD=""
+      printf "  5/5 Próxima clase (día y hora; vacío = después): "; read -r PROXIMA <"$TTY" || PROXIMA=""
+      node --input-type=module -e "import fs from 'node:fs'; import { fichaNueva } from '$AQUI/scripts/lib/marca.mjs'; fs.writeFileSync(process.argv[1], fichaNueva({ texto: process.argv[2], logo: process.argv[3], vetadas: process.argv[4].split(',').map(x => x.trim()).filter(Boolean), comunidad: process.argv[5], proximaClase: process.argv[6] }));" "$FICHA" "$T" "$LOGO" "$V" "$COMUNIDAD" "$PROXIMA"
     fi
     chmod 600 "$FICHA"; ok "creada: $FICHA"; echo "  · revísala:"; sed 's/^/      /' "$FICHA"
   else echo "  · omitida: las láminas salen sin firma hasta que exista $FICHA"; fi

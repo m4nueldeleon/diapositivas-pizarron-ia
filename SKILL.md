@@ -93,6 +93,8 @@ las tipografías.
 
 ## 1. Flujo
 
+Antes de escribir, congela el trato y las reglas del cliente; declara `persona` y conserva la misma persona en pantalla y voz (GUION §1).
+
 | Fase | Qué haces | Sale |
 |---|---|---|
 | **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). En `vsl`, `vsl-corto` y `webinar`, ANTES de los beats, la **ficha de venta** en 7 líneas: público y dolor con sus palabras · la promesa (resultado + plazo + «sin…») · el mecanismo con nombre · la prueba disponible · **promesa → qué la prueba → qué mide esa fuente** (si mide otra cosa, la voz la dice como dato del mercado y la lámina nombra lo que se midió) · una objeción real y cómo se DEMUESTRA la respuesta · un solo llamado (botón o palabra clave). Lo que falte va como dato pendiente, igual que un `{{…}}`. | beats |
@@ -236,3 +238,12 @@ estable. Esta skill entrega el lienzo, su revelado, PDF por paso y notas portabl
 - El montaje cubre la cámara a pantalla completa: no hace cara en círculo ni pantalla dividida.
 
 Para el cierre en vivo, `idea`, `lista` y `boton` aceptan `qr: {url, rotulo?}` (HTTPS real). Entra como un paso extra: alinea su `voz`. Prueba la proyección con dos teléfonos y conserva una URL corta como respaldo en `si_falla` (PROTOCOLO, acceso en vivo).
+
+## Desde Codex / sandbox
+
+Chromium necesita permiso para arrancar: en macOS, Codex con `-s workspace-write` puede bloquearlo.
+Ejecuta render y QA con permiso completo (`-s danger-full-access` o escalando el comando).
+Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`: es solo un filtro previo,
+con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.
+Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes renderizar, entrega
+`deck.json` + `qa-texto.json` + **«SIN RENDER, revisión visual pendiente»**.

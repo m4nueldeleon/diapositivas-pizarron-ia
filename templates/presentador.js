@@ -41,7 +41,16 @@
   const esc = t => String(t || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
   const porPaso = (v, p) => Array.isArray(v) ? v[p] || '' : v || '';
-  const apoyo = (g, p) => [['Acción', g.accion], ['Si falla', g.si_falla]].map(([r, v]) => porPaso(v, p) ? `${r}: ${porPaso(v, p)}` : '').filter(Boolean).join('\n');
+  const apoyo = (g, p) => [['ACCIÓN', g.accion], ['SI FALLA', g.si_falla]].map(([r, v]) => porPaso(v, p) ? `${r}: ${porPaso(v, p)}` : '').filter(Boolean).join('\n');
+
+  const notaOrador = (l, g, p) => {
+    const consigna = l.hasAttribute('data-vivo') ? (l.querySelector('.vivo-consigna') || {}).textContent || '' : '';
+    return [consigna, porPaso(g.voz, p), apoyo(g, p)].filter(Boolean).join('\n') || (l.dataset.tipo === 'camara' ? '🎥 a cámara' : '(sin voz)');
+  };
+
+  // Banda N: ACCIÓN en ámbar y SI FALLA en rojo, para verlas de reojo sin leer la voz entera
+  const notaHtml = t => t.split('\n').map(x => /^ACCIÓN: /.test(x) ? `<b style="color:#f0b429">${esc(x)}</b>`
+    : /^SI FALLA: /.test(x) ? `<b style="color:#ff6b6b">${esc(x)}</b>` : esc(x)).join('<br>');
 
   function secuencia(lams) {
     const seq = [];
@@ -106,7 +115,7 @@
       lams.forEach(x => x.classList.toggle('activa', x === l)); ajustar(l);
       barra.firstChild.style.width = ((pos + 1) / seq.length * 100) + '%';
       const g = guion(l);
-      notas.innerHTML = `<small>lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? (l.hasAttribute('data-vivo') ? ' · ⏱️ en vivo' : ' · 🎥 a cámara') : ''}</small>${esc((g.voz || [])[p]) || '<i>(sin voz)</i>'}${apoyo(g, p) ? `<br>${esc(apoyo(g, p)).replace(/\n/g, '<br>')}` : ''}`;
+      notas.innerHTML = `<small>lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? (l.hasAttribute('data-vivo') ? ' · ⏱️ en vivo' : ' · 🎥 a cámara') : ''}</small>${notaHtml(notaOrador(l, g, p))}`;
       const rel = l.querySelector('.vivo-reloj');
       cuentaVivo(l, r => { if (rel) { rel.textContent = reloj(r); clasesCuenta(rel, r); } });
     }
@@ -148,9 +157,7 @@
       }
       const g = guion(l), gs = s ? guion(lams[s.i]) : {};
       const vivo = l.hasAttribute('data-vivo');
-      const consigna = vivo ? ((l.querySelector('.vivo-consigna') || {}).textContent || '') : '';
-      voz.textContent = vivo ? consigna : (g.voz || [])[p] || (l.dataset.tipo === 'camara' ? '🎥 a cámara' : '(sin voz)');
-      if (apoyo(g, p)) voz.textContent += '\n' + apoyo(g, p);
+      voz.textContent = notaOrador(l, g, p);
       if (vivo) { const c = document.createElement('span'); c.className = 'o-cuenta'; voz.prepend(c); cuentaVivo(l, r => { c.textContent = reloj(r); clasesCuenta(c, r); }); }
       else cuentaVivo(null);
       vozSig.textContent = s ? [((gs.voz || [])[s.p] || ''), apoyo(gs, s.p)].filter(Boolean).join('\n') : '— fin —';

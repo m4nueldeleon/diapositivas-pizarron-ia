@@ -17,7 +17,7 @@ este reel» no guarda nada (ARCOS §Reel; QA lo avisa y el deck no sale `listo`)
 | 5 | Tarea 2 | 5-7 | el mapa vuelve con el titular del bloque en `texto` («La IA ordena tu bandeja»), `tarjetas` en una columna (9:16) con 🚨 urgente, 🧑‍🤝‍🧑 equipo y 🗄️ archivo (🗑️ sería «a la basura») y su prompt |
 | 6 | Tarea 3 | 8-9 | el mapa con ✅ en las dos anteriores y el prompt del reporte |
 | 7 | Remate con acción | 10 `foco` | «Esta semana delega solo una: la minuta» |
-| 8 | **Un solo llamado** | 11 `idea` 📌 | «Guarda este reel: los 3 prompts están aquí». Si los prompts no estuvieran a la vista, el llamado sería «Comenta PALABRA 💬» con `datos.ENTREGABLE` confirmado |
+| 8 | **Pago del gancho y un solo llamado** | 11 `idea`, `como` + `paga` | Vuelve la bandeja 📥 del gancho, ahora con la palomita (`si:📥`): «11 pm y ya cerraste el correo». La nota pide guardar los tres prompts; `llamado: true` conserva un solo llamado. |
 
 Si nombras una herramienta (ChatGPT, Claude, Gmail), va su logo real como `imagen` o un hueco declarado: nunca un emoji
 en lugar de la marca (SKILL, regla 10). Aquí se dice «tu IA» a propósito.

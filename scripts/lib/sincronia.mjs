@@ -32,7 +32,7 @@ function claves(t, enfasis = true) {
 }
 const coincide = (a, b) => [...a].some(k => b.has(k));
 const textoPlano = t => normal(textoEtiqueta(t));
-const OMITIR_CAMPO = /^(?:tipo|id|voz|accion|si_falla|procedencia|credibilidad|anclas?|emoji.*|iconos|imagen|src|logo|fuente|como|excepcion_persona|persona|sobre|centro|clic|cursor|revelar|fondo|sello_sobre|sello_pos|anclar|color|estilo|flecha|de|a|forma|grafica|lado|encabezado_pos|encabezado_estilo|posicion|tono.*|tam.*|_.*)$/;
+const OMITIR_CAMPO = /^(?:tipo|id|voz|accion|si_falla|procedencia|credibilidad|anclas?|emoji.*|iconos|imagen|src|logo|fuente|como|paga|excepcion_persona|persona|sobre|centro|clic|cursor|revelar|fondo|sello_sobre|sello_pos|anclar|color|estilo|flecha|de|a|forma|grafica|lado|encabezado_pos|encabezado_estilo|posicion|tono.*|tam.*|_.*)$/;
 function textosOriginales(l) {
   const ir = x => typeof x === 'string' ? [x] : Array.isArray(x) ? x.flatMap(ir)
     : x && typeof x === 'object' ? Object.entries(x).filter(([k]) => !OMITIR_CAMPO.test(k)).flatMap(([, v]) => ir(v)) : [];
@@ -101,13 +101,21 @@ export function reglasSincronia(deck, { pasos = [], revela = [] } = {}) {
   return { errores: [], avisos };
 }
 
-const EXCEPCIONES = new Set(['titulo-formula', 'cita', 'a-si-mismo', 'a-la-ia']);
-const personaDe = t => {
-  const s = normal(String(t || '').replace(/«[^»]*»/g, ''));
-  return { tu: /\b(tu|tus|te|ti|contigo)\b/.test(s), ustedes: /\b(ustedes|miren|imaginen|anoten|levanten|escriban|hagan)\b/.test(s) };
+const EXCEPCIONES = new Set(['titulo-formula', 'cita', 'a-si-mismo', 'a-la-ia', 'uno-a-uno']);
+const SINGULAR = /\b(tu|tus|te|ti|contigo|tomalo|escanealo|llevate|grabate)\b/;
+// Lista explícita: nunca inferimos ustedes por una terminación -an/-en ni por su/sus/son/van.
+const PLURAL = /\b(ustedes|miren|imaginen|anoten|levanten|escriban|hagan|tomenlo|tomenle|grabense|llevense)\b|\bles (dejo|pido|propongo|muestro|recomiendo|invito|comparto|digo)\b/;
+const personaDe = (t, excepciones) => {
+  const s = excepciones.reduce((texto, frase) => texto.replace(new RegExp(`(?<![a-z0-9])${frase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`, 'g'), ''), normal(String(t || '').replace(/«[^»]*»/g, '')));
+  return { tu: SINGULAR.test(s), ustedes: PLURAL.test(s) };
 };
+export const infoPersona = deck => !deck.persona && deck.en_vivo !== true
+  ? ['persona asumida: tu; declara persona si el trato será ustedes (VOZ-HUMANA.md)'] : [];
+
 export function reglasPersona(deck, { pasos = [], revela = [] } = {}) {
   const errores = [], avisos = [];
+  const excepciones = (Array.isArray(deck.persona_excepciones) ? deck.persona_excepciones : []).filter(t => typeof t === 'string' && t.trim()).map(normal);
+  if (!deck.persona && deck.en_vivo === true) avisos.push('persona sin declarar: decide tu o ustedes antes del guion (VOZ-HUMANA.md)');
   (deck.laminas || []).forEach((l, i) => {
     if (EXCEPCIONES.has(l.excepcion_persona)) return;
     const mapa = revela[i] || [], n = pasos[i] || mapa.length || (Array.isArray(l.voz) ? l.voz.length : 1);
@@ -115,12 +123,14 @@ export function reglasPersona(deck, { pasos = [], revela = [] } = {}) {
     const originales = textosOriginales(l);
     const pantalla = mapa.length ? mapa.map(xs => xs.map(et => originalDe(et, originales)).join(' ')) : [originales.join(' ')];
     for (let k = 0; k < n; k++) {
-      const p = personaDe(pantalla.slice(0, k + 1).join(' ')), v = personaDe(voz[k]), donde = `${nombre(l, i)}, paso ${k}`;
+      const p = personaDe(pantalla.slice(0, k + 1).join(' '), excepciones), v = personaDe(voz[k], excepciones), donde = `${nombre(l, i)}, paso ${k}`;
       if (['tu', 'ustedes'].includes(deck.persona)) {
         const opuesta = deck.persona === 'tu' ? 'ustedes' : 'tu';
         if (p[opuesta] || v[opuesta]) errores.push(`${donde}: persona opuesta en ${[p[opuesta] && 'pantalla', v[opuesta] && 'voz'].filter(Boolean).join(' y ')}; el deck declara persona: "${deck.persona}". Mantén la misma persona o documenta excepcion_persona (GUION §1)`);
       } else if ((p.tu && v.ustedes) || (p.ustedes && v.tu)) {
-        avisos.push(`${donde}: pantalla y voz cambian entre tú y ustedes; elige persona: "tu" o "ustedes" y alinea ambas (VOZ-HUMANA.md)`);
+        errores.push(`${donde}: pantalla y voz cambian entre tú y ustedes; elige persona: "tu" o "ustedes" y alinea ambas (VOZ-HUMANA.md)`);
+      } else if ((p.tu && p.ustedes) || (v.tu && v.ustedes)) {
+        avisos.push(`${donde}: mezcla tú y ustedes; fija la persona o marca la frase en persona_excepciones (VOZ-HUMANA.md)`);
       }
     }
   });

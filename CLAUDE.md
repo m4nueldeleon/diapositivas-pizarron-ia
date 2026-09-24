@@ -113,3 +113,5 @@ SKILL.md.
    node scripts/render.mjs ejemplos/demo && node scripts/qa.mjs ejemplos/demo
    ```
 5. Las correcciones de gusto del usuario van en `LECCIONES.md`, con fecha y el porqué.
+
+Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROTOCOLO.md#desde-codex--sandbox); `--sin-navegador` no sustituye render, QA medidos ni revisión de la hoja.

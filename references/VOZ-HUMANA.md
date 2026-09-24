@@ -29,11 +29,9 @@ la tiene tu oído.
 
 **La misma persona en voz y pantalla.** Antes de escribir el deck, declara `persona: "tu"` o
 `persona: "ustedes"`. «Te sirve» no acompaña una voz que dice «ustedes»: reescribe ambas hacia
-el mismo destinatario. QA lo considera error si contradice la persona declarada; sin declaración,
-avisa al encontrar singular en pantalla y plural en la voz del mismo paso, o al revés. No usa
-«su», «sus», «les» ni «los» para adivinar el destinatario. Las citas entre «…» quedan fuera.
+el mismo destinatario. Pantalla y voz hablan con la misma persona: su contradicción en el mismo paso es error aunque no se declare `persona`. No usa «su», «sus», «son» ni «van» sueltos para adivinar el destinatario. Las citas entre «…» quedan fuera. Frente a una sala es «ustedes»; los títulos-fórmula y los «tú» de uno a uno se quedan, marcados como excepción.
 Para una lámina que habla a alguien distinto, usa `excepcion_persona` con `titulo-formula`,
-`cita`, `a-si-mismo` o `a-la-ia` (GUION §1).
+`cita`, `a-si-mismo`, `a-la-ia` o `uno-a-uno` (GUION §1). Las frases fijas del deck van en `persona_excepciones`, comparadas sin mayúsculas ni acentos.
 
 Al cambiar «TÚ SÍ» por **«USTEDES SÍ»**, vuelve a medir la lámina: ocupa más ancho. Comprueba
 saltos de línea y encuadre en el formato final, además de oír la frase en el ensayo.

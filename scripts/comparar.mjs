@@ -26,10 +26,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { selloEvidencia } from './lib/hoja.mjs';
 import { pathToFileURL } from 'node:url';
-import { argumentos, prepararSalida, abrir, DIR_SKILL } from './lib/pipeline.mjs';
+import { argumentos, prepararSalida, abrir, ErrorNavegador, DIR_SKILL } from './lib/pipeline.mjs';
 import { cajaTinta, compararCajas, emparejar, densidadTinta, correlacionMiniaturas, MIN_PARECIDO, esOtraEscena } from './lib/tinta.mjs';
 
+try {
 const { pos, opt } = argumentos(process.argv);
 const esRef = d => { try { return fs.statSync(d).isDirectory() && fs.readdirSync(d).some(f => /^ref_\d+\.(jpe?g|png)$/i.test(f)); } catch { return false; } };
 let [dirDeck, dirRef] = pos;
@@ -113,7 +115,7 @@ for (let h = 0; h * 5 < pares.length; h++) {
   const html = `<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#222;font:600 18px system-ui;color:#fff}
     .f{display:flex;gap:12px;padding:10px 12px;align-items:center}.f img{width:640px;height:360px;object-fit:contain;background:#fff}
     .r{width:170px}.r b{display:block;font-size:24px}.mal{color:#ff6b6b}.bien{color:#7ee07a}.cab{padding:10px 12px 0;font-size:20px;color:#ffd35c}</style>
-    <div class="cab">comparar.mjs · ${path.relative(DIR_SKILL, path.resolve(deckJson)).replace(/[<&]/g, '')} · sha ${deckSha} · umbral ±${umbral} · pasan ${pasanAhora}/${medAhora}</div>
+    ${selloEvidencia(prep.evidencia.sello)}<div class="cab">comparar.mjs · ${path.relative(DIR_SKILL, path.resolve(deckJson)).replace(/[<&]/g, '')} · sha ${deckSha} · umbral ±${umbral} · pasan ${pasanAhora}/${medAhora}</div>
     ${grupo.map(p => `<div class="f"><div class="r"><b>ref_${p.seg}</b>${p.id} · paso ${p.paso + 1}<br><small>${String(p.cuadro).replace(/[<&]/g, '')}</small><br><span class="${p.falla || p.distinta ? 'mal' : 'bien'}">${p.distinta ? 'NO ES LA MISMA' : p.falla ? 'FALLA' : 'pasa'}</span> · r ${p.parecido}<br>x ${f1(p.dx)} · y ${f1(p.dy)}<br>w ${f1(p.dw)} · h ${f1(p.dh)}</div><img src="${p.referencia}"><img src="${p.nuestra}"></div>`).join('')}`;
   const hp = path.join(salida, `.comp_${h + 1}.html`);
   fs.writeFileSync(hp, html);
@@ -126,10 +128,16 @@ await browser.close();
 
 const medibles = pares.filter(p => !p.distinta), distintas = pares.filter(p => p.distinta);
 const pasan = medibles.filter(p => !p.falla).length;
-const informe = { deck: path.relative(DIR_SKILL, path.resolve(deckJson)), deck_sha: deckSha, umbral, minParecido, pasan, total: medibles.length, distintas: distintas.map(p => p.id), sinRef, sinLamina,
+const informe = { invalido: prep.evidencia.invalido, deck: path.relative(DIR_SKILL, path.resolve(deckJson)), deck_sha: deckSha, umbral, minParecido, pasan, total: medibles.length, distintas: distintas.map(p => p.id), sinRef, sinLamina,
   pares: pares.map(({ referencia, nuestra, pasos, ...p }) => p) };
 fs.writeFileSync(path.join(salida, 'comparar.json'), JSON.stringify(informe, null, 2));
 console.log(`Deck ${informe.deck} · sha ${deckSha}`);
 console.log(`Encuadre: ${pasan}/${medibles.length} pares dentro de ±${umbral}%${distintas.length ? ` · ${distintas.length} no parecen la misma lámina` : ''} · hojas en ${salida}`);
 pares.forEach(p => console.log(`  ${p.distinta ? '✗✗' : p.falla ? '✗' : '✓'} ${p.id} (paso ${p.paso + 1}, r ${p.parecido})  x ${f1(p.dx)}  y ${f1(p.dy)}  w ${f1(p.dw)}  h ${f1(p.dh)}${p.distinta ? '  ← no parece la misma lámina: ¿id o cuadro de otro momento?' : ''}`));
 process.exit(sinRef.length || sinLamina.length || distintas.length ? 1 : 0);
+
+} catch (error) {
+  if (!(error instanceof ErrorNavegador)) throw error;
+  console.error('✗ ' + error.message);
+  process.exit(4);
+}

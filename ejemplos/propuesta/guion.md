@@ -6,6 +6,7 @@ diagnóstico y, mientras no estén, van como huecos declarados en `"datos"` (`{ 
 QA deja el deck en BORRADOR y los lista al entregar. **Nunca «Pongamos que cada vendedor pierde…»**: esa excepción
 (GUION §3.8 d) es para clases y VSL.
 
+- Trato: `persona: "ustedes"` en pantalla y voz; el chat de vendedor a cliente conserva `excepcion_persona: "uno-a-uno"`.
 - Pieza: `propuesta` con `"en_vivo": true` (se presenta en la junta y se conversa). Sin regla de 2 llamados ni de
   objeciones: las objeciones se conversan en vivo.
 - Se reenvía a quien no estuvo en la junta: `render.mjs --finales --pdf` da `laminas-notas.pdf` con la voz.
@@ -21,7 +22,7 @@ QA deja el deck en BORRADOR y los lista al entregar. **Nunca «Pongamos que cada
 | 5 | Metas medibles | 17-18 | de {{HOY}} a {{META}}, medido en la semana 4, y la `linea-tiempo` de 8 semanas |
 | 6 | **Alcance** | 19-20 | `lista` «Incluye:» y `lista` «No incluye:» (evita el malentendido al firmar) |
 | 7 | **Inversión anclada** | 21 | `cifra`: el costo de no hacer nada arriba, chico y gris; `{{PRECIO}}` grande |
-| 8 | Condición de salida | 22 | 🛡️ con la semana y la condición medible («si no hay avance, cancelas») |
-| 9 | **Siguiente paso con fecha y vigencia** | 23-25 | la pregunta 🤔 para conversar, el `flujo` Firmas → Agendamos → Arrancamos con `"llamado": true` y la fecha con «Vigente hasta {{VIGENCIA}}» |
+| 8 | Condición de salida | 22 | 🛡️ con la semana y la condición medible («si no hay avance, cancelan») |
+| 9 | **Siguiente paso con fecha y vigencia** | 23-25 | la pregunta 🤔 para conversar, el `flujo` Firman → Agendamos → Arrancamos con `"llamado": true` y la fecha con «Vigente hasta {{VIGENCIA}}» |
 
 Antes de mandarla: llena los datos en `"datos"` y corre `node scripts/qa.mjs ejemplos/propuesta --estricto`.

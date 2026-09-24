@@ -56,14 +56,14 @@ export function cuadrosHoja(manifiesto) {
   ]);
 }
 
-export function htmlHoja(cuadros, { W, H, ancho = 560, titulo = '' }) {
+export function htmlHoja(cuadros, { W, H, ancho = 560, titulo = '', sello = '' }) {
   const cols = cuadros.length <= 4 ? 2 : cuadros.length <= 9 ? 3 : 4, alto = Math.round(ancho * H / W);
   const fig = c => `<figure><figcaption>${escapar(rotulo(c))}</figcaption>${c.camara || !c.archivo
     ? `<div class="cam" style="width:${ancho}px;height:${alto}px">🎥 cámara</div>`
     : `<img src="${escapar(c.archivo)}" style="width:${ancho}px;height:${alto}px">`}</figure>`;
   return { cols, ancho, html: `<!doctype html><meta charset="utf-8"><style>${ESTILO}
   .g{display:grid;grid-template-columns:repeat(${cols},${ancho}px);gap:18px;padding:18px}</style>
-  ${encabezado(titulo)}<div class="g">${cuadros.map(fig).join('')}</div>` };
+  ${selloEvidencia(sello)}${encabezado(titulo)}<div class="g">${cuadros.map(fig).join('')}</div>` };
 }
 
 // Filas de la hoja de pasos: una por lámina que no es cámara, con todos sus PNG
@@ -76,7 +76,7 @@ export function filasPasos(manifiesto) {
   return [...filas.values()];
 }
 
-export function htmlHojaPasos(filas, { W, H, ancho: anchoPedido = 320, titulo = '' }) {
+export function htmlHojaPasos(filas, { W, H, ancho: anchoPedido = 320, titulo = '', sello = '' }) {
   const max = Math.max(1, ...filas.map(f => f.pasos.length));
   // una lámina de muchos pasos no ensancha la hoja más de ~2400 px: los cuadros se achican
   const ancho = Math.max(120, Math.min(anchoPedido, Math.floor((ANCHO_MAX_PASOS - 236) / max) - 12));
@@ -85,5 +85,11 @@ export function htmlHojaPasos(filas, { W, H, ancho: anchoPedido = 320, titulo = 
     `<figure><figcaption>${escapar(p.etiqueta)}</figcaption><img src="${escapar(p.archivo)}" style="width:${ancho}px;height:${alto}px"></figure>`).join('')}</div>`;
   return { anchoTotal: 200 + max * (ancho + 12) + 36, html: `<!doctype html><meta charset="utf-8"><style>${ESTILO}
   .f{display:flex;gap:12px;align-items:center;padding:8px 18px}.id{width:188px;flex:none;font-size:20px;word-break:break-word}</style>
-  ${encabezado(titulo)}${filas.map(fila).join('')}` };
+  ${selloEvidencia(sello)}${encabezado(titulo)}${filas.map(fila).join('')}` };
+}
+
+// Sello diagonal por encima de la hoja: nunca puede confundirse con evidencia vigente.
+export function selloEvidencia(texto = '') {
+  if (!texto) return '';
+  return `<div style="position:fixed;z-index:9999;top:45%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);color:#c90000;background:rgba(255,255,255,.94);border:7px solid #c90000;padding:22px;font:900 clamp(24px,3vw,72px) system-ui;white-space:nowrap;pointer-events:none">${escapar(texto)}</div>`;
 }

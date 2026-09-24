@@ -26,7 +26,7 @@ const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barra
 
 // Campos que lee cada diseño (además de los COMUNES). Si agregas un campo a un layout, agrégalo aquí:
 // pruebas/contrato.test.mjs revisa que todo «l.campo» de layouts-*.mjs esté en esta tabla.
-export const COMUNES = ['id', 'tipo', 'como', 'voz', 'accion', 'si_falla', 'excepcion_persona', 'credibilidad', 'dur', 'ancla', 'anclas', 'revelar', 'sello', 'sello_paso', 'sello_pos', 'sello_sobre',
+export const COMUNES = ['id', 'tipo', 'como', 'paga', 'voz', 'accion', 'si_falla', 'excepcion_persona', 'credibilidad', 'dur', 'ancla', 'anclas', 'revelar', 'sello', 'sello_paso', 'sello_pos', 'sello_sobre',
   'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar',
   // `llamado: true` marca una lámina como llamado visible (reglas-deck.mjs); `paso_ref` elige el paso que
   // comparar.mjs mide contra el cuadro del video (réplica)
@@ -93,6 +93,9 @@ export const CAMPOS_OBJETO = {
   lista: ['letras', 'items', 'encabezado', 'tam_texto', 'separacion', 'vineta'],
   // la rejilla de meses que cambia sus emojis por valores [16:45 → 16:50]
   meses: ['celdas', 'columnas'],
+  chat: ['encabezado', 'encabezado_estilo', 'avatar_yo', 'avatar_otro', 'avatar_tam', 'sello', 'sello_sobre', 'sello_pos', 'sello_paso'],
+  idea: ['emoji', 'emoji_tam'],
+  prueba: ['capturas'],
 };
 const firmaObjeto = l => JSON.stringify((CAMPOS_OBJETO[l.tipo] || []).map(k => l[k] ?? null));
 // El «mismo objeto»: el mapa por sus etiquetas (o íconos), el calendario por sus fases y la tabla-marcador (que crece
@@ -312,6 +315,7 @@ export function validarDeck(deck, tipos) {
   if (deck.duracion_objetivo != null && minutosObjetivo(deck.duracion_objetivo) == null) e.push(`duracion_objetivo «${deck.duracion_objetivo}» no se entiende: minutos (45) o "mm:ss" ("0:45")`);
   if (deck.conceptos != null && (typeof deck.conceptos !== 'object' || Array.isArray(deck.conceptos) || Object.entries(deck.conceptos).some(([k, v]) => !k.trim() || typeof v !== 'string' || !v.trim() || v.length > 80))) e.push('«conceptos» debe ser un objeto emoji → concepto corto (1-80 caracteres)');
   if (deck.persona != null && !['tu', 'ustedes'].includes(deck.persona)) e.push('«persona» debe ser tu o ustedes');
+  if (deck.persona_excepciones != null && (!Array.isArray(deck.persona_excepciones) || deck.persona_excepciones.some(t => typeof t !== 'string' || !t.trim()))) e.push('«persona_excepciones» debe ser una lista de frases no vacías (VOZ-HUMANA.md)');
   if (deck.sala != null && typeof deck.sala !== 'boolean' && !(typeof deck.sala === 'object' && !Array.isArray(deck.sala) && Object.keys(deck.sala).length === 1 && Number.isFinite(deck.sala.distancia_m) && deck.sala.distancia_m > 0)) e.push('«sala» debe ser true, false o { distancia_m: número positivo }');
   if (deck.en_vivo != null && typeof deck.en_vivo !== 'boolean') e.push('«en_vivo» es true o false');
   if (deck.clase != null && typeof deck.clase !== 'boolean') e.push('«clase» es true o false (un tutorial que es clase express o taller)');
@@ -394,7 +398,7 @@ const COLORES = new Set(['amarillo', 'azul', 'verde', 'rojo']);
 const COLORES_STACK = new Set(['morado', 'marino', 'naranja', 'verde', 'azul', 'negro']);
 const ENUMS = {
   velo: ['blanco', 'banda'],
-  procedencia: ['real', 'ia', 'ejemplo'], excepcion_persona: ['titulo-formula', 'cita', 'a-si-mismo', 'a-la-ia'],
+  procedencia: ['real', 'ia', 'ejemplo'], excepcion_persona: ['titulo-formula', 'cita', 'a-si-mismo', 'a-la-ia', 'uno-a-uno'],
   cursor: ['mano', 'flecha'], flecha: ['recta', 'arco', 'arco-negro', 'ninguna'], estilo: ['recta', 'arco', 'arco-negro'],
   encabezado_pos: ['arriba', 'entre'], encabezado_estilo: ['rotulo', 'frase'], anclar: ['arriba', 'centro'], fondo: ['violeta', 'azul', 'negro'],
   lado: ['izquierda', 'derecha', 'arriba', 'abajo'], signo: ['+', '=', '−', '×'], entra: ['izquierda', 'derecha', 'arriba', 'abajo'], grafica: ['lineas', 'barras', 'crecimiento'], de: ['yo', 'otro', 'prompt', 'respuesta'],
@@ -556,11 +560,15 @@ export function sanearDeck(deck) {
     if (l && typeof l === 'object') sugerencias.push(...sugerenciasDiseno(l, i, deck.formato || '16:9'));
     revisarEmojis(l, `lámina ${i + 1}`, [], sugerencias);
     if (deck.emoji == null || deck.emoji === 'auto') emojisEnSvg(l).forEach(([campo, e]) => sugerencias.push(`lámina ${i + 1} (${l.id || l.tipo}): el emoji ${e} de «${campo}» va dentro de la gráfica (SVG) y sale con la fuente del sistema: con emoji "auto", en Linux saldrá distinto; ponlo en la nota, en el nodo o en barras[].emoji (EMOJIS.md)`));
-    return sanearObjeto(normalizar(l), `lámina ${i + 1}${l.tipo === 'medidor' ? ' medidor' : ''}`, avisos, l.tipo);
+    if (l.paga != null && (typeof l.paga !== 'string' || !deck.laminas.some(x => x.id === l.paga))) sugerencias.push(`lámina ${i + 1}: paga debe apuntar al id existente del gancho; corrige «${String(l.paga)}» (ARCOS.md, siembra y pago)`);
+    const base = l.paga == null || (typeof l.paga === 'string' && deck.laminas.some(x => x.id === l.paga)) ? l : Object.fromEntries(Object.entries(l).filter(([k]) => k !== 'paga'));
+    return sanearObjeto(normalizar(base), `lámina ${i + 1}${l.tipo === 'medidor' ? ' medidor' : ''}`, avisos, l.tipo);
   });
   const marca = deck.marca && typeof deck.marca === 'object' ? sanearObjeto(deck.marca, 'marca', avisos) : deck.marca;
   const sala = typeof deck.sala === 'boolean' ? deck.sala : deck.sala && Number.isFinite(deck.sala.distancia_m) && deck.sala.distancia_m > 0 ? { distancia_m: deck.sala.distancia_m } : undefined;
   const persona = ['tu', 'ustedes'].includes(deck.persona) ? deck.persona : undefined;
+  const persona_excepciones = Array.isArray(deck.persona_excepciones) ? deck.persona_excepciones.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : [];
+  if (deck.persona_excepciones != null && (!Array.isArray(deck.persona_excepciones) || persona_excepciones.length !== deck.persona_excepciones.length)) avisos.push('persona_excepciones: conserva solo frases de texto no vacías (VOZ-HUMANA.md)');
   const conceptos = deck.conceptos && typeof deck.conceptos === 'object' && !Array.isArray(deck.conceptos) ? Object.fromEntries(Object.entries(deck.conceptos).filter(([k, v]) => k.trim() && typeof v === 'string' && v.trim() && v.length <= 80)) : undefined;
-  return { deck: { ...deck, ...(deck.conceptos != null ? { conceptos } : {}), ...(deck.sala != null ? { sala } : {}), ...(deck.persona != null ? { persona } : {}), marca, laminas }, avisos, sugerencias };
+  return { deck: { ...deck, ...(deck.persona_excepciones != null ? { persona_excepciones } : {}), ...(deck.conceptos != null ? { conceptos } : {}), ...(deck.sala != null ? { sala } : {}), ...(deck.persona != null ? { persona } : {}), marca, laminas }, avisos, sugerencias };
 }

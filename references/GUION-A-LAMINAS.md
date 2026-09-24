@@ -8,8 +8,11 @@ convierte en UN cambio visual que la vuelve obvia. Este documento es el método.
 **Antes de escribir, elige a quién le hablas.** Declara `persona: "tu"` o `persona: "ustedes"`
 en el deck y conserva esa persona tanto en pantalla como en la voz. Para una cita, un título que
 es una fórmula, un diálogo contigo mismo o una instrucción dirigida a la IA, marca esa lámina con
-`excepcion_persona: "cita" | "titulo-formula" | "a-si-mismo" | "a-la-ia"`. La excepción se usa
+`excepcion_persona: "cita" | "titulo-formula" | "a-si-mismo" | "a-la-ia" | "uno-a-uno"`. La excepción se usa
 solo donde cambia el destinatario; no sustituye corregir el resto del guion (VOZ-HUMANA.md).
+
+**Mide sellos y cajas con la forma más larga:** «USTEDES SÍ.» no cabe donde cabe «TÚ SÍ.».
+**La voz que lleva al clic va en el paso ACTUAL y termina en la palabra del clic**, nunca en la lámina siguiente.
 
 Un beat es una unidad de sentido, normalmente una oración o una cláusula. Cada beat es un paso:
 la lámina nueva o un elemento más sobre la actual.
@@ -46,6 +49,8 @@ En láminas de tres pasos o más, evita poner el sello, la nota roja o el tachad
 **La fuente se ve cuando la nombras.** Si «Según Stanford…» está en `voz[0]`, usa
 `fuente_paso: 0` para que la atribución acompañe ese beat, aunque el dato termine de revelarse
 después. QA avisa si una fuente bibliográfica identificable se cita antes de entrar en pantalla.
+
+Para requisitos, comisiones o políticas de plataforma, `fuente` lleva origen y fecha de consulta («Centro de vendedores, consultado sep. 2026»); la voz aclara que puede cambiar.
 
 ## 2. Tabla de traducción: qué dice el guion y qué se dibuja
 
@@ -197,6 +202,8 @@ después. QA avisa si una fuente bibliográfica identificable se cita antes de e
 
 ## 6. Arcos: el de la referencia y los de cada pieza
 
+**Siembra y pago.** En `vsl`, `vsl-corto`, `webinar`, `clase` (incluida la clase express) y `reel`, el objeto del gancho vuelve en el tramo final, antes o junto al llamado, con el mismo diseño y emoji: resuelto (el mismo chat contestado, el reloj libre) o reafirmado. Como en [44:15, 44:35], puede regresar el muro de prensa del gancho y repetirse la frase del mecanismo. Un pago por deck basta; puede ser la lámina del llamado. Márcalo con `paga: "<id-del-gancho>"` o reutiliza el objeto con `como`: el último 25 % remite al primer 20 %.
+
 **Un dato que vuelve se define una sola vez.** Los años de experiencia y las cantidades de clientes,
 alumnos, personas, empresas o ventas se guardan en `datos` y se repiten como `{{AÑOS}}`, `{{CLIENTES}}`
 o la clave que corresponda. Así una edición no deja «24 años» en una lámina y «25 años» en otra.
@@ -275,7 +282,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2 (emoji negado si es «me falta X», 🤔 si es una pregunta: EMOJIS.md, objeción), «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita. La respuesta es un bloque de 1-3 láminas y la primera DEMUESTRA (tabla «objeción → respuesta», abajo); una `idea` de frase («Absolutamente.», «Imposible.») solo puede ir después, como remate [34:40-34:45]. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"`; la respuesta, otro diseño |
 | 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
 | 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes»). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
-| 3 | Ancla con tu nivel caro real («Quantum… desde $25,000»), opcional | 36:30-36:40 | `cifra` |
+| 3 | Ancla con un costo real, opcional: dinero que el espectador paga o pierde, en la misma unidad y periodo que el precio (regla abajo) | 36:30-36:40 | `cifra` |
 | 4 | Revelación del producto, en 1 paso; en oscura pueden seguir sus pilares (lista blanca con emoji que vuelve con uno activo) y para quién es. Si el programa es «hecho contigo», la videollamada «TÚ + tu mentor» lo presenta [36:45] | 36:15-37:55, 43:00 | `oscura` · `lista` + `oscura` · `llamada` |
 | 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`; un componente humano —mentor, consultor, llamadas en vivo— con `llamada` antes de su `lista` [40:10, 41:15]) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` / `llamada` |
 | 6 | Prueba real: el muro de capturas (con `src` o `fuente`). Sin prueba real, un sustituto de la tabla de abajo; nunca una maqueta `ejemplo: true` | 42:00 | `prueba` |
@@ -285,6 +292,8 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🧭 |
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
+
+**Regla del ancla del precio.** El ancla es dinero que el espectador PAGA o PIERDE, en la misma unidad y periodo que el precio: alternativa cara, sueldo, nivel superior, costo de financiarse o lo que nunca cobra, con fuente. Nunca un saldo que sí llegará (cuentas por cobrar, «en la calle», facturación o ventas brutas). Si el dinero llega tarde, ancla con su costo: {{TASA_…}} en `datos` con fuente, u horas de cobranza × {{COSTO_HORA}}. Un total calculado en una `cifra` «Si…» sigue permitido si es un costo. Contraejemplo inválido: «En la calle hoy: $60-90 mil» → «[producto]: [precio]».
 
 - **El orden en un `vsl` o `vsl-corto`** (la referencia: objeciones 34:17-36:00 → revelación 36:16 → componentes y
   stack → resumen 42:29 → primer «click the button below» 43:36 → el mismo botón otra vez 44:31):

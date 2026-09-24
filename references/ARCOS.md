@@ -135,6 +135,10 @@ la voz (y los `dur`) y:
   `"PRECIO": { "pendiente": true, "motivo": "lo define dirección el lunes" }`. Se pinta como hueco `[PRECIO]`,
   pero cuenta como aviso y deja el deck en borrador (tope de 90), no como error.
 
+## Siembra y pago
+
+En `vsl`, `vsl-corto`, `webinar`, `clase` (incluida la clase express) y `reel`, el objeto del gancho vuelve en el tramo final, antes o junto al llamado, con el mismo diseño y emoji: resuelto (el mismo chat contestado, el reloj libre) o reafirmado. Como en [44:15, 44:35], puede regresar el muro de prensa del gancho y repetirse la frase del mecanismo. Un pago por deck basta; puede ser la lámina del llamado. Márcalo con `paga: "<id-del-gancho>"` o reutiliza el objeto con `como`: el último 25 % remite al primer 20 %.
+
 ## Las plantillas
 
 Minutos por bloque. **El mapa 1-2-3** (`pasos` con `activo`) es un separador entre bloques largos: en la referencia

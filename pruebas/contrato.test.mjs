@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validarDeck } from '../scripts/lib/contrato.mjs';
-import { LAYOUTS } from '../scripts/lib/construir.mjs';
+import { LAYOUTS, construirHTML } from '../scripts/lib/construir.mjs';
 import { codigo } from '../scripts/lib/emoji.mjs';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const tipos = Object.keys(LAYOUTS);
 
@@ -204,7 +206,7 @@ test('como r4: hereda solo los campos del objeto (no revelar ni voz), la hija ga
   assert.match(e({ tipo: 'pasos', como: 'cal' }), /va DESPUÉS/);
   assert.match(e({ id: 'yo', tipo: 'pasos', como: 'yo' }), /a sí misma/);
   assert.match(resolverComo({ laminas: [mapa, { id: 'cal', tipo: 'calendario', n: 14 }, { tipo: 'calendario', como: 'mapa' }] }).errores.join(), /una lámina pasos y esta es calendario/);
-  assert.match(resolverComo({ laminas: [{ id: 'i', tipo: 'idea', texto: 'x' }, { tipo: 'idea', como: 'i' }] }).errores.join(), /solo existe en/);
+  assert.match(resolverComo({ laminas: [{ id: 'i', tipo: 'cita', texto: 'x' }, { tipo: 'cita', como: 'i' }] }).errores.join(), /solo existe en/);
   // copia a mano: avisa y sugiere el id
   const av = resolverComo({ laminas: [mapa, { tipo: 'pasos', iconos: mapa.iconos, etiquetas: mapa.etiquetas, activo: 2 }] }).avisos;
   assert.match(av.join('\n'), /repite a mano el pasos de la lámina 1: .*"como": "mapa"/);
@@ -226,4 +228,19 @@ test('r5: índices fuera de rango son error (pasos activo/hechos desde 1; rejill
   assert.ok(rj([30]).some(x => /destacar 30 y la rejilla tiene 30 celdas/.test(x)));
   assert.ok(v([{ tipo: 'opciones', items: ['a', 'b'], elegida: 2 }]).some(x => /elegida 2 y hay 2 opciones/.test(x)));
   assert.deepEqual(v([{ tipo: 'opciones', items: ['a', 'b'], elegida: 1 }]), []);
+});
+
+
+test('lista y objeto aceptan fuente y la construyen al pie sin campos desconocidos', () => {
+  const laminas = [
+    { tipo: 'lista', items: ['Una regla'], fuente: 'Centro de vendedores, consultado sep. 2026', fuente_paso: 0 },
+    { tipo: 'objeto', emoji: '📦', texto: 'Un objeto', fuente: 'Catálogo del ejemplo, consultado sep. 2026', fuente_paso: 0 },
+  ];
+  assert.deepEqual(laminas.flatMap((l, i) => camposDesconocidos(l, i)), []);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-fuentes-'));
+  try {
+    const { html } = construirHTML({ deck: { emoji: 'apple', marca: false, laminas }, dirDeck: dir, dirSalida: dir, dirSkill: path.resolve('.') });
+    for (const l of laminas) assert.ok(html.includes(l.fuente), `falta fuente de ${l.tipo}`);
+    assert.equal((html.match(/class="fuente"/g) || []).length, 2);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

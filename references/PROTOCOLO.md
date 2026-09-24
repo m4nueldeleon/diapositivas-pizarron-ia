@@ -21,6 +21,8 @@ beats (cada paso sigue siendo un beat de 2-3 s); los tramos en vivo sin láminas
 actividad, preguntas) van como `camara` con `"vivo": true`, la consigna en `texto` y `dur` en segundos. No
 sustituyen beats.
 
+Antes del guion congela «Trato y reglas del cliente» de MI-MARCA: persona, grafías, títulos-fórmula y prohibiciones. Pásala a cada revisor desde la ronda 1; introducir reglas a media corrida obliga a revisar de nuevo.
+
 ## 1. Ficha de marca
 
 Lee `MI-MARCA.md`: la primera que exista entre la carpeta del deck, la de arriba, `$PIZARRON_MARCA` y la
@@ -123,6 +125,15 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
   (`scripts/lib/reglas-deck.mjs`). La duración estimada sale en la primera línea y en `qa.json` →
   `duracion`.
 
+## Desde Codex / sandbox
+
+Chromium necesita permiso para arrancar: en macOS, Codex con `-s workspace-write` puede bloquearlo.
+Ejecuta render y QA con permiso completo (`-s danger-full-access` o escalando el comando).
+Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`: es solo un filtro previo,
+con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.
+Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes renderizar, entrega
+`deck.json` + `qa-texto.json` + **«SIN RENDER, revisión visual pendiente»**.
+
 ## 4b. Calibrar contra la referencia (solo quien mantiene la skill)
 
 ```bash
@@ -150,6 +161,9 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
 - Guardas: de la carpeta de referencias solo se leen los `ref_*.jpg`; un `deck.json` que esté ahí (el deck viejo de
   `pizarron-ref/replica`) se ignora con un aviso y nunca se compara. Si ninguna lámina `r<seg>` trae `_cuadro`, sale
   con código 1 (no es la réplica versionada).
+- Cada pendiente de fidelidad cita su cuadro fuente (hoja + marca de tiempo) y se verifica contra ese cuadro ANTES de mandarlo a arreglar.
+- La ronda reporta qué pendientes de la anterior cerró, con su `comparar.json` y `deck_sha` vigente.
+- Una réplica vieja produce evidencia inválida: sello rojo diagonal «NO VALE · réplica vieja · sha …» y `invalido: true` en sus JSON.
 - Deja `comp_N.jpg` (5 pares por hoja, referencia a la izquierda) y `comparar.json`.
 - La métrica es la **caja de tinta** de cada lado: lo oscuro (luminancia < 150), lo saturado que no es
   pastel (el 🏆 dorado) y la tinta roja, sin fondos pálidos y sin la esquina de la marca de agua. Un par falla si x, y, ancho o alto difieren más
@@ -181,6 +195,8 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
 
 En Keynote usa transición **ninguna** dentro de la lámina y **disolver 0.3 s** entre láminas. Pega `notas-por-paso.md` en las notas: incluye voz, `accion` y `si_falla`. `--pdf-pasos` es incompatible con `--finales`; `--pasos` solo imprime el mapa y sale antes de abrir el navegador.
 
+Para guion numerado con recortes por duración (60/45), Keynote y show, remite a la capa de escenario `conferencia-escenario-ia`; no se implementan aquí.
+
 Teclas del presentador:
 
 | Tecla | Hace |
@@ -189,8 +205,8 @@ Teclas del presentador:
 | ← ↑ Retroceso | regresa |
 | Inicio / Fin | primera o última |
 | F | pantalla completa |
-| N | banda de notas del orador (la `voz` del paso), para quien presenta con una sola pantalla |
-| O | abre la vista de ensayo en otra ventana: paso actual, el siguiente en miniatura, la voz grande, cronómetro total y de la lámina contra lo planeado. Las dos ventanas se siguen (también en Safari y desde `file://`) |
+| N | banda de notas del orador (`voz` + ACCIÓN + SI FALLA del paso), para quien presenta con una sola pantalla |
+| O | abre la vista de ensayo en otra ventana: paso actual, el siguiente en miniatura, voz + ACCIÓN + SI FALLA, cronómetro total y de la lámina contra lo planeado. Las dos ventanas se siguen (también en Safari y desde `file://`) |
 | B o . / W | pantalla en negro / en blanco; cualquier avance la quita |
 | 5 G (o 5 Intro) | salta a la lámina 5 |
 | G | índice de láminas |
@@ -199,9 +215,8 @@ Teclas del presentador:
 La lámina `camara` se proyecta en negro limpio: el público no ve el letrero «A cámara», que solo sale
 en los PNG y la hoja. Una `camara` con `"vivo": true` (actividad, demostración, preguntas) se proyecta en
 blanco con su emoji, la consigna, sus pasos y una cuenta regresiva desde `dur` (roja en los últimos 30 s); la
-vista de ensayo muestra la misma cuenta y la consigna; esa misma pantalla (reloj en `dur`) sale en su PNG, la hoja,
-el PDF y el video sin `--sobre`, y QA la revisa. Fuera de un proyector 16:9 (4:3, 16:10) las bandas salen negras. La
-`voz` viaja dentro del HTML y no se dibuja.
+vista de ensayo añade voz, ACCIÓN y SI FALLA como notas privadas. El PNG, la hoja, la página de lámina del PDF y el video sin `--sobre` muestran únicamente la pantalla pública (consigna, emoji, pasos y reloj congelado en `dur`), y QA la revisa. Fuera de un proyector 16:9 (4:3, 16:10) las bandas salen negras. La
+`voz`, `accion` y `si_falla` viajan dentro del HTML como notas del ponente; no se dibujan en el público, PNG, video ni montaje. La banda N se activa solo en la pantalla de quien presenta.
 
 ## 6. Montaje sobre una grabación a cámara
 

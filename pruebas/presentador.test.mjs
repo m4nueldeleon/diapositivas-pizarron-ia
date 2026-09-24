@@ -137,7 +137,7 @@ test('tramo en vivo: en el presentador es blanco con la consigna y la cuenta reg
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-vivo-'));
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', laminas: [
     { tipo: 'idea', id: 'uno', emoji: '💡', texto: 'Uno' },
-    { tipo: 'camara', id: 'actividad', vivo: true, dur: 300, texto: 'Ahora tú: **tu reparto**', items: ['Anota lo que entró', 'Sepáralo en 4'], voz: 'Tienes cinco minutos' },
+    { tipo: 'camara', id: 'actividad', vivo: true, dur: 300, texto: 'Ahora tú: **tu reparto**', items: ['Anota lo que entró', 'Sepáralo en 4'], voz: 'Tienes cinco minutos', accion: 'Abrir el documento', si_falla: 'Usar la copia local' },
     { tipo: 'camara', id: 'cam', voz: 'A cámara' },
   ] }));
   const p = prepararSalida(dir, path.join(dir, 'salida'));
@@ -157,10 +157,21 @@ test('tramo en vivo: en el presentador es blanco con la consigna y la cuenta reg
     assert.equal(r.id, 'actividad');
     assert.deepEqual([r.fondo, r.vis, r.consigna, r.items, r.nota], ['rgb(255, 255, 255)', 'flex', 'Ahora tú: tu reparto', 2, false]);
     assert.match(r.reloj, /^(5:00|4:5\d)$/);
+    await pres.page.keyboard.press('n');
+    const notas = await pres.page.locator('.notas-pres').innerText();
+    for (const texto of ['Ahora tú: tu reparto', 'Tienes cinco minutos', 'ACCIÓN: Abrir el documento', 'SI FALLA: Usar la copia local']) assert.ok(notas.includes(texto));
+    assert.doesNotMatch(await pres.page.locator('.vivo-pres').first().innerText(), /Abrir el documento|Usar la copia local/);
     // la cámara sin vivo sigue en negro limpio
     await pres.page.keyboard.press('ArrowRight');
     assert.equal(await pres.page.evaluate(() => getComputedStyle(document.querySelector('.lamina.activa')).backgroundColor), 'rgb(0, 0, 0)');
   } finally { await pres.browser.close(); }
+  const ensayo = await abrir(p.htmlPath, 1280, 720, { modo: 'orador' });
+  try {
+    await ensayo.page.waitForSelector('.o-voz');
+    await ensayo.page.keyboard.press('ArrowRight');
+    const notas = await ensayo.page.locator('.o-voz').innerText();
+    for (const texto of ['Ahora tú: tu reparto', 'Tienes cinco minutos', 'ACCIÓN: Abrir el documento', 'SI FALLA: Usar la copia local']) assert.ok(notas.includes(texto));
+  } finally { await ensayo.browser.close(); }
   const ren = await abrir(p.htmlPath, 1920, 1080);
   try {
     assert.equal(await ren.page.evaluate(() => getComputedStyle(document.querySelector('.vivo-pres')).display), 'none', 'los PNG y la hoja no cambian');

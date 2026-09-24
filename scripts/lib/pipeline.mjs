@@ -1,5 +1,6 @@
 // pipeline.mjs — lo que comparten render, video y qa: leer el deck, construir el HTML y abrirlo en Chromium.
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { construirHTML } from './construir.mjs';
@@ -14,7 +15,7 @@ for (const s of [process.stdout, process.stderr]) s.on('error', e => { if (e.cod
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--pdf-pasos', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa']);
+const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--pdf-pasos', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa', '--sin-navegador']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);
@@ -51,12 +52,12 @@ export function prepararSalida(entrada, salida) {
   fs.writeFileSync(htmlPath, r.html);
   // `crudo`: el deck.json con los `como` ya resueltos, antes de sustituir `datos` (las reglas leen de ahí los {{MARCADORES}})
   return { ...r, crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
-    avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
+    evidencia: evidenciaReplica(leido, jsonPath, fs.readFileSync(jsonPath)), avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
 }
 
 // Un deck cuyas láminas son TODAS «r<seg>», sin `_cuadro` y fuera de pruebas/replica parece la réplica vieja de
 // pizarron-ref: no se bloquea (un deck real puede usar esos ids), solo se avisa por consola.
-function avisoReplica(deck, jsonPath) {
+export function avisoReplica(deck, jsonPath) {
   const L = Array.isArray(deck.laminas) ? deck.laminas.filter(l => l && l.tipo !== 'camara') : [];
   if (L.length < 3 || !L.every(l => /^r\d+$/.test(String(l.id || ''))) || L.some(l => l._cuadro)) return null;
   if (path.resolve(jsonPath) === path.join(DIR_SKILL, 'pruebas', 'replica', 'deck.json')) return null;
@@ -64,8 +65,7 @@ function avisoReplica(deck, jsonPath) {
 }
 
 export async function abrir(htmlPath, W, H, { escala = 1, modo = 'render' } = {}) {
-  const { chromium } = cargarPlaywright(DIR_SKILL);
-  const browser = await chromium.launch();
+  const browser = await lanzarChromium();
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: escala });
   const errores = [];
   page.on('pageerror', e => errores.push(e.message));
@@ -74,4 +74,40 @@ export async function abrir(htmlPath, W, H, { escala = 1, modo = 'render' } = {}
   await page.waitForTimeout(150);
   const avisos = await page.evaluate(() => window.PZ.avisos.slice());
   return { browser, page, errores, avisos };
+}
+
+// La huella se calcula sobre los bytes del archivo, antes de sanear o sustituir datos.
+export function evidenciaReplica(deck, jsonPath, contenido = JSON.stringify(deck)) {
+  const deck_sha = crypto.createHash('sha256').update(contenido).digest('hex').slice(0, 12);
+  const invalido = Boolean(avisoReplica(deck, jsonPath));
+  return { invalido, deck_sha, sello: invalido ? `NO VALE · réplica vieja · sha ${deck_sha}` : '' };
+}
+
+export class ErrorNavegador extends Error {
+  constructor(mensaje, motivo) {
+    super(mensaje);
+    this.name = 'ErrorNavegador';
+    this.code = 'SIN_NAVEGADOR';
+    this.motivo = motivo;
+  }
+}
+
+export function clasificarErrorNavegador(error) {
+  const mensaje = String(error?.message || error);
+  if (/bootstrap_check_in|MachPortRendezvous|Permission denied|SIGTRAP|Target page, context or browser has been closed/i.test(mensaje)) {
+    return new ErrorNavegador('Chromium no puede arrancar dentro de este sandbox (p. ej. Codex con -s workspace-write en macOS). Corre este comando con permiso completo (Codex: -s danger-full-access o escalar el comando); mientras, usa qa.mjs --sin-navegador', 'sandbox');
+  }
+  if (/falta el navegador|Executable doesn.t exist|executable.*(not found|does not exist)|No encuentro playwright/i.test(mensaje)) {
+    return new ErrorNavegador(mensaje, 'falta');
+  }
+  return error;
+}
+
+export async function lanzarChromium(opciones = {}) {
+  try {
+    if (process.env.PZ_LAUNCH_FALSO === 'mach') throw new Error('bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100)');
+    if (process.env.PZ_LAUNCH_FALSO === 'falta') throw new Error('Playwright está, pero falta el navegador. Reinstálalo con: npx playwright install chromium');
+    const { chromium } = cargarPlaywright(DIR_SKILL);
+    return await chromium.launch(opciones);
+  } catch (error) { throw clasificarErrorNavegador(error); }
 }

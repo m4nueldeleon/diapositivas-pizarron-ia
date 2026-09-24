@@ -12,9 +12,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
+import { argumentos, prepararSalida, abrir, ErrorNavegador } from './lib/pipeline.mjs';
 import { tiemposSecuenciales, tiemposAlineados, cargarTranscripcion } from './lib/tiempos.mjs';
 
+try {
 const { opt, pos } = argumentos(process.argv);
 const salir = m => { console.error('✗ ' + m); process.exit(2); };
 const fps = Number(opt('--fps', 30));
@@ -151,3 +152,9 @@ if (!crudo) {
 console.log(`✓ Cortes → ${path.join(dirSalida, 'cortes.csv')}`);
 if (!process.argv.includes('--conservar-cuadros')) fs.rmSync(dirCuadros, { recursive: true, force: true });
 
+
+} catch (error) {
+  if (!(error instanceof ErrorNavegador)) throw error;
+  console.error('✗ ' + error.message);
+  process.exit(4);
+}

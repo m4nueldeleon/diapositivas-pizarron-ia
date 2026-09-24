@@ -15,8 +15,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { argumentos, DIR_SKILL } from './lib/pipeline.mjs';
-import { cargarPlaywright } from './lib/playwright.mjs';
+import { argumentos, DIR_SKILL, lanzarChromium } from './lib/pipeline.mjs';
 import { formaEmoji, patronTono, CDN_FLUENT } from './lib/emoji.mjs';
 
 const { opt } = argumentos(process.argv);
@@ -68,8 +67,7 @@ for (const [pat, { e, nombres }] of secuencias) {
 }
 
 // ---------- medir: luminancia media de los píxeles que cambian entre tonos ----------
-const { chromium } = cargarPlaywright(DIR_SKILL);
-const browser = await chromium.launch();
+const browser = await lanzarChromium();
 const page = await browser.newPage();
 const medidas = await page.evaluate(async items => {
   const S = 160, c = new OffscreenCanvas(S, S), g = c.getContext('2d', { willReadFrequently: true });

@@ -65,9 +65,9 @@ test('sincronía: remates explícitos en paso 0 de láminas largas avisan; revel
   }
 });
 
-test('persona: te frente a ustedes da aviso sin declarar y error con persona', () => {
+test('persona: te frente a ustedes da error con o sin persona declarada', () => {
   const l = { tipo: 'idea', texto: 'Te sirve', voz: 'Ustedes pueden' };
-  assert.equal(persona(l, l.texto).avisos.length, 1);
+  assert.equal(persona(l, l.texto).errores.length, 1);
   assert.equal(persona(l, l.texto, 'tu').errores.length, 1);
   assert.equal(persona(l, l.texto, 'ustedes').errores.length, 1);
   assert.deepEqual(persona({ ...l, voz: 'Te sirve' }, 'Te sirve', 'tu'), { errores: [], avisos: [] });
@@ -99,7 +99,7 @@ test('persona: normaliza acentos y revisa pantalla acumulada, sin metadata', () 
   assert.equal(persona({ tipo: 'idea', voz: 'Imáginen esto' }, 'Tú puedes', 'tu').errores.length, 1);
   const l = { tipo: 'idea', texto: 'Te sirve', voz: ['Inicio', 'Ustedes pueden'] };
   const r = reglasPersona({ laminas: [l] }, { pasos: [2], revela: [[['«Te sirve»'], []]] });
-  assert.match(r.avisos[0], /paso 1/);
+  assert.match(r.errores[0], /paso 1/);
   const metadata = { accion: 'Tú explicas', si_falla: 'Tú muestras', procedencia: 'Tú', credibilidad: { texto: 'Tú' }, _comentario: 'Tú' };
   assert.deepEqual(reglasPersona({ persona: 'ustedes', laminas: [{ tipo: 'idea', texto: 'Ustedes pueden', voz: 'Ustedes', ...metadata }] }), { errores: [], avisos: [] });
 });

@@ -42,7 +42,8 @@ varias etiquetas cortas; es información para revisar el sentido, no una penaliz
 | dinero que se va, gasto | 💸 | billetes con alas |
 | suscripción, membresía, pago recurrente | 🔁 | suelto; los ingresos recurrentes se dibujan con el flujo siguiente |
 | ingresos recurrentes | `flujo` 🔁 → 💰 | dos nodos, no insignia |
-| crecimiento | 📈 | |
+| crecimiento en números (la gráfica que sube), trading | 📈 | una cifra o curva que sube; también «trading» [ref_255] |
+| crecer como proceso: cómo crece el negocio, hacerlo crecer | 🌱 | la etapa o la pregunta «cómo crece», sin cifra; no lo uses junto a 📈 para lo mismo |
 | caída o pérdida | 📉 | |
 | métricas, datos, reporte, informe | 📊 | |
 | banco, tu cuenta | 🏦 | |
@@ -311,8 +312,7 @@ para una secuencia usa un `flujo`.
 - 🤳 para «creador»: en los dos sets es un brazo suelto con el celular, sin persona; se lee «selfie» o «mostrar la
   cara», lo contrario de un deck sin cara. Creador es `🧑+🎥`; sin cara, `👤+🎥`.
 - 🖥️ para «graba tu pantalla» del celular: es un monitor de escritorio. Usa `📱+🔴`.
-- Una mano (👆 ✍️ 👉) como emoji de un `boton` con cursor de mano: son dos manos [23:15, 38:15]. El botón lleva un
-  objeto (🤖 📝 🚀 📞); QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
+- El botón lleva el emoji de lo que da el clic: 📞 llamada, 🎟️ lugar, 🚀 arrancar, 🤖 la herramienta; 📝 solo si el clic es escribir (y es pálido: 30/28 %). Nunca una mano (👆 ✍️ 👉) en el botón: con el cursor de mano se ven dos manos [23:15, 38:15]; QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
 - 👨‍👩‍👧‍👦 para equipo: en Apple es un mosaico gris de siluetas. Usa 🧑‍🤝‍🧑.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.

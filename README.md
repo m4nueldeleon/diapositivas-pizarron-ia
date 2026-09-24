@@ -41,6 +41,12 @@ Gadzhi.
 curl -fsSL https://raw.githubusercontent.com/m4nueldeleon/diapositivas-pizarron-ia/main/install.sh | bash
 ```
 
+Para crear la firma durante la instalación: `curl -fsSL https://raw.githubusercontent.com/m4nueldeleon/diapositivas-pizarron-ia/main/install.sh | PIZARRON_FIRMA=@tu_arroba bash` (sustituye la firma por la tuya). También admite `PIZARRON_SUFIJO`, `PIZARRON_LOGO`, `PIZARRON_VETADAS`, `PIZARRON_COMUNIDAD` y `PIZARRON_PROXIMA_CLASE`; los flags de `setup.sh` ganan. Al terminar informa si existe la ficha o cómo crearla.
+
+Si existe `~/.codex`, el instalador enlaza la skill a Codex; también con `bash install.sh --codex` o `CODEX_SKILLS_DIR`.
+
+Desde Codex/sandbox, Chromium requiere permiso completo; `qa.mjs --sin-navegador` es solo un filtro previo: sin render y hoja vista, «SIN RENDER, revisión visual pendiente» ([protocolo](references/PROTOCOLO.md#desde-codex--sandbox)).
+
 Necesitas Node 18 o más. El instalador baja Playwright con Chromium y las tipografías libres.
 Para video y montaje también necesitas `ffmpeg` (`brew install ffmpeg`).
 

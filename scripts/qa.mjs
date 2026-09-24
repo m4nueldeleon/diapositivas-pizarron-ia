@@ -54,25 +54,52 @@ import { RE_PALABRA } from './lib/markup.mjs';
 // en borrador `nota_sin_tope` y `listo_salvo_datos` (sin errores, 90+ sin el tope y nada en falta), `falta_para_final` (lo que le
 // falta a una pieza de venta), `ritmo` (mediana y p90 de los pasos), `por_confirmar` e `iconos` (emoji → láminas).
 import fs from 'node:fs';
+import { revisarTexto, informeSinMedir } from './lib/qa-texto.mjs';
 import path from 'node:path';
-import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
+import { argumentos, prepararSalida, abrir, ErrorNavegador } from './lib/pipeline.mjs';
 import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, HALO_INSUFICIENTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable, PISOS } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, lineaArco } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, infoPersona, lineaArco } from './lib/reglas-deck.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
 import { errorVozPasos } from './lib/pasos-mapa.mjs';
 
+try {
 const NOTA_FINAL = 90;   // SKILL §6: 90 o más y cero errores
 
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
-try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
+try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) {
+  console.error('✗ ' + e.message);
+  if (flag('--sin-navegador')) {
+    const entrada = path.resolve(pos[0] || '.');
+    const destino = path.resolve(opt('--salida') || path.join(path.extname(entrada) === '.json' ? path.dirname(entrada) : entrada, 'salida'));
+    fs.mkdirSync(destino, { recursive: true });
+    const informe = informeSinMedir(e.errores || [e.message]);
+    fs.writeFileSync(path.join(destino, 'qa-texto.json'), JSON.stringify(informe, null, 2));
+    console.error(informe.advertencia);
+    process.exit(flag('--estricto') ? 3 : 1);
+  }
+  process.exit(2);
+}
 const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, revela = [], avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, fichaMarca, avisoFirma, infoDatosFicha = [] } = prep;
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
+if (flag('--sin-navegador')) {
+  const informe = revisarTexto(prep);
+  fs.writeFileSync(path.join(dirSalida, 'qa-texto.json'), JSON.stringify(informe, null, 2));
+  if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
+  else {
+    console.log(`QA de texto: nota provisional ${informe.nota_provisional}/100 · ESTADO: sin-medir`);
+    informe.errores.forEach(e => console.error('  ✗ ' + e));
+    informe.avisos.forEach(e => console.warn('  ⚠ ' + e));
+    informe.info.forEach(e => console.log('  ℹ ' + e));
+    console.log(informe.advertencia);
+  }
+  process.exit(informe.errores.length ? (flag('--estricto') ? 3 : 1) : 0);
+}
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() + `;window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, HALO_INSUFICIENTE, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
@@ -905,8 +932,8 @@ const infoContraste = [
   enVivoInfo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivoInfo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
-const info = [...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
-const informe = { nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
+const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
+const informe = { medido: true, invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
@@ -925,3 +952,9 @@ else {
 }
 // Código de salida: 1 con errores; con --estricto, 3 si no hay errores pero el estado no es «listo»
 process.exit(errores.length ? 1 : flag('--estricto') && estado !== 'listo' ? 3 : 0);
+
+} catch (error) {
+  if (!(error instanceof ErrorNavegador)) throw error;
+  console.error('✗ ' + error.message);
+  process.exit(4);
+}

@@ -816,7 +816,7 @@
      "etiqueta": "2. A qué precio"
     },
     {
-     "emoji": "📈",
+     "emoji": "🌱",
      "etiqueta": "3. Cómo crece"
     }
    ],
@@ -899,7 +899,7 @@
      "doble": true
     },
     {
-     "emoji": "📚",
+     "emoji": "📖",
      "texto": "Las 12 clases"
     },
     {
@@ -950,7 +950,7 @@
    "id": "llamado",
    "tipo": "boton",
    "boton": "Aplica aquí",
-   "emoji": "📝",
+   "emoji": "📞",
    "texto": "**2 minutos** de preguntas y te llega la invitación a la llamada",
    "llamado": true,
    "voz": "Clic en aplica aquí: dos minutos y te llega la invitación."

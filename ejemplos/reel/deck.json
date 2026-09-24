@@ -180,10 +180,17 @@
   {
    "id": "llamado",
    "tipo": "idea",
-   "emoji": "📌",
+   "emoji": "si:📥",
    "emoji_tam": "grande",
-   "texto": "Guarda __este reel__:\nlos 3 prompts están aquí",
-   "voz": "Guarda este reel: los tres prompts están aquí."
+   "texto": "11 pm y ya cerraste\n__el correo__",
+   "voz": [
+    "Once de la noche y ya cerraste el correo.",
+    "Guarda este reel: los tres prompts están aquí."
+   ],
+   "como": "gancho",
+   "paga": "gancho",
+   "nota": "Guarda el reel: los 3 prompts están aquí",
+   "llamado": true
   }
  ]
 }
