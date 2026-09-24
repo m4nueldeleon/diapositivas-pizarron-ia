@@ -44,11 +44,15 @@ for (let i = 0; i < lams.length; i++) {
   const l = deck.laminas[i];
   const n = await page.evaluate(k => window.PZ.pasos(window.PZ.lams[k]), i);
   if (l.tipo === 'camara') { manifiesto.push({ lamina: i, id: l.id || 'camara', tipo: 'camara', paso: 0, pasos: 1, archivo: null }); continue; }
-  for (let p = soloFinales ? n - 1 : 0; p < n; p++) {
+  // pasos clave: un layout cuyo cierre tapa lo anterior (stack a sangre + remate) marca data-clave-paso
+  const claves = new Set(await page.evaluate(k => [...window.PZ.lams[k].querySelectorAll('[data-clave-paso]')]
+    .map(e => Number(e.dataset.clavePaso)), i).then(v => v.filter(q => Number.isInteger(q) && q >= 0 && q < n - 1)));
+  for (let p = 0; p < n; p++) {
+    if (soloFinales && p < n - 1 && !claves.has(p)) continue;
     await page.evaluate(([k, q]) => window.PZ.mostrar(window.PZ.lams[k], q, Infinity), [i, p]);
     const nombre = `${String(i + 1).padStart(2, '0')}-${String(l.id || l.tipo).replace(/[^\w-]/g, '') || 'lamina'}-${p + 1}.png`;
     await lams[i].screenshot({ path: path.join(dirPng, nombre), type: 'png' });
-    manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}` });
+    manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}`, ...(claves.has(p) ? { clave: true } : {}) });
   }
 }
 fs.writeFileSync(path.join(dirSalida, 'pasos.json'), JSON.stringify(manifiesto, null, 2));
@@ -94,7 +98,7 @@ if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
   if (paginas.length > 1) console.log(`⚠ ${paginas.length} hojas de finales (${hojas.hojas.map(x => `${x.archivo}: ${x.desde}-${x.hasta}`).join(' · ')}): la revisión visual recorre TODAS, no solo hoja.jpg`);
 }
 
-// PDF: una página por lámina con su último paso (las `camara` no tienen página)
+// PDF: una página por cuadro de la hoja (el último paso de cada lámina y sus pasos clave; las `camara` no tienen página)
 if (flag('--pdf')) {
   const finales = cuadros.filter(c => c.archivo);
   if (!finales.length) console.warn('⚠ --pdf: no hay láminas con imagen');

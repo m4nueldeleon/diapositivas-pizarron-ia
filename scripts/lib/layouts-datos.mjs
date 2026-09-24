@@ -460,7 +460,9 @@ function stackSangre(l, ctx) {
     ${l.remate ? `<div class="t grande"${ctx.P(kRem)}>${ctx.em.html('✅', '1.1em', 'en-linea')}${marcar(l.remate)}</div>` : ''}
     ${l.total ? `<div class="etiqueta-chica"${ctx.P(kRem)} style="margin-top:24px">${marcar(l.total)}</div>` : ''}
     ${nota(ctx, l.nota, kNota, 'mt-m')}</div>` : '';
-  return `<div class="stack sangre"${ctx.P(0)} style="--cols:${cols};--alto-fila:${altoFila}px">${piezas}</div>${cierre}`;
+  // El cierre tapa las piezas: el paso anterior (el stack lleno) es un cuadro CLAVE para la hoja, el PDF y --finales
+  const clave = cierre ? ` data-clave-paso="${Math.min(kRem, kNota) - 1}"` : '';
+  return `<div class="stack sangre"${ctx.P(0)}${clave} style="--cols:${cols};--alto-fila:${altoFila}px">${piezas}</div>${cierre}`;
 }
 function stackPila(l, ctx) {
   const items = l.items || [];

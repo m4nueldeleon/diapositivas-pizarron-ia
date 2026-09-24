@@ -62,3 +62,36 @@ test('render --finales --pdf: una página por lámina (sin las cámaras) y hojas
   assert.ok(fs.existsSync(path.join(sal, 'hoja.jpg')), 'hoja.jpg sigue existiendo (copia de la hoja 1)');
   assert.ok(!fs.existsSync(path.join(sal, 'hoja-07.jpg')));
 });
+
+// Regresión r2: el stack a sangre deja el remate en un lienzo limpio que TAPA las piezas; la hoja (y el PDF y
+// --finales) tomaban solo el último paso y el stack desaparecía de la revisión. El paso con el stack lleno es
+// un cuadro clave: sale en la hoja junto al final, con el mismo número de lámina.
+test('cuadros clave: una lámina con clave da dos cuadros (el clave primero) con el mismo número', () => {
+  const m = [
+    { lamina: 0, id: 'a', tipo: 'idea', paso: 0, pasos: 1, archivo: 'laminas/1.png' },
+    { lamina: 1, id: 'incluye', tipo: 'stack', paso: 0, pasos: 3, archivo: 'laminas/2-1.png' },
+    { lamina: 1, id: 'incluye', tipo: 'stack', paso: 1, pasos: 3, archivo: 'laminas/2-2.png', clave: true },
+    { lamina: 1, id: 'incluye', tipo: 'stack', paso: 2, pasos: 3, archivo: 'laminas/2-3.png' },
+  ];
+  const c = cuadrosHoja(m);
+  assert.deepEqual(c.map(x => x.archivo), ['laminas/1.png', 'laminas/2-2.png', 'laminas/2-3.png']);
+  assert.deepEqual(c.map(x => x.n), [1, 2, 2]);
+  const h = htmlHoja(c, { W: 1920, H: 1080 });
+  assert.match(h.html, />2 · incluye · paso 2</, 'el cuadro clave dice qué paso es');
+  assert.match(h.html, />2 · incluye</);
+});
+
+test('render --finales: el stack a sangre con remate sale lleno en la hoja y en el PDF, no solo el remate', { timeout: 180_000 }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-clave-'));
+  const laminas = [
+    { tipo: 'idea', id: 'antes', emoji: '💡', texto: 'Lo que **incluye**' },
+    { tipo: 'stack', id: 'incluye', items: [{ emoji: '🤖', texto: 'Tu agente', doble: true }, { emoji: '📚', texto: 'Clases' }, { emoji: '⏰', texto: 'Mentor' }], remate: 'Hecho **contigo**' },
+  ];
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', laminas }));
+  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--finales', '--pdf'], { stdio: 'pipe' });
+  const sal = path.join(dir, 'salida');
+  const man = JSON.parse(fs.readFileSync(path.join(sal, 'pasos.json'), 'utf8')).filter(m => m.lamina === 1);
+  assert.deepEqual(man.map(m => [m.paso, !!m.clave]), [[3, true], [4, false]], 'el paso con las 3 piezas y el del remate');
+  const pdf = fs.readFileSync(path.join(sal, 'laminas.pdf'));
+  assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length, 3);
+});

@@ -32,14 +32,24 @@ figure{margin:0;position:relative}img,.cam{display:block;box-shadow:0 2px 8px rg
 .cam{background:#9a9a9a;color:#fff;display:grid;place-items:center;font-size:34px}
 figcaption{position:absolute;left:8px;top:8px;background:#111;color:#fff;padding:2px 8px;border-radius:4px}`;
 
-// Rótulo común: número de lámina (1 = la primera del deck, contando las cámaras) y su id
-export const rotulo = c => `${c.n} · ${c.id}`;
+// Rótulo común: número de lámina (1 = la primera del deck, contando las cámaras) y su id; un cuadro clave dice su paso
+export const rotulo = c => `${c.n} · ${c.id}${c.clave ? ` · paso ${c.paso + 1}` : ''}`;
 
-// Cuadros de la hoja a partir del manifiesto de render (pasos.json): uno por lámina, su último paso
+// Cuadros de la hoja a partir del manifiesto de render (pasos.json): uno por lámina, su último paso. Un paso
+// `clave` (el stack a sangre lleno, antes de que el remate lo tape) sale además, antes del final y con el mismo número.
 export function cuadrosHoja(manifiesto) {
   const porLamina = new Map();
-  manifiesto.forEach(m => porLamina.set(m.lamina, m));        // se queda con el último paso de cada una
-  return [...porLamina.values()].map(m => ({ n: m.lamina + 1, id: m.id, camara: m.tipo === 'camara', archivo: m.archivo }));
+  manifiesto.forEach(m => {
+    const c = porLamina.get(m.lamina) || { claves: [], ultimo: null };
+    if (m.clave) c.claves.push(m);
+    c.ultimo = m;                                               // se queda con el último paso de cada una
+    porLamina.set(m.lamina, c);
+  });
+  const cuadro = m => ({ n: m.lamina + 1, id: m.id, camara: m.tipo === 'camara', archivo: m.archivo });
+  return [...porLamina.values()].flatMap(({ claves, ultimo }) => [
+    ...claves.filter(m => m !== ultimo).map(m => ({ ...cuadro(m), clave: true, paso: m.paso })),
+    cuadro(ultimo),
+  ]);
 }
 
 export function htmlHoja(cuadros, { W, H, ancho = 560, titulo = '' }) {

@@ -481,6 +481,8 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
   sangre (QA avisa); si hace falta, va en la lámina anterior.
 - `sangre: false` (y el 9:16) usa la pila de casillas grises con el rótulo, el remate y el `total` debajo.
 - `remate_paso` y `nota_paso` mueven el cierre.
+- Como el remate tapa las piezas, la hoja, el PDF y `--finales` sacan DOS cuadros de esta lámina: el stack
+  lleno («N · id · paso K») y el remate («N · id»). Revisa los dos.
 
 ## Especiales
 
