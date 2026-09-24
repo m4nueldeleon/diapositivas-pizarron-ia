@@ -117,7 +117,7 @@
       const g = guion(l);
       notas.innerHTML = `<small>lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? (l.hasAttribute('data-vivo') ? ' · ⏱️ en vivo' : ' · 🎥 a cámara') : ''}</small>${notaHtml(notaOrador(l, g, p))}`;
       const rel = l.querySelector('.vivo-reloj');
-      cuentaVivo(l, r => { if (rel) { rel.textContent = reloj(r); clasesCuenta(rel, r); } });
+      cuentaVivo(l, r => PZ.actualizarReloj(rel, r));
     }
     const alternar = (x, clase) => x.classList.toggle(clase);
     const nav = navegar(lams, seq, pintar, (k, e) => {

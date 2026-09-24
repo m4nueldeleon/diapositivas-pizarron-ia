@@ -68,7 +68,7 @@ export const CAMPOS = {
     'multitud', 'nota_destacado', 'nota_destacado_paso',
     'texto', 'texto_paso', 'fuente', 'fuente_paso'],
   prueba: ['mensajes','mensajes_pos','variante', 'procedencia', 'fuente', 'fuente_paso', 'capturas', 'encabezado', 'encabezado_estilo', 'texto', 'texto_paso'],
-  chat: ['procedencia','fuente','fuente_paso','variante','marco','app','grabando','texto','guion', 'mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro', 'avatar_tam'],
+  chat: ['letras','procedencia','fuente','fuente_paso','variante','marco','app','grabando','texto','guion', 'mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro', 'avatar_tam'],
   reparto: ['total', 'partes', 'separacion', 'titulo'],
   calendario: ['fases', 'fase_activa', 'color', 'dias', 'n', 'columnas', 'palabra_dia', 'anotaciones', 'titulo', 'rango'],
   boton: ['variante','hora','sub','qr', 'boton', 'emoji', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
@@ -99,6 +99,7 @@ export const CAMPOS_OBJETO = {
   chat: ['procedencia','fuente','fuente_paso','variante','marco','app','grabando','encabezado', 'encabezado_estilo', 'avatar_yo', 'avatar_otro', 'avatar_tam', 'sello', 'sello_sobre', 'sello_pos', 'sello_paso'],
   idea: ['emoji', 'emoji_tam'],
   prueba: ['capturas'],
+  objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'reloj', 'logos'],
 };
 const firmaObjeto = l => JSON.stringify((CAMPOS_OBJETO[l.tipo] || []).map(k => l[k] ?? null));
 // El «mismo objeto»: el mapa por sus etiquetas (o íconos), el calendario por sus fases y la tabla-marcador (que crece
@@ -220,7 +221,7 @@ function revisarEmojis(o, ruta, errores, avisos) {
     for (const sp of specs) {
       const c = analizarCompuesto(sp);
       if (c.error) errores.push(`${ruta}.${k}: emoji «${sp}» ${c.error}`);
-      else for (const parte of [c.base, c.insignia].filter(Boolean)) if (!PICTO.test(parte)) avisos.push(`${ruta}.${k}: «${parte}» no parece un emoji`);
+      else for (const parte of [c.base, c.insignia].filter(Boolean)) if (!parte.startsWith('trazo:') && !PICTO.test(parte)) avisos.push(`${ruta}.${k}: «${parte}» no parece un emoji`);
     }
     if (typeof v === 'object' && k !== 'voz') revisarEmojis(v, `${ruta}.${k}`, errores, avisos);
   }
@@ -440,10 +441,16 @@ const cuadro = v => (Array.isArray(v) && v.length >= 4 && v.slice(0, 4).every(x 
 
 function sanearObjeto(o, ruta, avisos, tipo) {
   if (Array.isArray(o)) return o.map((x, i) => sanearObjeto(x, `${ruta}[${i}]`, avisos, tipo));
+  if (typeof o === 'string' && /\.(emoji|iconos)\[\d+\]$/.test(ruta) && /^(?:(?:no|si):)?trazo:/.test(o)) {
+    if (!analizarCompuesto(o).error) return o;
+    avisos.push(`${ruta}: trazo inválido; usa triangulo, circulo o marco con un rótulo corto`);
+    return '';
+  }
   if (!o || typeof o !== 'object') return o;
   const r = {};
   for (const [k, v] of Object.entries(o)) {
     const aviso = () => avisos.push(`${ruta}.${k}: valor «${String(JSON.stringify(v)).slice(0, 40)}» no válido, se ignoró`);
+    if (typeof v === 'string' && specsDeCampo(k, v).some(sp => /^(?:(?:no|si):)?trazo:/.test(sp)) && analizarCompuesto(v).error) { aviso(); continue; }
     // un número fuera de rango se recorta, pero nunca en silencio (un calendario de 28 días salía con 12)
     const recorte = rango => y => avisos.push(`${ruta}.${k}: ${v} → ${ent(rango, y)}, fuera de rango (${rango[0]}-${rango[1]})`);
     const ent = (rango, y) => (rango[2] ? Math.round(y) : y);

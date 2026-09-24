@@ -133,3 +133,22 @@ test('reel r5: 9:16, 30-60 s, el prompt a la vista, un solo llamado y sin avisos
     assert.deepEqual(rn.avisos.filter(a => /mapa repetido|el mapa vuelve|solo afirma|contrato|promete \d/.test(a)), [], n);
   }
 });
+
+// Los modelos enseñan transformaciones completas y mantienen voz y revelado sincronizados.
+import { prepararSalida } from '../scripts/lib/pipeline.mjs';
+import { revisarTexto } from '../scripts/lib/qa-texto.mjs';
+test('r7: los cuatro modelos construyen sin errores y transforman una composición en 3–4 pasos', t => {
+  const raiz = '/private/tmp/pz-loop/r7/codex-impl-estilo-iconos/pruebas-ejemplos';
+  fs.mkdirSync(raiz, { recursive: true });
+  const carpeta = fs.mkdtempSync(path.join(raiz, 'modelos-'));
+  t.after(() => fs.rmSync(carpeta, { recursive: true, force: true }));
+  const secuencias = { propuesta: 'otra-vez', reel: 'gancho', 'vsl-corto': 'intentos', 'clase-express': 'reciente' };
+  for (const [nombre, id] of Object.entries(secuencias)) {
+    const prep = prepararSalida(path.join(RAIZ, 'ejemplos', nombre), path.join(carpeta, nombre));
+    const revision = revisarTexto(prep);
+    assert.deepEqual(revision.errores, [], nombre);
+    const i = prep.deck.laminas.findIndex(l => l.id === id);
+    assert.ok(prep.pasos[i] >= 3 && prep.pasos[i] <= 4, `${nombre}: ${prep.pasos[i]} pasos`);
+    assert.ok(prep.revela[i].every(p => p.length > 0), `${nombre}: hay un paso vacío`);
+  }
+});

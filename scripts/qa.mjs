@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { reglasDeckCompleto, clasificarAvisos } from './lib/reglas-deck.mjs';
-import { medidasTrazos } from './lib/medidas-trazos.mjs';
+import { medidasTrazos, avisosGeometriaSello } from './lib/medidas-trazos.mjs';
 import { subrayadosCruzan } from './lib/medidas-subrayados.mjs';
 import { infoConceptos } from './lib/emoji-diccionario.mjs';
 import { RE_PALABRA } from './lib/markup.mjs';
@@ -103,7 +103,7 @@ if (flag('--sin-navegador')) {
   process.exit(informe.errores.length ? (flag('--estricto') ? 3 : 1) : 0);
 }
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
-await page.addScriptTag({ content: inyectable() + `;window.medidasTrazos = ${medidasTrazos.toString()};window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
+await page.addScriptTag({ content: inyectable() + `;window.medidasTrazos = ${medidasTrazos.toString()};window.avisosGeometriaSello = ${avisosGeometriaSello.toString()};window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, HALO_INSUFICIENTE, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
 
 const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, datosMuestra, enVivo]) => {
@@ -181,7 +181,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
     const n = window.PZ.pasos(lam), L = lam.getBoundingClientRect();
     const pendientesPasos = new Map();
     const registrarPendiente = (t,p) => pendientesPasos.set(t, new Set([...(pendientesPasos.get(t) || []), p+1]));
-    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], info: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [], contrasteReportado: [] };
+    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], info: [], palabras: 0, mano: 0, trazos: [], contenedores: 0, enfasis: 0, pendientes: [], medir: [], contrasteReportado: [] };
     // La `camara` normal se proyecta en negro: nada que revisar. El tramo en vivo (`vivo: true`) SÍ lo ve el público minutos
     // enteros: se revisa lo que se proyecta (.captura-vivo), con las mismas reglas (palabras, pendientes, desborde, letra)
     if (lam.dataset.tipo === 'camara' && !lam.dataset.vivo) { out.push(r); return; }
@@ -192,7 +192,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       window.subrayadosCruzan(lam).forEach(A);
       const trazos = window.medidasTrazos(lam); trazos.errores.forEach(E); trazos.avisos.forEach(A);
       if (document.body.classList.contains('sala')) {
-        const identificables = '.lz-pasos [style*="opacity"], .pasos-letras .pendiente, .rejilla .apagado, .rejilla .apagada, .calendario .dia.apagado, :scope > .clon';
+        const identificables = '.lz-pasos [style*="opacity"], .lz-pasos .paso-apagado .icono-paso, .lz-pasos .paso-apagado .rotulo-paso, .lz-pasos .paso-apagado .tecla, .item-apagado > *, .pasos-letras .pendiente, .rejilla .apagado, .rejilla .apagada, .calendario .dia.apagado, :scope > .clon';
         for (const e of lam.querySelectorAll(identificables)) {
           if (!visible(e) || (e.closest('.clon') && !e.matches('.clon'))) continue;
           const op = opac(e);
@@ -289,6 +289,11 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       // Sello: polígono girado contra renglones y emojis; fuera del lienzo
       for (const sello of lam.querySelectorAll(':scope > .sello')) if ( visible(sello) && parseFloat(sello.style.opacity || 1) > 0.5) {
         const pol = poligonoSello(sello, L);
+        const firmaSello = lam.querySelector('.firma');
+        const bloquesSello = [...lam.querySelectorAll(':scope > .lienzo > *')].filter(e => e.getClientRects().length).map(e => caja(e, lam));
+        const bloqueSello = bloquesSello.length ? { y: Math.min(...bloquesSello.map(b => b.y)), h: Math.max(...bloquesSello.map(b => b.y + b.h)) - Math.min(...bloquesSello.map(b => b.y)), x: Math.min(...bloquesSello.map(b => b.x)), w: Math.max(...bloquesSello.map(b => b.x + b.w)) - Math.min(...bloquesSello.map(b => b.x)) } : null;
+        const margenSello = parseFloat(getComputedStyle(lam).getPropertyValue('--margen-v')) || CT.mv;
+        window.avisosGeometriaSello(pol, W, H, margenSello, firmaSello ? caja(firmaSello, lam) : null, bloqueSello, !!sello.dataset.acomodado).forEach(A);
         if (pol.some(([x, y]) => x < -1 || y < -1 || x > W + 1 || y > H + 1)) E(`el sello «${corto(sello.textContent, 20)}» se sale del lienzo`);
         const tolerado = e => e.closest('.rejilla, .cuadrantes, .captura, .pruebas');
         // El ÍCONO que es el ancla de sello_sobre se sella A PROPÓSITO (LAYOUTS §Anclas; el mismo mecanismo que sobre las
@@ -521,6 +526,17 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
     [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && !tapado(e, Tc, lam)).forEach(e => {
       // emoji que imprime texto (🏪 «24», 🪪 «Jo Appleseed»): a tamaño de ícono se lee
       const base = e.querySelector(':scope > .emo-txt, :scope > img');
+      if (e.closest('.lz-pasos, .lz-lista')) {
+        let opacidad = 1;
+        for (let a = e; a && a !== lam; a = a.parentElement) opacidad *= parseFloat(getComputedStyle(a).opacity) || 0;
+        if (opacidad > 0 && opacidad < .99) {
+          const glifo = e.querySelector(':scope > .emo-txt, :scope > img, :scope > svg');
+          if (glifo) {
+            const tipo = glifo.tagName === 'IMG' ? 'img' : glifo.tagName.toLowerCase() === 'svg' ? 'svg' : 'txt';
+            r.medir.push({ tipo, ch: tipo === 'txt' ? glifo.textContent : e.dataset.e || glifo.getAttribute('alt') || 'ícono', src: tipo === 'img' ? glifo.getAttribute('src') : '', svg: tipo === 'svg' ? glifo.outerHTML : '', fondos: [[255,255,255]], apagado: opacidad });
+          }
+        }
+      }
       if (base && caja(e, lam).w >= 80 * (W / 1920)) {
         const ch = String(base.tagName === 'IMG' ? base.getAttribute('alt') : base.textContent).replace(/\uFE0F/g, '');
         const t = (CT.IMPRESO[modoEmoji] || {})[ch];
@@ -800,7 +816,13 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       if (img.dataset.recorteError) AF(`no se pudo comprobar el fondo de la imagen: ${img.dataset.recorteError}; usa un PNG local con transparencia`);
       else if (img.dataset.recorteOpaco === 'true') AF(img.dataset.recorte === 'anfitrion' ? 'la imagen de anfitrion no tiene alfa útil: aporta un PNG recortado real con transparencia' : 'se verá como rectángulo de foto: quítale el fondo o usa `foto`');
     }
-    r.mano = [...lam.querySelectorAll('.capa-mano path, .nota, .tabla, .sello, .t-mano, .mano, [data-sub], mark, .circ')].filter(e => fueraClon(e) && !e.closest('.pz-oculto')).length;
+    const visiblesTinta = selector => [...lam.querySelectorAll(selector)].filter(e => fueraClon(e) && !e.closest('.pz-oculto'));
+    const clasesTrazo = { subrayado: 'subrayado', tachon: 'tachón', llave: 'llave', flecha: 'flecha', circulo: 'círculo', ovalo: 'círculo' };
+    r.trazos = [...new Set(visiblesTinta('.capa-mano path[data-clase]').map(e => clasesTrazo[e.dataset.clase]).filter(Boolean))];
+    if (visiblesTinta(':scope > .sello').length) r.trazos.push('sello');
+    // «capa a mano» (láminas seguidas sin tinta) sigue contando todo lo manuscrito; `trazos` distingue la función
+    r.mano = visiblesTinta('.capa-mano path, .nota, .tabla, .sello, .t-mano, .mano, [data-sub], mark, .circ').length;
+    r.contenedores = visiblesTinta('.nota, .tabla').length;
     r.enfasis = lam.querySelectorAll('[data-sub], mark, .circ').length;
     [...lam.querySelectorAll('img')].forEach(im => { if (!im.complete || !im.naturalWidth) r.errores.push(`imagen sin cargar: ${im.getAttribute('src')}`); });
     out.push(r);
@@ -838,10 +860,12 @@ porLamina.forEach(r => {
   agrupar(r.avisos).forEach(e => avis.push(`${n}: ${e}`));
   if (r.palabras > 35) errores.push(`${n}: ${r.palabras} palabras a la vista; el estilo pide una idea por lámina (≤ 22)`);
   else if (r.palabras > 22) avis.push(`${n}: ${r.palabras} palabras a la vista (ideal ≤ 22)`);
-  if (r.enfasis > 2) avis.push(`${n}: ${r.enfasis} énfasis (subrayado/resaltador); uno por lámina, dos como máximo`);
-  const flojos = contrasteColor.filter(m => m.i === r.i && !r.contrasteReportado.includes(m.ch) && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : m.oscuro ? UMBRAL_OSCURA : UMBRAL_COLOR));
+  if (r.enfasis > 2) avis.push(`${n}: ${r.enfasis} énfasis (subrayado/resaltador/círculo); uno por lámina, dos como máximo`);
+  const apagados = contrasteColor.filter(m => m.i === r.i && m.apagado != null && m.pct != null && m.pct < 15);
+  if (apagados.length) avis.push(`${n}: el ícono apagado casi no se reconoce (${apagados.map(m => `${m.ch}: ${m.pct} % del glifo a ≥ 1.3:1`).join(', ')}); aumenta --apagado-icono o elige otro ícono que se reconozca`);
+  const flojos = contrasteColor.filter(m => m.i === r.i && m.apagado == null && !r.contrasteReportado.includes(m.ch) && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : m.oscuro ? UMBRAL_OSCURA : UMBRAL_COLOR));
   // fuera de la tabla medida, sobre blanco, tarjeta u oscura: el umbral de la tabla neutra (30 en la oscura)
-  const flojosN = contrasteColor.filter(m => m.i === r.i && !r.contrasteReportado.includes(m.ch) && m.neutro && m.pct != null && m.pct < (m.fondoN === 'oscura' ? UMBRAL_OSCURA : CONTRASTE.U));
+  const flojosN = contrasteColor.filter(m => m.i === r.i && m.apagado == null && !r.contrasteReportado.includes(m.ch) && m.neutro && m.pct != null && m.pct < (m.fondoN === 'oscura' ? UMBRAL_OSCURA : CONTRASTE.U));
   if (flojosN.length) avis.push(`${n}: emoji fuera de la tabla medida que casi no se ve en ${modoRender} sobre ${flojosN[0].fondoN === 'oscura' ? 'la lámina oscura' : flojosN[0].fondoN === 'tarjeta' ? 'la tarjeta' : 'blanco'}: ${flojosN.map(m => `${m.ch} (${m.pct}%)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cámbialo (EMOJIS.md)`);
   if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });
@@ -892,7 +916,7 @@ Object.entries(delDeck.porConfirmar || {}).forEach(([k, v]) => {
   porConfirmar[k] = v;
   avisDatos.push(`${k} por confirmar en ${enLaminas(v.laminas)}: ${v.motivo}${v.valor ? ` («${v.valor}»)` : ''}`);
 });
-avis.push(...reglasDeckCompleto(deck, { manoPorLamina: porLamina.map(r => r.mano) }).avisos);
+avis.push(...reglasDeckCompleto(deck, { manoPorLamina: porLamina.map(r => r.mano), tiposPorLamina: porLamina.map(r => r.trazos) }).avisos);
 
 // Con datos propuestos sin confirmar el deck es BORRADOR: la nota no pasa de TOPE_BORRADOR
 const nota = notaQA({ errores, avisos: avis, porConfirmar });
@@ -920,6 +944,7 @@ const infoContraste = [
 const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
 const informe = { medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
+  tinta: porLamina.map(r => ({ lamina: r.i + 1, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));

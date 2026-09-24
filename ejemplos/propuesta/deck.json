@@ -1,5 +1,5 @@
 {
-  "sala": false,
+ "sala": false,
  "titulo": "Propuesta de capacitación — ejemplo",
  "formato": "16:9",
  "emoji": "apple",
@@ -102,7 +102,7 @@
    "id": "temario",
    "tipo": "lista",
    "encabezado": "Hoy vemos:",
-   "vineta": "check",
+   "vineta": "numero",
    "items": [
     "Lo que nos **dieron**",
     "Cómo lo **resolvemos**",
@@ -166,12 +166,23 @@
   },
   {
    "id": "otra-vez",
-   "tipo": "idea",
+   "tipo": "rejilla",
    "emoji": "💸",
    "texto": "Y el mes que sigue\n**se vuelve a perder**",
    "voz": [
-    "Y el mes que sigue, se vuelve a perder."
-   ]
+    "Y el mes que sigue, se vuelve a perder.",
+    "Cada caja representa un mes.",
+    "El costo se repite."
+   ],
+   "total": 12,
+   "columnas": 6,
+   "ancho": 1050,
+   "alto": 380,
+   "texto_paso": 0,
+   "anotacion": "Una caja por mes",
+   "anotacion_paso": 1,
+   "sello": "Se repite",
+   "sello_paso": 2
   },
   {
    "id": "mapa",
@@ -375,7 +386,18 @@
    "voz": [
     "Incluye ocho sesiones en vivo,",
     "un agente configurado para cada vendedor",
-    "y un reporte cada semana."
+    "y un reporte cada semana.",
+    "Todo con acompañamiento."
+   ],
+   "anotaciones": [
+    {
+     "llave": [
+      "i0",
+      "i2"
+     ],
+     "texto": "Con acompañamiento",
+     "paso": 3
+    }
    ]
   },
   {
@@ -384,15 +406,28 @@
    "encabezado": "No incluye:",
    "vineta": "x",
    "items": [
-    "Licencias **de software**",
-    "Integración **con su CRM**",
-    "Contratar **personal**"
+    {
+     "texto": "Licencias **de software**",
+     "tachado": true
+    },
+    {
+     "texto": "Integración **con su CRM**",
+     "tachado": true
+    },
+    {
+     "texto": "Contratar **personal**",
+     "tachado": true
+    }
    ],
    "voz": [
-    "No incluye las licencias de software,",
-    "ni la integración con su CRM,",
-    "ni contratar personal."
-   ]
+    "Las licencias de software,",
+    "la integración con su CRM",
+    "y contratar personal.",
+    "Las licencias quedan fuera.",
+    "La integración también.",
+    "Y la contratación, también."
+   ],
+   "tachar_despues": true
   },
   {
    "id": "inversion",
@@ -404,7 +439,7 @@
      "peso": 500
     },
     {
-     "texto": "Inversión: __{{PRECIO}}__",
+     "texto": "Inversión: (({{PRECIO}}))",
      "tam": "120px",
      "peso": 800
     }
@@ -420,8 +455,12 @@
    "emoji": "🛡️",
    "texto": "Si en la semana {{SEMANA_SALIDA}} no hay avance,\n**cancelan sin penalización**",
    "voz": [
-    "Si en esa semana no medimos avance, cancelan sin penalización."
-   ]
+    "Si en esa semana no medimos avance, cancelan sin penalización.",
+    "Sin penalización."
+   ],
+   "sello": "Sin penalización",
+   "sello_sobre": "emoji",
+   "sello_paso": 1
   },
   {
    "id": "pregunta",

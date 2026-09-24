@@ -54,12 +54,26 @@ Para requisitos, comisiones o políticas de plataforma, `fuente` lleva origen y 
 
 ## 2. Tabla de traducción: qué dice el guion y qué se dibuja
 
+| Qué dice el guion | Qué trazo |
+|---|---|
+| Contradicción o descarte | Tachón después de leer la opción |
+| Conclusión o veredicto | Sello sobre la composición apagada |
+| Agrupar y comentar | Llave con nota |
+| Cifra clave, credencial, año, precio o ítem elegido | Círculo `((…))`, hasta 4 palabras |
+| Escala | Rejilla o multitud con sello |
+| Pausa | Descanso de una sola palabra |
+
+El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso 0. Cada modelo incluye una secuencia de 3–4 pasos que transforma la misma composición. QA distingue trazos de énfasis de contenedores como nota o tabla; avisa sin restar si un deck de 12 láminas usa menos de dos tipos, o deja precio, garantía o «no incluye» sin trazo.
+
+
 | Si el guion dice… | Dibuja… | Diseño |
 |---|---|---|
 | una afirmación fuerte | emoji literal + frase con la clave en negrita | `idea` |
 | una promesa o tesis | la frase con `__subrayado__` rojo | `idea` |
 | «sin X, sin Y, sin Z» | «Sin:» + ❌ por renglón | `lista` |
-| «lo que necesitas: A, B, C» | ✅ por renglón | `lista` |
+| «Incluye / Es para ti si / Te llevas / Sales con / Hoy hiciste» | ✅ por renglón; nunca si lleva `{{HUECO}}` | `lista` |
+| temario, agenda, actividades, módulos, evaluación o pasos | `vineta: "numero"` o emoji por ítem; objetivos: 🎯 | `lista` |
+| programa o temario de N módulos | se declara una vez con `id` y reaparece con `como` + `activo` antes de cada módulo; número y semana en la etiqueta | `pasos` |
 | «X, Y y Z no sirven» | lista con tachones | `lista` con `tachado` |
 | «A lleva a B» | A → B con flecha roja | `flujo` |
 | «A NO lleva a B» | arco negro con ✕ | `flujo` + `tachada` |

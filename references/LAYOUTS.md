@@ -37,14 +37,14 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
 - `sello`: texto de sello de goma que cae en un paso extra. Es una etiqueta blanca OPACA con doble
   borde rojo: tapa lo que queda debajo, como en [6:45]. **Sin posición se acomoda solo en un hueco libre**: prueba
-  el centro, debajo del contenido (a la derecha y centrado), a su derecha, arriba y las 9 zonas, y se queda en el
+  el centro limpio, centrado BAJO el bloque, centrado SOBRE él, a su derecha, debajo a la derecha y las 9 zonas, y se queda en el
   primero que no pisa renglones, emojis ni la tinta a mano (subrayados, llaves, tachones, flechas, con 24 px de aire);
   cada lugar se prueba a su tamaño, a 0.85 y a 0.7 (en
   `rejilla`, centrado sobre las cajas, como en [6:45]; si la rejilla tiene celdas en `destacar`, esas celdas
   son el dato que se cuenta: el sello se acomoda solo en la banda entre renglones que menos destacadas tapa
   o, si todas tapan más del 25%, en una franja libre junto a la rejilla. El sello es el remate y la cifra ya se
   dijo: tapar parte de la rejilla es fiel a [6:45]; QA solo avisa si tapa más del 25% de las destacadas). Se
-  mueve con:
+  El sello libre respeta `--margen-v` arriba y abajo (100 px en 16:9; abajo 140 px con firma inferior), deja 24 px al bloque y nunca se monta sobre el último renglón. La firma cuenta como obstáculo. Su ancho girado no supera `max(0.8 × ancho del bloque, 420 px)` y su letra no supera 96 px. QA avisa si invade la franja inferior o la firma, o queda corrido en horizontal más del 15 % del ancho del lienzo respecto al centro del bloque. Se mueve con:
   - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
     ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). Eso vale para rejillas y cajas, y también sobre el
     `emoji` de una `idea`: tapa el ícono a propósito y QA no lo cuenta como error (sí cuenta cualquier otro emoji
@@ -140,7 +140,8 @@ en negrita, después del emoji explícito de cada ítem: emoji → letra → tex
 { "tipo": "lista", "encabezado": "Sin:", "vineta": "x",
   "items": ["Pasar años trabajando **12 horas al día**", "**Construir** una audiencia"] }
 ```
-- `vineta`: `x` (❌), `check` (✅) o cualquier emoji. También puede ir un `emoji` por ítem.
+- `vineta`: `x` (❌), `check` (✅), `numero` (teclas 1️⃣–9️⃣ y desde 10 número en tinta y negrita), `letras` o cualquier emoji. Omitirla da una lista neutra. También puede ir un `emoji` por ítem.
+  ✅ solo para «Incluye», «Es para ti si», «Te llevas», «Sales con / Hoy hiciste» y el mapa `hechos`. Temario, agenda, actividades, módulos, evaluación y pasos llevan `numero` o un emoji por ítem; objetivos, 🎯. Una lista con `{{HUECO}}` nunca lleva ✅.
 - Un ítem con `"tachado": true` recibe un tachón rojo. Con `"tachar_despues": true` en la lista,
   los tachones llegan después de que aparece todo [4:05], **cada uno en su paso**: 3 ítems tachados dan 6 pasos
   (3 ítems + 3 tachones), y la `voz` lleva 6 textos.
@@ -465,10 +466,10 @@ láminas siguientes los reusan con `"como": "<id>"`: heredan solo los campos del
   `titulo`, `dias`, `fases`, `n`, `columnas`, `palabra_dia`, `color`, `rango`; `tabla` → `esquina`, `columnas`, `filas`,
   `ancho_etiqueta`, `vacias`; `lista` → su mapa y letras; `meses` → su rejilla;
   `chat` → `encabezado`, `encabezado_estilo`, `avatar_yo`, `avatar_otro`, `avatar_tam`, `sello`, `sello_sobre`, `sello_pos`, `sello_paso` (los mensajes los trae la hija);
-  `idea` → `emoji`, `emoji_tam`; `prueba` → `capturas`. Nunca `id`, `voz`, `revelar`, `activo`, `hechos`, `fase_activa`, `texto` ni notas; el sello solo se hereda en `chat`.
+  `idea` → `emoji`, `emoji_tam`; `prueba` → `capturas`; `objeto` → `imagen`, `alto`, `emoji`, `emoji_tam`, `reloj`, `logos`. Nunca `id`, `voz`, `revelar`, `activo`, `hechos`, `fase_activa`, `texto` ni notas; el sello solo se hereda en `chat`.
 - Lo que trae la lámina gana (`{ "tipo": "calendario", "como": "plan", "fase_activa": 2 }`). La madre va antes; se
   permiten cadenas. Es error un `como` a un id que no existe, que va después, a sí misma o de otro diseño; `como` solo
-  existe en `pasos`, `calendario`, `tabla`, `lista`, `meses`, `chat`, `idea` y `prueba`. QA avisa cuando una lámina repite a mano el objeto de otra.
+  existe en `pasos`, `calendario`, `tabla`, `lista`, `meses`, `chat`, `idea`, `prueba` y `objeto`. QA avisa cuando una lámina repite a mano el objeto de otra.
 
 ### `tabla` — la tabla-marcador escrita a mano  ·  [5:25 → 10:05]
 El recurso estrella: se llena columna por columna a lo largo de varias láminas. `converger: { "columna", "texto",
@@ -739,14 +740,14 @@ Cada bloque lleva `texto`, `sub` opcional y `tono`: `azul`, `verde` o `morado`. 
 
 ### `chat` — burbujas, un mensaje por paso  ·  [17:45, 19:00, 21:50]
 
-`de: "prompt"` dibuja una tarjeta blanca con borde y sin avatar. `de: "respuesta"` dibuja la
-respuesta en verde claro, con `remitente` manuscrito. Cada mensaje conserva su propio paso.
+`de: "prompt"` dibuja una tarjeta blanca con sombra suave, sin borde ni avatar; los prompts seguidos forman una sola tarjeta que crece renglón por renglón. `de: "respuesta"` conserva fondo verde claro sin borde, con `remitente` manuscrito a la izquierda. Cada renglón conserva su paso y ancla `m0`… para flechas, anotaciones y `sello_sobre`; `revelar: "todo"` los reúne en 0.
+`letras: ["R", "E", "A"]` añade una letra por mensaje en círculo rojo (una letra o sigla alfanumérica de 1–3 caracteres por posición). Una instrucción de 2–4 reglas se lee mejor como `lista` con `vineta: "letras"` o emoji; chat/prompt queda para el texto literal que se copia.
 Una respuesta real exige `fuente` con fecha, por ejemplo «Registro autorizado, 2026-09-24».
 Si el contenido es ilustrativo, usa `ejemplo: true`: lleva el sello visible EJEMPLO. Una respuesta
 sin esa marca y sin fuente fechada es error de QA.
 
 ```json
-{"tipo":"chat","mensajes":[{"de":"prompt","texto":"Resume este texto en tres tareas."},{"de":"respuesta","remitente":"IA","texto":"Revisar, confirmar y enviar.","ejemplo":true}]}
+{"tipo":"chat","mensajes":[{"de":"prompt","texto":"Resume el texto en tres tareas."},{"de":"prompt","texto":"Indica responsable y fecha."},{"de":"respuesta","remitente":"IA","texto":"Revisar, confirmar y enviar.","ejemplo":true}]}
 ```
 ```json
 { "tipo": "chat", "mensajes": [{ "de": "yo", "texto": "¿Quieres trabajar conmigo?" }, { "de": "otro", "texto": "¡Sí, me interesa!" }] }
@@ -984,9 +985,9 @@ En vivo, todo tramo que dependa de una página, documento o internet lleva `si_f
   ```
   - `texto`: la consigna para el público, a tamaño de frase (si falta, se usa `nota`). Acepta las marcas de
     texto.
-  - `items`: hasta 5 pasos de la consigna, en lista numerada.
-  - `emoji`: por omisión ⏱️, y 🙋 si la consigna habla de preguntas.
-  - `dur`: los segundos del tramo; de ahí sale la cuenta regresiva, que se reinicia al entrar a la lámina, pasa
+  - `items`: hasta 5 pasos como texto u objeto `{ "emoji": "📝", "texto": "Anota una tarea" }`, sin herencia `como`. Cada ítem lleva su emoji o tecla numérica por índice, letra de 66 px (72 en sala), interlineado 1.18 y separación de 52 px. Con reloj, divide una consigna de más de 3 ítems en dos tramos: conservar esas métricas puede desbordar el lienzo y QA avisa sin ocultar contenido.
+  - `emoji`: por omisión ⏱️, y 🙋 si la consigna habla de preguntas; el emoji grande aparece solo cuando no hay `dur`. Con reloj, la jerarquía es reloj → consigna de 84 px → ítems.
+  - `dur`: los segundos del tramo; de ahí sale el reloj SVG de siete segmentos (~420 px), que se reinicia al entrar a la lámina, pasa
     a rojo en los últimos 30 s y parpadea en 0:00. Sin `dur`, o con menos de 30 s, QA avisa.
   - En el presentador el público ve la consigna en **blanco** con su emoji y la cuenta regresiva; la vista de
     ensayo muestra la misma cuenta y la consigna. Como el público la ve minutos enteros, sale igual (con el reloj
@@ -1021,6 +1022,7 @@ marcas: no caben a lo ancho.
 | `texto_paso` | idea, flujo, pasos, cifra, objeto, oscura, grafica, linea-tiempo, medidor, opciones, rejilla, prueba, boton, circulos | Paso en que aparece el texto. Cuenta desde 0. |
 | `nota_paso` | idea, lista, flujo, pasos, cifra, cita, objeto, tarjetas, oscura, grafica, linea-tiempo, medidor, boton, circulos | Paso de la nota manuscrita. Por omisión, el paso siguiente al texto (en `pasos`, el mismo). |
 | `clic_paso` | pasos, opciones, boton, y cualquier lámina con `clic` de texto | Paso en que llega el cursor. |
+| `circulo_paso` | cualquiera con `((…))` | Paso absoluto del óvalo; por omisión entra con su texto. |
 | `sello_paso` | cualquiera con `sello` | Paso del sello; por omisión, uno extra al final. |
 | `banda_paso` · `anotacion_paso` · `destacado_paso` · `centro_paso` · `interior_paso` | grafica · rejilla · rejilla · circulos · circulos | Paso de ese elemento. |
 | `paso` | ítems de `marcas`, `tramos`, `anotaciones` | Lo mismo, por ítem. |
@@ -1040,7 +1042,7 @@ marcas: no caben a lo ancho.
 | `oscura: true` | cualquiera | Pinta esa lámina con el fondo oscuro de la oferta. |
 | `sello_sobre`, `sello_pos`, `clic_pos` | cualquiera | Mueven el sello y la punta del cursor (ver arriba). |
 | `anotaciones` | cualquiera | Notas a mano con gancho hacia un ancla, o una flecha que entra desde el borde (ver «Anotaciones con flecha»). |
-| `como` | pasos, calendario, tabla, lista, meses, chat, idea, prueba | Reusa el objeto de otra lámina (ver «El objeto que vuelve»). |
+| `como` | pasos, calendario, tabla, lista, meses, chat, idea, prueba, objeto | Reusa el objeto de otra lámina (ver «El objeto que vuelve»). |
 
 ### Anotaciones con flecha (cualquier diseño)  ·  [15:00, 28:35, 2:40, 11:20, 36:45]
 El video pone notas rojas a mano con su gancho sobre casi cualquier recurso: una captura con su dato encerrado, un
@@ -1158,7 +1160,7 @@ texto y se llena UNA vez en `datos`, arriba del deck:
 
 | Marca | Resultado |
 |---|---|
-| `((cifra))` | óvalo a mano, un único énfasis por lámina; admite `{v:((5))}` y `^^((2032))^^`; máximo unas 3 palabras, sin salto. `circulo_paso` lo separa del paso de la frase; en oscura va blanco |
+| `((cifra))` | óvalo a mano, un único énfasis por lámina; admite `{v:((5))}` y `^^((2032))^^`; máximo 4 palabras, sin salto de línea y sin partirse entre renglones. `circulo_paso` lo separa del paso de la frase; en oscura va blanco |
 | `**frase**` | negrita: la frase clave |
 | `__frase__` | negrita + subrayado rojo a mano |
 | `==frase==` | negrita + resaltador amarillo |
@@ -1298,3 +1300,7 @@ que explique qué pasa si no funciona. `avisos_aceptados` es una lista de `{ "te
 "laminas": [2], "motivo": "justificación concreta" }`; también acepta `regla` en lugar de `texto`.
 El motivo es obligatorio; `laminas` es opcional. Cada aviso restante se corrige o se acepta con motivo.
 Un aviso sin resolver impide `estado: listo`, aunque la nota sea mayor de 90.
+
+### Símbolo propio que vuelve
+
+Los campos que aceptan emoji (`idea`, `pasos`, `flujo`, `stack`, `lista`) admiten `trazo:triangulo|MÉTODO`, `trazo:circulo|MÉTODO` y `trazo:marco|MÉTODO`. Solo para términos acuñados sin emoji literal, con 1–2 rótulos por deck, repetidos con figura idéntica; véase EMOJIS, «Término acuñado sin emoji literal». Para una metáfora física, usa `objeto` con `imagen: "assets/objeto.svg"`; su grupo vuelve con `como`, conservando imagen y medidas, sin heredar texto ni voz.

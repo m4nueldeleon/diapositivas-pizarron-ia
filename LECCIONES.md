@@ -190,3 +190,7 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Tinta:** medir la línea base de cada nodo mantiene el subrayado debajo de g/p/q/y; el arco sube levemente y tiene un tope que evita invadir letras o huecos.
 - **Imágenes:** una fotografía opaca necesita foto a sangre con velo; la sombra de objeto solo se aplica al recorte. Los ejemplos visuales se rotulan y nunca acreditan resultados.
 - **Íconos:** los conceptos de tienda, identificación y factura deben tener un glifo inequívoco; la oscura resuelve glifos hundidos con halo sin medir el halo como parte del emoji.
+
+## 2026-09-24 · Estilo e íconos: recetas de una conferencia real (ronda 7)
+
+- **Regla:** el sello libre remata cerca y centrado bajo el bloque, con margen y firma protegidos; la ✅ afirma inclusión o algo hecho, mientras planes y pendientes llevan números o su emoji literal. El tramo en vivo conserva tres niveles: reloj de segmentos, consigna e ítems espaciados. Los prompts seguidos comparten tarjeta sin borde. Los íconos pendientes mantienen su color y un piso de 35 %, separado de la etiqueta. Un término propio puede volver como figura negra con rótulo estable; el óvalo encierra hasta cuatro palabras sin invadir otro renglón. Cada sección se abre con el mapa que vuelve, sin eyebrow. Los modelos enseñan la transformación por pasos con sello, tachón, círculo y llave, conservando los datos pendientes y el arco. Se generalizan los aprendizajes sin incorporar nombres, cifras ni materiales del evento.

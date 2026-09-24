@@ -50,11 +50,12 @@ test('A/C/M: anclas en texto, palabra, óvalo, llave y emoji con letras llegan a
   assert.match(r.html, /data-a="ovalo"[^>]*data-w="w2"/);
   assert.match(r.html, /"estilo":"llave"/); assert.match(r.html, /📋/);
 });
-test('C: dos óvalos o salto son error; longitud y énfasis simultáneo avisan', () => {
+test('C: dos óvalos o salto son error; longitud es error y énfasis simultáneo avisa', () => {
   const r = reglasMarcasYSuperficies({laminas:[idea('((Uno)) ((Dos))'),idea('((Una\nlínea))'),idea('((una frase de cuatro palabras)) __extra__')]});
   assert.ok(r.errores.some(x => /más de un óvalo/.test(x)));
   assert.ok(r.errores.some(x => /salto/.test(x)));
-  assert.equal(r.avisos.length,2);
+  assert.ok(r.errores.some(x => /más de 4 palabras/.test(x)));
+  assert.equal(r.avisos.length,1);
 });
 test('E: escala numérica avisa solo cuando distorsiona; pos manda', () => {
   const linea = numeros => ({tipo:'linea-tiempo',marcas:numeros.map(n => ({texto:`Semana ${n}`}))});

@@ -42,7 +42,8 @@ export function medidasTrazos(lam) {
     const walker = document.createTreeWalker(lam,NodeFilter.SHOW_TEXT);
     for (let nodo; (nodo=walker.nextNode());) {
       const e = nodo.parentElement; if (!nodo.textContent.trim() || !visible(e) || propia.contains(e) || e.closest('script,style,svg')) continue;
-      const rango = document.createRange(); rango.selectNodeContents(nodo); obstaculos.push(...rango.getClientRects());
+      // palabra por palabra y sin el interlineado: el rect de un nodo incluye el espacio final y la caja de línea, que no son tinta [r7]
+      for (const m of nodo.textContent.matchAll(/\S+/g)) { const rango = document.createRange(); rango.setStart(nodo, m.index); rango.setEnd(nodo, m.index + m[0].length); obstaculos.push(...[...rango.getClientRects()].map(b => ({ left: b.left, right: b.right, top: b.top + b.height * .15, bottom: b.bottom - b.height * .15 }))); }
     }
     if (obstaculos.some(b => trazaCruza(f,b))) errores.push('el óvalo cruza otro renglón o un emoji; separa la cifra de los elementos vecinos');
   });
@@ -64,4 +65,25 @@ export function medidasTrazos(lam) {
   });
   lam.querySelectorAll('path[data-sin-espacio]').forEach(f => { if (visible(f)) avisos.push('el subrayado no tiene espacio entre renglones; separa las líneas o acorta la frase'); });
   return { errores:[...new Set(errores)], avisos:[...new Set(avisos)] };
+}
+
+// Polígono girado, no su caja exterior: evita falsos cruces de firma en las esquinas vacías.
+export function avisosGeometriaSello(poligono, W, H, margen, firma, bloque, automatico) {
+  const avisos = [];
+  if (poligono.some(([, y]) => y > H - margen + 1)) avisos.push(`el sello invade la franja inferior de ${margen} px; súbelo o quita sello_pos para acomodarlo dentro del margen`);
+  if (firma) {
+    const rectangulo = [[firma.x,firma.y],[firma.x+firma.w,firma.y],[firma.x+firma.w,firma.y+firma.h],[firma.x,firma.y+firma.h]];
+    const ejes = [...poligono, ...rectangulo].map((p,i) => { const figura = i < 4 ? poligono : rectangulo, q = figura[(i+1)%4]; return [-(q[1]-p[1]), q[0]-p[0]]; });
+    const cruza = ejes.every(([x,y]) => {
+      const a = poligono.map(p => p[0]*x+p[1]*y), b = rectangulo.map(p => p[0]*x+p[1]*y);
+      return Math.max(...a) >= Math.min(...b) && Math.max(...b) >= Math.min(...a);
+    });
+    if (cruza) avisos.push('el sello cruza la firma; sepáralo de la firma o quita sello_pos para acomodarlo solo');
+  }
+  if (automatico && bloque) {
+    const centro = poligono.reduce((s,p) => [s[0]+p[0]/4,s[1]+p[1]/4],[0,0]);
+    // solo el desvío horizontal: centrado DEBAJO del bloque es el lugar preferido y queda lejos en vertical por diseño
+    if (Math.abs(centro[0]-(bloque.x+bloque.w/2)) > .15*W) avisos.push('el sello acomodado solo queda corrido más del 15 % del ancho respecto al centro del bloque; acorta el sello o despeja espacio centrado debajo');
+  }
+  return avisos;
 }

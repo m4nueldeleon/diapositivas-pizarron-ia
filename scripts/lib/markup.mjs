@@ -38,7 +38,7 @@ export function marcar(texto) {
   // el sufijo va antes que el tono: «{v:$50k{s:/año}}» deja el sufijo dentro del verde
   h = h.replace(/\{s:([^{}]+?)\}/g, '<span class="sufijo">$1</span>');
   h = h.replace(/\{([vrngako]):([^{}]+?)\}/g, (m, t, x) => (TONOS.has(t) ? `<span class="tono-${t}">${x}</span>` : m));
-  h = h.replace(/\(\(([\s\S]*?)\)\)/g, (_, x) => x.trim() ? `<b class="circ" data-circulo="linea" data-a="ovalo">${x}</b>` : '');
+  h = h.replace(/\(\(([\s\S]*?)\)\)/g, (_, x) => x.trim() && !/\n|\\n/.test(x) ? `<b class="circ" data-circulo="linea" data-a="ovalo">${x}</b>` : x.trim() ? `((${x}))` : '');
   // [\s\S] y no «.»: una marca puede cruzar un salto de línea real (el \n de un deck.json). El salto
   // se vuelve <br> al final, así queda DENTRO de <b>, <s> o <mark>.
   h = h.replace(/\[\[([\s\S]+?)\]\]/g, '<span class="mano">$1</span>');

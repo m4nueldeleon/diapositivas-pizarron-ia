@@ -1,5 +1,5 @@
 import { invitacion } from './layouts-interfaces.mjs';
-import { burbuja, mensajesSobre } from './burbujas.mjs';
+import { burbuja, mensajesSobre, cuerpoMensaje } from './burbujas.mjs';
 import { posicionesTiempo } from './reglas-marcas.mjs';
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
@@ -525,7 +525,7 @@ export function chat(l, ctx) {
   const tbVertical = ms.length <= 3 && maxPalabras <= 12 ? 76 : maxPalabras <= 12 ? 68 : maxPalabras <= 24 ? 64 : 58;
   const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbVertical;
   const muro = l.variante === 'muro', celular = l.marco === 'celular';
-  const html = ms.map((m,i) => burbuja(m,ctx,{
+  const html = ms.map((m,i) => m.de === 'prompt' ? renglonPrompt(l, ctx, i) : burbuja(m,ctx,{
     indice:i, paso:l.revelar === 'todo' || l.revelar === 'rafaga' ? 0 : muro ? Math.floor(i/(ctx.vertical ? 1 : 2)) : i,
     avatar:(m.de || 'yo') === 'yo' ? l.avatar_yo : l.avatar_otro,
     avatarTam: muro ? 76 : celular ? 42 : Number.isFinite(l.avatar_tam) ? Math.round(l.avatar_tam*.85) : ctx.vertical ? Math.round(tbAvatar*1.3*.85) : 108,
@@ -540,6 +540,15 @@ export function chat(l, ctx) {
   const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : ctx.vertical && !l.tam_texto ? `--tb:${tbVertical}px` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ctx.vertical ? `--av:${Math.round(tbAvatar * 1.3)}px` : ''].filter(Boolean);
   const tb = vars.length ? ` style="${vars.join(';')}"` : '';
   return `<div class="pila">${rotulo(ctx, ctx.vertical && !l.encabezado_estilo ? { ...l, encabezado_estilo: 'frase' } : l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div>${pie}</div>`;
+}
+
+// Una instrucción literal conserva una tarjeta; cada renglón tiene su paso y su ancla propia.
+function renglonPrompt(l, ctx, i) {
+  const m = l.mensajes[i], k = ['todo', 'rafaga'].includes(l.revelar) ? 0 : i;
+  const primera = l.mensajes[i - 1]?.de !== 'prompt', ultima = l.mensajes[i + 1]?.de !== 'prompt';
+  const letra = l.letras?.[i];
+  const viñeta = letra ? `<b class="vineta-letra" data-circulo="linea">${escapar(letra)}</b>` : '';
+  return `${primera ? `<div class="chat-tarjeta prompt"${ctx.P(k)}>` : ''}<div class="chat-renglon"${ctx.P(k)}${ctx.A('m' + i)}>${viñeta}<div class="burbuja">${cuerpoMensaje(m.texto)}</div></div>${ultima ? '</div>' : ''}`;
 }
 
 // REPARTO — pastilla verde (audiencia · ingresos) que se parte en «su parte» y «tu parte».

@@ -850,7 +850,8 @@
    "id": "remate",
    "tipo": "idea",
    "texto": "Eso es lo que yo llamo un\n^^__plan de monetización__^^",
-   "voz": "Eso es lo que yo llamo un plan de monetización"
+   "voz": "Eso es lo que yo llamo un plan de monetización",
+   "emoji": "trazo:marco|PLAN"
   },
   {
    "id": "camara",
@@ -1038,7 +1039,11 @@
    "mensajes": [
     {
      "de": "prompt",
-     "texto": "Resume este texto en tres tareas."
+     "texto": "Resume el texto en tres tareas."
+    },
+    {
+     "de": "prompt",
+     "texto": "Indica responsable y fecha."
     },
     {
      "de": "respuesta",
@@ -1049,6 +1054,7 @@
    ],
    "voz": [
     "Pide un resumen con tres tareas concretas.",
+    "Pide responsable y fecha.",
     "Revisa las tareas antes de usarlas."
    ]
   },
@@ -1278,7 +1284,9 @@
    "capturas": [
     {
      "post": {
-      "texto": ["Documento de trabajo"],
+      "texto": [
+       "Documento de trabajo"
+      ],
       "nombre": "Equipo"
      },
      "ejemplo": true
@@ -1295,6 +1303,13 @@
     "Este documento inventado muestra la superficie de prueba.",
     "La burbuja aparece después."
    ]
+  },
+  {
+   "id": "trazo-r7",
+   "tipo": "idea",
+   "emoji": "trazo:marco|PLAN",
+   "texto": "El mismo **plan**, cada vez que vuelve",
+   "voz": "El símbolo propio vuelve idéntico cada vez que nombro el plan."
   }
  ]
 }

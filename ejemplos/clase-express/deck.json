@@ -1,5 +1,5 @@
 {
-  "sala": false,
+ "sala": false,
  "titulo": "Clase express — el mensaje de seguimiento",
  "formato": "16:9",
  "emoji": "apple",
@@ -63,7 +63,18 @@
    "voz": [
     "Sales con tus tres chats,",
     "con la fórmula",
-    "y con tus tres mensajes escritos."
+    "y con tus tres mensajes escritos.",
+    "Listos para mandar."
+   ],
+   "anotaciones": [
+    {
+     "llave": [
+      "i0",
+      "i2"
+     ],
+     "texto": "Listos para mandar",
+     "paso": 3
+    }
    ]
   },
   {
@@ -107,18 +118,21 @@
    "id": "reciente",
    "tipo": "idea",
    "emoji": "⏳",
-   "texto": "Un chat de hace **3 días**\ntodavía se acuerda de ti",
+   "texto": "Un chat de hace **((3 días))**\ntodavía se acuerda de ti",
    "nota": "Uno de hace un mes, ya no",
    "voz": [
     "Un chat de hace tres días todavía se acuerda de ti.",
+    "Es reciente.",
     "Uno de hace un mes, ya no."
-   ]
+   ],
+   "circulo_paso": 1,
+   "nota_paso": 2
   },
   {
    "id": "filtro",
    "tipo": "lista",
    "encabezado": "En tu WhatsApp:",
-   "vineta": "check",
+   "vineta": "numero",
    "items": [
     "Preguntaron **precio**",
     "Hace **3 a 10 días**",

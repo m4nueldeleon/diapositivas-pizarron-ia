@@ -329,7 +329,10 @@
       case 'llave': {
         if (c.vertical) {
           const ev = ancla(esc, c.via); if (!ev) return;
-          const x = Math.max(A.x + A.w, B.x + B.w) + 28, y0 = Math.min(A.y, B.y), y1 = Math.max(A.y + A.h, B.y + B.h), ym = (y0 + y1) / 2;
+          // La llave agrupa también lo que queda ENTRE sus puntas: un renglón intermedio más largo no puede quedar cortado
+          const entre = [];
+          if (ea && ea.parentElement === eb.parentElement) for (let n = ea.nextElementSibling; n && n !== eb; n = n.nextElementSibling) entre.push(caja(n, lam));
+          const x = Math.max(A.x + A.w, B.x + B.w, ...entre.map(b => b.x + b.w)) + 28, y0 = Math.min(A.y, B.y), y1 = Math.max(A.y + A.h, B.y + B.h), ym = (y0 + y1) / 2;
           const d = `M${x} ${y0} Q${x+22} ${y0} ${x+22} ${y0+24} L${x+22} ${ym-24} Q${x+22} ${ym} ${x+48} ${ym} Q${x+22} ${ym} ${x+22} ${ym+24} L${x+22} ${y1-24} Q${x+22} ${y1} ${x} ${y1}`;
           const tr = trazo(svg, d, { color: TONO[c.tono] || C.rojo, ancho: 5, p, clase: 'llave' });
           Object.assign(tr.dataset, { de: c.de, a: c.a, via: c.via });
@@ -433,7 +436,7 @@
     });
   }
   function elipse(svg, b, r, p, ancho = 4.8, enLinea = false) {
-    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + (enLinea ? 14 : Math.max(18, b.w * 0.07)), ry = b.h / 2 + (enLinea ? 10 : Math.max(14, b.h * 0.3));
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + (enLinea ? 14 : Math.max(18, b.w * 0.07)), ry = b.h / 2 + (enLinea ? Math.min(10, .25 * b.h) : Math.max(14, b.h * 0.3));
     const a0 = -2.4 + r() * 0.4, pts = [];
     for (let i = 0; i <= 44; i++) {
       const a = a0 + (i / 44) * Math.PI * 2.12;
@@ -452,7 +455,7 @@
       const b = caja(el, lam), p = pasoDe(el);
       if (el.dataset.circulo === 'caja') cajaRoja(svg, b, p); else {
         const tr = elipse(svg, b, r, el.dataset.circuloP != null ? +el.dataset.circuloP : p, 4.8, el.dataset.circulo === 'linea');
-        if (el.dataset.circulo === 'linea') tr.dataset.a = el.dataset.w || 'ovalo';
+        if (el.dataset.circulo === 'linea') tr.dataset.a = el.dataset.w || el.dataset.a || 'ovalo';
       }
     });
     dentro(esc, '[data-circulo-img]').forEach(el => {
@@ -599,8 +602,9 @@
       const el = ancla(lam, n.dataset.sobre); if (!el) return;
       if (n.dataset.llaveHasta) {
         const fin = ancla(lam, n.dataset.llaveHasta); if (!fin) return;
-        const a = caja(el, lam), b = caja(fin, lam);
-        n.style.left = (Math.max(a.x+a.w, b.x+b.w)+100) + 'px';
+        const a = caja(el, lam), b = caja(fin, lam), entre = [];
+        if (el.parentElement === fin.parentElement) for (let h = el.nextElementSibling; h && h !== fin; h = h.nextElementSibling) entre.push(caja(h, lam));
+        n.style.left = (Math.max(a.x+a.w, b.x+b.w, ...entre.map(e => e.x+e.w))+100) + 'px';
         n.style.top = ((Math.min(a.y,b.y)+Math.max(a.y+a.h,b.y+b.h))/2-n.offsetHeight/2) + 'px';
         puestas.push(caja(n,lam)); return;
       }   // la conexión avisa que falta el ancla
@@ -805,10 +809,17 @@
   // Paso de un trazo: el suyo o el del grupo que lo contiene (las series de una gráfica lo llevan en su <g>)
   const pasoTrazo = e => (e.dataset.p != null ? +e.dataset.p : pasoDe(e));
   function mostrar(lam, paso, t) {
+    if (lam.classList.contains('captura-vivo')) actualizarReloj(lam.querySelector('.vivo-reloj'), +lam.dataset.dur || 0);
     const fin = !isFinite(t), suave = document.body.dataset.anim === 'suave';
     lam.querySelectorAll('[data-p]').forEach(e => {
       if (e.closest('defs')) return;
       e.classList.toggle('oculto', +e.dataset.p > paso);
+    });
+    // La tarjeta crece hasta el último renglón visible sin mover las anclas ya dibujadas.
+    lam.querySelectorAll('.chat-tarjeta.prompt').forEach(tarjeta => {
+      const visibles = [...tarjeta.querySelectorAll('.chat-renglon')].filter(r => !r.classList.contains('oculto'));
+      const ultimo = visibles.at(-1);
+      if (ultimo) tarjeta.style.setProperty('--alto-prompt', `${ultimo.offsetTop + ultimo.offsetHeight + parseFloat(getComputedStyle(tarjeta).paddingBottom)}px`);
     });
     // data-hasta: el elemento se va DESPUÉS de su paso (la mano y las estrellas de una calificación que no acumula)
     lam.querySelectorAll('[data-hasta]').forEach(e => e.classList.toggle('pasado', paso > +e.dataset.hasta));
@@ -917,6 +928,22 @@
   /*@@RECORTES@@*/
   /*@@EMOJIS@@*/
 
+  // El presentador y la captura activan la misma geometría; nunca reemplazan el SVG por texto.
+  const SEGMENTOS_RELOJ = { 0:'abcdef', 1:'bc', 2:'abged', 3:'abgcd', 4:'fgbc', 5:'afgcd', 6:'afgedc', 7:'abc', 8:'abcdefg', 9:'abcdfg' };
+  function actualizarReloj(svg, segundos) {
+    if (!svg) return;
+    const s = Math.max(0, Math.ceil(Number(segundos) || 0));
+    const texto = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    const grupos = [...svg.querySelectorAll('[data-digito]')];
+    const digitos = texto.replace(':', '').padStart(grupos.length, '0').slice(-grupos.length);
+    grupos.forEach((g, i) => g.querySelectorAll('[data-segmento]').forEach(p => p.classList.toggle('on', (SEGMENTOS_RELOJ[digitos[i]] || '').includes(p.dataset.segmento))));
+    const titulo = svg.querySelector('title');
+    if (titulo) titulo.textContent = texto;
+    svg.setAttribute('aria-label', texto);
+    svg.classList.toggle('final', s > 0 && s <= 30);
+    svg.classList.toggle('cero', s === 0);
+  }
+
   // ---------- arranque ----------
   async function preparar() {
     try { await document.fonts.ready; } catch (e) {}
@@ -953,6 +980,6 @@
   const modo = new URLSearchParams(location.search).get('modo') || 'presentador';
   document.body.classList.add(modo === 'presentador' ? 'preparando' : modo);
   // El presentador y la vista de ensayo viven en templates/presentador.js y arrancan sobre PZ.listo
-  window.PZ = { mostrar, pasos, animaDur, avisos, modo, listo: null };
+  window.PZ = { mostrar, pasos, animaDur, actualizarReloj, avisos, modo, listo: null };
   window.PZ.listo = preparar().then(lams => { window.PZ.lams = lams; return lams.length; });
 })();

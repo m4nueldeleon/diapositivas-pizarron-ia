@@ -15,11 +15,11 @@ export const recortar = (t, n = LARGO) => { const s = String(t || '').replace(/\
 
 function nuevoMarco(tag, attrs, padre) {
   const clase = attr(attrs, 'class') || '';
-  const dp = attr(attrs, 'data-p'), tp = attr(attrs, 'data-tachar-p'), ap = attr(attrs, 'data-atenuar');
+  const dp = attr(attrs, 'data-p'), tp = attr(attrs, 'data-tachar-p'), ap = attr(attrs, 'data-atenuar'), cp = attr(attrs, 'data-circulo-p');
   return {
     tag, clase, rotulo: attr(attrs, 'data-rotulo'), cantidad: attr(attrs, 'data-cantidad'), textos: [], emojis: [], todo: [],
     propio: dp != null, p: dp != null ? Number(dp) : padre ? padre.p : 0,
-    tachar: tp != null ? Number(tp) : null, atenuar: ap != null && Number(ap) > 0 ? Number(ap) : null,
+    circulo: cp != null ? Number(cp) : null, tachar: tp != null ? Number(tp) : null, atenuar: ap != null && Number(ap) > 0 ? Number(ap) : null,
     emo: /(^|\s)emo(\s|$)/.test(clase), e: deEmoji(attr(attrs, 'data-e')),
     fuera: /(^|\s)(onda|pz-oculto)(\s|$)/.test(clase) || (padre && padre.fuera),
   };
@@ -47,6 +47,7 @@ export function describirPasos(html, n, conexiones = []) {
     const f = pila.pop();
     const padre = pila[pila.length - 1];
     if (f.emo) { const d = dueno(pila.length - 1); if (!f.fuera) d.emojis.push(f.e || f.todo.join('').trim() || 'emoji'); }
+    if (!f.fuera && f.circulo != null) poner(f.circulo, `círculo de «${recortar(f.todo.join(' '), 24)}»`);
     if (!f.fuera && f.tachar != null) poner(f.tachar, `tachón de «${recortar(f.todo.join(' '), 24)}»`);
     if (!f.fuera && f.atenuar != null) poner(f.atenuar, `se apaga «${recortar(f.todo.join(' '), 24)}»`);
     if (f.propio && !f.fuera) poner(f.p, etiqueta(f));

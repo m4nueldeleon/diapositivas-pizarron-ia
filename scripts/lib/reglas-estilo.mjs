@@ -4,6 +4,7 @@ const normal = t => plano(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u0
 const SIGLAS = new Set(['IA', 'CRM', 'SAT', 'USD', 'MXN', 'PDF', 'URL', 'CEO', 'VSL']);
 const CORTAS_COMUNES = new Set(['HOY', 'HAY', 'VAS', 'VE', 'DA', 'DAS', 'MAS', 'MÁS', 'DOS', 'MES', 'DÍA', 'A', 'AL', 'DE', 'DEL', 'EL', 'EN', 'ES', 'LA', 'LAS', 'LO', 'LOS', 'MI', 'MIS', 'NO', 'POR', 'QUE', 'SE', 'SIN', 'SON', 'SU', 'SUS', 'TE', 'TU', 'TUS', 'UN', 'UNA', 'UNO', 'Y', 'YA']);
 const CAMPOS = ['texto', 'nota', 'lineas', 'items', 'etiquetas', 'arriba', 'abajo'];
+export const encabezadoSeccion = t => /^(modulo|semana|bloque|parte|dia|fase|etapa|sesion)\s*\d/i.test(normal(t).trim()) && !/[:…?]$|\.\.\.$/.test(plano(t).trim());
 function textos(l) {
   const leer = v => typeof v === 'string' ? [v] : Array.isArray(v) ? v.flatMap(leer)
     : v && typeof v === 'object' ? leer(v.texto || v.etiqueta || '') : [];
@@ -13,7 +14,8 @@ export function reglasEstilo(deck) {
   const avisos = [];
   deck.laminas.forEach((l, i) => {
     const cab = plano(l.encabezado || '');
-    if (/\s[·|]\s/.test(cab)) avisos.push(`lámina ${i+1}: el encabezado «${cab}» lleva metadatos separados por “·” (eyebrow); preséntalo con “:” o numéralo, y pasa la semana o el “ejemplo” al texto, a la línea de tiempo o a la voz (ESTILO §2)`);
+    if (encabezadoSeccion(cab) && ((l.tipo === 'idea' && l.encabezado_pos !== 'entre') || l.tipo === 'flujo')) avisos.push(`lámina ${i+1}: rótulo de sección encima del titular (eyebrow): quítalo y usa el mapa que vuelve, o encabezado_pos:"entre" (ESTILO §8)`);
+    else if (/\s[·|]\s/.test(cab) && !/[:…?]$|\.\.\.$/.test(cab.trim())) avisos.push(`lámina ${i+1}: el encabezado «${cab}» lleva metadatos separados por “·” (eyebrow); preséntalo con “:” o numéralo, y pasa la semana o el “ejemplo” al texto, a la línea de tiempo o a la voz (ESTILO §2)`);
 
     const nombre = `lámina ${i + 1} (${l.id || l.tipo})`;
     for (const t of textos(l)) {

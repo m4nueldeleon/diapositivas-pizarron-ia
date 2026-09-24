@@ -79,3 +79,35 @@ export function correlacionMiniaturas(a, b) {
 // ¿Es OTRA escena? Con correlación menor que el umbral el par no se mide (id desfasado o cuadro de otro momento).
 export const MIN_PARECIDO = 0.7;
 export const esOtraEscena = (parecido, minParecido = MIN_PARECIDO) => !(parecido >= minParecido);
+
+// Trazo de concepto propio: misma semilla, temblor transversal y curva suave que runtime.js.
+function azarTrazo(texto) {
+  let s = [...texto].reduce((n, c) => Math.imul(n ^ c.codePointAt(0), 16777619), 2166136261) >>> 0;
+  return () => { s = (s + 0x6d2b79f5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function curvaTrazo(puntos) {
+  const f = n => n.toFixed(1);
+  return `M${puntos[0].map(f).join(' ')}` + puntos.slice(1).map((p2, i) => {
+    const p0 = puntos[i - 1] || puntos[i], p1 = puntos[i], p3 = puntos[i + 2] || p2;
+    const a = p1.map((v, k) => v + (p2[k] - p0[k]) / 6), b = p2.map((v, k) => v - (p3[k] - p1[k]) / 6);
+    return ` C${[...a, ...b, ...p2].map(f).join(' ')}`;
+  }).join('');
+}
+export function figuraTrazo(figura, rotulo) {
+  const azar = azarTrazo(`${figura}|${rotulo}`);
+  if (figura === 'circulo') {
+    const puntos = Array.from({ length: 49 }, (_, i) => {
+      const t = i / 48 * Math.PI * 2, radio = 99 + (azar() - .5) * 2.4;
+      return [120 + Math.cos(t) * radio, 120 + Math.sin(t) * radio];
+    });
+    return [curvaTrazo(puntos) + 'Z'];
+  }
+  const vertices = figura === 'triangulo' ? [[120, 18], [224, 215], [16, 215], [120, 18]] : [[18, 42], [222, 42], [222, 198], [18, 198], [18, 42]];
+  return vertices.slice(1).map((q, j) => {
+    const p = vertices[j], dx = q[0] - p[0], dy = q[1] - p[1], largo = Math.hypot(dx, dy), curvatura = (azar() - .5) * 2.4 * 2.2;
+    return curvaTrazo(Array.from({ length: 7 }, (_, i) => {
+      const t = i / 6, desvio = Math.sin(Math.PI * t) * curvatura + (i && i < 6 ? (azar() - .5) * 2.4 : 0);
+      return [p[0] + dx * t - dy / largo * desvio, p[1] + dy * t + dx / largo * desvio];
+    }));
+  });
+}

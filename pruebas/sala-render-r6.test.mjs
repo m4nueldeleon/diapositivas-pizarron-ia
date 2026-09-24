@@ -21,7 +21,7 @@ async function opacidades(deck) {
       const [, mapa, foco] = window.PZ.lams;
       window.PZ.mostrar(mapa, window.PZ.pasos(mapa) - 1, Infinity);
       window.PZ.mostrar(foco, window.PZ.pasos(foco) - 1, Infinity);
-      const apagados = [...mapa.querySelectorAll('[style*="opacity"]')].map(e => +getComputedStyle(e).opacity).filter(o => o < 1);
+      const apagados = [...mapa.querySelectorAll('[style*="opacity"], .paso-apagado .rotulo-paso')].map(e => +getComputedStyle(e).opacity).filter(o => o < 1);
       return { apagados, foco: +getComputedStyle(foco.querySelector('.escena.clon')).opacity };
     });
   } finally { await browser.close(); }

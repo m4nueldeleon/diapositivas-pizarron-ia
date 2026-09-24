@@ -75,7 +75,8 @@ test('iconos: no:X que niega un paso del mapa (después del mapa o en una objeci
 });
 
 test('diccionario: las viñetas del motor (✅ ❌), la ✅ de hechos y los 🙋 ⏱️ por omisión tienen concepto', () => {
-  for (const e of [...Object.values(ALIAS_VINETA), '✅', '⏱️', '🙋', '⭐']) assert.ok(conceptoDe(e), e);
+  // letras/numero generan su viñeta por índice; no representan un emoji del diccionario.
+  for (const e of [...Object.values(ALIAS_VINETA).filter(Boolean), '✅', '⏱️', '🙋', '⭐']) assert.ok(conceptoDe(e), e);
 });
 
 test('glifos SVG: la ✕ lleva halo blanco debajo del rojo; ningún glifo de objeto está en el rojo de la tinta (el boleto es ámbar)', () => {
@@ -159,7 +160,8 @@ test('render r5: negritas, titulo-marca, huecos, remate, flecha recta, mapa sin 
       const suelto = [...L[13].querySelectorAll('[data-a^="k"]')].map(e => cj(e, L[13]));
       out.suelto = Math.round(Math.min(...suelto.map(b => b.y)));
       // pilares: el regreso apaga los ítems 1 y 3
-      out.pil = [...L[15].querySelectorAll('.lista .item')].map(e => getComputedStyle(e).opacity);
+      out.pil = [...L[15].querySelectorAll('.lista .item .item-texto')].map(e => getComputedStyle(e).opacity);
+      out.pilIcono = [...L[15].querySelectorAll('.lista .item > .emo')].map(e => getComputedStyle(e).opacity);
       out.pilLienzo = L[14].querySelector(':scope > .lienzo').classList.contains('arriba');
       // llamada
       out.llamada = { tarjetas: L[16].querySelectorAll('.llamada-tarjeta').length, activa: getComputedStyle(L[16].querySelector('.llamada-tarjeta.activa')).outlineColor };
@@ -187,6 +189,7 @@ test('render r5: negritas, titulo-marca, huecos, remate, flecha recta, mapa sin 
     assert.equal(new Set(r.mapa).size, 1, `los íconos del mapa se mueven: ${r.mapa}`);
     assert.ok(r.suelto >= 300 && r.suelto <= 420, `un pasos suelto sin ✅ queda centrado (íconos en y=${r.suelto})`);
     assert.deepEqual(r.pil, ['0.25', '1', '0.25']);
+    assert.deepEqual(r.pilIcono, ['0.35', '1', '0.35'], 'el ícono apagado conserva su piso de 35 %');
     assert.equal(r.pilLienzo, false, 'los pilares van centrados');
     assert.equal(r.llamada.tarjetas, 2); assert.equal(r.llamada.activa, 'rgb(124, 196, 245)');
     assert.ok(r.reloj >= 12, `segmentos encendidos de «33:00»: ${r.reloj}`);

@@ -51,6 +51,21 @@ export function pctRojo(datos) {
   return op ? Math.round((rojo / op) * 100) : null;
 }
 
+// Visibilidad al apagar el glifo: porcentaje con contraste ≥ 1.3:1 sobre blanco.
+// Conserva el alfa del píxel y aplica la opacidad efectiva del elemento.
+export function pctApagado(datos, opacidad = .35) {
+  const lineal = c => { c /= 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; };
+  let total = 0, visibles = 0;
+  for (let i = 0; i < datos.length; i += 4) {
+    if (datos[i + 3] < 128) continue;
+    total++;
+    const alfa = datos[i + 3] / 255 * opacidad;
+    const rgb = [0, 1, 2].map(j => lineal(datos[i + j] * alfa + 255 * (1 - alfa)));
+    if (1.05 / (.2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2] + .05) >= 1.3) visibles++;
+  }
+  return total ? Math.round(100 * visibles / total) : null;
+}
+
 // Puntuación pura (se inyecta también en la página): rgba del glifo contra un fondo [r,g,b]
 export function puntuarGlifo(datos, [br, bg, bb]) {
   const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
@@ -89,15 +104,15 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     if (m.tipo === 'txt' && process.platform !== 'darwin') return;
     const promedio = [0, 1, 2].map(j => Math.round(m.fondos.reduce((s, c) => s + c[j], 0) / m.fondos.length));
     const fondos = m.fondos.length > 1 ? [...m.fondos, promedio] : m.fondos;
-    const clave = `${m.tipo}|${m.ch}|${url.length}|${url.slice(-64)}|${JSON.stringify(fondos)}`;
-    if (!cache.has(clave)) { cache.set(clave, items.length); items.push({ tipo: m.tipo, ch: m.ch, url, fondos }); }
+    const clave = `${m.tipo}|${m.ch}|${url.length}|${url.slice(-64)}|${JSON.stringify(fondos)}|${m.apagado ?? ""}`;
+    if (!cache.has(clave)) { cache.set(clave, items.length); items.push({ tipo: m.tipo, ch: m.ch, url, fondos, apagado: m.apagado }); }
     m._k = cache.get(clave); m._pastel = esPastel(m.fondos); m._oscuro = esOscuro(m.fondos); m._neutro = m.neutro === true;
   }));
   if (!items.length) return [];
   const pg = await browser.newPage();
   let pcts = [];
   try {
-    await pg.addScriptTag({ content: `window.puntuarGlifo = ${puntuarGlifo.toString()};` });
+    await pg.addScriptTag({ content: `window.puntuarGlifo = ${puntuarGlifo.toString()}; window.pctApagado = ${pctApagado.toString()};` });
     pcts = await pg.evaluate(async lista => {
       const S = 128, c = new OffscreenCanvas(S, S), g = c.getContext('2d', { willReadFrequently: true });
       const out = [];
@@ -107,6 +122,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
           if (it.tipo === 'txt') { g.font = `${S * 0.8}px "Apple Color Emoji"`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(it.ch, S / 2, S / 2); }
           else { const im = new Image(); im.src = it.url; await im.decode(); g.drawImage(im, 0, 0, S, S); }
           const d = g.getImageData(0, 0, S, S).data;
+          if (it.apagado != null) { out.push(window.pctApagado(d, it.apagado)); continue; }
           const ps = it.fondos.map(f => window.puntuarGlifo(d, f)).filter(x => x != null);
           out.push(ps.length ? Math.min(...ps) : null);
         } catch { out.push(null); }
@@ -115,7 +131,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     }, items);
   } finally { await pg.close(); }
   const res = [];
-  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], pastel: m._pastel, oscuro: m._oscuro, ...(m._neutro ? { neutro: true, fondoN: m.fondoN } : {}) }); }));
+  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], apagado: m.apagado, pastel: m._pastel, oscuro: m._oscuro, ...(m._neutro ? { neutro: true, fondoN: m.fondoN } : {}) }); }));
   // un hallazgo por emoji y lámina
-  return [...new Map(res.map(x => [`${x.i}|${x.ch}|${x.pct}`, x])).values()];
+  return [...new Map(res.map(x => [`${x.i}|${x.ch}|${x.pct}|${x.apagado ?? ""}`, x])).values()];
 }

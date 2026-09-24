@@ -5,7 +5,7 @@
   // Se mide sin escala; k lo reduce si, girado −5°, no cabe en el lienzo (sellos largos, 9:16). Con `sello_sobre` se
   // centra en ese ancla [6:45: sobre la rejilla]. Sin posición NO cae al centro a ciegas: se busca el primer lugar que no
   // pise renglones, emojis ni la tinta a mano (subrayados, llaves, tachones, flechas): el centro, luego debajo del bloque
-  // (a la derecha y centrado), a su derecha, arriba y las 9 zonas; si nada queda limpio, se reduce a 0.85 y a 0.7 y
+  // centrado, arriba, a su derecha, debajo a la derecha y las 9 zonas; cada lugar se prueba a 0.85 y a 0.7 y
   // gana el que menos tapa. Con `sello_pos` se respeta la zona del autor y solo se corre lo mínimo DENTRO de su lado.
   const ZONAS = { centro: [0.5, 0.5], arriba: [0.5, 0.27], abajo: [0.5, 0.73], izquierda: [0.28, 0.5], derecha: [0.72, 0.5],
     'arriba-izquierda': [0.28, 0.27], 'arriba-derecha': [0.72, 0.27], 'abajo-izquierda': [0.28, 0.73], 'abajo-derecha': [0.72, 0.73] };
@@ -16,7 +16,7 @@
     const fuera = e => e.getClientRects().length && !e.closest('.escena.clon') && !e.closest('.rejilla, .cuadrantes, .captura, .pruebas') && !(excluir && excluir.contains(e));
     const hojas = [...lam.querySelectorAll(TXT_SELLO)].filter(e => fuera(e) && !e.querySelector(TXT_SELLO));
     const renglones = hojas.flatMap(e => rectsTexto(e, lam));
-    const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo')].filter(e => fuera(e) && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
+    const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo, .firma')].filter(e => fuera(e) && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
     const puntos = [];
     const svg = lam.querySelector(':scope > .capa-mano');
     if (svg) svg.querySelectorAll('path').forEach(p => {
@@ -27,13 +27,13 @@
     return { renglones, iconos, puntos };
   }
   // Costo de un sello de w×h (sin escala) con factor k centrado en (cx, cy), girado −a: 0 = no toca nada
-  function costoSello(obs, W, H, cx, cy, w, h, a, k, m) {
+  function costoSello(obs, W, H, cx, cy, w, h, a, k, m, arriba = m, abajo = m) {
     const c = Math.cos(a), sn = Math.sin(a), sw = w * k, sh = h * k;   // del lienzo al marco del sello: se deshace con +a
     const bw = (sw * Math.cos(a) + sh * Math.sin(a)) / 2, bh = (sw * Math.sin(a) + sh * Math.cos(a)) / 2;
     const marco = (x, y, inf = 0) => { const u = (x - cx) * c - (y - cy) * sn, v = (x - cx) * sn + (y - cy) * c; return Math.abs(u) <= sw / 2 + inf && Math.abs(v) <= sh / 2 + inf; };
     const frac = r => { let n = 0; for (let i = 0; i <= 9; i++) for (let j = 0; j <= 4; j++) if (marco(r.x + (i / 9) * r.w, r.y + (j / 4) * r.h)) n++; return n / 50; };
     let t = 0;
-    if (cx - bw < m - 0.5 || cx + bw > W - m + 0.5 || cy - bh < m - 0.5 || cy + bh > H - m + 0.5) t += 100;
+    if (cx - bw < m - 0.5 || cx + bw > W - m + 0.5 || cy - bh < arriba - 0.5 || cy + bh > H - abajo + 0.5) t += 100;
     obs.renglones.forEach(r => { t += frac(r); });
     obs.iconos.forEach(r => { t += 4 * frac(r); });
     obs.puntos.forEach(([x, y]) => { if (marco(x, y, 24)) t += 0.05; });
@@ -44,6 +44,11 @@
   }
   function colocarUnSello(lam, s) {
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
+    const libre = !s.dataset.sobre && !s.dataset.pos;
+    const margen = parseFloat(getComputedStyle(lam).getPropertyValue('--margen-v')) || 100;
+    const arriba = libre ? margen : m, abajo = libre ? Math.max(margen, lam.querySelector('.firma:not(.arriba)') ? 140 : margen) : m;
+    const tintaLibre = s.querySelector('.sello-tinta');
+    if (libre && tintaLibre) tintaLibre.style.fontSize = Math.min(96, parseFloat(getComputedStyle(tintaLibre).fontSize) || 96) + 'px';
     let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
     let rejilla = null, burbuja = null, sobre = null;
     if (s.dataset.sobre) {
@@ -64,7 +69,7 @@
       } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
     }
     const w = s.offsetWidth, h = s.offsetHeight;
-    let k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
+    let k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - arriba - abajo) / (w * Math.sin(a) + h * Math.cos(a)));
     const medio = kk => [(w * Math.cos(a) + h * Math.sin(a)) * kk / 2, (w * Math.sin(a) + h * Math.cos(a)) * kk / 2];
     let [bw, bh] = medio(k);
     if (rejilla) [cx, cy] = selloEnRejilla(lam, rejilla, [cx, cy], w * k, h * k, a, bw, bh, m);
@@ -73,8 +78,8 @@
       [cx, cy] = r.p; k = r.k; [bw, bh] = medio(k);
     } else if (!sobre) {
       const obs = obstaculosSello(lam, null);
-      const acota = ([x, y], kk) => { const [ww, hh] = medio(kk); return [clamp(x, m + ww, W - m - ww), clamp(y, m + hh, H - m - hh)]; };
-      const costo = (p, kk) => costoSello(obs, W, H, p[0], p[1], w, h, a, kk, m);
+      const acota = ([x, y], kk) => { const [ww, hh] = medio(kk); return [clamp(x, m + ww, W - m - ww), clamp(y, arriba + hh, H - abajo - hh)]; };
+      const costo = (p, kk) => costoSello(obs, W, H, p[0], p[1], w, h, a, kk, m, arriba, abajo);
       if (s.dataset.pos && ZONAS[s.dataset.pos]) {
         // Zona del autor: se queda si está limpia; si no, se corre lo mínimo sin salir de su lado del lienzo
         const pos = s.dataset.pos, z = acota([cx, cy], k);
@@ -97,14 +102,17 @@
       } else {
         const bloques = [...lam.querySelectorAll(':scope > .lienzo > *')].filter(e => e.getClientRects().length).map(e => caja(e, lam));
         const B = bloques.length ? bloques.reduce((u, b) => { const x0 = Math.min(u.x, b.x), y0 = Math.min(u.y, b.y), x1 = Math.max(u.x + u.w, b.x + b.w), y1 = Math.max(u.y + u.h, b.y + b.h); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; }) : { x: W / 2, y: H / 2, w: 0, h: 0 };
-        // Candidatos en orden: el centro, debajo del bloque (a la derecha y centrado), a su derecha, arriba y las 9 zonas
+        // Candidatos: centro limpio, debajo centrado, encima centrado, derecha, debajo a la derecha y las 9 zonas
         // (de la más cercana al centro a la más lejana). Cada lugar se prueba a su tamaño, a 0.85 y a 0.7 antes de pasar
         // al siguiente: un sello algo más chico debajo del contenido lee mejor que uno enorme encima del título.
-        const ks = [k, k * 0.85, Math.max(0.7, k * 0.7)];
+        k = Math.min(k, Math.max(0.8 * B.w, 420) / (w * Math.cos(a) + h * Math.sin(a)));
+        const ks = [k, k * 0.85, k * 0.7];
         const lugares = [
           () => [W / 2, H / 2],
-          (ww, hh) => [B.x + B.w - ww, B.y + B.h + 24 + hh], (ww, hh) => [B.x + B.w / 2, B.y + B.h + 24 + hh],
-          ww => [B.x + B.w + 24 + ww, B.y + B.h / 2], (ww, hh) => [B.x + B.w / 2, B.y - 24 - hh],
+          (ww, hh) => [B.x + B.w / 2, B.y + B.h + 24 + hh],
+          (ww, hh) => [B.x + B.w / 2, B.y - 24 - hh],
+          ww => [B.x + B.w + 24 + ww, B.y + B.h / 2],
+          (ww, hh) => [B.x + B.w - ww, B.y + B.h + 24 + hh],
           ...Object.values(ZONAS).sort((p, q) => Math.hypot(p[0] - 0.5, p[1] - 0.5) - Math.hypot(q[0] - 0.5, q[1] - 0.5)).map(([fx, fy]) => () => [fx * W, fy * H]),
         ];
         let elegido = null;
@@ -117,7 +125,7 @@
         s.dataset.acomodado = '1';
       }
     }
-    cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, m + bh, H - m - bh);
+    cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, arriba + bh, H - abajo - bh);
     Object.assign(s.style, { left: cx + 'px', top: cy + 'px' });
     s.dataset.k = k.toFixed(3);
   }
@@ -163,7 +171,7 @@
     const b = caja(burbuja, lam), yo = !!burbuja.closest('.msj.yo');
     const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
       .flatMap(e => rectsTexto(e, lam));
-    const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo')].filter(e => e.getClientRects().length && !e.closest('.escena.clon') && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
+    const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo, .firma')].filter(e => e.getClientRects().length && !e.closest('.escena.clon') && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
     // fracción de una caja bajo el sello (muestreo 10×5, más fino que el de QA: aquí se busca NO tocar las letras)
     const frac = (r, cx, cy, sw, sh) => {
       let n = 0;

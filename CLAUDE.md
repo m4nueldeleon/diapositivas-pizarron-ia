@@ -121,3 +121,9 @@ SKILL.md.
 5. Las correcciones de gusto del usuario van en `LECCIONES.md`, con fecha y el porqué.
 
 Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROTOCOLO.md#desde-codex--sandbox); `--sin-navegador` no sustituye render, QA medidos ni revisión de la hoja.
+
+### Ronda 7 · Estilo e íconos
+- `emoji.mjs` valida `trazo:figura|RÓTULO` y `tinta.mjs` produce su geometría determinista; `reglas-deck.mjs` revisa reuso, identidad del producto, viñetas de plan y eyebrows.
+- `layouts-texto.mjs` comparte la viñeta numérica y el reloj de segmentos con el tramo en vivo; `runtime.js → actualizarReloj` actualiza la misma geometría en presentador y captura. `pasos-mapa.mjs` cuenta también el óvalo diferido.
+- QA distingue `trazos` de `contenedores`, vigila sello libre y firma, óvalos entre renglones y contraste del ícono apagado; `contraste-color.mjs` calcula `pctApagado` y `medir-emojis.mjs` lo guarda como `apagado`.
+- Pruebas: `layouts-estilo-r7.test.mjs`, `reglas-iconos-r7.test.mjs`, `runtime-estilo-r7.test.mjs` y la integración de secuencias en `ejemplos.test.mjs`.

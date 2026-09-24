@@ -101,15 +101,16 @@ test('iconos: avisa por dos conceptos y por no:X frente a X en otro concepto', (
   assert.equal(reglasConceptosIconos({ laminas: [idea('Felicidad', { emoji: '😄' }), idea('Clientes', { emoji: '😄' })] }).avisos.length, 1);
 });
 
-test('iconos: ignora mapa, retornos como/paga y el mismo concepto resuelto', () => {
+test('iconos: ignora herencias como y el mismo concepto; mapa declarado y paga se revisan', () => {
   const primero = idea('Dinero', { emoji: 'no:💰' });
   for (const segundo of [
     idea('Dinero', { emoji: '💰' }),
     idea('Tiempo', { emoji: '💰', como: 'idea' }),
-    idea('Tiempo', { emoji: '💰', paga: 'idea' }),
     { tipo: 'pasos', etiquetas: ['Tiempo'], iconos: ['⏳'] },
-    { tipo: 'mapa', texto: 'Tiempo', emoji: '💰' },
   ]) assert.deepEqual(reglasConceptosIconos({ laminas: [primero, segundo] }).avisos, []);
+  for (const segundo of [idea('Tiempo', { emoji: '💰', paga: 'idea' }), { tipo: 'mapa', texto: 'Tiempo', emoji: '💰' }]) {
+    assert.ok(reglasConceptosIconos({ laminas: [primero, segundo] }).avisos.some(a => /coherencia emoji/.test(a)));
+  }
 });
 
 test('iconos: cero avisos de conceptos en TODOS los ejemplos crudos y resueltos', () => {

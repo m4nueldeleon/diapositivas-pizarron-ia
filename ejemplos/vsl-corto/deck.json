@@ -180,15 +180,20 @@
    "encabezado": "Lo que ya intentaste:",
    "vineta": "x",
    "items": [
-    "Contestar **de madrugada**",
+    {
+     "texto": "Contestar **de madrugada**",
+     "tachado": true
+    },
     "Un bot de **menú 1, 2, 3**",
     "Pagar a alguien **de noche**"
    ],
    "voz": [
     "Contestar de madrugada, y no duermes.",
     "Un bot de menú uno, dos, tres, que nadie usa.",
-    "Pagarle a alguien de noche, que no alcanza."
-   ]
+    "Pagarle a alguien de noche, que no alcanza.",
+    "Contestar de madrugada te deja sin dormir."
+   ],
+   "tachar_despues": true
   },
   {
    "id": "dolor",
@@ -316,7 +321,7 @@
   {
    "id": "revelacion",
    "tipo": "oscura",
-   "emoji": "🚀",
+   "emoji": "🤖",
    "titulo": "{{PRODUCTO}}",
    "texto": "Tu agente de citas, configurado contigo",
    "voz": "Por eso armé {{PRODUCTO}}."
@@ -419,8 +424,12 @@
    "nota": "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero",
    "voz": [
     "Tienes {{GARANTIA_DIAS}} días de garantía.",
-    "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero."
-   ]
+    "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero.",
+    "Esa es tu garantía."
+   ],
+   "sello": "Garantía",
+   "sello_sobre": "emoji",
+   "sello_paso": 2
   },
   {
    "id": "reclama",
@@ -483,7 +492,18 @@
    "voz": [
     "Te llevas tu agente de citas,",
     "la configuración conmigo",
-    "y las seis clases."
+    "y las seis clases.",
+    "Lo dejamos funcionando contigo."
+   ],
+   "anotaciones": [
+    {
+     "llave": [
+      "i0",
+      "i2"
+     ],
+     "texto": "Funciona contigo",
+     "paso": 3
+    }
    ]
   },
   {

@@ -215,10 +215,12 @@ function bloqueVivo(l, em) {
   const consigna = typeof l.texto === 'string' && l.texto.trim() ? l.texto : typeof l.nota === 'string' ? l.nota : '';
   const preguntas = /pregunt|dudas/i.test(`${consigna} ${l.id || ''}`);
   const emoji = typeof l.emoji === 'string' && l.emoji.trim() ? l.emoji : preguntas ? '🙋' : '⏱️';
-  const items = (Array.isArray(l.items) ? l.items : []).map(x => (typeof x === 'string' ? x : x && typeof x === 'object' && typeof x.texto === 'string' ? x.texto : ''))
-    .filter(x => x.trim()).slice(0, MAX_ITEMS_VIVO);
-  const lista = items.length ? `<ol class="vivo-items">${items.map(t => `<li>${marcar(t)}</li>`).join('')}</ol>` : '';
-  return `<div class="vivo-pres">${em.html(emoji, 190)}<div class="vivo-consigna">${marcar(consigna)}</div>${lista}<div class="vivo-reloj">${reloj(duracionVivo(l))}</div></div>`;
+  const items = (Array.isArray(l.items) ? l.items : []).map(x => typeof x === 'string' ? { texto: x } : x)
+    .filter(x => x && typeof x.texto === 'string' && x.texto.trim()).slice(0, MAX_ITEMS_VIVO);
+  const lista = items.length ? `<ol class="vivo-items">${items.map((it, i) => `<li>${it.emoji ? em.html(it.emoji, '1.12em') : T.vinetaNumero(em, i)}<span>${marcar(it.texto)}</span></li>`).join('')}</ol>` : '';
+  const dur = duracionVivo(l);
+  const relojVivo = dur ? T.relojSVG(reloj(dur), 420).replace('class="reloj-7seg vol"', 'class="reloj-7seg vol vivo-reloj"').replace('aria-hidden="true">', `role="timer" aria-label="${reloj(dur)}"><title>${reloj(dur)}</title>`) : '';
+  return `<div class="vivo-pres">${dur ? relojVivo : em.html(emoji, 190)}<div class="vivo-consigna">${marcar(consigna)}</div>${lista}</div>`;
 }
 const reloj = s => `${Math.floor(s / 60)}:${String(Math.round(s) % 60).padStart(2, '0')}`;
 

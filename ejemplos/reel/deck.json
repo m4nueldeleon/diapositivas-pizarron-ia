@@ -12,12 +12,19 @@
    "tipo": "idea",
    "emoji": "😩+📥",
    "emoji_tam": "heroe",
-   "texto": "11 pm y sigues\n__en el correo__",
+   "texto": "11 pm y sigues\n**en el correo**",
    "nota": "Y mañana, junta a las 8",
    "voz": [
-    "Once de la noche y sigues en el correo.",
-    "Y mañana, junta a las ocho."
-   ]
+    "Son las once.",
+    "Sigues en el correo.",
+    "Mañana, junta a las ocho.",
+    "Otra noche igual."
+   ],
+   "texto_paso": 1,
+   "nota_paso": 2,
+   "sello": "Otra noche",
+   "sello_sobre": "emoji",
+   "sello_paso": 3
   },
   {
    "id": "mapa",

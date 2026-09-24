@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { esCampoEmoji, specsDeCampo } from './emoji.mjs';
+import { esCampoEmoji, specsDeCampo, analizarCompuesto, analizarTrazo } from './emoji.mjs';
 
 const RUTA = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'references', 'EMOJIS.md');
 const sinSel = e => String(e).trim().replace(/️/g, '');
@@ -76,6 +76,8 @@ export function infoConceptos(deck) {
 export function conceptoDe(spec, exacto = false) {
   const m = cargar(), s = sinSel(spec || '');
   if (!s) return null;
+  const trazo = analizarTrazo(analizarCompuesto(s).base);
+  if (!trazo.error) return `término propio: ${trazo.rotulo}`;
   if (m.has(s)) return m.get(s);
   if (exacto) {
     const sinTono = s.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');

@@ -326,9 +326,10 @@ test('sala: foco, mapa, rejilla y calendario conservan el piso; video mantiene s
   for (const sala of [false, true]) await conDeck({ sala, marca: false, emoji: 'apple', laminas }, async page => {
     const r = await page.evaluate(() => {
       const op = sel => Number(getComputedStyle(document.querySelector(sel)).opacity);
-      return { mapa: op('.lz-pasos [style*="opacity"]'), foco: op('.clon'), rejilla: op('.rejilla .apagado'), calendario: op('.calendario .dia.apagado:not(.tinte)') };
+      return { mapa: op('.lz-pasos .paso-apagado .rotulo-paso'), icono: op('.lz-pasos .paso-apagado .icono-paso'), foco: op('.clon'), rejilla: op('.rejilla .apagado'), calendario: op('.calendario .dia.apagado:not(.tinte)') };
     });
     assert.equal(r.mapa, sala ? .35 : .2);
+    assert.equal(r.icono, .35, 'el ícono apagado del mapa no baja de 35 % ni en video');
     assert.equal(r.foco, sala ? .35 : .2);
     assert.equal(r.rejilla, sala ? .35 : .25);
     assert.equal(r.calendario, sala ? .35 : .3);

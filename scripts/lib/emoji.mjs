@@ -16,6 +16,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { escapar } from './markup.mjs';
+import { figuraTrazo } from './tinta.mjs';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/@lobehub/fluent-emoji-3d@1.1.0/assets/';
 export const CDN_FLUENT = CDN;
@@ -262,11 +263,29 @@ export function conPiel(ch, piel) {
 
 // Sintaxis de un emoji compuesto: [no:|si:]base[+insignia]
 //   Devuelve { base, prefijo, insignia, error } sin descartar nada en silencio.
+export const FIGURAS_TRAZO = Object.freeze(['triangulo', 'circulo', 'marco']);
+export function analizarTrazo(spec) {
+  const m = /^trazo:([^|]+)\|([^|]+)$/.exec(String(spec));
+  if (!m || !FIGURAS_TRAZO.includes(m[1])) return { error: 'trazo exige triangulo, circulo o marco y un rótulo: trazo:triangulo|MÉTODO' };
+  const rotulo = m[2].trim().toUpperCase();
+  if (!rotulo || [...rotulo].length > 24 || /[\r\n+]/.test(rotulo)) return { error: 'el rótulo de trazo debe tener 1–24 caracteres, sin saltos de línea ni «+»' };
+  return { figura: m[1], rotulo, error: '' };
+}
+export function trazoSVG(spec) {
+  const t = analizarTrazo(spec);
+  if (t.error) return '';
+  const ancho = t.figura === 'triangulo' ? 132 : 174, y = t.figura === 'triangulo' ? 166 : 121;
+  const tam = Math.max(16, Math.min(t.figura === 'triangulo' ? 46 : 60, ancho / ([...t.rotulo].length * .58)));
+  const ajustar = [...t.rotulo].length * tam * .58 > ancho ? ` textLength="${ancho}" lengthAdjust="spacingAndGlyphs"` : '';
+  return `<svg class="trazo-concepto" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapar(t.rotulo)}">`
+    + figuraTrazo(t.figura, t.rotulo).map(d => `<path d="${d}" fill="none" stroke="#171717" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`).join('')
+    + `<text x="120" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="#171717" font-family="Caveat,cursive" font-weight="700" font-size="${tam}"${ajustar}>${escapar(t.rotulo)}</text></svg>`;
+}
 export function analizarCompuesto(spec) {
   let s = String(spec ?? '').trim();
   let prefijo = '';
   const m = s.match(/^([a-z]+):\s*/i);
-  if (m) {
+  if (m && m[1].toLowerCase() !== 'trazo') {
     const error = ['no', 'si'].includes(m[1].toLowerCase()) ? '' : `prefijo «${m[1]}:» no existe (usa no: o si:)`;
     s = s.slice(m[0].length);
     if (error) { const r = analizarCompuesto(s); return { ...r, error }; }
@@ -275,7 +294,8 @@ export function analizarCompuesto(spec) {
   const partes = s.split('+').map(t => t.trim());
   if (partes.some(p => !p)) return { base: partes.find(Boolean) || '', prefijo, insignia: partes.filter(Boolean)[1] || '', error: '«+» sin emoji a un lado' };
   if (partes.length > 2) return { base: partes[0], prefijo, insignia: partes[1], error: `lleva ${partes.length} partes; la sintaxis es base+insignia (un solo «+»). Para una secuencia usa un «flujo»` };
-  return { base: partes[0], prefijo, insignia: partes[1] || '', error: '' };
+  const invalido = partes.find(p => p.startsWith('trazo:') && analizarTrazo(p).error);
+  return { base: partes[0], prefijo, insignia: partes[1] || '', error: invalido ? analizarTrazo(invalido).error : '' };
 }
 
 const RE_EMOJI_TEXTO = /^\p{RGI_Emoji}$/v;
@@ -304,6 +324,7 @@ export class Emojis {
   }
 
   glifo(ch0, clase = '') {
+    if (String(ch0).startsWith('trazo:')) return trazoSVG(ch0) || `<span class="emo-txt">${escapar(ch0)}</span>`;
     const ch = conPiel(ch0, this.piel);
     const dibujado = glifoSVG(ch, this.modo);
     if (dibujado) return dibujado;
@@ -334,6 +355,7 @@ export class Emojis {
   enOscura(html) {
     return String(html).replace(/<span class="emo\b([^\"]*)"([^>]*\bdata-e="([^\"]*)"[^>]*)>/g, (todo, clases, atributos, spec) => {
       const { base } = analizarCompuesto(decodeURIComponent(spec));
+      if (base.startsWith('trazo:')) return todo;
       if (necesitaHalo(base, this.modo)) return /\bhundido\b/.test(clases) ? todo : `<span class="emo${clases} hundido"${atributos}>`;
       if (glifoSVG(base, this.modo) || HALO_INSUFICIENTE.includes(sinSel(base)) || contrasteMedido()[this.modo]?.oscura?.[sinSel(base)] != null) return todo;
       const rel = this.modo === 'fluent' ? resolverFluent(base, this.dirSalida) : '';
@@ -454,12 +476,12 @@ export const esMano = e => MANO_EMOJI.test(String(e || '').replace(/^(no|si):/, 
 // Todo campo que se dibuja como ícono: `emoji`, `iconos`, la viñeta de una lista, los avatares del chat, `sobre`
 // y `centro`, y los `emoji_*` que no son un tamaño, un lado o un paso. La viñeta acepta alias (x, no, check, si).
 export const NO_EMOJI = ['emoji_tam', 'emoji_lado', 'emoji_paso'];
-export const ALIAS_VINETA = { x: '❌', cruz: '❌', no: '❌', check: '✅', si: '✅' };
+export const ALIAS_VINETA = { x: '❌', cruz: '❌', no: '❌', check: '✅', si: '✅', letras: '', numero: '' };
 const CAMPOS_EMOJI = new Set(['emoji', 'iconos', 'vineta', 'avatar', 'avatar_yo', 'avatar_otro', 'sobre', 'centro']);
 export const esCampoEmoji = k => typeof k === 'string' && (CAMPOS_EMOJI.has(k) || (k.startsWith('emoji_') && !NO_EMOJI.includes(k)));
 // Los textos de emoji de un campo (lista si es lista, alias de viñeta ya traducidos); [] si no es un campo de emoji
 export function specsDeCampo(k, v) {
   if (!esCampoEmoji(k)) return [];
   const lista = Array.isArray(v) ? v : [v];
-  return lista.filter(x => typeof x === 'string' && x.trim() && !(k === 'vineta' && x === 'letras')).map(x => (k === 'vineta' && Object.hasOwn(ALIAS_VINETA, x) ? ALIAS_VINETA[x] : x));
+  return lista.filter(x => typeof x === 'string' && x.trim() && !(k === 'vineta' && ['letras', 'numero'].includes(x))).map(x => (k === 'vineta' && Object.hasOwn(ALIAS_VINETA, x) ? ALIAS_VINETA[x] : x));
 }

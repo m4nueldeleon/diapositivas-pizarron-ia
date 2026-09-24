@@ -1,8 +1,9 @@
 // La misma burbuja y avatar en conversación, muro, celular y sobre una imagen.
 import { marcar, escapar, PERSONA } from './comun.mjs';
+export const cuerpoMensaje = texto => marcar(texto).replace(/\[([^\[\]<>]+)\]/g, (todo,t) => /^[A-ZÁÉÍÓÚÑÜ0-9 _-]+$/.test(t) ? todo : `<span class="var-plantilla${t.trim().split(/\s+/).length>3 ? ' largo' : ''}">[${t}]</span>`);
 export function burbuja(m, ctx, { indice = 0, paso = indice, avatar, avatarTam = 108, ejemplo = false, rafaga = false, celda = false } = {}) {
   const yo = (m.de || 'yo') === 'yo';
-  const cuerpo = marcar(m.texto).replace(/\[([^\[\]<>]+)\]/g, (todo,t) => /^[A-ZÁÉÍÓÚÑÜ0-9 _-]+$/.test(t) ? todo : `<span class="var-plantilla${t.trim().split(/\s+/).length>3 ? ' largo' : ''}">[${t}]</span>`);
+  const cuerpo = cuerpoMensaje(m.texto);
   // El sello EJEMPLO y la fuente por mensaje son de la tarjeta `respuesta` (la salida de una IA). En una conversación
   // yo/otro la procedencia va UNA vez en el pie de la lámina (rotuloProcedencia): un sello en cada burbuja tapaba el texto.
   const pie = m.de !== 'respuesta' ? '' : ejemplo || m.ejemplo === true ? '<div class="chat-ejemplo">EJEMPLO</div>' : m.fuente ? `<div class="fuente">${escapar(m.fuente)}</div>` : '';

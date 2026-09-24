@@ -65,6 +65,11 @@ export function idea(l, ctx) {
 export const listaCentrada = l => l.alinear === 'centro' || (l.alinear !== 'izquierda' && Array.isArray(l.items) && l.items.length > 0
   && l.items.every(it => it && typeof it === 'object' && it.tachado));
 
+// Las teclas numeradas comparten su glifo en la lista y en la consigna en vivo.
+export function vinetaNumero(em, indice) {
+  return indice < 9 ? em.html(`${indice + 1}\uFE0F\u20E3`, '1.12em') : `<b class="vineta-letra">${indice + 1}</b>`;
+}
+
 // LISTA — encabezado gris chico + viñetas (❌ ✅ o emoji). Una viñeta por paso.
 export function lista(l, ctx) {
   if (Array.isArray(l.columnas)) return listaContraste(l,ctx);
@@ -84,12 +89,13 @@ export function lista(l, ctx) {
   const mapa = activo || hechos.size;
   const filas = items.map((it, i) => {
     const o = typeof it === 'string' ? { texto: it } : it;
-    const e = l.vineta === 'letras' ? o.emoji || '' : o.emoji || vin[l.vineta] || l.vineta || '';
+    const e = ['letras', 'numero'].includes(l.vineta) ? o.emoji || '' : o.emoji || vin[l.vineta] || l.vineta || '';
     const letra = l.vineta === 'letras' ? `<b class="vineta-letra">${escapar((l.letras || [])[i] || '')}</b>` : '';
+    const viñeta = e ? ctx.em.html(vin[e] || e, '1.12em') + letra : l.vineta === 'numero' ? vinetaNumero(ctx.em, i) : letra;
     const kT = o.tachado ? ` data-tachar="caja" data-tachar-p="${ctx.paso(i + (l.tachar_despues ? items.length : 0))}"` : '';
-    const apagado = activo && activo !== i + 1 && !hechos.has(i + 1) ? ' style="opacity:max(var(--apagado),.25)"' : '';
+    const apagado = activo && activo !== i + 1 && !hechos.has(i + 1) ? ' item-apagado' : '';
     const ok = hechos.has(i + 1) ? ctx.em.html('✅', '.9em', 'ok-item') : '';
-    return `<div class="item"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}${apagado}>${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}${letra}<span>${marcar(o.texto)}</span>${ok}</div>`;
+    return `<div class="item${apagado}"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}>${viñeta}<span class="item-texto">${marcar(o.texto)}</span>${ok}</div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', mapa ? 0 : Math.max(0, items.length - 1)))}</div>`;
@@ -241,11 +247,11 @@ export function pasos(l, ctx) {
   const mEtq = l.clic && !l.iconos ? 75 : 28;
   const cols = [];
   for (let i = 0; i < n; i++) {
-    const apagado = activo && activo !== i + 1 ? ' style="opacity:var(--apagado)"' : '';
-    const sobre = l.sobre ? `<div style="margin-bottom:10px">${ctx.emoji(l.sobre, 120)}</div>` : '';
+    const apagado = activo && activo !== i + 1 ? ' paso-apagado' : '';
+    const sobre = l.sobre ? `<div class="icono-paso" style="margin-bottom:10px">${ctx.emoji(l.sobre, 120)}</div>` : '';
     let cab;
     if (l.iconos) {
-      cab = `<div${ctx.A('k' + i)}>${l.iconos[i]?.imagen ? imagenConHueco(ctx, l.iconos[i].imagen, tamIcono) : ctx.emoji(l.iconos[i]?.emoji || l.iconos[i], tamIcono)}</div>
+      cab = `<div class="icono-paso"${ctx.A('k' + i)}>${l.iconos[i]?.imagen ? imagenConHueco(ctx, l.iconos[i].imagen, tamIcono) : ctx.emoji(l.iconos[i]?.emoji || l.iconos[i], tamIcono)}</div>
         ${l.prefijo !== false ? `<div class="rotulo-paso" style="font-size:${tamPref}px;color:var(--gris);margin-top:60px;line-height:1.05;white-space:nowrap">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
         ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
@@ -256,7 +262,7 @@ export function pasos(l, ctx) {
     // alargaba la pila y el lienzo la volvía a centrar, y el mapa que vuelve subía 58 px [r5]
     const ok = hechos.has(i + 1) ? `<div class="ok-paso">${ctx.emoji('✅', 90)}</div>` : '';
     // flex:0 0 auto: la columna nunca se encoge (encogida partía «Paso / 2»); si la fila no cabe, encaja con zoom
-    cols.push(`<div class="pila" style="flex:0 0 auto;position:relative"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
+    cols.push(`<div class="pila" style="flex:0 0 auto;position:relative"${rev ? ctx.P(i) : ''}><div class="pila${apagado}">${sobre}${cab}</div>${ok}</div>`);
     if (i > 0 && ruta) {
       const j = i - l.clic;   // tramo j-ésimo desde la tecla del clic (0 = el que sale de ella)
       if (arrastra && j >= 0) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: kClic, retraso: 1500 + j * 700, arrastre: j });
@@ -368,7 +374,7 @@ function digito(n, dx) {
   const seg = { a: [L + g, 10, R - g, 10], b: [R, 10 + g, R, 90 - g], c: [R, 90 + g, R, 170 - g], d: [L + g, 170, R - g, 170],
     e: [L, 90 + g, L, 170 - g], f: [L, 10 + g, L, 90 - g], g: [L + g, 90, R - g, 90] };
   const on = SEGMENTOS[n] || '';
-  return Object.entries(seg).map(([k, c]) => `<polygon points="${segmento(...c)}"${on.includes(k) ? ' class="on"' : ''}/>`).join('');
+  return `<g data-digito>${Object.entries(seg).map(([k, c]) => `<polygon data-segmento="${k}" points="${segmento(...c)}"${on.includes(k) ? ' class="on"' : ''}/>`).join('')}</g>`;
 }
 export function relojSVG(txt, ancho) {
   let x = 0, cuerpo = '';

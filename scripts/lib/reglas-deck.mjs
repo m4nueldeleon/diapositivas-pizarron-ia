@@ -1,9 +1,9 @@
-import { reglasMarcasYSuperficies, reglasEscalaTiempo, reglasIconosInversa } from './reglas-marcas.mjs';
+import { reglasMarcasYSuperficies, reglasEscalaTiempo, reglasIconosInversa, reglasCapaExpresiva } from './reglas-marcas.mjs';
 import { avisosProcedencia } from './imagenes.mjs';
 import { reglasVariantes } from './variantes.mjs';
 import { reglasQr } from './reglas-qr.mjs';
 export { reglasQr } from './reglas-qr.mjs';
-import { reglasEstilo, reglasLogos } from './reglas-estilo.mjs';
+import { reglasEstilo, reglasLogos, encabezadoSeccion } from './reglas-estilo.mjs';
 export { reglasEstilo, reglasLogos } from './reglas-estilo.mjs';
 import { reglasAritmetica } from './aritmetica.mjs';
 export { reglasAritmetica } from './aritmetica.mjs';
@@ -18,7 +18,7 @@ export { reglasSincronia, reglasPersona, infoPersona } from './sincronia.mjs';
 import { plano, palabras, sinCitas } from './markup.mjs';
 import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
-import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedido, esGlifoDibujado } from './emoji.mjs';
+import { analizarCompuesto, analizarTrazo, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedido, esGlifoDibujado } from './emoji.mjs';
 import { RELLENO, esFirmaRelleno, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
 import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
@@ -771,14 +771,18 @@ export function emojisDeLamina(l) {
   const ir = (o, campoPadre) => {
     if (Array.isArray(o)) return o.forEach(x => ir(x, campoPadre));
     if (!o || typeof o !== 'object') return;
-    const texto = plano(String(o.etiqueta || o.texto || o.titulo || o.encabezado || '')).slice(0, 40);
+    const texto = plano(String(o.etiqueta || o.texto || o.titulo || o.encabezado || ''));
     for (const [k, v] of Object.entries(o)) {
       if (esCampoEmoji(k)) {
         // la viñeta es de toda la lista: se nombra por su encabezado; un avatar, por el chat
         const txt = k === 'vineta' ? plano(String(o.encabezado || '(viñeta)')).slice(0, 40) : /^avatar/.test(k) ? `(${k.replace('_', ' ')})` : texto;
-        specsDeCampo(k, v).forEach(sp => {
+        // Conserva el índice original: iconos puede mezclar cadenas con objetos {emoji}.
+        const specs = k === 'iconos' && Array.isArray(v)
+          ? v.flatMap((x, j) => specsDeCampo('emoji', typeof x === 'string' ? x : x?.emoji).map(sp => ({ sp, etiqueta: plano(String(o.etiquetas?.[j] || x?.etiqueta || x?.texto || '')) })))
+          : specsDeCampo(k, v).map(sp => ({ sp, etiqueta: txt }));
+        specs.forEach(({ sp, etiqueta }) => {
           const c = analizarCompuesto(sp);
-          if (c.base) out.push({ base: sinSelector(c.base), prefijo: c.prefijo, insignia: sinSelector(c.insignia), campo: k, texto: txt });
+          if (c.base) out.push({ base: sinSelector(c.base), prefijo: c.prefijo, insignia: sinSelector(c.insignia), campo: k, texto: etiqueta });
         });
       } else if (v && typeof v === 'object' && k !== 'voz') ir(v, k);
     }
@@ -845,8 +849,17 @@ const CONCEPTOS_ROTULOS = [
   ['producto', /\b(producto|productos|entrega|paquete|paquetes)\b/],
   ['arranque', /\b(arranca|arrancas|arrancar|arranque|empieza|empezar)\b/],
 ];
-function conceptoRotulo(texto) {
+const ROTULO_ACCION = /^(?:(?:te|me|lo|los|la|las)\s+)?(?:aprend(?:e|en)|aplic(?:a|an)|medimos|mide|contesta(?:n)?|escrib(?:e|en)|revisamos|devuelvo|encuentra|manda(?:n|los)?)(?:\s|$)/;
+function conceptoRotulo(texto, declarados = [], esPaso = false, esGrafica = false) {
   const t = sinAcentos(texto);
+  const propio = declarados.find(c => t.trim() === c || t.includes(c));
+  if (propio) return propio;
+  // La categoría «Un producto digital» no dice qué mide la barra; un sustantivo
+  // inequívoco («Dinero») o un término declarado sí permite comparar su icono.
+  if (esGrafica && palabrasConcepto(texto).length > 1) return null;
+  // «Contesta» describe la acción del agente, no declara que su icono signifique «mensaje».
+  // Los sustantivos del mapa sí definen concepto; los verbos siguen en el inventario de revisión.
+  if (esPaso && ROTULO_ACCION.test(t.trim())) return null;
   if (t.split(/\s+/).length > 6 || /\{\{|\[|\blo llamo\b|\bse llama\b/.test(t)) return null;
   const conceptos = CONCEPTOS_ROTULOS.filter(([, patron]) => patron.test(t));
   if (conceptos.length === 1) return conceptos[0][0];
@@ -855,13 +868,78 @@ function conceptoRotulo(texto) {
 }
 // Dos rótulos de una palabra con la misma raíz («venta»/«ventas», «cliente»/«clientes») son el mismo concepto.
 const mismoConcepto = (a, b) => a === b || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5));
+
+// Los planes no están hechos: un solo aviso por lista, sin penalización numérica.
+export function reglasVinetasPlan(deck) {
+  const avisos = [];
+  deck.laminas.forEach((l, i) => {
+    if (l.tipo !== 'lista' || l.hechos != null || l.activo != null) return;
+    const items = l.items || [], cab = plano(l.encabezado || '');
+    const check = ['check', 'si', '✅'].includes(l.vineta) || items.some(it => it && typeof it === 'object' && /✅/.test(it.emoji || ''));
+    if (!check) return;
+    const pendiente = items.some(it => /\{\{[^}]+\}\}|\[[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ0-9_ -]*\]/.test(typeof it === 'string' ? it : it?.texto || ''));
+    const permitido = /^(incluye|te llevas|es para ti si|sales con|hoy hiciste)\b/i.test(cab.trim());
+    const plan = /hoy vemos|temario|agenda|m[oó]dulo|semana|actividad|objetivo|pr[oó]xim|por confirmar|pendiente|diagn[oó]stico|evaluaci[oó]n/i.test(cab);
+    if (pendiente || (plan && !permitido)) avisos.push(`${nombre(deck, i)}: la ✅ dice “ya está hecho/incluido”; en un plan, agenda o dato por confirmar usa vineta:"numero" o un emoji por ítem (objetivos: 🎯)`);
+  });
+  return { errores: [], avisos };
+}
+
+export function reglasEyebrows(deck) {
+  const secciones = deck.laminas.filter(l => encabezadoSeccion(l.encabezado || ''));
+  const mapa = deck.laminas.some(l => l.como && ['pasos', 'linea-tiempo', 'lista', 'calendario'].includes(l.tipo) && (l.activo != null || l.hechos != null || l.fase_activa != null));
+  return { errores: [], avisos: secciones.length >= 3 && !mapa ? [`${secciones.length} láminas nombran su sección con un rótulo encima: abre cada sección con el mapa que vuelve (como + activo, ESTILO §8)`] : [] };
+}
+
+export function reglasTrazosPropios(deck) {
+  const usos = deck.laminas.flatMap((l, i) => emojisDeLamina(l).flatMap(e => [e.base, e.insignia].filter(s => s.startsWith('trazo:')).map(s => ({ ...analizarTrazo(s), i })))).filter(t => !t.error);
+  const rotulos = [...new Set(usos.map(t => t.rotulo))], avisos = [];
+  if (rotulos.length > 2) avisos.push(`${rotulos.length} rótulos distintos de trazo: reserva los símbolos propios para 1–2 términos del deck (EMOJIS.md)`);
+  rotulos.forEach(rotulo => {
+    const propios = usos.filter(t => t.rotulo === rotulo);
+    if (propios.length === 1) avisos.push(`${nombre(deck, propios[0].i)}: trazo: «${rotulo}» se usa una sola vez; un símbolo propio debe volver idéntico en su bloque o mapa (EMOJIS.md)`);
+    if (new Set(propios.map(t => t.figura)).size > 1) avisos.push(`trazo: «${rotulo}» sale con distinta figura; conserva una sola figura y el mismo rótulo cada vez que vuelva (EMOJIS.md)`);
+  });
+  return { errores: [], avisos };
+}
+
+const PALABRAS_FUNCIONALES = new Set(['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'tu', 'tus', 'su', 'sus', 'mi', 'mis', 'de', 'del', 'para', 'que', 'en', 'y']);
+const palabrasConcepto = texto => (sinAcentos(plano(texto)).match(/[a-z0-9]+/g) || []).filter(p => !PALABRAS_FUNCIONALES.has(p));
+const claveProducto = texto => palabrasConcepto(texto).join(' ');
+export function reglasProductoIconos(deck) {
+  const avisos = [], declarados = Object.entries(deck.conceptos || {}).filter(([, c]) => typeof c === 'string');
+  declarados.forEach(([spec, texto], i) => {
+    const a = analizarCompuesto(spec), sustantivo = palabrasConcepto(texto)[0];
+    for (const [otro, concepto] of declarados.slice(i + 1)) {
+      const b = analizarCompuesto(otro);
+      if (sustantivo && sustantivo === palabrasConcepto(concepto)[0] && sinSelector(a.base) === sinSelector(b.base) && Boolean(a.insignia) !== Boolean(b.insignia)) avisos.push(`${spec} y ${otro} declaran conceptos con el mismo sustantivo principal «${sustantivo}»: conserva el mismo emoji compuesto para ese concepto (EMOJIS.md)`);
+    }
+  });
+  deck.laminas.forEach((l, i) => {
+    if (l.tipo !== 'oscura' || typeof l.emoji !== 'string') return;
+    const textos = [l.titulo, l.texto].filter(t => typeof t === 'string' && !/\{\{|\[[A-Z_]+\]/.test(t));
+    const productos = textos.map(claveProducto).filter(Boolean);
+    if (!productos.length) return;
+    deck.laminas.slice(i + 1).forEach((otra, k) => {
+      if (otra.tipo !== 'stack') return;
+      const pieza = otra.items?.find(it => {
+        if (typeof it?.emoji !== 'string') return false;
+        const clave = claveProducto(it.texto || it.etiqueta || '');
+        return clave && productos.some(p => p === clave || (clave.split(' ').length >= 2 && ` ${p} `.includes(` ${clave} `)));
+      });
+      if (pieza && sinSelector(pieza.emoji) !== sinSelector(l.emoji)) avisos.push(`el producto sale con ${l.emoji} en la ${i + 1} y con ${pieza.emoji} en la ${i + k + 2}: conserva el mismo emoji al revelar el producto y al nombrarlo en el stack (EMOJIS.md)`);
+    });
+  });
+  return { errores: [], avisos };
+}
 export function reglasConceptosIconos(deck) {
   const avisos = [...reglasIconosInversa(deck).avisos], anteriores = new Map(), reportados = new Set();
+  const declarados = Object.values(deck.conceptos || {}).filter(c => typeof c === 'string').map(c => sinAcentos(plano(c))).filter(Boolean);
   deck.laminas.forEach((l, i) => {
-    if (['mapa', 'pasos', 'grafica'].includes(l.tipo) || l.como || l.paga) return;
+    if (l.como) return;
     for (const e of emojisDeLamina(l)) {
       if (/^avatar|^vineta$/.test(e.campo)) continue;
-      const concepto = conceptoRotulo(e.texto);
+      const concepto = conceptoRotulo(e.texto, declarados, ['mapa', 'pasos'].includes(l.tipo), l.tipo === 'grafica');
       if (!concepto) continue;
       const previo = (anteriores.get(e.base) || []).find(p => !mismoConcepto(p.concepto, concepto) && sinAcentos(p.texto) !== sinAcentos(e.texto));
       if (previo && !reportados.has(e.base)) {
@@ -875,7 +953,7 @@ export function reglasConceptosIconos(deck) {
   return { errores: [], avisos };
 }
 export function reglasIconos(deck) {
-  const avisos = [...reglasConceptosIconos(deck).avisos], L = deck.laminas;
+  const avisos = [...reglasConceptosIconos(deck).avisos, ...reglasProductoIconos(deck).avisos, ...reglasTrazosPropios(deck).avisos], L = deck.laminas;
   const usos = L.map(emojisDeLamina);
   const usados = new Set(usos.flat().flatMap(e => [e.base, e.insignia]).filter(Boolean));
   // a) dos emojis que se ven casi iguales en el set del deck (con auto, en cualquiera de los dos)
@@ -1120,7 +1198,7 @@ export function mensajeSinFirma({ ficha, rutaGlobal = '~/.config/diapositivas-pi
 // (qa.mjs no los pasa en `avisos`): ya los representa el tope; restarlos premiaba borrar el caso o la prueba.
 export const TOPE_BORRADOR = 90;
 // La nota SIN el tope del borrador: distingue un borrador limpio (100) de uno con 3 avisos (91), que el tope iguala en 90.
-export const notaSinTope = ({ errores = [], avisos = [] } = {}) => Math.max(0, 100 - 12 * errores.length - 3 * avisos.length);
+export const notaSinTope = ({ errores = [], avisos = [] } = {}) => Math.max(0, 100 - 12 * errores.length - 3 * avisos.filter(a => !/^capa expresiva:/.test(a) && !/la ✅ dice “ya está hecho\/incluido”/.test(a)).length);
 export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
   const n = notaSinTope({ errores, avisos });
   return Object.keys(porConfirmar).length ? Math.min(n, TOPE_BORRADOR) : n;
@@ -1164,7 +1242,7 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck, { crudo, credenciales }), reglasDescargo(deck), reglasIconos(deck),
     reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck), reglasPagoGancho(deck), reglasNotasPonente(deck, pasos), reglasAnclaPrecio(deck, { crudo }),
-    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo })];
+    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasEyebrows(deck), reglasVinetasPlan(crudo || deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo })];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
@@ -1180,8 +1258,8 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
 }
 
 // Reglas del deck completo (qa.mjs con la capa a mano medida en el DOM; qa-texto con la estimada del HTML)
-export function reglasDeckCompleto(deck, { manoPorLamina = [] } = {}) {
-  const avis = [];
+export function reglasDeckCompleto(deck, { manoPorLamina = [], tiposPorLamina = [] } = {}) {
+  const avis = [...reglasCapaExpresiva(deck, tiposPorLamina).avisos];
   const nombre = i => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
   const porLamina = deck.laminas.map((l,i) => ({tipo:l.tipo, i, mano:manoPorLamina[i]}));
   const sinCamara = porLamina.filter(l => l.tipo !== 'camara');

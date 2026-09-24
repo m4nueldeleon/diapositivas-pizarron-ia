@@ -211,7 +211,9 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 ## Psicología y decisión
 | Concepto | Emoji | Notas |
 |---|---|---|
-| dolor, cansancio: el «hoy» | 😩 | el par antes/después es `["😩", "😌"]` en una `idea` |
+| dolor, cansancio: el «hoy» | 😩 | |
+| antes/después | par de estados | `idea` con `["😩", "😌"]`: dolor → alivio; cada emoji conserva su concepto |
+| gancho, anzuelo, lo que atrapa la atención | 🪝 | |
 | alivio: el «después» | 😌 | |
 | miedo | 😰 | la pena es 😳 |
 | vergüenza, pena, «te da pena» | 😳 | 😰 es «miedo» (en Fluent, una cara de terror) |
@@ -248,9 +250,17 @@ Una persona del equipo sin rol (vendedor, integrante) es 👤, y el equipo 🧑�
 ## Sí / no
 | Concepto | Emoji |
 |---|---|
-| lo que sí, lo que ya está hecho | ✅ |
+| lo incluido, lo que ya está hecho | ✅ |
 | lo que no, lo que no necesitas | ❌ |
 | calificación (en fila: ⭐⭐⭐⭐⭐) | ⭐ |
+
+✅ solo para «Incluye», «Es para ti si», «Te llevas», «Sales con / Hoy hiciste» y el mapa `hechos`. Temario, agenda, actividades, módulos, evaluación y pasos: `vineta: "numero"` o emoji por ítem; objetivos: 🎯. Nunca ✅ en una lista con `{{HUECO}}`.
+
+## Término acuñado sin emoji literal
+
+En el estilo base del video, el término del autor va entre comillas y subrayado. Solo cuando no existe emoji literal, puede tener un símbolo propio: `trazo:triangulo|MÉTODO`, `trazo:circulo|MÉTODO` o `trazo:marco|MÉTODO`. Figuras cerradas: `triangulo`, `circulo`, `marco`; rótulo de 1–24 caracteres en mayúsculas, escapado y ajustado dentro. Tinta negra de plumón y Caveat 700, semilla estable por figura y rótulo: vuelve idéntico. Uno o dos rótulos por deck y cada uno vuelve al menos una vez, siempre con la misma figura. Acepta `no:`/`si:` y una insignia `+emoji`; el rótulo no admite `+` ni `|`.
+
+Sirve donde se acepta emoji (`idea`, `pasos`, `flujo`, `stack`, `lista`). Para una metáfora física (por ejemplo, un vaso), usa `objeto` con una imagen `.svg` del propio deck, dentro de su grupo con `como`; nunca como adorno de lista.
 
 ## Compuestos útiles
 La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**.

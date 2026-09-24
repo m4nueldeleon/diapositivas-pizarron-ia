@@ -42,7 +42,8 @@ que es ejemplo se dice una vez en la voz. Si no hay dato, {{MARCADOR}}.
 | Frase | 68–90 px según longitud | Piso 72 px |
 | Nota a mano | 60–64 px | 88 px; piso medido 72 px |
 | Fuente / pie | 40 / 36 px | 44 px |
-| Apagado identificable | 20 % [ref_1040] | 35 % |
+| Etiqueta apagada | 20 % [ref_1040] | 35 % |
+| Ícono apagado identificable | Piso 35 %, conserva el color | Piso 35 %, conserva el color |
 
 - Tamaños medidos en un lienzo de 1920×1080:
   - Frase normal: **84 a 90 px** (la frase de 14 palabras de c_0250 da un renglón de 78 px de
@@ -71,7 +72,7 @@ que es ejemplo se dice una vez en la voz. Si no hay dato, {{MARCADOR}}.
   se marca con negrita, nunca pintándolo de color.
 - Mayúsculas solo en UNA palabra para gritar: «NO IDEA», «ALREADY», «YOU».
 - Los términos acuñados van **entre comillas y con subrayado rojo**: «Market Gap», «Growth
-  Marketer». Así nace el vocabulario del método.
+  Marketer». Así nace el vocabulario del método. Solo si es un término propio sin emoji literal, se permite `trazo:figura|RÓTULO`: figura negra a plumón y rótulo, estable entre apariciones. Máximo 1–2 por deck, siempre vuelve igual (EMOJIS.md).
 
 **Por qué funciona:** la sans habla y la manuscrita comenta. El cerebro distingue en menos de un
 segundo qué es el mensaje y qué es la acotación. Es como un maestro que escribe la idea y luego
@@ -118,14 +119,13 @@ El emoji no decora: **nombra**. Estilo 3D brillante de Apple. En máquinas sin M
   - 🎥 con ❌: «sin hacer contenido».
   - 🙅‍♂️ con ❌: «sin mostrar tu cara» (ref_628).
   - 💸 con ✅: «$0 de capital».
-- **Emoji como viñeta**: ❌ para lo que NO necesitas y ✅ para lo que sí. Del mismo tamaño que el
-  texto.
+- **Emoji como viñeta**: ❌ para lo que NO necesitas. ✅ solo en «Incluye», «Es para ti si», «Te llevas», «Sales con / Hoy hiciste» y el mapa `hechos`. Temarios, agendas, actividades, módulos, evaluación y pasos usan `vineta: "numero"` o un emoji por ítem; objetivos: 🎯. Una lista con `{{HUECO}}` nunca lleva ✅. Tamaño del texto.
 - **Emoji como cantidad**: 500 cajas 📦 hacen visible «tendrías que vender 500». 99 puntos
   verdes y uno rojo dicen «99%». Una multitud de 👤 con uno encendido dice «tú».
 - **Teclas numéricas 1️⃣ 2️⃣ 3️⃣** unidas por una ruta punteada son el «sistema de 3 pasos», con
   la frase ~240 px debajo [ref_115]. La ruta solo existe con las teclas; el mapa con íconos
   (🔍 🛠️ 🚀) no lleva ruta [16:40, 28:00]. La imagen vuelve en cada sección con el paso activo
-  encendido, los demás al 20 % en video [ref_1040], 35 % en sala y la ✅ bajo los completados **a todo color**: es la señal de
+  encendido; las etiquetas pendientes van al 20 % en video [ref_1040], 35 % en sala, y los íconos tienen piso propio de 35 %, sin gris ni contraste artificial y la ✅ bajo los completados **a todo color**: es la señal de
   avance. Funciona como mapa del video. En el deck, el objeto que vuelve se declara una vez y se reúsa con
   `como` (LAYOUTS.md): la imagen es la misma porque ES la misma.
 
@@ -154,17 +154,30 @@ limpio:
 | **Arco con ✕** | Arco negro con una ✕ roja al centro | «Esto NO lleva a aquello»: tus ahorros ✕→ apostarlos. |
 | **Flecha gris fina** | Curva delgada de 120-160 px que sale del borde y baja en gancho con la punta SOBRE la nota | Señalar una nota: «Son 500» [6:45]. |
 | **Llave roja** | Une dos cosas con una nota manuscrita abajo | Comparar dos valores: «Mismo trabajo». |
-| **Círculo o caja roja** | Óvalo o rectángulo redondeado alrededor de un dato | El número clave dentro de una captura. |
+| **Círculo o caja roja** | Óvalo o rectángulo redondeado alrededor de un dato | La cifra, el año de credibilidad, el precio, la palabra clave o un dato de una captura. |
 | **Tachón rojo** | Línea sobre texto o ítem | Descartar opciones, como tachar Dropshipping o Trading. |
 | **Ruta punteada gris** | Curva sinuosa entre pasos | Un camino o un proceso en etapas. |
 | **Sello de goma** | Etiqueta blanca opaca con doble borde rojo, girada −5°, letra slab con grano leve, centrada sobre lo que sella y ~100% de su ancho (en [6:45] mide 1210 px sobre una rejilla de 1210, con letras de ~100 px); no tapa notas ni flechas | El remate: «MUCHA HABILIDAD» sobre una rejilla [6:45]. Puede tapar parte de la rejilla: la cifra ya se dijo antes. |
 
 Reglas:
 
+- El sello libre se centra bajo lo que sella, sin invadir el margen de 100 px ni la firma (140 px inferiores con firma). Primero prueba el centro limpio; después debajo y sobre el bloque. No tapa el último renglón.
 - Máximo **un énfasis** por lámina: subrayado, resaltador o círculo. Dos es el tope.
 - El trazo tiene **textura de plumón**, un leve temblor y extremos redondos. Nunca líneas
   vectoriales perfectas.
 - Las notas manuscritas van en gris. Solo son rojas cuando señalan.
+
+
+| Qué dice el guion | Qué trazo |
+|---|---|
+| Contradicción o descarte | Tachón después de leer la opción |
+| Conclusión o veredicto | Sello sobre la composición apagada |
+| Agrupar y comentar | Llave con nota |
+| Cifra clave, credencial, año, precio o ítem elegido | Círculo `((…))`, hasta 4 palabras |
+| Escala | Rejilla o multitud con sello |
+| Pausa | Descanso de una sola palabra |
+
+El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso 0. Cada modelo incluye una secuencia de 3–4 pasos que transforma la misma composición. QA distingue trazos de énfasis de contenedores como nota o tabla; avisa sin restar si un deck de 12 láminas usa menos de dos tipos, o deja precio, garantía o «no incluye» sin trazo.
 
 ## 6. Imágenes
 
@@ -179,7 +192,8 @@ Reglas:
    - una pastilla verde «5k audiencia | $30,000»;
    - botones con cursor;
    - calendarios de fases;
-   - tarjetas de métricas gris suave.
+   - tarjetas de métricas gris suave;
+   - tarjeta de prompt blanca con sombra suave, sin borde; prompts seguidos dentro de una sola tarjeta que crece por renglón. Respuesta verde clara sin borde; remitente a la izquierda.
 4. **Fotos o video de ambiente** solo para emoción: un laberinto para «perdido» o un escenario
    para «comunidad». Pocas.
 5. **Láminas oscuras**: fondo negro con brillo violeta (o azul arriba, o negro plano: `fondo`).
@@ -229,7 +243,7 @@ instante en que se dice su palabra. Por eso el video se siente rápido sin senti
 - **La tabla-marcador**: primero se presentan los criterios, luego cada opción llena una columna.
   Al final aparece la columna «modelo ideal» toda en verde. Es un argumento que el espectador
   ve crecer durante 10 minutos.
-- **El mapa de pasos 1-2-3**: abre cada sección y deja claro dónde estás.
+- **El mapa de pasos 1-2-3**: abre cada sección y deja claro dónde estás. Sin eyebrow: ningún texto chico encima del titular que no sea el arranque de la frase. Declara el mapa una vez y vuelve con `como` + `activo`; número y semana van en la etiqueta del paso.
 - **Pregunta → emoji 🤔**: «¿Ves por qué esto no es ideal para un principiante?».
 - **Prueba antes de la explicación**: la captura con el dato encerrado llega antes que la teoría.
 - **Cámara en los momentos personales**: la historia, la confesión o la oferta. Tramos de unos
@@ -277,9 +291,10 @@ Solo se activa con `sala: true` o `{ "distancia_m": número positivo }`. En vivo
 
 | Medida | Video | Sala |
 |---|---|---|
-| Elemento apagado que debe identificarse | 20 % | 35 % (`--apagado`) |
+| Etiqueta apagada | 20 % | 35 % (`--apagado`) |
+| Ícono apagado de pasos/lista activa | ≥35 % (`--apagado-icono`), a color | ≥35 %, a color |
 | Rótulo de encabezado | 56 px | 64 px |
-| Consigna: ítems | 56 px | 64 px |
+| Consigna: ítems | 66 px | 72 px |
 | Nota manuscrita | 64 px | 88 px (piso 72) |
 | Fuente / pie | 40 / 36 px | 44 px |
 | Subtítulo / pastilla | 42 / 50 px | 56 px |

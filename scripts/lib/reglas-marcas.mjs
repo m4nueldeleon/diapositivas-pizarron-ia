@@ -53,10 +53,14 @@ export function reglasMarcasYSuperficies(deck) {
   const errores = [], avisos = [];
   deck.laminas.forEach((l,i) => {
     const n = `lámina ${i+1}`, ts = textos(l), t = normal(ts.join(' '));
+    const duracionVivo = Array.isArray(l.dur) ? l.dur.reduce((total, dur) => total + (Number(dur) || 0), 0) : Number(l.dur) || 0;
+    if (l.tipo === 'camara' && l.vivo && duracionVivo > 0 && l.items?.length > 3) avisos.push(`${n}: la consigna con reloj tiene más de 3 ítems; divídela en dos tramos para conservar el tamaño de lectura y los espacios (LAYOUTS, tramo en vivo)`);
     const ovalos = ts.flatMap(s => [...s.matchAll(/\(\(([\s\S]*?)\)\)/g)]).filter(m => m[1].trim());
     if (ovalos.length>1) errores.push(`${n}: hay más de un óvalo; encierra solo la cifra o palabra principal`);
     if (ovalos.some(m => /\n|\\n/.test(m[1]))) errores.push(`${n}: el óvalo ((…)) abarca un salto de línea; encierra una cifra en un renglón`);
-    if (ovalos.some(m => palabras(m[1])>3)) avisos.push(`${n}: el óvalo encierra más de 3 palabras; acórtalo a la cifra o palabra principal`);
+    if (ovalos.some(m => palabras(m[1])>4)) errores.push(`${n}: el óvalo encierra más de 4 palabras; acórtalo a la cifra o palabra principal`);
+    const enfasis = ovalos.length + ts.reduce((n, s) => n + [...s.matchAll(/__[^]*?__|==[^]*?==/g)].length, 0);
+    if (enfasis > 2) avisos.push(`${n}: ${enfasis} énfasis (subrayado/resaltador/círculo); deja uno, dos como máximo`);
     if (ovalos.length && ts.some(s => /__|==/.test(s))) avisos.push(`${n}: el óvalo convive con subrayado o resaltado; deja un único énfasis`);
     if (l.tipo === 'lista' && l.vineta === 'letras' && l.letras?.length && !l.items?.some(it => it?.emoji)) {
       const j = deck.laminas.slice(0,i).findIndex(x => x.tipo === 'pasos' && JSON.stringify(x.letras) === JSON.stringify(l.letras));
@@ -75,4 +79,28 @@ export function reglasMarcasYSuperficies(deck) {
     if (fallo && emojis.some(e => !/^(no|si):/.test(e) && ['👑','🏆','🏅','🎉','🚀'].includes(base(e)))) avisos.push(`${n}: el emoji celebra y la frase es un fallo: usa 😩 o el concepto negado (no:…)`);
   });
   return { errores, avisos };
+}
+
+// Variedad de tinta sin cuota por recurso: los contenedores no cuentan como énfasis.
+export function reglasCapaExpresiva(deck, tiposPorLamina) {
+  const tipos = deck.laminas.map((l, i) => {
+    if (tiposPorLamina?.[i]) return new Set(tiposPorLamina[i]);
+    const t = textos(l).join(' '), encontrados = [];
+    if (l.sello) encontrados.push('sello');
+    if (/\(\(/.test(t) || l.circulo || l.circulo_img) encontrados.push('círculo');
+    if (/~~/.test(t) || l.tachon || l.tachon_img || l.items?.some(it => it?.tachado)) encontrados.push('tachón');
+    if (/__/.test(t)) encontrados.push('subrayado');
+    const conexiones = [...(l.flechas || []), ...(l.anotaciones || [])];
+    if (conexiones.some(c => c.estilo === 'llave' || c.llave)) encontrados.push('llave');
+    if (conexiones.some(c => c.estilo !== 'llave' && !c.llave) || ['flujo', 'bifurcacion', 'converger'].includes(l.tipo)) encontrados.push('flecha');
+    return new Set(encontrados);
+  });
+  const avisos = [], distintos = new Set(tipos.flatMap(t => [...t]));
+  if (deck.laminas.length >= 12 && distintos.size < 2) avisos.push('capa expresiva: el deck usa menos de 2 tipos de trazo de énfasis; añade una marca donde el guion concluya, descarte o agrupe (ESTILO)');
+  deck.laminas.forEach((l, i) => {
+    const t = textos(l).join(' ');
+    const precio = l.precio || /^(?:precio|inversi[oó]n|pago)(?:-|$)/i.test(l.id || '') || (!['chat', 'tabla', 'reparto', 'meses', 'cuadrantes'].includes(l.tipo) && /\[\[?PRECIO\]?\]|\{\{PRECIO\}\}|(?:cuesta|precio|inversi[oó]n)\s*[:：]?\s*(?:\$|\[)/i.test(t));
+    if (!tipos[i].size && (precio || /\bgarant[ií]a\b|no incluye/i.test(t))) avisos.push(`capa expresiva: lámina ${i + 1}: el precio, la garantía o «no incluye» queda sin trazo; encierra la cifra, sella la garantía o tacha el descarte`);
+  });
+  return { errores: [], avisos };
 }

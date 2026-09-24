@@ -97,10 +97,10 @@ test('A1/A2 navegador: PDF páginas por paso sin cursor y apagado 35/20', async 
   }
   const { browser, page } = abierto;
   try {
-    const op = await page.evaluate(() => getComputedStyle(document.querySelector('[style*="opacity:var(--apagado)"]')).opacity);
+    const op = await page.evaluate(() => getComputedStyle(document.querySelector('.paso-apagado .icono-paso')).opacity);
     assert.equal(Number(op), .35);
     await page.evaluate(() => document.body.classList.remove('sala'));
-    assert.equal(Number(await page.evaluate(() => getComputedStyle(document.querySelector('[style*="opacity:var(--apagado)"]')).opacity)), .2);
+    assert.equal(Number(await page.evaluate(() => getComputedStyle(document.querySelector('.paso-apagado .icono-paso')).opacity)), .35);
     const pdf = await exportarPdfPasos({ browser, page, deck, dirSalida: r.dir, W: r.W, H: r.H });
     assert.equal(pdf.paginas_pasos, r.pasos[0] + 1); assert.equal(pdf.cursores_visibles, 0);
     assert.ok(fs.statSync(path.join(r.dir, 'laminas-pasos.pdf')).size > 100);

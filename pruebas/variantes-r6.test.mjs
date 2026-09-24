@@ -83,6 +83,6 @@ test('variantes: demo y todos los ejemplos sin hallazgos propios; voces alineada
   }
   const d = { emoji: 'apple', marca: false, laminas: [bandas, letras, prompt] };
   const armado = construirHTML({ deck: d, dirDeck: RAIZ, dirSalida: fs.mkdtempSync(path.join(os.tmpdir(), 'pz-variantes-')), dirSkill: RAIZ });
-  assert.deepEqual(armado.pasos, [5, 1, 2]);
+  assert.deepEqual(armado.pasos, [5, 1, 3]);
   assert.ok(armado.deck.laminas.every((l, i) => l.voz.length === armado.pasos[i]));
 });

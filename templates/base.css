@@ -25,10 +25,11 @@
   --sombra-suave: 0 6px 18px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .05);
   --radio: 20px;
   --apagado: .2;
+  --apagado-icono: .35;
   --t-nota: 64px;
   --t-fuente: 40px;
   --t-pie: 36px;
-  --t-vivo: 56px;
+  --t-vivo: 66px;
   --t-sub: 42px;
   --t-pastilla: 50px;
   --t-rotulo: 56px;          /* rótulo gris chico («Sin:», «Paso 1», «Objeción #2»): uno solo en todo el estilo */
@@ -171,6 +172,9 @@ s.tachon, .tachon { text-decoration: none; }
 .lista .item { display: flex; align-items: center; font-size: var(--t, 66px); line-height: 1.18; letter-spacing: -.012em; max-width: 1560px; text-wrap-style: pretty; }
 .lista .item .emo { --s: 1.12em; margin-right: .6em; }
 .lista .item b { font-weight: 700; }
+.item-apagado > .emo, .paso-apagado .icono-paso, .paso-apagado .tecla { opacity: max(var(--apagado), var(--apagado-icono)); }
+.item-apagado > .item-texto, .item-apagado > .vineta-letra { opacity: max(var(--apagado), .25); }
+.paso-apagado .rotulo-paso { opacity: var(--apagado); }
 /* descartes tachados: cada renglón centrado y en seminegrita [m_256 4:16] */
 .lista.centrada { align-items: center; text-align: center; }
 .lista.centrada .item { font-weight: 600; }
@@ -543,10 +547,12 @@ body.presentador .lamina[data-vivo] > :not(.vivo-pres), .lamina.captura-vivo > :
 body.presentador .lamina[data-vivo] > .vivo-pres, .lamina.captura-vivo > .vivo-pres { display: flex; position: absolute; inset: 0; flex-direction: column; align-items: center;
   justify-content: center; gap: 28px; padding: var(--margen-v) var(--margen-h); text-align: center; background: var(--blanco); }
 .vivo-consigna { font: 500 84px/1.15 var(--sans); color: var(--tinta); max-width: var(--ancho-texto); text-wrap: balance; }
-.vivo-items { font: 500 var(--t-vivo)/1.3 var(--sans); color: var(--tinta); text-align: left; padding-left: 1.2em; max-width: var(--ancho-texto); }
-.vivo-reloj { font: 700 150px/1 var(--mano); color: var(--tinta); font-variant-numeric: tabular-nums; }
-.vivo-reloj.final { color: var(--rojo); }
-.vivo-reloj.cero { color: var(--rojo); animation: pz-parpadeo 1s steps(2, start) infinite; }
+.vivo-items { display:flex; flex-direction:column; gap:52px; list-style:none; padding:0; margin:0; align-self:center; color:var(--tinta); text-align:left; max-width:var(--ancho-texto); }
+.vivo-items li { font:500 var(--t-vivo)/1.18 var(--sans); display:flex; align-items:center; }
+.vivo-items li .emo { --s:1.12em; margin-right:.6em; }
+.vivo-reloj { flex:none; }
+.vivo-reloj.final .on, .vivo-reloj.cero .on { fill:var(--rojo); filter:drop-shadow(0 0 5px var(--rojo)); }
+.vivo-reloj.cero { animation:pz-parpadeo 1s steps(2, start) infinite; }
 @keyframes pz-parpadeo { to { visibility: hidden; } }
 body.presentador .velo-pres { position: fixed; inset: 0; z-index: 30; display: none; }
 body.presentador .velo-pres.negro { display: block; background: #000; }
@@ -603,7 +609,7 @@ body.hoja { display: flex; flex-direction: column; gap: 30px; padding: 30px; ali
 .lamina.oscura > .anotacion.tono-n { color: #ffffff; }
 
 /* Sala explícita: lo apagado sigue siendo identificable con proyector. */
-body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; --t-pie: 44px; --t-vivo: 64px; --t-sub: 56px; --t-pastilla: 56px; }
+body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; --t-pie: 44px; --t-vivo: 72px; --t-sub: 56px; --t-pastilla: 56px; }
 .sala .nota:not(.foco-frase .nota) { font-size: max(var(--tn, var(--t-nota)), var(--t-nota)); }
 .sala .rejilla .apagado, .sala .rejilla.multitud .celda.apagada { opacity: var(--apagado); }
 .sala .sub-etiqueta { font-size: 56px; }
@@ -643,11 +649,16 @@ body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; 
 .letra-concepto { width:100%; gap:26px; text-align:center; }
 .letra-concepto .rotulo-paso { font-weight:700; line-height:1.1; overflow-wrap:anywhere; }
 .vineta-letra { font-size:1.15em; min-width:1.1em; color:var(--tinta); }
-.chat-tarjeta { position:relative; width:100%; padding:30px 38px; border:3px solid #bcc5ce; border-radius:22px; background:#fff; }
-.chat-tarjeta.respuesta { background:#e8f5e7; border-color:#94b991; }
+.chat-tarjeta { position:relative; width:100%; padding:30px 38px; border:0; border-radius:22px; background:#fff; box-shadow:var(--sombra-suave); }
+.chat-tarjeta.respuesta { background:#e8f5e7; }
+.chat-tarjeta.prompt { background:transparent; box-shadow:none; isolation:isolate; }
+.chat-tarjeta.prompt::before { content:""; position:absolute; inset:0 0 auto; height:var(--alto-prompt,100%); border-radius:inherit; background:#fff; box-shadow:var(--sombra-suave); z-index:-1; }
+.chat-renglon { display:flex; align-items:center; gap:24px; }
+.chat-renglon + .chat-renglon { margin-top:18px; }
+.chat-renglon .vineta-letra { font:700 var(--tb, 54px)/1 var(--sans); text-align:center; flex:none; }
 .chat-tarjeta .burbuja { max-width:none; padding:0; background:transparent; color:var(--tinta); border-radius:0; font-size:var(--tb, 54px); line-height:1.3; text-align:left; }
 .f-vertical .chat-tarjeta .burbuja { font-size:var(--tb, 58px); }
-.chat-tarjeta .chat-remitente { color:var(--gris); font-size:52px; margin-bottom:20px; }
+.chat-tarjeta .chat-remitente { color:var(--gris); font-size:52px; margin-bottom:20px; text-align:left; }
 .chat-tarjeta .fuente { margin-top:24px; }
 .chat-ejemplo { display:inline-block; margin-top:24px; border:3px solid var(--rojo); padding:6px 14px; transform:rotate(-3deg); color:var(--rojo); font-size:34px; font-weight:800; letter-spacing:.08em; }
 .f-vertical .bandas-comparacion { gap:38px; }
@@ -722,7 +733,7 @@ body.sala .objeto-logos img { height: 52px !important; }
 .f-vertical .tarjetas-logos { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); gap: 60px; }
 
 /* Óvalo en línea: aire acotado sobre una palabra; no cambia los tokens de la referencia. */
-.circ, .lamina .circ { font-weight: 800; display: inline-block; padding: 0 .12em; }
+.circ, .lamina .circ { font-weight: 800; display: inline-block; padding: 0 .12em; margin: 0 .16em; white-space:nowrap; }  /* margen: el óvalo sobresale ~14 px y no debe pisar la palabra vecina */
 .flujo-con-texto > .nodo { align-self: end; }
 .flujo-con-texto > .nodo > .etiqueta { margin-top: 0; }
 /* Superficies de interfaz [19:00, 19:25, 41:25–41:30, 43:50]: tamaños propios, sin alterar tokens base. */
