@@ -147,7 +147,7 @@ test('llamado: solo cuenta el llamado VISIBLE; «WhatsApp», «aparta» o «agen
   // dos llamados a la vista (botón a media pieza y al final) y una objeción antes: sin avisos
   const obj = idea('**«No tengo tiempo»**', { emoji: 'no:⏰', encabezado: 'Objeción #1', encabezado_pos: 'entre' });
   const dos = reglasArco({ pieza: 'vsl', laminas: [obj, ...cuerpo, { tipo: 'boton', boton: 'Aplica aquí' }, idea('Cuatro'), idea('Cinco'),
-    idea('Escribe «CITA» al WhatsApp del video'), { tipo: 'camara' }] });
+    idea('Dale clic al link de abajo'), { tipo: 'camara' }] });
   assert.deepEqual(dos.avisos, []);
   // `llamado: true` marca a mano la lámina que muestra la palabra clave o la flecha al link
   assert.deepEqual(reglasArco({ pieza: 'webinar', laminas: [...cuerpo, obj, idea('La palabra: CITA', { llamado: true }), idea('Cuatro'), { tipo: 'boton', boton: 'Entrar' }] }).avisos, []);

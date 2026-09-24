@@ -5,8 +5,10 @@
 //              + salida/pasos.json (manifiesto para video y QA) + salida/hojas.json (qué hojas hay y qué láminas cubren)
 //
 //   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales]
-//                           [--pdf [--notas | --sin-notas]]
+//                           [--pdf [--notas | --sin-notas]] [--pasos]
 //
+//   --pasos     imprime qué entra en cada paso de cada lámina (sin navegador ni PNG) y sale: para escribir la `voz` con
+//               una frase por paso ANTES de renderizar (LAYOUTS.md, «Pasos que genera cada diseño»)
 //   --finales   solo el último paso de cada lámina (para revisar rápido; no genera hoja-pasos.jpg)
 //   --pdf       además, salida/laminas.pdf: una página por lámina (su último paso, sin la mano del cursor), del tamaño
 //               del formato, para Keynote o Google Slides; un `stack` a sangre sale en UNA página con su remate en una
@@ -27,7 +29,17 @@ import { exportarPdf, conNotas } from './lib/pdf.mjs';
 const { opt, flag, pos } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos } = prep;
+const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos, revela = [] } = prep;
+if (flag('--pasos')) {
+  // Mapa de pasos: numerado desde 1 como la hoja; entre corchetes, cuántos textos trae la voz
+  deck.laminas.forEach((l, i) => {
+    const nv = Array.isArray(l.voz) ? l.voz.length : l.voz ? 1 : 0;
+    const marca = l.tipo === 'camara' ? '' : nv && nv !== pasos[i] ? `  ✗ voz: ${nv} textos` : '';
+    console.log(`${String(i + 1).padStart(2)} · ${l.id || l.tipo} (${l.tipo}) · ${pasos[i]} ${pasos[i] === 1 ? 'paso' : 'pasos'}${marca}`);
+    (revela[i] || []).forEach((xs, k) => console.log(`     paso ${k + 1}: ${xs.length ? xs.join(' + ') : '(sin cambio visible)'}`));
+  });
+  process.exit(0);
+}
 const auto = !prep.crudo.emoji || prep.crudo.emoji === 'auto' ? ` (auto → ${modoEmoji} en esta máquina; fluent en Linux: fija "emoji" en el deck)` : '';
 console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji}${auto} · voz ~${mmss(duracionTotal(deck, pasos))})`);
 avisosBuild.forEach(a => console.warn('⚠ ' + a));
@@ -59,7 +71,7 @@ for (let i = 0; i < lams.length; i++) {
     await page.evaluate(([k, q]) => window.PZ.mostrar(window.PZ.lams[k], q, Infinity), [i, p]);
     const nombre = `${String(i + 1).padStart(2, '0')}-${String(l.id || l.tipo).replace(/[^\w-]/g, '') || 'lamina'}-${p + 1}.png`;
     await lams[i].screenshot({ path: path.join(dirPng, nombre), type: 'png' });
-    manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}`, ...(claves.has(p) ? { clave: true } : {}) });
+    manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}`, revela: (revela[i] || [])[p] || [], ...(claves.has(p) ? { clave: true } : {}) });
   }
 }
 fs.writeFileSync(path.join(dirSalida, 'pasos.json'), JSON.stringify(manifiesto, null, 2));

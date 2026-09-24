@@ -5,7 +5,7 @@
  "animacion": "seco",
  "piel": "🏻",
  "pieza": "vsl-corto",
- "_comentario": "Modelo de VSL corto (3-6 min) que cumple GUION §7. Los datos de la oferta que nadie ha confirmado van como huecos declarados en «datos» (pendiente): QA deja el deck en BORRADOR hasta llenarlos. Copia el arco, no las cifras.",
+ "_comentario": "Modelo de VSL corto (3-6 min) que cumple GUION §6.1 y §7: promesa y mecanismo antes del segundo 25, objeción con respuesta antes de la revelación, la revelación al ~55-60%, y el mismo llamado (el botón «Aplica aquí») dos veces después de la revelación. Los datos de la oferta que nadie ha confirmado van como huecos declarados en «datos» (pendiente) y la objeción como dato propuesto: QA deja el deck en BORRADOR hasta llenarlos. Copia el arco, no las cifras.",
  "datos": {
   "PRODUCTO": {
    "valor": "Agenda Llena",
@@ -58,6 +58,10 @@
   "CITAS_PERDIDAS": {
    "pendiente": true,
    "motivo": "10 × la tasa real de abandono: se calcula cuando esté TASA_ABANDONO"
+  },
+  "OBJECION_1": {
+   "valor": "No sé nada de tecnología",
+   "propuesto": true
   }
  },
  "laminas": [
@@ -85,6 +89,67 @@
    ]
   },
   {
+   "id": "promesa",
+   "tipo": "idea",
+   "emoji": "📅",
+   "texto": "Citas agendadas toda la noche,\n**sin que contestes tú**",
+   "nota": "Ni de madrugada",
+   "voz": [
+    "Te enseño a llenar tu agenda de noche, sin que contestes tú.",
+    "Ni de madrugada, ni el domingo."
+   ]
+  },
+  {
+   "id": "sin",
+   "tipo": "lista",
+   "encabezado": "Sin:",
+   "vineta": "x",
+   "items": [
+    "**Desvelarte**",
+    "Programar **nada**",
+    "Contratar **a nadie**"
+   ],
+   "voz": [
+    "Sin desvelarte,",
+    "sin programar nada",
+    "y sin contratar a nadie."
+   ]
+  },
+  {
+   "id": "mecanismo",
+   "tipo": "idea",
+   "emoji": "🤖+📅",
+   "texto": "Lo llamo la __«Agenda en automático»__",
+   "voz": "Lo llamo la agenda en automático. Ahorita te enseño cómo funciona."
+  },
+  {
+   "id": "paraquien",
+   "tipo": "lista",
+   "encabezado": "Es para ti si:",
+   "vineta": "check",
+   "items": [
+    "Vives de **citas**",
+    "Te escriben **por WhatsApp**",
+    "Hoy contestas **tú**"
+   ],
+   "voz": [
+    "Es para ti si vives de citas: consultorio o salón.",
+    "Si tus clientes te escriben por WhatsApp.",
+    "Y si hoy contestas tú, a cualquier hora."
+   ]
+  },
+  {
+   "id": "quien",
+   "tipo": "idea",
+   "emoji": "🧑‍💼",
+   "texto": "Más de **{{CLIENTES}} negocios**\nya agendan así",
+   "voz": [
+    "Más de {{CLIENTES}} negocios ya agendan así.",
+    "Contestan de noche sin desvelarse."
+   ],
+   "nota": "Contestan de noche sin desvelarse"
+  },
+  {
    "id": "costo",
    "tipo": "idea",
    "emoji": "no:📅",
@@ -101,7 +166,7 @@
    "arriba": "Si te escriben 10 personas de noche:",
    "lineas": [
     "10 × {{TASA_ABANDONO}} se van con otro",
-    "Son __{{CITAS_PERDIDAS}} citas perdidas por noche__"
+    "Son __{{CITAS_PERDIDAS}} citas perdidas__"
    ],
    "voz": [
     "Pongamos que te escriben diez de noche: una parte se va con otro.",
@@ -130,40 +195,6 @@
    "emoji": "😩",
    "texto": "Si contestas todo tú,\n**tu negocio cierra cuando duermes**",
    "voz": "Si contestas todo tú, tu negocio cierra cuando duermes."
-  },
-  {
-   "id": "quien",
-   "tipo": "idea",
-   "emoji": "🧑‍💼",
-   "texto": "Más de **{{CLIENTES}} negocios**\nya agendan así",
-   "voz": [
-    "Más de {{CLIENTES}} negocios ya agendan así.",
-    "Contestan de noche sin desvelarse."
-   ],
-   "nota": "Contestan de noche sin desvelarse"
-  },
-  {
-   "id": "paraquien",
-   "tipo": "lista",
-   "encabezado": "Es para ti si:",
-   "vineta": "check",
-   "items": [
-    "Vives de **citas**",
-    "Te escriben **por WhatsApp**",
-    "Hoy contestas **tú**"
-   ],
-   "voz": [
-    "Es para ti si vives de citas: consultorio, salón, taller.",
-    "Si tus clientes te escriben por WhatsApp.",
-    "Y si hoy contestas tú, a cualquier hora."
-   ]
-  },
-  {
-   "id": "mecanismo",
-   "tipo": "idea",
-   "emoji": "🤖+📅",
-   "texto": "Lo llamo la __«Agenda en automático»__",
-   "voz": "A esto le llamo la agenda en automático."
   },
   {
    "id": "mapa",
@@ -256,83 +287,7 @@
    "nota": "Y a ti te llega el aviso",
    "voz": [
     "La cita cae sola en tu calendario.",
-    "Y a ti te llega el aviso al celular."
-   ]
-  },
-  {
-   "id": "recuerda",
-   "tipo": "chat",
-   "avatar_yo": "🤖",
-   "mensajes": [
-    {
-     "de": "yo",
-     "hora": "9:00 am",
-     "texto": "Hola, te recuerdo tu cita de mañana a las 10:00"
-    }
-   ],
-   "voz": [
-    "Y un día antes, le recuerda su cita.",
-    "Sin que tú muevas un dedo."
-   ],
-   "sello": "Solo",
-   "sello_sobre": "m0"
-  },
-  {
-   "id": "hueco",
-   "tipo": "idea",
-   "emoji": "🪑",
-   "texto": "Si alguien cancela,\n**ofrece el hueco** a quien esperaba",
-   "voz": [
-    "Y si alguien cancela, le ofrece ese hueco a quien estaba esperando."
-   ]
-  },
-  {
-   "id": "flujo",
-   "tipo": "flujo",
-   "nodos": [
-    {
-     "emoji": "📲",
-     "etiqueta": "Mensaje"
-    },
-    {
-     "emoji": "🤖",
-     "etiqueta": "Tu agente"
-    },
-    {
-     "emoji": "📅",
-     "etiqueta": "Cita"
-    }
-   ],
-   "voz": [
-    "Llega el mensaje,",
-    "tu agente lo contesta",
-    "y la cita queda puesta."
-   ]
-  },
-  {
-   "id": "caso",
-   "tipo": "cifra",
-   "arriba": "{{CASO_NEGOCIO}}, en 30 días:",
-   "lineas": [
-    "{{CASO_ANTES}} citas por semana",
-    "→ **{{CASO_DESPUES}} citas por semana**"
-   ],
-   "fuente": "{{FUENTE_CASO}}",
-   "voz": [
-    "Un caso real: {{CASO_NEGOCIO}} tenía {{CASO_ANTES}} citas por semana.",
-    "Treinta días después, {{CASO_DESPUES}}."
-   ]
-  },
-  {
-   "id": "llamado-1",
-   "tipo": "idea",
-   "emoji": "📲",
-   "texto": "Escríbeme **CITA** por WhatsApp",
-   "nota": "Y agendamos una llamada de diagnóstico",
-   "llamado": true,
-   "voz": [
-    "Si lo quieres para tu negocio, escríbeme CITA por WhatsApp.",
-    "Y agendamos una llamada de diagnóstico."
+    "Y te llega el aviso."
    ]
   },
   {
@@ -341,8 +296,8 @@
    "emoji": "no:⌨️",
    "encabezado": "Objeción #1",
    "encabezado_pos": "entre",
-   "texto": "**«No sé nada de tecnología»**",
-   "voz": "La objeción que más oigo: no sé nada de tecnología."
+   "texto": "**«{{OBJECION_1}}»**",
+   "voz": "Objeción número uno: no sé nada de tecnología."
   },
   {
    "id": "respuesta",
@@ -402,11 +357,36 @@
    ]
   },
   {
+   "id": "componente",
+   "tipo": "idea",
+   "emoji": "🤖",
+   "texto": "Tu agente contesta\n**desde tu mismo WhatsApp**",
+   "nota": "Tus clientes no notan el cambio",
+   "voz": [
+    "Tu agente contesta desde tu mismo WhatsApp.",
+    "Tus clientes no notan el cambio."
+   ]
+  },
+  {
    "id": "pregunta",
    "tipo": "idea",
    "emoji": "🤔",
    "texto": "¿Ves cómo **ya no dependes**\nde contestar tú?",
    "voz": "¿Ves cómo ya no dependes de contestar tú?"
+  },
+  {
+   "id": "caso",
+   "tipo": "cifra",
+   "arriba": "{{CASO_NEGOCIO}}, en 30 días:",
+   "lineas": [
+    "{{CASO_ANTES}} citas por semana",
+    "→ **{{CASO_DESPUES}} citas por semana**"
+   ],
+   "fuente": "{{FUENTE_CASO}}",
+   "voz": [
+    "Un caso real: {{CASO_NEGOCIO}} tenía {{CASO_ANTES}} citas por semana.",
+    "Treinta días después, {{CASO_DESPUES}}."
+   ]
   },
   {
    "id": "precio",
@@ -456,7 +436,7 @@
    "voz": "Para reclamarla me escribes, revisamos tu agenda y te devuelvo el pago."
   },
   {
-   "id": "llamado-2",
+   "id": "llamado-1",
    "tipo": "boton",
    "boton": "Aplica aquí",
    "emoji": "📝",
@@ -469,7 +449,7 @@
    "tipo": "flujo",
    "nodos": [
     {
-     "emoji": "👆",
+     "emoji": "✍️",
      "etiqueta": "Aplicas"
     },
     {
@@ -488,6 +468,22 @@
    ]
   },
   {
+   "id": "resumen",
+   "tipo": "lista",
+   "encabezado": "Te llevas:",
+   "vineta": "check",
+   "items": [
+    "Tu **agente de citas**",
+    "La **configuración** contigo",
+    "Las **6 clases**"
+   ],
+   "voz": [
+    "Te llevas tu agente de citas,",
+    "la configuración conmigo",
+    "y las seis clases."
+   ]
+  },
+  {
    "id": "ahora",
    "tipo": "idea",
    "emoji": "📉",
@@ -500,15 +496,12 @@
   },
   {
    "id": "cierre",
-   "tipo": "idea",
-   "emoji": "📲",
-   "texto": "Escríbeme **CITA** por WhatsApp",
-   "nota": "Hoy en la noche alguien te va a escribir",
+   "tipo": "boton",
+   "boton": "Aplica aquí",
+   "emoji": "📝",
+   "texto": "Hoy en la noche\n**alguien te va a escribir**",
    "llamado": true,
-   "voz": [
-    "Escríbeme CITA por WhatsApp.",
-    "Hoy en la noche alguien te va a escribir."
-   ]
+   "voz": "Da clic en aplica aquí. Hoy en la noche alguien te va a escribir."
   }
  ]
 }

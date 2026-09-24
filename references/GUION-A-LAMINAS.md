@@ -238,21 +238,42 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
 
+- **El orden en un `vsl` o `vsl-corto`** (la referencia: objeciones 34:17-36:00 → revelación 36:16 → componentes y
+  stack → resumen 42:29 → primer «click the button below» 43:36 → el mismo botón otra vez 44:31):
+  1. objeción y su respuesta (beat 0);
+  2. revelación oscura (beat 4): en un `vsl-corto`, a más tardar al 60% (en un `vsl` largo va en el ~20-25% final);
+  3. qué incluye: componentes y `stack` (beats 5 y 7);
+  4. prueba (beat 6);
+  5. precio y garantía, solo si hay precio público;
+  6. llamado 1 con qué pasa después del clic (beat 9);
+  7. resumen del stack (beat 10);
+  8. llamado 2, al final.
+
+  Dos reglas: **ningún llamado visible antes de la revelación** («Aplica aquí» antes de decir qué se vende; el
+  webinar sí puede llevar un llamado temprano) y **un solo canal de llamado por pieza**: botón o link, o palabra
+  clave por WhatsApp, repetido; no mezclados (los dos llamados de la referencia son la misma acción: aplicar). QA
+  avisa las dos, y mide dónde empieza la oferta por la revelación oscura (sin oscura, el primer `stack`): un botón
+  temprano no cuenta como oferta.
 - **VSL y webinar: al menos 1 objeción antes del llamado de la oferta** (beat 0): 1 en un `vsl-corto`, 2 en un
   VSL de 8 min o más, 2-3 en un webinar. No se inventan objeciones ni respuestas: salen del público real (en un
   VSL de eventos, «mi público no paga apartado» o «ya mando recordatorios y aun así no llegan»). QA avisa si no
-  hay ninguna `idea` «Objeción #N» o «Razón #N» antes del llamado.
+  hay ninguna `idea` «Objeción #N» o «Razón #N» antes del llamado. **Si no puedes preguntar** (loop, agente de fondo),
+  la objeción que no dio el usuario se PROPONE: `"datos": { "OBJECION_1": { "valor": "No sé nada de tecnología",
+  "propuesto": true } }` y la lámina dice `**«{{OBJECION_1}}»**`, así sale en `por_confirmar`. Y se introduce sin
+  frecuencia: «Objeción número uno: …» o «Quizá estés pensando: …», nunca «la de siempre» ni «la que más oigo» sin un
+  dato (QA lo avisa; VOZ-HUMANA.md).
 - **Sin prueba real, en este orden** (el beat 6 y el tramo de prueba de un vsl o webinar):
 
   | # | Sustituto | Diseño |
   |---|---|---|
   | a | Demostración del mecanismo con material real del creador: su calendario, su cuenta, su chat | `prueba` con `src`, o `objeto` con `imagen` |
   | b | Caso propio con números y su `fuente` | `cifra` con `fuente` o `prueba` con `fuente` |
-  | c | Prueba lógica: la cuenta con la condición en `arriba` (§3.8) | `cifra` sin `fuente`, con `arriba` que empieza con la condición («Si…», «Cuando…», «Con…») y un número, y un rango en `arriba` o en `lineas` |
-  | d | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ con plazo real («30 días»; un `{{GARANTIA_DIAS}}` sin llenar no cuenta) y condición («si…») |
+  | c | **Prueba de mercado**: una nota de prensa o un dato publicado real (INEGI, un estudio, un medio) que respalda la OPORTUNIDAD, no el resultado del producto [11:25 «$250 billion Creator Economy», 11:30 Forbes citando a Goldman Sachs, 12:00 creadores reales con su logo]. Se busca y se abre con WebSearch o WebFetch, **nunca un número de memoria**. En la voz se dice como dato del mercado («según INEGI…»), nunca como caso propio. Su sitio natural es el tramo de «por qué ahora», antes de la revelación; no sustituye el muro de capturas del beat 6 cuando lo hay | `prueba` con la captura del artículo en `src` y su `fuente` (medio y fecha), con el subrayado o el círculo rojo en la frase clave; o `cifra` con `fuente` |
+  | d | Prueba lógica: la cuenta con la condición en `arriba` (§3.8). La tasa va DENTRO de la condición, dicha como hipótesis («Si te contrata el 0.1-0.3%:»), o con `fuente` (puede ser la misma nota de c). Una tasa escrita en la cuenta sin origen («10 × 20% compran») es una cifra de resultado inventada: QA la deja en borrador («tasa sin origen») y el deck no es final | `cifra` sin `fuente`, con `arriba` que empieza con la condición («Si…», «Cuando…», «Con…») y un número, y un rango en `arriba` o en `lineas` |
+  | e | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ con plazo real («30 días»; un `{{GARANTIA_DIAS}}` sin llenar no cuenta) y condición («si…») |
 
-  QA cuenta c y d como prueba para final (qa.json → `prueba`: `real`, `logica` o `garantia`); una captura real
-  sigue siendo mejor. La `a` es `prueba` con `src` u `objeto` con `imagen`; la `b`, `cifra` o `prueba` con
+  QA cuenta la prueba de mercado (c) como prueba real (lleva `fuente`) y la lógica (d, sin tasas sueltas) y la
+  garantía (e) como sustitutos para final (qa.json → `prueba`: `real`, `logica` o `garantia`); una captura real sigue siendo mejor. La `a` es `prueba` con `src` u `objeto` con `imagen`; la `b` y la `c`, `cifra` o `prueba` con
   `fuente` (si la fuente es un `{{HUECO}}`, queda como dato pendiente y el deck es borrador hasta llenarla).
 
   Si no hay ninguno, el beat se omite. **Un `prueba` hecho solo de capturas `ejemplo: true` nunca ocupa el
@@ -274,10 +295,17 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   («Si aplicas los 6 módulos y no…»), y después `pasos` con cómo se reclama. «Garantía total» o «sin riesgo» sin plazo
   ni condición no dicen nada (QA avisa). Los datos que falten van con `{{PRECIO}}` en el texto y `"datos"` en el deck
   (LAYOUTS.md, «Datos que se llenan una vez»): QA los lista como pendientes.
-- **El modelo que se copia** para un VSL, un webinar o cualquier oferta es `ejemplos/vsl-corto/` (deck.json + guion.md):
-  gancho, credibilidad, mecanismo, prueba, objeción con su respuesta, revelación, stack, precio anclado, garantía y el
-  llamado dos veces, con los datos que faltan como huecos declarados. El demo (`ejemplos/demo/`) es un catálogo de
-  diseños, no un modelo de guion.
+- **El modelo que se copia** depende de la pieza (deck.json + guion.md en cada carpeta):
+
+  | Pieza | Modelo |
+  |---|---|
+  | `vsl`, `vsl-corto`, `webinar` | `ejemplos/vsl-corto/`: gancho, promesa y mecanismo antes del segundo 25, filtro y credibilidad, problema, cómo funciona, prueba, objeción con su respuesta, revelación, stack, precio anclado, garantía, el llamado con qué pasa después, resumen y el llamado otra vez |
+  | `propuesta` | `ejemplos/propuesta/`: los 9 bloques de ARCOS.md, con los números del cliente como huecos declarados |
+  | `tutorial` con `"clase": true` (clase express) | `ejemplos/clase-express/`: gancho, contrato de tiempo, mapa, dos bloques con su tramo en vivo, tarea y puente |
+  | cualquier otra | ARCOS.md, la plantilla de su pieza |
+
+  Con los datos que faltan como huecos declarados. El demo (`ejemplos/demo/`) es un catálogo de diseños, no un modelo
+  de guion.
 - **Propuesta**: su arco son los 9 bloques de ARCOS.md (diagnóstico con sus números, costo, solución, quién la imparte
   y un caso, metas, alcance con «No incluye», inversión anclada, garantía o condición de salida, siguiente paso con
   fecha y vigencia). Sin prueba real, los sustitutos de arriba; nunca inventada.

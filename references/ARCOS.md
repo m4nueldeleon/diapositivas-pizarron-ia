@@ -38,7 +38,7 @@ también en vivo.
 | `clase` (en vivo) | 40-60 min | el guion completo en beats, más tramos en vivo con `dur` | 500-900 + tramos | 220-400 | sin oscuras; puente al siguiente paso | al final: comunidad, próxima clase o invitación suave |
 | `webinar` | 60-90 min | el arco completo de la referencia, estirado | 1,000-1,600 + tramos | 450-700 | ~20% final, oscura solo la revelación | 3 o más |
 | `propuesta` | 3-20 min (corta: 3-8 min, 20-60 láminas); normalmente `en_vivo` | 480-3,200 | 60-400 | 20-180 | inversión anclada + garantía o condición de salida + siguiente paso con vigencia | 1 |
-| `tutorial` | 3-8 min | 500-1,300 | 60-160 | 25-70 | ninguna | 1 |
+| `tutorial` | 2-8 min | 330-1,300 | 40-160 | 16-60 | ninguna | 1 (con `"clase": true`, tarea + puente) |
 | `vsl-corto` | 3-6 min | 480-970 | 60-125 | 25-55 | desde el 55-60%, 1 objeción antes | 2 |
 | `clase-corta` (taller) | 15-30 min | el guion en beats, más tramos en vivo con `dur` | 200-450 + tramos | 90-200 | sin oscuras; puente al siguiente paso | al final |
 
@@ -54,9 +54,19 @@ de láminas fijo o de duración atípica.
 `tutorial`, `vsl-corto` y `clase-corta` son arcos propios de piezas cortas, no el arco largo comprimido: un VSL
 de 5 min no puede dejar la oferta para el 25% final, porque no le queda espacio para gancho, problema,
 mecanismo y prueba. Si el encargo fija el número de láminas («18-30 láminas»), estima la duración antes de
-escribir con **~6.5-9.5 s por lámina** (2.2 pasos × 2.9 s por lo bajo; el VSL de 30 láminas midió 4:41, ~9.4 s)
-y escoge la pieza cuyo rango la contiene en vez de forzar el objetivo sobre una pieza larga. La duración real
-la mide QA con la voz.
+escribir con **~6.5-9.5 s por lámina; planea con 7.5 s** (2.2 pasos × 2.9 s por lo bajo; el VSL de 30 láminas midió
+4:41, ~9.4 s) y escoge la pieza con esta tabla en vez de forzar el objetivo sobre una pieza larga:
+
+| Láminas fijadas | Pieza |
+|---|---|
+| 5-9 | `reel` |
+| 10-15 | `libre`, o `reel`/`tutorial` ajustando la voz |
+| 16-60 | `tutorial` (o `vsl-corto` si vende: 25-50) |
+| 60-150 | `video` o `vsl` |
+| 90-200 más tramos en vivo | `clase-corta` |
+
+QA solo avisa fuera de 0.7 × el mínimo y 1.3 × el máximo de la pieza. Una **clase express** (menos de 15 min) es
+`"pieza": "tutorial"` con `"clase": true`: no hay pieza aparte. La duración real la mide QA con la voz.
 
 `"duracion_objetivo"` (minutos o `"mm:ss"`) manda sobre el rango de la tabla. QA estima la duración con
 la voz (y los `dur`) y:
@@ -71,7 +81,11 @@ la voz (y los `dur`) y:
   `en_vivo`: el deck es mayormente tramos sin lámina;
 - avisa si CUALQUIER pieza de la tabla (reel, video, tutorial, propuesta, clase, VSL, webinar) termina sin
   llamado visible o siguiente paso en sus 3 últimas láminas, si una clase o un reel llevan láminas oscuras, si un
-  reel lleva más de un llamado separado, o si un VSL o webinar tiene menos de 2 llamados VISIBLES. Un llamado
+  reel lleva más de un llamado separado, si un VSL o webinar tiene menos de 2 llamados VISIBLES, si un `vsl` o
+  `vsl-corto` pide actuar antes de la revelación oscura, si los llamados mezclan botón o link con palabra clave por
+  mensaje, y si en un VSL o webinar ninguna lámina de los primeros 30 s trae la promesa («sin…») o el mecanismo con
+  nombre (GUION §6.1). La oferta de un VSL corto empieza en la revelación oscura (sin oscura, en el primer `stack`): un
+  botón temprano no cuenta como oferta. Un llamado
   visible es un botón, `llamado: true` o un texto que ARRANCA con verbo + objeto: la palabra clave marcada o en
   MAYÚSCULAS («Comenta ==DOBLE==», «Escríbeme **CITA** por WhatsApp», «Manda INFO al…»), «este/tu + algo»
   («Guarda este reel», «Agenda tu llamada») o un canal. `llamado: true` queda para lo que no empieza con verbo
@@ -88,7 +102,7 @@ la voz (y los `dur`) y:
   enseña lo que no se hace); avisa una garantía sin plazo ni condición («Garantía total», «Sin riesgo») y un bono del
   `stack` sin `{{BONO_N}}` o antes de las piezas base (GUION §7);
 - en `vsl`, `vsl-corto` y `webinar`, avisa si no hay ninguna objeción («Objeción #N» o «Razón #N») antes del
-  llamado de la oferta, si no hay ninguna prueba real o la única es una maqueta, y si antes de la revelación no
+  llamado de la oferta, si su voz afirma una frecuencia que nadie midió («la de siempre», «la que más oigo»), si no hay ninguna prueba real o la única es una maqueta, y si antes de la revelación no
   aparece una cifra de credibilidad (GUION §7).
 - `qa.json → duracion` trae la voz total y, aparte, `laminas` y `camara`.
 - `qa.json → estado`: `borrador` (datos por confirmar) → `con errores` → `bajo-90` → `falta-venta` → `listo`.
@@ -125,7 +139,9 @@ Minutos por bloque. Cada bloque abre, si toca, con el mapa 1-2-3 (`pasos` con `a
    con emoji negado, «Objeción #N» o «Razón #N» entre el emoji y la frase y la objeción en negrita; la
    respuesta va en la lámina siguiente, con un dato real o un paso concreto. Nunca pegada al botón. Salen del
    público real, no se inventan [34:17-36:00].
-6. Oferta en el 25-30% final, beat por beat (GUION §7), con el llamado 2 veces o más.
+6. Oferta en el 25-30% final, beat por beat (GUION §7, «El orden en un `vsl`»): revelación, qué incluye, prueba,
+   precio y garantía si los hay, llamado con qué pasa después, resumen y el llamado otra vez. Ningún «aplica» antes
+   de la revelación y una sola acción en todos los llamados.
 
 ### Clase en vivo (40-60 min)
 1. Gancho (≤ 2 min, GUION §6.1) y **contrato de tiempo**: qué se van a llevar en esta hora.
@@ -145,7 +161,7 @@ El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
 6. Oferta en el ~20% final, beat por beat (GUION §7). Oscura solo la revelación; el llamado aparece 3
    veces o más.
 
-### Tutorial (3-8 min)
+### Tutorial (2-8 min)
 También es la pieza de una **clase de menos de 15 min** («clase express» o taller): se marca con `"clase": true`
 en el deck (no se deduce de `en_vivo`). Entonces el cierre son **dos beats obligatorios**: la tarea con objeto y el
 puente a la próxima clase o la comunidad, con un dato real (`{{PROXIMA_CLASE}}`, `{{COMUNIDAD}}`) a la vista. QA avisa
@@ -162,13 +178,21 @@ puente a la próxima clase o la comunidad, con un dato real (`{{PROXIMA_CLASE}}`
    «Únete a {{COMUNIDAD}}»). `llamado: true` es para la flecha al link o la palabra clave, no para la tarea.
 
 ### VSL corto (3-6 min)
-1. Gancho con el resultado o el conflicto (0:00-0:20).
-2. Problema y costo de no hacer nada (0:20-1:00).
-3. Mecanismo con nombre (1:00-2:30): el qué, no el cómo completo.
-4. Prueba real o su sustituto (2:30-3:00).
-5. Oferta desde el 55-60%, beat por beat (GUION §7, comprimido): revelación, qué incluye, qué pasa después
-   del clic y el llamado; **1 objeción** antes del último llamado; el llamado otra vez al final (2 llamados
-   visibles). QA avisa si la oferta arranca después del 70%.
+La apertura sigue la tabla de GUION §6.1 (la referencia da la promesa de 0:08 a 0:19, el nombre del mecanismo a
+0:23 y el «te voy a enseñar a…» de 0:29 a 0:36): en un anuncio de 3-4 min los primeros 30 s deciden si se quedan.
+1. **0:00-0:10, el conflicto o la escena concreta** (el gancho en `chat`, con la hora a la vista).
+2. **0:10-0:25, la promesa**: resultado, plazo si es real, y su «sin…» (`idea` + `lista` «Sin:»), más el nombre del
+   mecanismo entre «comillas» y __subrayado__, dicho de pasada («más de eso en un minuto»).
+3. **0:25-0:35, a quién va dirigido** (el filtro «Es para ti si:») con una credibilidad breve (la cifra real o su
+   `{{CLIENTES}}`).
+4. Problema y costo de no hacer nada, ahora DESPUÉS de la promesa.
+5. Cómo funciona el mecanismo: el qué, con el mapa 1-2-3 (no el cómo completo).
+6. Prueba real o su sustituto (GUION §7, «Sin prueba real, en este orden»).
+7. **Objeción y su respuesta**, antes de la revelación [34:17-36:00].
+8. Oferta en el orden de GUION §7 («El orden en un `vsl` o `vsl-corto`»): revelación oscura entre el 55 y el 60%
+   (QA avisa después del 70%), qué incluye (`stack`), precio y garantía si hay precio público, **llamado 1** con qué
+   pasa después del clic, resumen y **llamado 2** al final. Ningún llamado antes de la revelación, y los dos con la
+   misma acción (botón o link, o la palabra clave por WhatsApp).
 
 ### Clase corta o taller (15-30 min)
 1. Gancho (≤ 1 min), contrato de tiempo y mapa 1-2-3.

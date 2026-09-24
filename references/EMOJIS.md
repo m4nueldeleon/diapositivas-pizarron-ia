@@ -115,6 +115,7 @@ el rodeo de usar 🏾.
 | testimonio | sin emoji | es una `prueba` con captura real |
 | boleto, lugar apartado, cupos | 🎟️ | en Apple se dibuja liso (el de Apple dice «ADMIT ONE»); en Fluent sale el boleto 3D nativo, sin texto. Cupos solo si son reales, con `rejilla` (GUION §7). Usa 🎟️, no 🎫 |
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
+| página web, en línea, en la nube | 🌐 | ☁️ es pálido en los dos sets |
 | compra en línea, carrito | 🛒 | |
 | tienda o negocio local | 🏠 o 🏬 | 🏪 trae «24» (Apple) o «24 H» (Fluent) impreso: QA lo avisa |
 | pago con tarjeta | 💳 | |
@@ -173,20 +174,23 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 ## Creación de contenido
 | Concepto | Emoji | Notas |
 |---|---|---|
-| voz, narrar, podcast | 🗣️ · 🎤 en lámina oscura con Fluent | 🎙️ en Fluent es gris pálido |
-| grabar la pantalla (del celular) | `📱+🔴` | 🖥️ es un monitor de escritorio |
-| tomas, clips de video, stock | 🎞️ | 🎥 es «grabar video» |
-| música de fondo | 🎵 | 🔊 se lee «volumen» |
-| borrar, descartar | 🗑️ | |
-| cámara de fotos o profesional | 📸 | |
-| manos trabajando, contenido solo con las manos | 🤲 | |
+| voz, narrar, la voz en off, podcast | 🎤 · 🗣️ solo con Apple en lámina clara | 🗣️ en Fluent es una silueta negra pesada (y 1% sobre lámina oscura); 🎙️ en Fluent es gris pálido |
+| grabar la pantalla (del celular) | `📱+🔴` | 🖥️ es un monitor de escritorio: úsalo solo si se habla de la computadora |
+| tomas, clips de video, stock | 🎞️ | 🎥 es «grabar video». Pálido en Apple (≈45 en claro y en tarjeta): no lo pongas en tarjeta con Apple |
+| música de fondo | 🎵 | no en lámina oscura (26 en Apple, 33 en Fluent); 🔊 se lee «volumen» y en Fluent es gris |
+| borrar, descartar | 🗑️ | en Fluent es gris (32 en claro, 22 en tarjeta): no en tarjeta ni sobre un cuadrante de color; o tacha el elemento |
+| cámara de fotos o profesional | 📸 | «grabar video» sigue siendo 🎥 |
+| manos trabajando, hecho a mano, contenido solo con las manos | 🤲 · 🙌 | |
+| link, enlace | 🔗 | en Fluent es gris (40 en claro, 24 en tarjeta): igual que 🗑️; el llamado al link es la flecha roja o un `boton` |
+| ubicación, dónde | 📍 | |
 
 ## Psicología y decisión
 | Concepto | Emoji | Notas |
 |---|---|---|
 | dolor, cansancio: el «hoy» | 😩 | el par antes/después es `["😩", "😌"]` en una `idea` |
 | alivio: el «después» | 😌 | |
-| miedo | 😰 | |
+| miedo | 😰 | la pena es 😳 |
+| vergüenza, pena, «te da pena» | 😳 | 😰 es «miedo» (en Fluent, una cara de terror) |
 | comparar, decidir | ⚖️ | |
 | truco, ilusión, «parece magia» | 🪄 | |
 | estudio, investigación | 🔬 | la cita del estudio va en `fuente` (LAYOUTS.md) |
@@ -266,13 +270,13 @@ para una secuencia usa un `flujo`.
 
 ## Evita
 - Emojis ambiguos o de doble sentido, como 🍆 o 🍑.
-- Banderas para hablar de idiomas: usa 🗣️.
+- Banderas para hablar de idiomas: usa 🗣️ solo en Apple; en Fluent, 🌐.
 - Encadenar 3 o más emojis en una frase: para eso existe `flujo`.
 - Logos de marcas hechos con emoji. Para una marca real se usa su **logo real** como `imagen`.
 - 👨‍💼 junto a 🧑‍💼: se ven casi iguales en los dos modos. Cliente es 🧑‍💼; experto, 🧑‍🏫.
 - 🤵 para «vendedor»: en Apple es casi igual a 🧑‍💼 (rubio con traje negro). Vendedor es 👤; cliente, 🧑‍💼.
 - 🧑‍✈️ para «líder»: se lee «piloto». Líder es 👑.
-- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», `🎥+🔴`; para voz, 🗣️.
+- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», `🎥+🔴`; para voz, 🎤.
 - 🔴 sola: un círculo sin significado (en Fluent, una esfera rosa). Va como insignia: `🎥+🔴` en vivo, `📱+🔴` grabar la pantalla.
 - 🤳 para «creador»: en los dos sets es un brazo suelto con el celular, sin persona; se lee «selfie» o «mostrar la
   cara», lo contrario de un deck sin cara. Creador es `🧑+🎥`; sin cara, `👤+🎥`.
@@ -307,7 +311,7 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 | 📱 | teléfono | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos |
 | 📲 | celular con flecha | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos (el mismo celular, con una flecha azul que entra) |
 | 🤔 | pensativo | con ojos de alarma | para la pregunta retórica en modo `fluent`, ❓ |
-| 🗣️ | perfil que habla | silueta negra | sirve en lámina clara, pero no junto a 👤 o 👥 grises |
+| 🗣️ | perfil que habla | silueta negra pesada, muy distinta al resto de la lámina | para «voz», 🎤 en los dos sets; 🗣️ solo con Apple en lámina clara y no junto a 👤 o 👥 grises |
 | 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | 3D, sin fecha, encabezado azul y distintos (liso, argollas, espiral) | en Apple se dibujan en SVG, un calendario sin fecha con volumen (también dentro del texto); en Fluent salen nativos. Usa 📅 |
 | 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | en Apple se dibujan en SVG, un boleto rojo liso; en Fluent salen nativos |
 | 📄 📃 | hoja pálida | hoja pálida | se dibujan en SVG, una hoja con renglones y la esquina azul, igual en los dos modos |
@@ -351,6 +355,7 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 | los dos | claro | 🤍 🏳️ 🧾 | ❤️ · 🚩 · 💵 |
 | Apple | oscura | 📞 💲 🎥 | ☎️ · 💵 · 📹 (el mismo «grabar video») |
 | Fluent | oscura | 🗣️ | 🎤 |
+| Fluent | blanco, tarjeta | 🔊 🗑️ 🔗 (grises: 22-40, pasan el umbral pero se ven apagados) | música → 🎵 · borrar → tacha el elemento · link → la flecha roja al `boton`, o 🌐 si es «la página» |
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se
 perdía sobre el cuadrante verde.

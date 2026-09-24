@@ -59,13 +59,14 @@ import { revisarDeck, notaQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos } 
 import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
+import { errorVozPasos } from './lib/pasos-mapa.mjs';
 
 const NOTA_FINAL = 90;   // SKILL §6: 90 o más y cero errores
 
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, avisoFirma } = prep;
+const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, revela = [], avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, avisoFirma } = prep;
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
@@ -697,8 +698,7 @@ deck.laminas.forEach((l, i) => {
   if (l.tipo === 'camara') return;
   for (const k of ['voz', 'anclas']) {
     if (!Array.isArray(l[k]) || l[k].length === pasos[i]) continue;
-    const sobra = l[k].length > pasos[i] ? `; se perderían: «${l[k].slice(pasos[i]).join('», «').slice(0, 60)}»` : '';
-    errores.push(`${nombre(i)}: «${k}» tiene ${l[k].length} textos y la lámina ${pasos[i]} pasos${sobra}`);
+    errores.push(`${nombre(i)}: ${errorVozPasos(k, l[k], pasos[i], revela[i])}`);
   }
   if (typeof l.voz === 'string' && pasos[i] > 1) avis.push(`${nombre(i)}: «voz» es un solo texto y la lámina tiene ${pasos[i]} pasos; los pasos 2 en adelante quedan sin voz ni ancla (usa una lista)`);
 });
@@ -750,14 +750,15 @@ const falta = delDeck.faltaParaFinal || [];
 const estado = borrador ? 'borrador' : errores.length ? 'con errores' : nota < NOTA_FINAL ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
 // Información que NO resta nota: el set de emojis sin fijar y la firma (de dónde salió o dónde se llena)
 const pruebaInfo = delDeck.prueba && delDeck.prueba.tipo !== 'real'
-  ? `va con prueba por sustituto ${delDeck.prueba.tipo === 'logica' ? 'c (prueba lógica)' : 'd (primeros casos con garantía)'} en la lámina ${delDeck.prueba.lamina}; una captura real con permiso la refuerza (GUION §7)` : null;
+  ? `va con prueba por sustituto ${delDeck.prueba.tipo === 'logica' ? 'd (prueba lógica)' : 'e (primeros casos con garantía)'} en la lámina ${delDeck.prueba.lamina}; una captura real con permiso la refuerza (GUION §7)` : null;
 const infoContraste = [
   enVivo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
 const info = [...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal() }), avisoFirma, pruebaInfo, infoIconos(deck)].filter(Boolean);
 const informe = { nota, estado, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
-  avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
+  avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
+  mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {

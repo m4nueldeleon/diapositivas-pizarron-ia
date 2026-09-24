@@ -52,7 +52,7 @@ export const PIEZAS = {
   webinar: { min: 60, max: 90, nombre: 'webinar' },
   propuesta: { min: 3, max: 20, nombre: 'propuesta' },   // corta (3-8 min, 20-60 láminas) o larga en vivo
   // piezas cortas con arco propio (ARCOS.md): no son el arco largo comprimido
-  tutorial: { min: 3, max: 8, nombre: 'tutorial' },
+  tutorial: { min: 2, max: 8, nombre: 'tutorial' },   // 2-8: con el reel (≤ 1) y la tolerancia de QA (0.7×) ya no queda hueco de 1-3 min
   'vsl-corto': { min: 3, max: 6, nombre: 'VSL corto' },
   'clase-corta': { min: 15, max: 30, nombre: 'clase corta o taller' },
   libre: null,

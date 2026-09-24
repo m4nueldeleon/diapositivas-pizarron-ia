@@ -10,7 +10,7 @@ import { DATO_DURO } from './layouts-datos.mjs';
 import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo } from './emoji.mjs';
 import { RELLENO, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
-import { reglasTasa, reglasPromesa, cierreDeClase } from './reglas-venta.mjs';
+import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 export { reglasTasa, reglasPromesa, esPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 
 export const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -69,7 +69,7 @@ export function reglasDuracion(deck, pasos) {
     if (lam < objetivo * 60 * 0.5) corto(`las láminas cubren ~${mmss(lam)}${deCam} y el objetivo es ${mmss(objetivo * 60)}: el deck es menos de la mitad de su ${nomPieza}; escribe el guion completo con el arco de ARCOS.md.${vivoNota}`);
     else if (Math.abs(est / (objetivo * 60) - 1) > 0.3) { const r = est / (objetivo * 60); avisos.push(`la voz dura ~${mmss(est)} contra un objetivo de ${mmss(objetivo * 60)} (${r > 1 ? '+' : ''}${Math.round((r - 1) * 100)}%): ajusta beats o el objetivo.${vivoNota}`); }
     if (pieza && (objetivo < pieza.min * 0.7 || objetivo > pieza.max * 1.3)) {
-      avisos.push(`el objetivo ${mmss(objetivo * 60)} queda fuera de un(a) ${nomPieza} (${pieza.min}-${pieza.max} min): usa la pieza que le toca (tutorial 3-8, vsl-corto 3-6, clase-corta 15-30 o libre) en vez de forzar el objetivo (ARCOS.md)`);
+      avisos.push(`el objetivo ${mmss(objetivo * 60)} queda fuera de un(a) ${nomPieza} (${pieza.min}-${pieza.max} min): usa la pieza que le toca (tutorial 2-8, vsl-corto 3-6, clase-corta 15-30 o libre) en vez de forzar el objetivo (ARCOS.md)`);
     }
   } else if (pieza) {
     if (lam < pieza.min * 60 * 0.5) corto(`las láminas cubren ~${mmss(lam)}${deCam} y un(a) ${nomPieza} dura ${pieza.min}-${pieza.max} min: el deck es menos de la mitad; escribe el guion completo con el arco de ARCOS.md.${vivoNota}`);
@@ -80,7 +80,7 @@ export function reglasDuracion(deck, pasos) {
     else avisos.push(`de ~${mmss(est)}, ~${mmss(cam)} son tramos a cámara (${pc}%); las láminas cubren ~${mmss(lam)}. La referencia va ~12% a cámara: el objetivo se cumple con beats, no con tramos en vivo (ARCOS.md)`);
   }
   if (deck.pieza === 'vsl-corto' && est > 0) {
-    const i0 = deck.laminas.findIndex(esOferta);
+    const i0 = inicioOferta(deck.laminas);
     const seg = i0 >= 0 ? tiemposSecuenciales(deck, pasos).find(s => s.lamina === i0) : null;
     if (seg && seg.inicio / est > 0.7) avisos.push(`la oferta del VSL corto empieza en ${mmss(seg.inicio)} de ~${mmss(est)} (${Math.round((seg.inicio / est) * 100)}%): en 3-6 min va desde el 55-60%, con el llamado 2 veces (ARCOS.md, VSL corto)`);
   }
@@ -107,7 +107,24 @@ export function reglasApertura(deck, pasos) {
     const txt = sinAcentos(plano(L[primera].texto || L[primera].titulo || ''));
     if (/^(como|aprende a)\b/.test(txt)) avisos.push(`${nombre(deck, primera)}: abre con el título («${plano(L[primera].texto || L[primera].titulo).slice(0, 40)}…»); abre con el resultado, la escena o el error en vivo y deja el título para después (GUION §6.1)`);
   }
+  // Piezas de venta: la promesa («sin…») o el mecanismo con nombre antes del segundo 30 [0:08-0:36]
+  if (PIEZAS_VENTA.includes(deck.pieza) && !hayPromesaTemprana(deck, t)) avisos.push(`los primeros 30 s no dicen qué gana el que mira: después del gancho, la promesa con su «sin…» (\`idea\` + \`lista\` «Sin:») y el nombre del mecanismo entre «comillas» y __subrayado__, dicho de pasada, antes del segundo 25; el problema va después (GUION §6.1, ARCOS.md «VSL corto»)`);
   return { errores: [], avisos };
+}
+// ¿Alguna lámina que arranca antes del segundo 30 trae la promesa o el mecanismo? Un término «…» subrayado, una `lista`
+// «Sin:» o una promesa con «sin…» (en el texto de una `idea` o en la voz). `t`: tiemposSecuenciales del deck.
+const MECANISMO_MARCADO = /__[^_]*«[^»]+»[^_]*__|«[^»]*__[^_]+__[^»]*»/;
+const PROMESA_SIN = /(^|[^a-z])sin [a-z]{3,}/;
+export function hayPromesaTemprana(deck, t) {
+  const idx = new Set(t.filter(s => s.inicio < 30).map(s => s.lamina));
+  return [...idx].some(i => {
+    const l = deck.laminas[i];
+    if (!l || l.tipo === 'camara') return false;
+    if (textosCrudos(l).some(x => MECANISMO_MARCADO.test(x))) return true;
+    if (l.tipo === 'lista' && /^sin\b/.test(sinAcentos(plano(String(l.encabezado || ''))).trim())) return true;
+    const vistos = l.tipo === 'idea' ? textosVisibles(l) : [];
+    return [...vistos, vozDe(l)].some(x => PROMESA_SIN.test(sinAcentos(x)));
+  });
 }
 
 // ---------- voz humana (VOZ-HUMANA.md) ----------
@@ -248,8 +265,9 @@ const CIERRE_POR_PIEZA = { clase: esCierre, 'clase-corta': esCierre, webinar: es
   reel: esLlamadoVisible, video: esLlamadoVisible, tutorial: esLlamadoVisible, propuesta: esCierrePropuesta };
 const sinCamara = L => L.filter(l => l.tipo !== 'camara');
 // ¿Cierra con qué hacer ahora? (las 3 últimas láminas que no son cámara)
+// Un tutorial marcado `"clase": true` (clase express) cierra como una clase: la próxima clase o la comunidad cuentan.
 export function cierraConLlamado(deck) {
-  const f = CIERRE_POR_PIEZA[deck.pieza];
+  const f = deck.pieza === 'tutorial' && esClase(deck) ? esCierre : CIERRE_POR_PIEZA[deck.pieza];
   if (!f) return true;
   const ult = sinCamara(deck.laminas).slice(-3);
   return !ult.length || ult.some(f);
@@ -290,17 +308,70 @@ export function reglasArco(deck) {
   }
   if (['webinar', 'vsl', 'vsl-corto'].includes(p)) {
     const n = llamadosVisibles(deck);
-    if (n < 2) avisos.push(`el llamado visible aparece ${n} ${n === 1 ? 'vez' : 'veces'}; en un(a) ${p} va al menos 2 veces a la vista (botón o palabra clave): después de la prueba y al final, con qué pasa después del clic (GUION §7). Una palabra suelta («WhatsApp», «aparta») no cuenta; marca con "llamado": true la lámina que muestra la palabra clave o la flecha al link`);
+    if (n < 2) avisos.push(`el llamado visible aparece ${n} ${n === 1 ? 'vez' : 'veces'}; en un(a) ${p} va al menos 2 veces a la vista (botón o palabra clave): después de la revelación y al final, con qué pasa después del clic (GUION §7). Una palabra suelta («WhatsApp», «aparta») no cuenta; marca con "llamado": true la lámina que muestra la palabra clave o la flecha al link`);
     // Objeciones antes del botón [34:17-36:00]: `idea` con «Objeción #N» o «Razón #N» y la respuesta en la
     // siguiente. Se busca antes del primer llamado de la oferta: un llamado temprano de webinar no cuenta.
     if (!hayObjecionAntes(deck)) avisos.push(`ninguna objeción antes del llamado: agrega ${p === 'vsl-corto' ? '1 lámina' : '1-2 láminas'} \`idea\` con encabezado «Objeción #N» o «Razón #N» (emoji negado, la objeción en negrita) y la respuesta con un dato o un paso en la siguiente; salen del público real, no se inventan (ARCOS.md, GUION §7)`);
+    // Un solo canal por pieza [43:36, 44:31: los dos llamados son «aplicar»]: botón/link o palabra clave por mensaje
+    const canales = canalesDeLlamado(deck);
+    if (canales.boton.length && canales.palabra.length) avisos.push(`los llamados mezclan dos acciones: botón o link (${canales.boton.map(i => `lámina ${i + 1}`).join(', ')}) y palabra clave por mensaje (${canales.palabra.map(i => `lámina ${i + 1}`).join(', ')}): una sola acción por pieza, la misma en todos los llamados (GUION §7)`);
+  }
+  // VSL: nada de «aplica» antes de decir qué se vende [la referencia: revelación 36:16, primer botón 43:36]. El webinar
+  // puede llevar un llamado temprano (GUION §7).
+  if (['vsl', 'vsl-corto'].includes(p)) {
+    const k = llamadoAntesDeRevelar(deck);
+    if (k >= 0) avisos.push(`${nombre(deck, k)} pide actuar antes de decir qué se vende: en un(a) ${p} el llamado va después de la revelación (la lámina oscura) y otra vez al final; mueve este llamado detrás de la revelación y deja antes la objeción con su respuesta (GUION §7)`);
   }
   return { errores: [], avisos };
 }
+// Primer llamado visible antes de la revelación oscura (-1 si no hay oscura o no hay llamado antes)
+export function llamadoAntesDeRevelar(deck) {
+  const L = deck.laminas, osc = L.findIndex(esLaminaOscura);
+  return osc < 0 ? -1 : L.slice(0, osc).findIndex(l => l && l.tipo !== 'camara' && esLlamadoVisible(l));
+}
+// Canal de cada llamado visible: `boton` (un botón, un link, «aplica», «da clic») o `palabra` (palabra clave por
+// WhatsApp, DM o comentario). { boton: [i…], palabra: [i…] }
+const CANAL_BOTON = /\b(link|liga|aplica|aplicar|da(le)? clic|haz clic|boton|formulario)\b|https?:|\.com\b/;
+const CANAL_PALABRA = /\b(whatsapp|dm|mensaje|comenta|escribe(me|nos)?|manda(me|nos)?)\b/;
+export function canalesDeLlamado(deck) {
+  const r = { boton: [], palabra: [] };
+  deck.laminas.forEach((l, i) => {
+    if (!l || l.tipo === 'camara' || !esLlamadoVisible(l)) return;
+    const t = sinAcentos(textosVisibles(l).join(' / '));
+    if (l.tipo === 'boton' || CANAL_BOTON.test(t)) r.boton.push(i);
+    else if (CANAL_PALABRA.test(t)) r.palabra.push(i);
+  });
+  return r;
+}
 const OBJECION = /^(objecion|razon)\s*(#|n[.o°º]?)\s*\d/;
 const esObjecion = l => l && l.tipo === 'idea' && OBJECION.test(sinAcentos(plano(String(l.encabezado || ''))).trim());
-// Primera lámina de la oferta (para medir dónde empieza en un VSL corto)
-const esOferta = l => l && (l.tipo === 'oscura' || l.oscura === true || l.tipo === 'stack' || l.tipo === 'boton');
+const esLaminaOscura = l => l && (l.tipo === 'oscura' || l.oscura === true);
+// Dónde empieza la oferta (para medir en un VSL corto): la revelación oscura; sin oscura, el primer `stack`. Un botón NO
+// es la oferta: un «Aplica aquí» temprano tapaba una revelación tardía (GUION §7).
+export function inicioOferta(L) {
+  const o = L.findIndex(esLaminaOscura);
+  return o >= 0 ? o : L.findIndex(l => l && l.tipo === 'stack');
+}
+// ¿El deck trae algo de oferta? (para la escasez inventada: un botón también cuenta)
+const pareceOferta = l => l && (esLaminaOscura(l) || l.tipo === 'stack' || l.tipo === 'boton');
+
+// ---------- objeciones con una frecuencia que nadie midió (VOZ-HUMANA §5, GUION §7 beat 0) ----------
+// «La objeción de siempre», «la que más oigo»: afirma un consenso sin dato. La referencia la introduce sin frecuencia
+// («a quick word of warning… reason number one»). Se revisa la voz de la lámina «Objeción #N» y la de la siguiente;
+// no avisa si datos.OBJECION_N está confirmado (valor sin «propuesto»).
+const FRECUENCIA = /de siempre|que mas (oigo|escucho|me dicen)|todos me dicen|siempre me preguntan|la mayoria (me )?dice/;
+export function reglasObjecion(deck) {
+  const avisos = [], L = deck.laminas, datos = deck.datos && typeof deck.datos === 'object' ? deck.datos : {};
+  L.forEach((l, i) => {
+    if (!esObjecion(l)) return;
+    const n = (sinAcentos(plano(String(l.encabezado || ''))).match(/\d+/) || [''])[0];
+    if (n && confirmado(datos[`OBJECION_${n}`])) return;
+    const voz = sinAcentos([vozDe(l), L[i + 1] ? vozDe(L[i + 1]) : ''].join(' '));
+    const m = voz.match(FRECUENCIA);
+    if (m) avisos.push(`${nombre(deck, i)}: «${m[0]}» afirma que la objeción es frecuente sin dato: confirma OBJECION_${n || 'N'} en "datos" o dila sin frecuencia («Objeción número uno: …», «Quizá estés pensando: …») (VOZ-HUMANA.md)`);
+  });
+  return { errores: [], avisos };
+}
 
 // ---------- prueba real y credibilidad en piezas de venta (GUION §7, beats 2 y 6) ----------
 // Una maqueta `ejemplo: true` enseña un formato («así se ve el mensaje»); no respalda la oferta. Sin prueba real,
@@ -342,9 +413,9 @@ const CIFRA_PROVEEDOR = new RegExp(`\\bdesde (19|20)\\d\\d\\b|${NUM_O_HUECO}\\s*
 // Predicados que usan los avisos y faltaParaFinal (la misma condición, sin comparar textos de mensajes)
 export const hayPruebaReal = deck => deck.laminas.some(esPruebaReal);
 // Sustitutos de GUION §7 que QA cuenta como prueba para final (una captura real sigue siendo mejor):
-//   c) prueba lógica: `cifra` sin `fuente` con la condición en `arriba` («Si…», «Cuando…», «Con…») y un número, y un
+//   d) prueba lógica: `cifra` sin `fuente` con la condición en `arriba` («Si…», «Cuando…», «Con…») y un número, y un
 //      rango en `arriba` o en `lineas` (no un desglose de precio);
-//   d) primeros casos con garantía: `idea` 🛡️ con plazo REAL («30 días»; un {{GARANTIA_DIAS}} sin llenar no cuenta) y
+//   e) primeros casos con garantía: `idea` 🛡️ con plazo REAL («30 días»; un {{GARANTIA_DIAS}} sin llenar no cuenta) y
 //      condición («si…»).
 const CONDICION_INICIO = /^\s*(si|cuando|con|pongamos|supongamos)\b/;
 const PLAZO_REAL = /\d+\s*(dias|semanas|meses|anos)\b/;
@@ -363,7 +434,7 @@ export function sustitutoPrueba(l) {
   }
   return null;
 }
-// La prueba del deck: la real primero; si no, el primer sustituto c o d. null si no hay ninguno.
+// La prueba del deck: la real primero; si no, el primer sustituto d o e (la c, prueba de mercado, lleva `fuente`: ya es real). null si no hay ninguno.
 export function pruebaDelDeck(deck) {
   const i = deck.laminas.findIndex(esPruebaReal);
   if (i >= 0) return { tipo: 'real', lamina: i + 1 };
@@ -396,7 +467,7 @@ export function reglasCredibilidad(deck) {
   if (pr && pr.tipo !== 'real') {
     L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; la prueba del deck es el sustituto de la lámina ${pr.lamina} (GUION §7)`); });
   } else if (!pr) {
-    avisos.push(`sin prueba real en el ${p}: pide 1-3 capturas con permiso o usa un sustituto de GUION §7 (demostración con material real, caso con números y «fuente», prueba lógica, primeros casos con garantía medible)`);
+    avisos.push(`sin prueba real en el ${p}: pide 1-3 capturas con permiso o usa un sustituto de GUION §7 (demostración con material real, caso con números y «fuente», dato de mercado publicado con «fuente» (búscalo, no de memoria), prueba lógica con la tasa en la condición o con «fuente», primeros casos con garantía medible)`);
     L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; cámbiala por una captura real o por un sustituto (GUION §7)`); });
   }
   if (!hayCifraCredibilidad(deck)) avisos.push(`credibilidad sin cifra: di años, clientes o eventos reales antes de la revelación (GUION §7, beat 2: «desde 2016, más de 23,000 clientes»); si no los hay, omítelo, no lo inventes`);
@@ -451,7 +522,7 @@ const ESCASEZ = /solo hoy|precio especial (solo )?(hoy|por hoy|esta semana|este 
 // La escasez inventada solo se revisa en un deck que VENDE (sin pieza, libre, VSL, webinar, propuesta, o con una
 // lámina de oferta): un tutorial que enseña a anunciar «cierra mañana a las 10 pm» no está vendiendo nada.
 const PIEZAS_QUE_VENDEN = ['vsl', 'vsl-corto', 'webinar', 'propuesta'];
-const vendeElDeck = deck => !deck.pieza || deck.pieza === 'libre' || PIEZAS_QUE_VENDEN.includes(deck.pieza) || deck.laminas.some(esOferta);
+const vendeElDeck = deck => !deck.pieza || deck.pieza === 'libre' || PIEZAS_QUE_VENDEN.includes(deck.pieza) || deck.laminas.some(pareceOferta);
 const PLAZO_GARANTIA = /\d+\s*(dias|semanas|meses|anos)\b|\{\{\s*garantia|\[garantia/;
 const CONDICION = /\bsi\b|\bcondicion|\bsiempre que\b|\bcuando\b/;
 const negada = l => [].concat(l.emoji || []).some(e => typeof e === 'string' && /^no:/.test(e.trim()));
@@ -727,7 +798,7 @@ export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
 export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
   const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck), tasa = reglasTasa(deck, { crudo }), promesa = reglasPromesa(deck);
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
-    reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
+    reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
     reglasClaves(deck), reglasFuente(deck), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierreDeClase(deck, { crudo })];
   return {

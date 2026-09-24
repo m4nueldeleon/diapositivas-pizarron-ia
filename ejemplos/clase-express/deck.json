@@ -1,0 +1,395 @@
+{
+ "titulo": "Clase express — el mensaje de seguimiento",
+ "formato": "16:9",
+ "emoji": "apple",
+ "animacion": "seco",
+ "piel": "🏻",
+ "pieza": "tutorial",
+ "clase": true,
+ "en_vivo": true,
+ "_comentario": "Modelo de clase express (menos de 15 min): pieza tutorial con \"clase\": true. Gancho con el error en vivo, contrato de tiempo, mapa 1-2-3 que vuelve, dos ejercicios en vivo (camara con vivo y dur), tarea con objeto y puente a la próxima clase desde {{PROXIMA_CLASE}}.",
+ "datos": {
+  "PROXIMA_CLASE": {
+   "pendiente": true,
+   "motivo": "día y hora reales de la próxima clase"
+  }
+ },
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "chat",
+   "sello": "Visto",
+   "sello_sobre": "m1",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "lunes",
+     "texto": "¿Qué precio tiene?"
+    },
+    {
+     "de": "yo",
+     "hora": "lunes",
+     "texto": "$1,500 🙂"
+    }
+   ],
+   "voz": [
+    "Te preguntan el precio.",
+    "Lo mandas.",
+    "Y se queda en visto. Para siempre."
+   ]
+  },
+  {
+   "id": "resultado",
+   "tipo": "idea",
+   "emoji": "📲",
+   "texto": "Hoy sales con **3 mensajes**\nlistos para mandar",
+   "nota": "A los chats que ya diste por perdidos",
+   "voz": [
+    "Hoy sales de aquí con tres mensajes listos para mandar.",
+    "A los chats que ya diste por perdidos."
+   ]
+  },
+  {
+   "id": "llevas",
+   "tipo": "lista",
+   "encabezado": "Sales con:",
+   "vineta": "check",
+   "items": [
+    "Tus **3 chats**",
+    "Tu **fórmula**",
+    "Tus **3 mensajes**"
+   ],
+   "voz": [
+    "Sales con tus tres chats,",
+    "con la fórmula",
+    "y con tus tres mensajes escritos."
+   ]
+  },
+  {
+   "id": "contrato",
+   "tipo": "cifra",
+   "arriba": "Te pido los próximos:",
+   "lineas": [
+    "__10 minutos__"
+   ],
+   "voz": [
+    "Te pido los próximos diez minutos: tres pasos y dos ejercicios."
+   ]
+  },
+  {
+   "id": "mapa",
+   "tipo": "pasos",
+   "iconos": [
+    "🔍",
+    "📝",
+    "📲"
+   ],
+   "etiquetas": [
+    "Encuentra",
+    "Escribe",
+    "Manda"
+   ],
+   "activo": 1,
+   "voz": "Paso uno: encuentra los chats que vale la pena retomar."
+  },
+  {
+   "id": "busca",
+   "tipo": "idea",
+   "emoji": "🔍",
+   "texto": "Busca los chats que\n**preguntaron precio**",
+   "nota": "y ya no contestaron",
+   "voz": [
+    "Busca los chats que preguntaron precio,",
+    "y después ya no contestaron."
+   ]
+  },
+  {
+   "id": "reciente",
+   "tipo": "idea",
+   "emoji": "⏳",
+   "texto": "Un chat de hace **3 días**\ntodavía se acuerda de ti",
+   "nota": "Uno de hace un mes, ya no",
+   "voz": [
+    "Un chat de hace tres días todavía se acuerda de ti.",
+    "Uno de hace un mes, ya no."
+   ]
+  },
+  {
+   "id": "filtro",
+   "tipo": "lista",
+   "encabezado": "En tu WhatsApp:",
+   "vineta": "check",
+   "items": [
+    "Preguntaron **precio**",
+    "Hace **3 a 10 días**",
+    "**No** dijeron que no"
+   ],
+   "voz": [
+    "Que hayan preguntado el precio,",
+    "que haya sido hace tres a diez días,",
+    "y que no te hayan dicho que no."
+   ]
+  },
+  {
+   "id": "ejercicio-1",
+   "tipo": "camara",
+   "vivo": true,
+   "dur": 30,
+   "texto": "Ahora tú: **busca 3 chats**",
+   "items": [
+    "Abre WhatsApp",
+    "Busca «precio»",
+    "Anota 3 nombres"
+   ],
+   "voz": "Treinta segundos: busca tres chats y anota los nombres."
+  },
+  {
+   "id": "mapa-2",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 2,
+   "hechos": [
+    1
+   ],
+   "voz": "Paso dos: escribe el mensaje."
+  },
+  {
+   "id": "no-funciona",
+   "tipo": "lista",
+   "encabezado": "Lo que no funciona:",
+   "vineta": "x",
+   "tachar_despues": true,
+   "items": [
+    {
+     "texto": "«¿Sigues **interesado**?»",
+     "tachado": true
+    },
+    {
+     "texto": "«Quedo **atento**»",
+     "tachado": true
+    },
+    {
+     "texto": "El precio **otra vez**",
+     "tachado": true
+    }
+   ],
+   "voz": [
+    "«¿Sigues interesado?»",
+    "«Quedo atento.»",
+    "Y mandar el precio otra vez.",
+    "Fuera el primero:",
+    "se contesta con un no.",
+    "Fuera los otros dos: no piden nada."
+   ]
+  },
+  {
+   "id": "foco",
+   "tipo": "foco",
+   "texto": "Si se contesta con un no, **no lo mandes**.",
+   "voz": "Regla: si se contesta con un no, no lo mandes."
+  },
+  {
+   "id": "retoma",
+   "tipo": "idea",
+   "emoji": "📝",
+   "texto": "Retoma **lo que te preguntó**",
+   "nota": "Con su nombre y una opción concreta",
+   "voz": [
+    "Lo que sí funciona: retoma lo que te preguntó.",
+    "Con su nombre y una opción concreta."
+   ]
+  },
+  {
+   "id": "formula",
+   "tipo": "flujo",
+   "flechas": [
+    {
+     "signo": "+"
+    },
+    {
+     "signo": "+"
+    }
+   ],
+   "nodos": [
+    {
+     "emoji": "👤",
+     "etiqueta": "Su nombre"
+    },
+    {
+     "emoji": "💵",
+     "etiqueta": "Lo que preguntó"
+    },
+    {
+     "emoji": "📅",
+     "etiqueta": "Una fecha"
+    }
+   ],
+   "voz": [
+    "Su nombre,",
+    "más lo que preguntó,",
+    "más una fecha para decidir."
+   ]
+  },
+  {
+   "id": "ejemplo",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Hola Ana, el curso de $1,500 arranca el martes. ¿Te aparto lugar?"
+    },
+    {
+     "de": "otro",
+     "texto": "¡Sí! Apártamelo"
+    }
+   ],
+   "voz": [
+    "Así se ve: Ana, el curso que preguntaste arranca el martes.",
+    "Y contesta, porque le preguntaste algo que se contesta con un sí."
+   ]
+  },
+  {
+   "id": "si",
+   "tipo": "idea",
+   "emoji": "🎯",
+   "texto": "Una pregunta que se contesta\n__con un sí__",
+   "voz": [
+    "Tu mensaje termina en una pregunta que se contesta con un sí."
+   ]
+  },
+  {
+   "id": "ejercicio-2",
+   "tipo": "camara",
+   "vivo": true,
+   "dur": 30,
+   "texto": "Ahora tú: **escribe tus 3 mensajes**",
+   "items": [
+    "Su nombre",
+    "Lo que preguntó",
+    "Una fecha"
+   ],
+   "voz": "Treinta segundos: escribe tus tres mensajes con la fórmula."
+  },
+  {
+   "id": "mapa-3",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 3,
+   "hechos": [
+    1,
+    2
+   ],
+   "voz": "Y el paso tres: mándalos."
+  },
+  {
+   "id": "manda",
+   "tipo": "idea",
+   "emoji": "📲",
+   "texto": "Mándalos **hoy**,\nno mañana",
+   "nota": "Cada día que pasa se enfría",
+   "voz": [
+    "Mándalos hoy, no mañana.",
+    "Cada día que pasa, el chat se enfría."
+   ]
+  },
+  {
+   "id": "hora",
+   "tipo": "idea",
+   "emoji": "⏰",
+   "texto": "Mándalo **a la hora\nen que te escribió**",
+   "nota": "A esa hora ya sabes que lee",
+   "voz": [
+    "Mándalo a la hora en que te escribió.",
+    "A esa hora ya sabes que lee."
+   ]
+  },
+  {
+   "id": "contesta",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "📲",
+     "etiqueta": "Contesta"
+    },
+    {
+     "emoji": "📅",
+     "etiqueta": "Agenda"
+    },
+    {
+     "emoji": "💵",
+     "etiqueta": "Paga"
+    }
+   ],
+   "voz": [
+    "Si contesta,",
+    "agenda",
+    "y paga: ya no es un chat perdido."
+   ]
+  },
+  {
+   "id": "si-no",
+   "tipo": "idea",
+   "emoji": "🤷",
+   "texto": "Si no contesta:\n**uno más en 3 días**",
+   "nota": "Y ahí lo dejas",
+   "voz": [
+    "Si no contesta, le mandas uno más en tres días.",
+    "Y ahí lo dejas."
+   ]
+  },
+  {
+   "id": "errores",
+   "tipo": "lista",
+   "encabezado": "Errores comunes:",
+   "vineta": "x",
+   "items": [
+    "Mandar **un audio**",
+    "Los 3 mensajes **al mismo chat**",
+    "Escribir **de madrugada**"
+   ],
+   "voz": [
+    "Mandar un audio que nadie escucha,",
+    "mandar los tres mensajes al mismo chat",
+    "y escribir de madrugada."
+   ]
+  },
+  {
+   "id": "hiciste",
+   "tipo": "lista",
+   "encabezado": "Hoy hiciste:",
+   "vineta": "check",
+   "items": [
+    "Encontraste **3 chats**",
+    "Escribiste **3 mensajes**",
+    "Tienes **la fórmula**"
+   ],
+   "voz": [
+    "Hoy encontraste tres chats,",
+    "escribiste tres mensajes",
+    "y te llevas la fórmula."
+   ]
+  },
+  {
+   "id": "tarea",
+   "tipo": "idea",
+   "emoji": "📋",
+   "texto": "Tu tarea: **manda tus 3 mensajes** hoy",
+   "nota": "Y cuéntame cuántos contestaron",
+   "voz": [
+    "Tu tarea: manda tus tres mensajes hoy.",
+    "Y en la próxima clase me cuentas cuántos contestaron."
+   ]
+  },
+  {
+   "id": "puente",
+   "tipo": "idea",
+   "emoji": "📅",
+   "texto": "Próxima clase: **{{PROXIMA_CLASE}}**",
+   "nota": "Qué contestar cuando te dicen «está caro»",
+   "voz": [
+    "Te espero en la próxima clase.",
+    "Vemos qué contestar cuando te dicen que está caro."
+   ]
+  }
+ ]
+}

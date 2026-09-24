@@ -12,7 +12,7 @@ ese diseño.
 - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
   **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
   «@tuusuario», «<…>») es error de QA.
-- `pieza`: `reel`, `tutorial` (3-8 min), `vsl-corto` (3-6 min), `clase-corta` (15-30 min), `video`, `vsl`,
+- `pieza`: `reel`, `tutorial` (2-8 min), `vsl-corto` (3-6 min), `clase-corta` (15-30 min), `video`, `vsl`,
   `clase`, `webinar`, `propuesta` o `libre`; `duracion_objetivo`: minutos (`45`) o `"mm:ss"`; `en_vivo: true`
   si se presenta en vivo. QA mide la voz contra eso ([ARCOS.md](ARCOS.md)): un objetivo fuera del rango de su
   pieza avisa (usa la pieza corta que le toca), «menos de la mitad» se mide con el tiempo de LÁMINAS (la
@@ -120,7 +120,8 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 ```
 - `vineta`: `x` (❌), `check` (✅) o cualquier emoji. También puede ir un `emoji` por ítem.
 - Un ítem con `"tachado": true` recibe un tachón rojo. Con `"tachar_despues": true` en la lista,
-  los tachones llegan después de que aparece todo [4:05].
+  los tachones llegan después de que aparece todo [4:05], **cada uno en su paso**: 3 ítems tachados dan 6 pasos
+  (3 ítems + 3 tachones), y la `voz` lleva 6 textos.
 - Arranca arriba y crece hacia abajo (`anclar`); con `revelar: "todo"` se centra.
 - **Descartes** [m_256 4:16, 4:05]: si TODOS los ítems van tachados, cada renglón va centrado, en
   seminegrita, y la lista se queda centrada en la lámina con su hueco reservado (el primer renglón aparece
@@ -236,7 +237,8 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   «esto NO lleva a aquello» [1:45].
 - Un nodo acepta `imagen` (foto recortada), `sub` (texto gris) y `normal: true`, que quita la
   negrita de la etiqueta.
-- Cada nodo aparece en su propio paso junto con la flecha que llega a él.
+- Cada nodo aparece en su propio paso junto con la flecha que llega a él. El `texto` del flujo entra en el ÚLTIMO
+  paso (con el último nodo), aunque sea la frase que abre la lámina: `texto_paso: 0` lo sube al primero.
 - En 16:9 las columnas son iguales (todas del ancho del nodo más ancho): los emojis quedan a la misma
   distancia y las flechas miden lo mismo aunque un nodo lleve un `sub` largo [17:00, 17:20]. El `sub` va a
   52 px y se parte en dos renglones balanceados pasando de ~9 em.
@@ -426,6 +428,8 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 { "tipo": "linea-tiempo", "marcas": [{ "texto": "Día 1" }, { "texto": "Día 14", "tono": "v" }, { "texto": "Día 30", "tono": "v" }],
   "tramos": [{ "desde": 1, "hasta": 2, "tono": "v", "etiqueta": "Ideal" }, { "desde": 2, "hasta": "fin", "tono": "r", "etiqueta": "Aquí renuncian" }] }
 ```
+- `desde` y `hasta` de un tramo son el número de la marca **contado desde 0** (en el ejemplo, `1` es «Día 14»), y
+  `"fin"` es el final de la línea.
 - Una marca acepta `pos` (de 0 a 1) y `arriba`, un texto sobre la marca como «$1B». Los textos de marcas
   y tramos van en SVG: sin emojis (ver `grafica`).
 - Marcas muy juntas («Semana 1» en 0 y «Semana 2» en 0.125) bajan solas a un segundo renglón, con una guía
@@ -610,6 +614,10 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 { "tipo": "boton", "boton": "Generar", "emoji": "🤖", "texto": "Solo das clic en el **agente correcto**…" }
 ```
 `boton` (el texto del botón) es obligatorio. `cursor` acepta `mano` (por omisión) o `flecha`.
+- **Pasos: 1.** El botón, su `texto` y el cursor que llega y aprieta entran en el paso 0 (`clic_paso` y `texto_paso`
+  valen 0 por omisión): la `voz` lleva UN texto. `clic_paso: 1` separa el clic en un segundo paso.
+- Con `cursor: "mano"` (por omisión) el `emoji` del botón no puede ser una mano (👆 👉 ✍️): el cursor ya señala y se
+  verían dos manos [23:15, 38:15]. Va un objeto (📝 🤖 🚀 📞); QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
 
 ### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:50]
 En 16:9 va **a sangre**: el bento llena la lámina de borde a borde (18 px de margen), las casillas vacías
@@ -621,7 +629,7 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 { "tipo": "stack",
   "items": [{ "emoji": "🤖", "texto": "Tu agente de ventas", "doble": true }, { "emoji": "📚", "texto": "Las 12 clases" },
             { "emoji": "🧑‍🏫", "texto": "Un mentor", "alto": 2, "sub": "Por 6 meses" },
-            { "emoji": "🗓️", "texto": "4 llamadas en vivo" }, { "imagen": "assets/logo.png", "texto": "Grupo privado" }],
+            { "emoji": "📞", "texto": "4 llamadas en vivo" }, { "imagen": "assets/logo.png", "texto": "Grupo privado" }],
   "remate": "Hecho **contigo**" }
 ```
 - Cada pieza se nombra como producto: un sustantivo corto, **2 a 4 palabras** (QA avisa desde 6). Más de
@@ -749,7 +757,27 @@ cuenta como error. Un campo que el diseño no usa se ignora con aviso (−3), co
 un error de dedo.
 
 **`voz` y `anclas` como lista llevan un texto por paso, ni más ni menos.** Si no cuadran con los
-pasos de la lámina, QA da error: los cortes del montaje se desalinean y las frases de más se pierden.
+pasos de la lámina, QA da error: los cortes del montaje se desalinean y las frases de más se pierden. El error dice
+qué entra en cada paso («paso 1: 📅 «Dices a qué hora…» · paso 2: sello «Cerrado»»).
+
+### Pasos que genera cada diseño
+La fuente de verdad es el motor: **`node scripts/render.mjs <deck> --pasos`** imprime, sin navegador ni PNG, qué entra
+en cada paso de cada lámina (numerado desde 1, como la hoja) y marca con ✗ la `voz` que no cuadra. Úsalo ANTES de
+escribir la voz. `pasos.json` (cada fila con `revela`) y `qa.json → mapa_pasos` guardan lo mismo. Los casos que
+confunden (una prueba construye cada uno y compara con esta tabla):
+
+| Diseño | Pasos | Qué entra |
+|---|---|---|
+| `boton` | 1 | el botón, su texto y el clic, todo en el paso 1 (`clic_paso: 1` separa el clic) |
+| `tabla` con 3 columnas (`revelar: "columnas"`) | 4 | paso 1: el marco y los rótulos de fila; luego una columna por paso (N + 1) |
+| `lista` de 3 ítems con `tachar_despues` | 6 | los 3 ítems, uno por paso, y después los 3 tachones, uno por paso (2 × N) |
+| `idea` con `sello` | 2 | el texto (aunque sean 2 renglones) en el paso 1; el sello, un paso extra |
+| `flujo` de 3 nodos con `texto` | 3 | un nodo por paso; el `texto` entra con el ÚLTIMO (`texto_paso: 0` lo sube) |
+| `lista` de 3 ítems | 3 | el encabezado con el primer ítem; un ítem por paso |
+
+- Una `anotacion` sin `paso` y el `sello` sin `sello_paso` suman un paso al final.
+- Los campos `*_paso` (`texto_paso`, `nota_paso`, `clic_paso`, `sello_paso`…) y los `desde`/`hasta` de una línea de
+  tiempo cuentan **desde 0**; la hoja, `--pasos` y los mensajes de QA numeran desde 1.
 
 ## Anclas
 

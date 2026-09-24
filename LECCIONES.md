@@ -80,3 +80,22 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   sin-mostrar-cara el foco dejaba los 3 errores sin tachar y se leían como la recomendación, con la frase pegada
   abajo como pie de foto. En el video [15:20-15:23, h_pill] la frase cruza el fondo atenuado al centro.
 - **Cómo se detectó**: auditorías de mercadotecnia, técnica y diseño (r4), reproducidas en /private/tmp/pz-loop/r4.
+
+## 2026-09-24 · La oferta en su orden y la promesa al principio (loop, ronda 4, conocimiento)
+- **Regla**: en un `vsl` o `vsl-corto`, nada de «aplica» antes de decir qué se vende: objeción y respuesta →
+  revelación (en el corto, al 55-60%) → qué incluye → prueba → precio y garantía → llamado con qué pasa después →
+  resumen → el MISMO llamado al final. Una sola acción por pieza (botón o palabra clave, no las dos). Y en los
+  primeros 25 s, después del gancho, la promesa con su «sin…» y el nombre del mecanismo; el problema va después.
+- **Porqué**: el modelo pedía aplicar al 60% y revelaba al 69%, mezclaba «CITA por WhatsApp» con «Aplica aquí» y
+  dejaba 40 s de puro dolor antes de decir qué gana el que mira. En la referencia la revelación es 36:16, el primer
+  botón 43:36 (los dos llamados son «aplicar») y la promesa llega de 0:08 a 0:19.
+- **Cómo se detectó**: midiendo los tiempos de cada lámina del ejemplo y del VSL de la ronda contra transcript.txt.
+  QA no lo veía porque contaba un botón como inicio de la oferta.
+
+## 2026-09-24 · Objeciones propuestas, sin frecuencia; prueba de mercado con fuente (loop, ronda 4, conocimiento)
+- **Regla**: una objeción que el usuario no dio va como `OBJECION_N` propuesta y se dice «Objeción número uno: …», nunca
+  «la que más oigo». Sin prueba propia, un dato publicado del mercado (buscado, con medio y fecha) respalda la
+  oportunidad, no el resultado del producto.
+- **Porqué**: los loops escribían «la objeción de siempre» (un consenso que nadie midió) y usaban una tasa inventada como
+  «prueba lógica». La referencia respalda la oportunidad con prensa real [11:25-12:00].
+

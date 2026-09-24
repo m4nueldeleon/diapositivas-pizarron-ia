@@ -292,7 +292,7 @@ export class Emojis {
     const izq = c.prefijo ? `<span class="insignia izq${c.prefijo === 'no' ? ' no' : ''}">${this.glifo(c.prefijo === 'no' ? '❌' : '✅')}</span>` : '';
     const der = c.insignia ? `<span class="insignia">${this.glifo(c.insignia)}</span>` : '';
     const tamCss = typeof tam === 'number' && Number.isFinite(tam) ? tam + 'px' : /^[\d.]+(px|em)$/.test(String(tam)) ? tam : '130px';
-    return `<span class="emo ${escapar(extra)}" style="--s:${tamCss}">${base}${izq}${der}</span>`;
+    return `<span class="emo ${escapar(extra)}" style="--s:${tamCss}" data-e="${encodeURIComponent(String(spec).trim())}">${base}${izq}${der}</span>`;
   }
 
   // Emojis escritos DENTRO del texto (burbujas, etiquetas, tarjetas…). En modo fluent se cambian por la

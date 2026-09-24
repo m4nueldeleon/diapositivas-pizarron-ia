@@ -9,6 +9,7 @@ import * as D from './layouts-datos.mjs';
 import { validarDeck, sanearDeck, resolverComo } from './contrato.mjs';
 import { sustituirDatos } from './datos.mjs';
 import { duracionPaso } from './tiempos.mjs';
+import { describirPasos } from './pasos-mapa.mjs';
 
 export const LAYOUTS = {
   idea: T.idea, lista: T.lista, flujo: T.flujo, pasos: T.pasos, bifurcacion: T.bifurcacion, cifra: T.cifra,
@@ -107,8 +108,10 @@ function armarLamina(l, i, deck, comun) {
     pasos = Math.max(pasos, clic.p + 1);
   }
   const oscura = l.tipo === 'oscura' || l.oscura;
+  // qué entra en cada paso (pasos.json → revela, render.mjs --pasos, el error de voz de QA)
+  const revela = l.tipo === 'camara' ? [['a cámara']] : describirPasos(interior + extras, pasos, ctx.conexiones);
   return {
-    interior, pasos, extras, oscura, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
+    interior, pasos, extras, oscura, revela, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
     clic: clic ? JSON.stringify({ a: clic.a, p: clic.p, ...(clic.pos ? { pos: clic.pos } : {}), ...(clic.fin ? { fin: clic.fin } : {}) }) : '',
   };
 }
@@ -237,5 +240,5 @@ ${secciones.join('\n')}
 <script>${runtime}</script>
 <script>${presentador}</script>
 </body></html>`;
-  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, crudoResuelto: crudo, pasos: armadas.map(a => a.pasos), faltan, propuestos, declarados };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, crudoResuelto: crudo, pasos: armadas.map(a => a.pasos), revela: armadas.map(a => a.revela), faltan, propuestos, declarados };
 }

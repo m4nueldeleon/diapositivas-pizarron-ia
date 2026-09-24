@@ -1,0 +1,468 @@
+{
+ "titulo": "Propuesta de capacitación — ejemplo",
+ "formato": "16:9",
+ "emoji": "apple",
+ "animacion": "seco",
+ "piel": "🏻",
+ "pieza": "propuesta",
+ "en_vivo": true,
+ "_comentario": "Modelo de propuesta con los 9 bloques de ARCOS.md. Los números del cliente vienen de la llamada de diagnóstico: hasta tenerlos van como huecos declarados (pendiente). Copia el arco, no las cifras.",
+ "datos": {
+  "CLIENTE": {
+   "pendiente": true,
+   "motivo": "nombre de la empresa, como lo escribe ella"
+  },
+  "VENDEDORES": {
+   "pendiente": true,
+   "motivo": "cuántos vendedores atienden WhatsApp: llamada de diagnóstico"
+  },
+  "HORAS_PERDIDAS": {
+   "pendiente": true,
+   "motivo": "horas por vendedor a la semana en chats que no cierran: llamada de diagnóstico"
+  },
+  "HORAS_MES": {
+   "pendiente": true,
+   "motivo": "VENDEDORES × HORAS_PERDIDAS × 4: se calcula con los dos datos reales"
+  },
+  "COSTO_HORA": {
+   "pendiente": true,
+   "motivo": "costo real de una hora de vendedor: lo da el cliente"
+  },
+  "COSTO_MES": {
+   "pendiente": true,
+   "motivo": "HORAS_MES × COSTO_HORA: se calcula con los datos reales"
+  },
+  "CHATS_SIN_RESPUESTA": {
+   "pendiente": true,
+   "motivo": "chats sin respuesta al mes: sale de su WhatsApp Business o su CRM"
+  },
+  "EMPRESAS": {
+   "pendiente": true,
+   "motivo": "empresas capacitadas por quien imparte: cifra real"
+  },
+  "DESDE": {
+   "pendiente": true,
+   "motivo": "año en que empezó a impartirlo"
+  },
+  "CASO": {
+   "pendiente": true,
+   "motivo": "un cliente parecido, con permiso"
+  },
+  "CASO_ANTES": {
+   "pendiente": true,
+   "motivo": "ventas al mes antes, del caso real"
+  },
+  "CASO_DESPUES": {
+   "pendiente": true,
+   "motivo": "ventas al mes después, del caso real"
+  },
+  "FUENTE_CASO": {
+   "pendiente": true,
+   "motivo": "de dónde sale el caso (su reporte, con permiso)"
+  },
+  "HOY": {
+   "pendiente": true,
+   "motivo": "tiempo de respuesta de hoy: se mide en la semana 1"
+  },
+  "META": {
+   "pendiente": true,
+   "motivo": "la meta que se acuerda con el cliente"
+  },
+  "PRECIO": {
+   "pendiente": true,
+   "motivo": "lo define dirección"
+  },
+  "SEMANA_SALIDA": {
+   "pendiente": true,
+   "motivo": "semana en que se puede cancelar si no hay avance"
+  },
+  "FECHA_ARRANQUE": {
+   "pendiente": true,
+   "motivo": "fecha real de arranque"
+  },
+  "VIGENCIA": {
+   "pendiente": true,
+   "motivo": "hasta cuándo vale esta propuesta"
+  }
+ },
+ "laminas": [
+  {
+   "id": "portada",
+   "tipo": "idea",
+   "emoji": "🏢",
+   "texto": "Propuesta para **{{CLIENTE}}**",
+   "nota": "Ventas por WhatsApp con IA",
+   "voz": [
+    "Esta es la propuesta para {{CLIENTE}}.",
+    "Ventas por WhatsApp con inteligencia artificial."
+   ]
+  },
+  {
+   "id": "temario",
+   "tipo": "lista",
+   "encabezado": "Hoy vemos:",
+   "vineta": "check",
+   "items": [
+    "Lo que nos **diste**",
+    "Cómo lo **resolvemos**",
+    "**Inversión** y arranque"
+   ],
+   "voz": [
+    "Hoy vemos tres cosas: lo que nos diste en la llamada,",
+    "cómo lo resolvemos",
+    "y la inversión con la fecha de arranque."
+   ]
+  },
+  {
+   "id": "diagnostico",
+   "tipo": "cifra",
+   "arriba": "Lo que nos diste en la llamada:",
+   "lineas": [
+    "{{VENDEDORES}} vendedores",
+    "{{HORAS_PERDIDAS}} h a la semana",
+    "Son __{{HORAS_MES}} horas al mes__"
+   ],
+   "fuente": "Llamada de diagnóstico",
+   "voz": [
+    "En la llamada nos diste tus números: tus vendedores,",
+    "las horas que cada uno pasa en chats que no cierran,",
+    "y eso suma estas horas al mes."
+   ]
+  },
+  {
+   "id": "chats",
+   "tipo": "idea",
+   "emoji": "📲",
+   "texto": "**{{CHATS_SIN_RESPUESTA}} chats**\nsin respuesta al mes",
+   "fuente": "WhatsApp Business del equipo",
+   "voz": [
+    "Y estos chats se quedan sin respuesta cada mes."
+   ]
+  },
+  {
+   "id": "mismas",
+   "tipo": "idea",
+   "emoji": "😩",
+   "texto": "Tus vendedores contestan\n**las mismas preguntas** todo el día",
+   "nota": "Precio, horario, formas de pago",
+   "voz": [
+    "Tus vendedores contestan las mismas preguntas todo el día.",
+    "Precio, horario, formas de pago."
+   ]
+  },
+  {
+   "id": "costo",
+   "tipo": "cifra",
+   "arriba": "Hoy, cada mes:",
+   "lineas": [
+    "{{HORAS_MES}} h × {{COSTO_HORA}} la hora",
+    "Son __{{COSTO_MES}} al mes__"
+   ],
+   "voz": [
+    "Esas horas, por lo que te cuesta cada hora,",
+    "es lo que hoy te cuesta no hacer nada."
+   ]
+  },
+  {
+   "id": "otra-vez",
+   "tipo": "idea",
+   "emoji": "💸",
+   "texto": "Y el mes que sigue\n**se vuelve a perder**",
+   "voz": [
+    "Y el mes que sigue, se vuelve a perder."
+   ]
+  },
+  {
+   "id": "mapa",
+   "tipo": "pasos",
+   "iconos": [
+    "📚",
+    "🤖",
+    "📊"
+   ],
+   "etiquetas": [
+    "Aprenden",
+    "Aplican",
+    "Medimos"
+   ],
+   "activo": 1,
+   "voz": "La solución tiene tres partes. Primero: tu equipo aprende."
+  },
+  {
+   "id": "sesiones",
+   "tipo": "idea",
+   "emoji": "📚",
+   "texto": "8 sesiones en vivo,\n**una por semana**",
+   "nota": "Con sus chats, no con ejemplos",
+   "voz": [
+    "Son ocho sesiones en vivo, una por semana.",
+    "Trabajamos con sus chats, no con ejemplos."
+   ]
+  },
+  {
+   "id": "demo",
+   "tipo": "chat",
+   "avatar_yo": "🤖",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "10:12 pm",
+     "texto": "¿Cuánto cuesta el plan anual?"
+    },
+    {
+     "de": "yo",
+     "hora": "10:12 pm",
+     "texto": "Te paso las dos opciones y agendamos una llamada"
+    }
+   ],
+   "voz": [
+    "Así contesta un vendedor con su agente,",
+    "en el mismo minuto, también de noche."
+   ]
+  },
+  {
+   "id": "mapa-2",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 2,
+   "hechos": [
+    1
+   ],
+   "voz": "Segundo: lo aplican en sus chats reales, con acompañamiento.",
+   "nota": "Con sus chats reales"
+  },
+  {
+   "id": "como",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "📲",
+     "etiqueta": "Mensaje"
+    },
+    {
+     "emoji": "🤖",
+     "etiqueta": "Agente"
+    },
+    {
+     "emoji": "👤",
+     "etiqueta": "Vendedor"
+    }
+   ],
+   "voz": [
+    "Te escriben,",
+    "el agente propone la respuesta",
+    "y tu vendedor la revisa y la envía."
+   ]
+  },
+  {
+   "id": "mapa-3",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 3,
+   "hechos": [
+    1,
+    2
+   ],
+   "voz": "Y tercero: medimos cada semana."
+  },
+  {
+   "id": "metricas",
+   "tipo": "tarjetas",
+   "encabezado": "Lo que medimos cada semana:",
+   "items": [
+    {
+     "emoji": "⏳",
+     "texto": "Tiempo de respuesta"
+    },
+    {
+     "emoji": "📲",
+     "texto": "Chats contestados"
+    },
+    {
+     "emoji": "💵",
+     "texto": "Ventas cerradas"
+    }
+   ],
+   "voz": [
+    "Cada semana medimos el tiempo de respuesta,",
+    "los chats contestados",
+    "y las ventas cerradas."
+   ]
+  },
+  {
+   "id": "quien",
+   "tipo": "idea",
+   "emoji": "🧑‍🏫",
+   "texto": "Más de **{{EMPRESAS}} empresas**\ncapacitadas desde {{DESDE}}",
+   "voz": [
+    "Lo imparte un equipo que ya capacitó a más de {{EMPRESAS}} empresas."
+   ]
+  },
+  {
+   "id": "caso",
+   "tipo": "cifra",
+   "arriba": "{{CASO}}, en 8 semanas:",
+   "lineas": [
+    "{{CASO_ANTES}} ventas al mes",
+    "→ **{{CASO_DESPUES}} ventas al mes**"
+   ],
+   "fuente": "{{FUENTE_CASO}}",
+   "voz": [
+    "Un caso parecido al tuyo: {{CASO}}.",
+    "Pasó de {{CASO_ANTES}} a {{CASO_DESPUES}} ventas al mes."
+   ]
+  },
+  {
+   "id": "meta",
+   "tipo": "idea",
+   "emoji": "🎯",
+   "texto": "Tiempo de respuesta: de {{HOY}} a {{META}}",
+   "nota": "Medido en la semana 4",
+   "voz": [
+    "La meta es bajar el tiempo de respuesta a lo que acordemos.",
+    "Y lo medimos en la semana cuatro."
+   ]
+  },
+  {
+   "id": "plan",
+   "tipo": "linea-tiempo",
+   "marcas": [
+    {
+     "texto": "Semana 1"
+    },
+    {
+     "texto": "Semana 4",
+     "tono": "v"
+    },
+    {
+     "texto": "Semana 8",
+     "tono": "v"
+    }
+   ],
+   "tramos": [
+    {
+     "desde": 0,
+     "hasta": 1,
+     "tono": "v",
+     "etiqueta": "Aprenden"
+    },
+    {
+     "desde": 1,
+     "hasta": 2,
+     "tono": "v",
+     "etiqueta": "Aplican y medimos"
+    }
+   ],
+   "voz": [
+    "En la semana uno medimos cómo están hoy.",
+    "Hasta la cuatro, aprenden.",
+    "De la cuatro a la ocho, aplican y medimos."
+   ]
+  },
+  {
+   "id": "incluye",
+   "tipo": "lista",
+   "encabezado": "Incluye:",
+   "vineta": "check",
+   "items": [
+    "**8 sesiones** en vivo",
+    "Un agente **por vendedor**",
+    "**Reporte** cada semana"
+   ],
+   "voz": [
+    "Incluye ocho sesiones en vivo,",
+    "un agente configurado para cada vendedor",
+    "y un reporte cada semana."
+   ]
+  },
+  {
+   "id": "no-incluye",
+   "tipo": "lista",
+   "encabezado": "No incluye:",
+   "vineta": "x",
+   "items": [
+    "Licencias **de software**",
+    "Integración **con tu CRM**",
+    "Contratar **personal**"
+   ],
+   "voz": [
+    "No incluye las licencias de software,",
+    "ni la integración con tu CRM,",
+    "ni contratar personal."
+   ]
+  },
+  {
+   "id": "inversion",
+   "tipo": "cifra",
+   "lineas": [
+    {
+     "texto": "Hoy: {g:{{COSTO_MES}} al mes}",
+     "tam": "64px",
+     "peso": 500
+    },
+    {
+     "texto": "Inversión: __{{PRECIO}}__",
+     "tam": "120px",
+     "peso": 800
+    }
+   ],
+   "voz": [
+    "Hoy pierdes esto cada mes.",
+    "La inversión es esta."
+   ]
+  },
+  {
+   "id": "salida",
+   "tipo": "idea",
+   "emoji": "🛡️",
+   "texto": "Si en la semana {{SEMANA_SALIDA}} no hay avance,\n**cancelas sin penalización**",
+   "voz": [
+    "Si en esa semana no medimos avance, cancelas sin penalización."
+   ]
+  },
+  {
+   "id": "pregunta",
+   "tipo": "idea",
+   "emoji": "🤔",
+   "texto": "¿Tiene sentido\n**para tu equipo**?",
+   "voz": [
+    "¿Tiene sentido para tu equipo? Te escucho antes de seguir."
+   ]
+  },
+  {
+   "id": "siguiente",
+   "tipo": "flujo",
+   "llamado": true,
+   "nodos": [
+    {
+     "emoji": "✍️",
+     "etiqueta": "Firmas"
+    },
+    {
+     "emoji": "📅",
+     "etiqueta": "Agendamos"
+    },
+    {
+     "emoji": "🚀",
+     "etiqueta": "Arrancamos"
+    }
+   ],
+   "voz": [
+    "Firmas,",
+    "agendamos la primera sesión",
+    "y arrancamos."
+   ]
+  },
+  {
+   "id": "fecha",
+   "tipo": "idea",
+   "emoji": "📅",
+   "texto": "Arrancamos el **{{FECHA_ARRANQUE}}**",
+   "nota": "Vigente hasta el {{VIGENCIA}}",
+   "voz": [
+    "Podemos arrancar en esta fecha.",
+    "La propuesta está vigente hasta este día."
+   ]
+  }
+ ]
+}

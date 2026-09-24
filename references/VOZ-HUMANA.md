@@ -20,9 +20,11 @@ it's». De ahí sale la regla: **máximo una antítesis por deck**.
 | Frase de folleto | «desbloquea tu potencial» · «al siguiente nivel» · «cambia las reglas del juego» · «el secreto es» · «la clave del éxito» | El verbo concreto y el número. |
 | Muletilla de gancho | «…y ni cuenta te das» | El conflicto concreto: la hora, el mensaje, la cifra. |
 | Tricolón decorativo | «rápido, confiable y escalable» | Dos o cuatro, o el dato. |
+| Consenso inventado | «la objeción de siempre» · «la que más oigo» · «todos me dicen» · «siempre me preguntan» · «la mayoría me dice» | Sin frecuencia, como la referencia («a quick word of warning… reason number one»): «Objeción número uno: …» o «Quizá estés pensando: …». La frecuencia solo con un dato (`OBJECION_N` confirmado en `datos`). |
 
 QA (`scripts/lib/reglas-deck.mjs`) avisa las fórmulas del catálogo, cuenta las antítesis del deck (más
-de 1 es aviso) y lee «Palabras que nunca usas» de MI-MARCA.md. Es aviso, no error: la última palabra
+de 1 es aviso), avisa el consenso inventado en la voz de una «Objeción #N» y de su respuesta, y lee «Palabras que
+nunca usas» de MI-MARCA.md. Es aviso, no error: la última palabra
 la tiene tu oído.
 
 ## 2. Antes y después (casos reales del loop de calidad)

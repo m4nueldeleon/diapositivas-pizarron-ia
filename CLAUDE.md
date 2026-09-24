@@ -24,7 +24,9 @@ SKILL.md.
   relleno, duración de la pieza y peso de los tramos en vivo, apertura, voz humana, proyecciones, posts de
   maqueta, llamado, prueba real y credibilidad, objeciones, descargos en pantalla, coherencia emoji↔concepto,
   claves que nadie lee, los 9 bloques de la propuesta, escasez/garantía/bonos de la oferta, desglose de un precio,
-  promesas de ingreso sin descargo visible, tasas sin origen, sustitutos de prueba c/d de GUION §7, capturas `hueco`
+  promesas de ingreso sin descargo visible, el orden de la oferta en un VSL (ningún llamado antes de la revelación, un
+  solo canal de llamado, la oferta medida desde la oscura), la promesa o el mecanismo antes del segundo 30, objeciones
+  con frecuencia inventada, tasas sin origen, sustitutos de prueba d/e de GUION §7 (la prueba de mercado, c, es real: lleva `fuente`), capturas `hueco`
   por conseguir, tutoriales sin demostración y el cierre de una clase: tarea + puente)
   y la nota (`notaQA`, con tope de BORRADOR: los datos por confirmar NO restan; qa.mjs los pone en `datos_por_confirmar`). `infoEmoji`/`infoFirma` van a `qa.json → info` y NO restan. Son
   funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs` u `oferta-propuesta.test.mjs`. `revisarDeck`
@@ -40,7 +42,12 @@ SKILL.md.
   de 20 láminas las pagina (`hoja-01.jpg`…, `hojas.json`). `render.mjs --pdf` usa `scripts/lib/pdf.mjs`: recaptura
   cada lámina sin cursor (una página por lámina; el stack con su remate en una banda) y en propuesta o VSL arma
   `laminas-notas.pdf` con la voz como texto (`pdf.json` lo resume).
-- `ejemplos/vsl-corto/` es el modelo de guion de venta; `pruebas/ejemplos.test.mjs` exige que no dé avisos de guion.
+- `ejemplos/vsl-corto/` (venta), `ejemplos/propuesta/` (los 9 bloques) y `ejemplos/clase-express/` (tutorial con
+  `"clase": true`) son los modelos de guion que se copian; `pruebas/ejemplos.test.mjs` exige que no den avisos de guion,
+  que la revelación del VSL caiga entre el 55 y el 60% y que ningún ejemplo use un emoji de «Evita».
+- `scripts/lib/pasos-mapa.mjs`: qué entra en cada paso, leído del HTML armado (sin navegador). construir.mjs lo devuelve
+  como `revela`; lo usan `render.mjs --pasos`, `pasos.json → revela`, `qa.json → mapa_pasos` y el error de voz de QA.
+  Los `.emo` llevan `data-e` con su spec para que el mapa nombre los emojis dibujados en SVG.
 - `templates/presentador.js` es el presentador en vivo y la vista de ensayo (`?modo=orador`), sobre
   `window.PZ`. Lee la voz del `<script class="guion">` que `construir.mjs` mete en cada lámina. Las dos
   ventanas se siguen por `postMessage` (ventana ↔ opener; BroadcastChannel no cruza documentos `file://` en

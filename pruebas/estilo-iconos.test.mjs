@@ -35,8 +35,10 @@ test('emoji: en apple 📅 📆 🗓️ son un calendario SVG sin fecha y 🎟�
   const em = new Emojis({ modo: 'apple', dirSalida: tmp() });
   const cal = em.html('📅');
   assert.ok(cal.includes('<svg') && !cal.includes('<img') && !cal.includes('📅'));
-  assert.equal(em.html('📆'), cal.replace('📅', '📆'));
-  assert.equal(em.html('🗓️'), cal);
+  // el mismo dibujo: solo cambia data-e (el spec, para el mapa de pasos)
+  const sinE = h => h.replace(/ data-e="[^"]*"/, '');
+  assert.equal(sinE(em.html('📆')), sinE(cal));
+  assert.equal(sinE(em.html('🗓️')), sinE(cal));
   assert.ok(em.html('🎟️').includes('url(#pz-boleto)') && em.html('🎫').includes('url(#pz-boleto)'));
   assert.ok(!/JUL|ADMIT/.test(cal + em.html('🎟️')));
   const fl = new Emojis({ modo: 'fluent', dirSalida: tmp() });

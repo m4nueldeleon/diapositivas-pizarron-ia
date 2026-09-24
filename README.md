@@ -82,13 +82,16 @@ Sin `marca`, las láminas toman la firma de tu ficha `MI-MARCA.md` (la de la car
 `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`, que crea `bash scripts/setup.sh`); sin ficha salen sin firma y
 `"marca": false` la apaga. Con tu firma real en el deck: `"marca": { "texto": "<tu @ o dominio>" }`
 o `{ "logo": "assets/logo.png" }` (nunca un valor de ejemplo: QA lo marca). Para que QA mida la duración,
-agrega `"pieza"` (`reel`, `video`, `vsl`, `clase`, `webinar`, `propuesta`) y `"duracion_objetivo"` en
+agrega `"pieza"` (`reel`, `tutorial`, `vsl-corto`, `video`, `vsl`, `clase-corta`, `clase`, `webinar`, `propuesta`) y `"duracion_objetivo"` en
 minutos ([`references/ARCOS.md`](references/ARCOS.md)).
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
-El demo con los 27 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). El modelo de
-guion para vender (VSL corto con objeción, prueba, garantía y el llamado dos veces) está en
-[`ejemplos/vsl-corto/`](ejemplos/vsl-corto/guion.md). `render.mjs --pdf` da `laminas.pdf` (para Keynote) y, en una
+El demo con los 27 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). Los modelos de
+guion que se copian, cada uno con su `guion.md`: para vender (VSL corto con la promesa antes del segundo 25, la
+objeción antes de la revelación y el mismo llamado dos veces) en [`ejemplos/vsl-corto/`](ejemplos/vsl-corto/guion.md);
+para una propuesta (los 9 bloques) en [`ejemplos/propuesta/`](ejemplos/propuesta/guion.md), y para una clase express
+(tarea y puente) en [`ejemplos/clase-express/`](ejemplos/clase-express/guion.md). `render.mjs --pasos` imprime qué
+entra en cada paso de cada lámina, sin navegador, para escribir la voz con una frase por paso. `render.mjs --pdf` da `laminas.pdf` (para Keynote) y, en una
 propuesta o un VSL, `laminas-notas.pdf` con la voz como texto, para mandarlo.
 
 ### Montaje sobre tu grabación
