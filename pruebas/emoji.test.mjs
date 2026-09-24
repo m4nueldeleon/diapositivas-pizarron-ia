@@ -35,7 +35,7 @@ test('no:X+Y dibuja la base, la ❌ a la izquierda y la insignia a la derecha, s
   const em = new Emojis({ modo: 'apple' });
   const h = em.html('no:🧑‍⚕️+💰');
   assert.ok(!h.includes('+'));
-  assert.equal((h.match(/class="insignia izq"/g) || []).length, 1);
+  assert.equal((h.match(/class="insignia izq no"/g) || []).length, 1);
   assert.equal((h.match(/class="insignia"/g) || []).length, 1);
   assert.ok(h.includes('💰') && h.includes('🧑‍⚕️'));
   em.html('🤖+💬+✅');

@@ -39,7 +39,9 @@ Criterio de salida: una lista de láminas con su diseño y la voz de cada paso.
   - [ ] El mismo concepto usa el mismo emoji en todo el deck.
   - [ ] Ningún diseño aparece 4 veces seguidas.
   - [ ] Hay capa a mano cada 3 o 4 láminas: subrayado, flecha, nota, tabla o sello.
-  - [ ] Las láminas oscuras son solo para la oferta.
+  - [ ] Las láminas oscuras son solo para revelar la marca o el producto; precio, lo que incluye
+        y llamado van en blanco.
+  - [ ] Todas las objeciones tienen la misma forma (`idea` + «Objeción #N» + respuesta aparte).
 
 ## 4. Render y revisión visual
 

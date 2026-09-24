@@ -34,7 +34,7 @@ if command -v ffmpeg >/dev/null 2>&1; then ok "$(ffmpeg -version | head -1 | cut
 
 echo "▶ Tipografías (licencia OFL, de google/fonts)"
 B=https://raw.githubusercontent.com/google/fonts/main/ofl
-for par in "Figtree.ttf|figtree/Figtree%5Bwght%5D.ttf" "Caveat.ttf|caveat/Caveat%5Bwght%5D.ttf" "ZillaSlab-Bold.ttf|zillaslab/ZillaSlab-Bold.ttf"; do
+for par in "Figtree.ttf|figtree/Figtree%5Bwght%5D.ttf" "Figtree-Italic.ttf|figtree/Figtree-Italic%5Bwght%5D.ttf" "Caveat.ttf|caveat/Caveat%5Bwght%5D.ttf" "ZillaSlab-Bold.ttf|zillaslab/ZillaSlab-Bold.ttf"; do
   n="${par%%|*}"; r="${par#*|}"
   if [ -s "$FUENTES/$n" ]; then ok "$n"; elif curl -fsSL "$B/$r" -o "$FUENTES/$n"; then ok "$n (descargada)"; else mal "no pude bajar $n"; fi
 done

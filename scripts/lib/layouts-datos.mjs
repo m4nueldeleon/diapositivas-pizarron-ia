@@ -4,6 +4,11 @@ import { marcar, escapar, texto, nota, pasoDe, PERSONA, PIN } from './comun.mjs'
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
 const HEX = { v: '#22a812', r: '#c8101e', n: '#d0661a', g: '#9a9a9a', a: '#3ea6f2', k: '#111111' };
+// Rótulo sobre un diseño de datos: gris chico (.encabezado) por omisión; `encabezado_estilo: "frase"` lo
+// pone negro a tamaño de frase, como la rejilla de 6:35 («To make $10k/month…»).
+const rotulo = (ctx, l, extra = '') => (!l.encabezado ? '' : l.encabezado_estilo === 'frase'
+  ? texto(ctx, l.encabezado, 'chico', 0, extra)
+  : `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>`);
 const celda = c => (typeof c === 'string' || typeof c === 'number' ? { texto: String(c) } : (c || {}));
 
 // TABLA — la «tabla-marcador» escrita a mano que se llena columna por columna.
@@ -163,10 +168,13 @@ export function rejilla(l, ctx) {
   const aspecto = l.aspecto || 1.55;
   const cols = l.columnas || Math.max(1, Math.round(Math.sqrt(total * aspecto)));
   const rows = Math.ceil(total / cols);
-  const areaW = l.ancho || (ctx.vertical ? 880 : 1450), areaH = l.alto || (ctx.vertical ? 1100 : 720);
+  // con anotación a la derecha la rejilla deja sitio para el gancho de la flecha y la nota
+  const areaW = l.ancho || (ctx.vertical ? 880 : l.anotacion ? 1250 : 1450), areaH = l.alto || (ctx.vertical ? 1100 : 720);
   const c = Math.floor(Math.min(areaW / cols, areaH / rows) * 0.86);
   const g = Math.max(3, Math.floor(c * 0.16));
   const dest = new Set(l.destacar || []);
+  // `destacado_paso` > 0: el color de las destacadas aparece DESPUÉS, sobre la rejilla ya vista [43:15]
+  const kDest = l.etiqueta_destacado ? 0 : pasoDe(l, 'destacado_paso', 0);
   const celdas = [];
   const unico = l.emoji && !l.punto ? ctx.emoji(l.emoji, c) : '';
   const destE = l.emoji_destacado ? ctx.emoji(l.emoji_destacado, c) : '';
@@ -174,16 +182,19 @@ export function rejilla(l, ctx) {
     const d = dest.has(i);
     const cls = l.apagar_resto && !d ? ' apagado' : '';
     const tp = x => (['v', 'r', 'g'].includes(x) ? x : null);
-    if (l.punto) celdas.push(`<div class="punto ${d ? (tp(l.tono_destacado) || 'r') : (tp(l.tono) || 'v')}${cls}"${d ? ctx.A('d' + i) : ''}></div>`);
+    const capa = h => `<div${ctx.P(kDest)} style="position:absolute;inset:0">${h}</div>`;
+    if (l.punto && d && kDest) celdas.push(`<div class="punto ${tp(l.tono) || 'v'}" style="position:relative"${ctx.A('d' + i)}>${capa(`<div class="punto ${tp(l.tono_destacado) || 'r'}"></div>`)}</div>`);
+    else if (l.punto) celdas.push(`<div class="punto ${d ? (tp(l.tono_destacado) || 'r') : (tp(l.tono) || 'v')}${cls}"${d ? ctx.A('d' + i) : ''}></div>`);
+    else if (d && destE && kDest) celdas.push(`<div${ctx.A('d' + i)} style="position:relative;width:${c}px;height:${c}px">${unico}${capa(`<div style="background:#fff">${destE}</div>`)}</div>`);
     else celdas.push(`<div class="${cls.trim()}"${d ? ctx.A('d' + i) : ''} style="width:${c}px;height:${c}px">${d && destE ? destE : unico}</div>`);
   }
   const kAn = l.anotacion_paso ?? 1;
   if (l.anotacion) ctx.con({ de: 'rejilla', a: 'anot', estilo: 'fina', p: kAn });
   if (l.etiqueta_destacado && dest.size) ctx.con({ de: 'etq', a: 'd' + [...dest][0], estilo: 'fina-abajo', p: l.destacado_paso ?? 0 });
-  return `<div class="pila">${texto(ctx, l.encabezado, 'chico', 0, ' style="margin-bottom:34px"')}
+  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:34px"')}
     ${l.etiqueta_destacado ? `<div class="pila"${ctx.P(l.destacado_paso ?? 0)}${ctx.A('etq')} style="margin-bottom:44px">${l.emoji_etiqueta ? ctx.emoji(l.emoji_etiqueta, 110) : ''}<div style="font-size:72px;font-weight:700">${marcar(l.etiqueta_destacado)}</div></div>` : ''}
-    <div class="fila" style="align-items:center;gap:40px"><div class="rejilla"${ctx.P(0)}${ctx.A('rejilla')} style="--cols:${cols};--c:${c}px;--g:${g}px">${celdas.join('')}</div>
-    ${l.anotacion ? `<div class="nota"${ctx.P(kAn)}${ctx.A('anot')} style="--tn:66px;color:var(--tinta);margin-top:40px;white-space:nowrap">${marcar(l.anotacion)}</div>` : ''}</div>
+    <div class="fila" style="align-items:center;gap:${l.anotacion ? 150 : 40}px"><div class="rejilla"${ctx.P(0)}${ctx.A('rejilla')} style="--cols:${cols};--c:${c}px;--g:${g}px">${celdas.join('')}</div>
+    ${l.anotacion ? `<div class="nota"${ctx.P(kAn)}${ctx.A('anot')} style="--tn:66px;color:var(--tinta);margin-top:110px;white-space:nowrap">${marcar(l.anotacion)}</div>` : ''}</div>
     ${texto(ctx, l.texto, 'chico mt-m', l.texto_paso ?? 0)}</div>`;
 }
 
@@ -210,20 +221,29 @@ export function prueba(l, ctx) {
     }
     return `<div class="captura"${ctx.P(l.revelar === 'todo' ? 0 : i)} style="${giro}">${dentro}</div>`;
   }).join('');
-  return `<div class="pila">${texto(ctx, l.encabezado, 'chico', 0, ' style="margin-bottom:40px"')}<div class="pruebas">${html}</div>
+  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="pruebas">${html}</div>
     ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}</div>`;
 }
 
-// CHAT — burbujas estilo mensaje: tú en azul a la derecha, los demás en gris a la izquierda.
+// CHAT — burbujas estilo mensaje: tú en azul a la derecha, los demás en gris medio a la izquierda.
+// Avatar: silueta por omisión; `avatar_yo` / `avatar_otro` (o `avatar` por mensaje) con un emoji lo
+// cambian (la IA como 🤖), y `false` lo quita.
 export function chat(l, ctx) {
   const ms = l.mensajes || [];
+  const avatar = (m, yo) => {
+    const spec = m.avatar ?? (yo ? l.avatar_yo : l.avatar_otro);
+    if (spec === false) return '';
+    const cls = yo ? 'yo-av' : 'otro-av';
+    return typeof spec === 'string' && spec ? `<div class="${cls} av-emo">${ctx.emoji(spec, ctx.vertical ? 70 : 92)}</div>` : `<div class="${cls}">${PERSONA}</div>`;
+  };
   const html = ms.map((m, i) => {
     const yo = (m.de || 'yo') === 'yo';
     const cuerpo = marcar(m.texto).replace(/\[([^\[\]]+)\]/g, '<span class="hueco">[$1]</span>');
-    const av = `<div class="${yo ? 'yo-av' : 'otro-av'}">${PERSONA}</div>`;
+    const av = avatar(m, yo);
     return `<div class="msj ${yo ? 'yo' : 'otro'}"${ctx.P(l.revelar === 'todo' ? 0 : i)}>${yo ? '' : av}<div class="burbuja">${cuerpo}</div>${yo ? av : ''}</div>`;
   }).join('');
-  return `<div class="pila">${texto(ctx, l.encabezado, 'chico', 0, ' style="margin-bottom:40px"')}<div class="chat">${html}</div></div>`;
+  const tb = l.tam_texto && /px$/.test(l.tam_texto) ? ` style="--tb:${l.tam_texto}"` : '';
+  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div></div>`;
 }
 
 // REPARTO — pastilla verde (audiencia · ingresos) que se parte en «su parte» y «tu parte».
@@ -250,16 +270,23 @@ export function calendario(l, ctx) {
   const dias = l.dias || Array.from({ length: l.n || 14 }, (_, i) => ({ titulo: `DÍA ${i + 1}` }));
   const cols = l.columnas || 5;
   const faseDe = d => fases.findIndex(f => d + 1 >= f.desde && d + 1 <= f.hasta);
+  // Con fase activa, todas las fases conservan su tinte: la activa saturada y las demás apagadas al 30%
+  // [29:05-29:25]. Sin fase activa los 14 días van en gris neutro (la lámina que presenta el plan, 28:45).
   const html = dias.map((d, i) => {
     const f = faseDe(i), c = f >= 0 ? colores[fases[f].color] || colores.amarillo : null;
     const encendida = activa ? f === iAct : false;
-    const st = encendida && c ? `background:linear-gradient(180deg,${c[0]},${c[1]});color:#111` : '';
-    const apagada = activa && !encendida ? ' apagado' : '';
+    const st = activa && c ? `background:linear-gradient(180deg,${c[0]},${c[1]});color:#111` : '';
+    const apagada = activa && !encendida ? ` apagado${c ? ' tinte' : ''}` : '';
     return `<div class="dia${apagada}" style="width:calc((100% - ${(cols - 1) * 20}px)/${cols});${st}"${ctx.A('dia' + i)}><small>${escapar(d.titulo || l.palabra_dia || 'DÍA')}</small><b>${escapar(String(d.numero ?? i + 1))}</b>${d.sub ? `<span>${escapar(d.sub)}</span>` : ''}</div>`;
   }).join('');
   (l.anotaciones || []).forEach((a, i) => ctx.con({ de: 'an' + i, a: 'dia' + (a.dia - 1), estilo: 'curva-roja', p: a.paso ?? 1 }));
-  const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};top:${Number.isFinite(Number(a.arriba)) ? Number(a.arriba) : 300}px;--tn:46px;color:var(--tinta);max-width:300px">${marcar(a.texto)}</div>`).join('');
-  return `<div class="calendario"${ctx.P(0)}><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})">${escapar(activa ? activa.nombre : (l.titulo || 'Calendario'))}<span>${escapar(activa ? `${l.palabra_dia ? l.palabra_dia + 'S' : 'DÍAS'} ${activa.desde}-${activa.hasta}` : (l.rango || `DÍAS 1-${dias.length}`))}</span></div>
+  // `arriba`: px (número) o un porcentaje del alto («40%»); `tam` en px (52-58 en m_1740, 56 por omisión)
+  const arriba = a => (typeof a.arriba === 'string' && /^\d{1,3}(\.\d+)?%$/.test(a.arriba) ? a.arriba : `${Number.isFinite(Number(a.arriba)) ? Number(a.arriba) : 300}px`);
+  const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};top:${arriba(a)};--tn:${a.tam || '56px'};color:var(--tinta);max-width:340px">${marcar(a.texto)}</div>`).join('');
+  const sub = activa && activa.sub ? `<em class="sub">${escapar(activa.sub)}</em>` : '';
+  // con notas al margen el calendario se angosta para que la nota quede FUERA, como en m_1740
+  const angosto = (l.anotaciones || []).length && !ctx.vertical ? ' style="width:1080px"' : '';
+  return `<div class="calendario"${ctx.P(0)}${angosto}><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})"><b>${escapar(activa ? activa.nombre : (l.titulo || 'Calendario'))}</b>${sub}<span>${escapar(activa ? `${l.palabra_dia ? l.palabra_dia + 'S' : 'DÍAS'} ${activa.desde}-${activa.hasta}` : (l.rango || `DÍAS 1-${dias.length}`))}</span></div>
     <div class="dias" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px">${html}</div></div>${anot}`;
 }
 
@@ -292,4 +319,24 @@ export function circulos(l, ctx) {
       <div style="position:absolute;inset:0;border-radius:50%;background:${ext[0]};border:5px solid ${ext[1]}"></div>
       <div${ctx.P(l.interior_paso ?? 0)} style="position:absolute;left:${R - r}px;top:${R - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;background:${int[0]};border:5px solid ${int[1]}"></div>
       ${gente}${centro}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-m')}</div>`;
+}
+
+// STACK — lo que incluye la oferta como un bento de tarjetas gris claro de tamaño desigual [42:30-42:45]:
+// todas las casillas se ven vacías al cortar y cada pieza se llena en su propio paso; `remate` (con ✅)
+// cierra en el paso siguiente y `total` va debajo, chico. `doble: true` hace una tarjeta de dos columnas.
+export function stack(l, ctx) {
+  const items = l.items || [];
+  const cols = l.columnas || (ctx.vertical ? 2 : 3);
+  const cw = Math.min(480, Math.floor((ctx.util - (cols - 1) * 28) / Math.max(1, cols)));
+  const tonos = { v: 'tono-bv', r: 'tono-br', n: 'tono-bn' };
+  const piezas = items.map((it, i) => {
+    const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${ctx.vertical ? 80 : 96}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, ctx.vertical ? 84 : 96) : '';
+    return `<div class="bento"${it.doble ? ' style="grid-column:span 2"' : ''}${ctx.A('s' + i)}><div class="bento-lleno ${tonos[it.tono] || ''}"${ctx.P(i + 1)}>${vis}${it.texto ? `<span>${marcar(it.texto)}</span>` : ''}</div></div>`;
+  }).join('');
+  const kRem = pasoDe(l, 'remate_paso', items.length + 1);
+  return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
+    <div class="stack"${ctx.P(0)} style="--cols:${cols};--cw:${cw}px">${piezas}</div>
+    ${l.remate ? `<div class="t chico mt-m"${ctx.P(kRem)}>${ctx.em.html('✅', '1.1em', 'en-linea')}${marcar(l.remate)}</div>` : ''}
+    ${l.total ? `<div class="etiqueta-chica"${ctx.P(kRem)} style="margin-top:18px">${marcar(l.total)}</div>` : ''}
+    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kRem + (l.remate || l.total ? 1 : 0)), 'mt-s')}</div>`;
 }

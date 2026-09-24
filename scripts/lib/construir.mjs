@@ -12,27 +12,32 @@ export const LAYOUTS = {
   cita: T.cita, objeto: T.objeto, tarjetas: T.tarjetas, oscura: T.oscura, cuadrantes: T.cuadrantes,
   tabla: D.tabla, grafica: D.grafica, 'linea-tiempo': D.lineaTiempo, medidor: D.medidor, opciones: D.opciones,
   rejilla: D.rejilla, prueba: D.prueba, chat: D.chat, reparto: D.reparto, calendario: D.calendario,
-  boton: D.boton, circulos: D.circulos,
+  boton: D.boton, circulos: D.circulos, stack: D.stack,
   camara: () => '', foco: () => '',
 };
 
 export const FORMATOS = {
   '16:9': { W: 1920, H: 1080, mv: 100, mh: 150, at: 1560 },
-  '9:16': { W: 1080, H: 1920, mv: 220, mh: 90, at: 900 },
+  // 9:16: 320 arriba y abajo = la barra de Reels arriba y el caption y los botones abajo no tapan nada
+  '9:16': { W: 1080, H: 1920, mv: 320, mh: 90, at: 900 },
   '1:1': { W: 1080, H: 1080, mv: 90, mh: 90, at: 920 },
   '4:5': { W: 1080, H: 1350, mv: 110, mh: 90, at: 920 },
 };
 
-// Grano para el sello de goma (agujeritos de tinta)
-const GRANO = `url("data:image/svg+xml;utf8,${encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -2.4 0 0 0 1.75'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>",
+// Grano para el sello de goma (agujeritos de tinta). La fila alfa decide cuánto se perfora:
+//   GRANO       −2.4·R + 1.75  (tinta muy gastada; se conserva como variable --grano)
+//   GRANO_SUAVE −1.2·R + 1.35  (la del sello: tinta de goma limpia con desgaste leve, como en 6:45)
+const grano = fila => `url("data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  ${fila}'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>`,
 ).replace(/%2523/g, '%23')}")`;
+const GRANO = grano('-2.4 0 0 0 1.75');
+const GRANO_SUAVE = grano('-1.2 0 0 0 1.35');
 
 function copiarFuentes(dirSkill, dirSalida) {
   const src = path.join(dirSkill, 'assets', 'fonts'), dst = path.join(dirSalida, 'fonts');
   fs.mkdirSync(dst, { recursive: true });
   const faltan = [];
-  for (const f of ['Figtree.ttf', 'Caveat.ttf', 'ZillaSlab-Bold.ttf']) {
+  for (const f of ['Figtree.ttf', 'Figtree-Italic.ttf', 'Caveat.ttf', 'ZillaSlab-Bold.ttf']) {
     const a = path.join(src, f);
     if (fs.existsSync(a)) fs.copyFileSync(a, path.join(dst, f)); else faltan.push(f);
   }
@@ -64,7 +69,8 @@ function armarLamina(l, i, deck, comun) {
     // En la rejilla el sello cae centrado SOBRE las cajas, como en la referencia [6:35 «A LOT OF SKILL»]
     const sobre = l.sello_sobre || (l.tipo === 'rejilla' && !l.sello_pos ? 'rejilla' : '');
     const pos = `${sobre ? ` data-sobre="${escapar(sobre)}"` : ''}${l.sello_pos ? ` data-pos="${escapar(l.sello_pos)}"` : ''}`;
-    extras += `<div class="sello" data-p="${k}"${pos}>${escapar(l.sello)}</div>`;
+    // La etiqueta blanca opaca va por fuera y la tinta (con el grano) por dentro: base.css
+    extras += `<div class="sello" data-p="${k}"${pos}><div class="sello-tinta">${escapar(l.sello)}</div></div>`;
     pasos = Math.max(pasos, k + 1);
   }
   const clic = ctx.clic || (typeof l.clic === 'string' ? { a: l.clic, p: l.clic_paso ?? pasos, tipo: l.cursor || 'mano' } : null);
@@ -77,9 +83,19 @@ function armarLamina(l, i, deck, comun) {
   }
   const oscura = l.tipo === 'oscura' || l.oscura;
   return {
-    interior, pasos, extras, oscura, conexiones: ctx.conexiones, avisos: ctx.avisos,
+    interior, pasos, extras, oscura, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
     clic: clic ? JSON.stringify({ a: clic.a, p: clic.p, ...(clic.pos ? { pos: clic.pos } : {}) }) : '',
   };
+}
+
+// Listas y tarjetas que se revelan de a uno arrancan ARRIBA y crecen hacia abajo: el hueco de abajo le
+// anuncia al ojo que viene más [ref_95 «Without:», 3:25, 9:25]. Una lista que entra entera se queda
+// centrada [15:35]. `anclar: "arriba" | "centro"` lo fuerza en cualquier diseño.
+function anclaArriba(l) {
+  if (l.anclar === 'centro') return false;
+  if (l.anclar === 'arriba') return true;
+  if (!['lista', 'tarjetas'].includes(l.tipo) || l.revelar === 'todo') return false;
+  return Array.isArray(l.items) && l.items.length >= 2;
 }
 
 // Quita los pasos de una escena clonada (el fondo atenuado de «foco» se ve completo)
@@ -109,16 +125,17 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
     catch (e) { throw new Error(`lámina ${i + 1} (${l.id || l.tipo}): ${e.message}`, { cause: e }); }
     armadas.push(a);
     avisos.push(...a.avisos.map(x => `lámina ${i + 1}: ${x}`));
-    let cuerpo = `<div class="lienzo lz-${escapar(l.tipo)}">${a.interior}</div>`;
+    let cuerpo = `<div class="lienzo lz-${escapar(l.tipo)}${a.arriba ? ' arriba' : ''}">${a.interior}</div>`;
     let pasos = a.pasos;
     if (l.tipo === 'foco') {
       const prev = armadas[i - 1];
       const op = Number.isFinite(l.opacidad) ? l.opacidad : 0.2;
-      const fondo = prev ? `<div class="escena clon" style="position:absolute;inset:0;opacity:${op}"><div class="lienzo">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
+      const fondo = prev ? `<div class="escena clon" style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
       cuerpo = `${fondo}<div class="lienzo" style="z-index:3"><div class="nota" data-p="0" style="--tn:${l.tam || '60px'};color:var(--tinta);font-weight:600;max-width:1300px">${marcar(l.texto || l.nota || '')}</div></div>`;
     }
     const tipo = escapar(l.tipo);
-    return `<section class="lamina escena${a.oscura ? ' oscura' : ''}" data-i="${i}" data-tipo="${tipo}" data-id="${escapar(l.id || tipo)}" data-pasos="${pasos}"${a.clic ? ` data-clic='${escapar(a.clic)}'` : ''}>
+    const claseFondo = a.oscura && ['azul', 'negro'].includes(l.fondo) ? ` fondo-${l.fondo}` : '';
+    return `<section class="lamina escena${a.oscura ? ' oscura' + claseFondo : ''}" data-i="${i}" data-tipo="${tipo}" data-id="${escapar(l.id || tipo)}" data-pasos="${pasos}"${a.clic ? ` data-clic='${escapar(a.clic)}'` : ''}>
   ${em.enTexto(cuerpo)}
   <svg class="capa-mano"></svg>${em.enTexto(a.extras)}
   ${l.tipo === 'camara' ? `<div class="lienzo"><div class="nota" style="color:#999">🎥 ${escapar(l.nota || 'A cámara')}</div></div>` : ''}
@@ -129,7 +146,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
 
   const css = fs.readFileSync(path.join(dirSkill, 'templates', 'base.css'), 'utf8');
   const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8');
-  const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO}}`;
+  const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO};--grano-suave:${GRANO_SUAVE}}`;
   if (em.faltantes.size) avisos.push(`Emojis sin imagen Fluent (se usará la fuente del sistema): ${[...em.faltantes].join(' ')}`);
   em.malformados.forEach((motivo, spec) => avisos.push(`emoji «${spec}»: ${motivo}`));
   em.aproximados.forEach((usado, pedido) => sugerencias.push(`Emoji Fluent aproximado: ${pedido} → ${usado} (Fluent no tiene el original)`));
@@ -138,7 +155,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapar(deck.titulo || 'Láminas')}</title>
 <style>${vars}\n${css}</style></head>
-<body class="${F.W < F.H ? 'f-vertical' : 'f-horizontal'}" data-anim="${deck.animacion === 'suave' ? 'suave' : 'seco'}" data-w="${F.W}" data-h="${F.H}">
+<body class="${F.W < F.H ? 'f-vertical' : 'f-horizontal'}" data-anim="${deck.animacion === 'suave' ? 'suave' : 'seco'}" data-emoji="${em.modo}" data-w="${F.W}" data-h="${F.H}">
 ${DEFS_GLOBALES}
 ${secciones.join('\n')}
 <script>${runtime}</script>

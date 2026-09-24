@@ -22,12 +22,17 @@
 //   · campo que ese diseño no usa (¿error de dedo?), emoji dudoso o aproximado en Fluent;
 //   · `voz` de un solo texto en una lámina de varios pasos; firma por omisión («tumarca»);
 //   · 9:16: contenido en menos del 35% del alto, o dentro de la zona que tapa la interfaz de Reels;
+//   · sello que tapa una flecha; flecha de anotación o de nota al margen de menos de 60 px (un garabato);
+//   · emoji de bajo contraste para su set y su fondo (💬 Fluent sobre blanco, 🗨️ Apple sobre oscura…);
+//   · lámina oscura en algo que no es una revelación (lista, cifra, tabla, tarjetas, stack, idea larga);
+//   · objeción metida en el encabezado de una lista o en un botón (la receta es una `idea` propia);
 //   · un mismo diseño 4 veces seguidas o en más del 45% del deck, 4 láminas seguidas sin capa a mano,
 //     más de 15% de láminas oscuras.
 import fs from 'node:fs';
 import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
-import { MARCA_LITERAL } from './lib/markup.mjs';
+import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
+import { BAJO_CONTRASTE } from './lib/emoji.mjs';
 
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
@@ -35,7 +40,7 @@ try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.erro
 const { deck, dirSalida, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [] } = prep;
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 
-const porLamina = await page.evaluate(([W, H, MARCA]) => {
+const porLamina = await page.evaluate(([W, H, MARCA, BAJO]) => {
   const out = [];
   const reMarca = new RegExp(MARCA);
   const rePendiente = /\[[A-ZÁÉÍÓÚÑÜ0-9][A-ZÁÉÍÓÚÑÜ0-9 _\-]{1,30}\]/g;
@@ -132,6 +137,13 @@ const porLamina = await page.evaluate(([W, H, MARCA]) => {
         [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && !tolerado(e) && opac(e) > 0.5).forEach(e => {
           if (fraccionEn(caja(e, lam), pol) > 0.2) E('el sello tapa un emoji: muévelo con sello_sobre o sello_pos');
         });
+        const tapaFlecha = [...lam.querySelectorAll(':scope > .capa-mano path[data-clase="flecha"]')].some(pth => {
+          if (+pth.dataset.p > p) return false;
+          const tot = pth.getTotalLength(); let k = 0;
+          for (let t = 0; t <= tot; t += 6) { const q = pth.getPointAtLength(t); if (dentroPoligono([q.x, q.y], pol)) k++; }
+          return k >= 3;
+        });
+        if (tapaFlecha) A(`el sello «${corto(sello.textContent, 20)}» tapa una flecha: muévelo con sello_sobre o sello_pos`);
         if ((+sello.dataset.k || 1) < 0.7) A(`el sello «${corto(sello.textContent, 20)}» se redujo al ${Math.round(+sello.dataset.k * 100)}% para caber: un sello lleva 1 o 2 palabras`);
       }
       // Cursor: la mano (sin el margen transparente del SVG) contra letras y emojis
@@ -161,6 +173,12 @@ const porLamina = await page.evaluate(([W, H, MARCA]) => {
           lineas.forEach(({ n: nodo, b }) => { const m = b.h * 0.22; if (q.x > b.x && q.x < b.x + b.w && q.y > b.y + m && q.y < b.y + b.h - m) golpes.set(nodo, (golpes.get(nodo) || 0) + 1); });
         }
         golpes.forEach((g, nodo) => { if (g >= 3) E(`una flecha atraviesa «${corto(nodo.nodeValue, 24)}» y se lee como tachón`); });
+      });
+      // Flecha de anotación o de nota al margen reducida a un garabato
+      lam.querySelectorAll(':scope > .capa-mano path[data-estilo="fina"], :scope > .capa-mano path[data-estilo="curva-roja"]').forEach(pth => {
+        if (+pth.dataset.p > p) return;
+        const largo = pth.getTotalLength();
+        if (largo < 60) A(`una flecha de anotación mide ${Math.round(largo)} px: se ve como un garabato; separa la nota (≥ 60)`);
       });
       // Firma: contra renglones (también en tablas) y contra celdas con texto
       const firma = lam.querySelector(':scope > .firma');
@@ -222,13 +240,23 @@ const porLamina = await page.evaluate(([W, H, MARCA]) => {
         if (zona) AF(`«${zona}» entra en la zona que tapan el caption y los botones de Reels (abajo 320 px, derecha 140 px)`);
       }
     }
+    // Emojis que casi desaparecen en ese set y sobre ese fondo (tabla de emoji.mjs)
+    const modoEmoji = document.body.dataset.emoji || 'apple';
+    const tabla = (BAJO[modoEmoji] || {})[lam.classList.contains('oscura') ? 'oscura' : 'claro'] || {};
+    const flojos = new Set();
+    [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e)).forEach(e => {
+      const g = e.querySelector(':scope > .emo-txt, :scope > img');
+      const ch = g ? String(g.tagName === 'IMG' ? g.getAttribute('alt') : g.textContent).replace(/\uFE0F/g, '') : '';
+      if (tabla[ch]) flojos.add(`${ch} → ${tabla[ch]}`);
+    });
+    if (flojos.size) AF(`emoji de bajo contraste en ${modoEmoji} sobre ${lam.classList.contains('oscura') ? 'fondo oscuro' : 'fondo claro'}; cámbialo: ${[...flojos].join(', ')}`);
     r.mano = lam.querySelectorAll('.capa-mano path, .nota, .tabla, .sello, .t-mano').length;
     r.enfasis = lam.querySelectorAll('[data-sub], mark').length;
     [...lam.querySelectorAll('img')].forEach(im => { if (!im.complete || !im.naturalWidth) r.errores.push(`imagen sin cargar: ${im.getAttribute('src')}`); });
     out.push(r);
   });
   return out;
-}, [W, H, MARCA_LITERAL]);
+}, [W, H, MARCA_LITERAL, BAJO_CONTRASTE]);
 await browser.close();
 
 const errores = [], avis = [];
@@ -271,6 +299,19 @@ Object.entries(conteo).forEach(([t, c]) => { if (tipos.length >= 8 && c / tipos.
 let sinMano = 0;
 porLamina.forEach(r => { if (r.tipo === 'camara') return; sinMano = r.mano ? 0 : sinMano + 1; if (sinMano === 4) avis.push(`4 láminas seguidas sin capa a mano (hasta la ${r.i + 1}): suma una nota, un subrayado o una flecha`); });
 const oscuras = deck.laminas.filter(l => l.tipo === 'oscura' || l.oscura).length;
+// La referencia solo oscurece REVELACIONES de marca o producto [36:15, 37:40, 43:00]; precio, qué incluye,
+// garantía y llamado van en blanco [38:10-42:25]
+deck.laminas.forEach((l, i) => {
+  if (!l.oscura || l.tipo === 'oscura') return;
+  if (['lista', 'cifra', 'tabla', 'tarjetas', 'stack'].includes(l.tipo) || (l.tipo === 'idea' && palabras(l.texto) > 12)) {
+    avis.push(`${nombre(i)}: «oscura» en un(a) ${l.tipo}; la referencia solo oscurece la revelación de la marca o el producto (el precio y lo que incluye van en blanco)`);
+  }
+});
+// Objeciones: una forma para todas (idea con «Objeción #N» y la respuesta en la lámina siguiente)
+deck.laminas.forEach((l, i) => {
+  const cab = String((['lista', 'boton', 'tarjetas'].includes(l.tipo) && (l.encabezado || l.texto)) || '');
+  if (/^\s*(objeci[oó]n|raz[oó]n\s*#)/i.test(cab)) avis.push(`${nombre(i)}: la objeción va dentro de un(a) ${l.tipo}; dale su propia lámina \`idea\` con encabezado «Objeción #N» y la respuesta en la siguiente (GUION §2)`);
+});
 if (tipos.length >= 8 && oscuras / tipos.length > 0.15) avis.push(`${oscuras} láminas oscuras: resérvalas para revelar el producto o la oferta (≤ 15%)`);
 
 const nota = Math.max(0, 100 - 12 * errores.length - 3 * avis.length);

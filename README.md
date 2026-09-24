@@ -11,7 +11,7 @@ Gadzhi.
 
 ## Qué hace
 
-- **25 diseños**: idea, lista, flujo, sistema de pasos 1-2-3, bifurcación, tabla-marcador escrita
+- **26 diseños**: idea, lista, flujo, sistema de pasos 1-2-3, bifurcación, tabla-marcador escrita
   a mano, gráficas, línea de tiempo, medidor, rejillas de cantidad, chat, capturas de prueba con
   el dato encerrado, reparto, calendario de fases, botón con cursor, lámina de oferta y más.
 - **Revelado por acumulación**: cada frase suma un elemento sin mover nada. Es el ritmo de la
@@ -77,7 +77,7 @@ Un `deck.json` mínimo:
 ```
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
-El demo con los 25 diseños, en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json).
+El demo con los 26 diseños, en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json).
 
 ### Montaje sobre tu grabación
 

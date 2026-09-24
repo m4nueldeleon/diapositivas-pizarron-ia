@@ -35,7 +35,7 @@ deducir.
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
    usuario prefiere dejarlos para después, usa huecos en MAYÚSCULAS entre corchetes (`[PRECIO]`),
    nunca cifras inventadas; QA los marca como error.
-5. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 25 diseños y sus campos) y
+5. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 26 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
@@ -61,16 +61,21 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 1. **Una idea por lámina**, revelada **un elemento por frase**. Nada cambia de lugar al revelar.
 2. **Lienzo blanco puro.** El color solo significa algo: rojo para énfasis o lo malo, verde para
    lo bueno, naranja para lo intermedio, amarillo como resaltador.
-3. **Texto grande**: 72 a 80 px en 1920, casi negro, con la frase clave en **negrita**. Máximo
-   22 palabras visibles.
-4. **Un emoji literal por lámina**, grande. La negación se dibuja (`no:🎥`) y los conceptos
-   dobles se componen (`🧑‍⚕️+💰`).
+3. **Texto grande**: 84 a 90 px en 1920 (76 en frases largas), casi negro, con la frase clave en
+   **negrita**. Máximo 22 palabras visibles.
+4. **Un emoji protagonista por lámina de idea**, grande, o un par antes/después
+   (`["no:📚","si:🤖"]`, con el negado atenuado). La negación se dibuja (`no:🎥`) y los conceptos
+   dobles se componen (`🧑‍⚕️+💰`). Para una fila de conceptos, `flujo` (con `flecha: "ninguna"` si no
+   hay causa→efecto). Las láminas de datos (cifra, tabla, línea de tiempo, calendario, gráfica) no
+   llevan emoji protagonista.
 5. **Un énfasis por lámina**: subrayado rojo, resaltador o círculo. Dos es el tope.
 6. **La capa a mano es la firma**: cada 3 o 4 láminas debe haber una nota, flecha, llave,
    tachón o sello.
 7. **Objetos que vuelven**: la tabla-marcador crece columna por columna y el mapa 1-2-3 abre
    cada sección.
-8. **Láminas oscuras solo para la oferta.**
+8. **Láminas oscuras solo para REVELAR la marca o el producto** (nombre y logo, una frase). El
+   precio, lo que incluye, los entregables, la garantía y el llamado van en blanco con el estilo
+   normal (✅, cifras, `stack`).
 9. **Prueba real o nada.** Nunca inventes testimonios, capturas ni cifras. Si no hay prueba, la
    lámina lo dice como hipótesis o no existe.
 10. **Marcas con su logo real**, nunca dibujadas ni hechas con emoji.
@@ -96,7 +101,7 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   - `marca`: `{ "texto": "tumarca", "sufijo": ".com" }` o `{ "logo": "assets/logo.png" }`. Va abajo
     a la derecha; en 9:16 va arriba (abajo la tapan el caption y los botones de Reels).
     `"posicion": "arriba"` o `"abajo"` lo fuerza. QA avisa si sigue la firma de ejemplo «tumarca».
-- El demo con los 25 diseños está en `ejemplos/demo/deck.json`.
+- El demo con los 26 diseños está en `ejemplos/demo/deck.json`.
 
 ## 4. Qué entregar al usuario
 

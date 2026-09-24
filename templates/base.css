@@ -3,6 +3,7 @@
    Medidas en px sobre el lienzo real (1920x1080 en 16:9, 1080x1920 en 9:16). */
 
 @font-face { font-family: 'Figtree'; src: url('fonts/Figtree.ttf') format('truetype'); font-weight: 300 900; font-display: block; }
+@font-face { font-family: 'Figtree'; src: url('fonts/Figtree-Italic.ttf') format('truetype'); font-weight: 300 900; font-style: italic; font-display: block; }
 @font-face { font-family: 'Caveat'; src: url('fonts/Caveat.ttf') format('truetype'); font-weight: 400 700; font-display: block; }
 @font-face { font-family: 'Sello'; src: url('fonts/ZillaSlab-Bold.ttf') format('truetype'); font-weight: 700; font-display: block; }
 
@@ -23,6 +24,8 @@
   --sombra: 0 22px 60px rgba(0, 0, 0, .13), 0 3px 10px rgba(0, 0, 0, .06);
   --sombra-suave: 0 6px 18px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .05);
   --radio: 20px;
+  --t-rotulo: 56px;          /* rótulo gris chico («Sin:», «Paso 1», «Objeción #2»): uno solo en todo el estilo */
+  --oro: #f2b33d;            /* cifra o precio sobre lámina oscura [36:40 «$25,000»] */
   /* la fuente de emoji al final es la red de seguridad del texto (en modo fluent el emoji del texto ya es imagen) */
   --sans: 'Figtree', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
   --mano: 'Caveat', 'Bradley Hand', 'Comic Sans MS', cursive, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
@@ -59,21 +62,28 @@ body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: an
 .atenuado-paso { opacity: .2; transition: none; }
 
 /* ---------- texto ---------- */
-.t { font-size: var(--t, 74px); line-height: 1.24; font-weight: 400; letter-spacing: -.012em; max-width: var(--ancho-texto); text-wrap: balance; }
+/* Escala medida en la referencia a 1920: la frase de 8-15 palabras de c_0250 da un renglón de 78 px de alto
+   y ~1490 de ancho, que es Figtree a 84 px; las de más de 15 palabras (c_0115, c_0205) van a ~76. */
+.t { font-size: var(--t, 84px); line-height: 1.24; font-weight: 400; letter-spacing: -.012em; max-width: var(--ancho-texto); text-wrap: balance; }
 .t b, .t strong { font-weight: 700; }
-.t.chico { --t: 62px; }
-.t.medio { --t: 72px; }
-.t.grande { --t: 80px; }
+.t.compacto { --t: 68px; }   /* solo frases de más de 25 palabras: nunca por debajo */
+.t.chico { --t: 76px; }
+.t.medio { --t: 84px; }
+.t.grande { --t: 90px; }
 .t.enorme { --t: 120px; font-weight: 700; letter-spacing: -.02em; }
 .sub { font-weight: 700; position: relative; }
 mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; margin: 0 -.04em;
   background-image: linear-gradient(to bottom, transparent 6%, var(--amarillo) 6%, var(--amarillo) 94%, transparent 94%);
   -webkit-box-decoration-break: clone; box-decoration-break: clone; border-radius: 2px; }
 .mayus { font-weight: 800; letter-spacing: .005em; }
+/* ^^remate^^: la entrada va en regular y el remate en su propio renglón, en negrita y ~1.5× [18:30, 17:15] */
+.remate { display: block; font-weight: 700; font-size: min(1.5em, 124px); line-height: 1.08; letter-spacing: -.022em; margin-top: .08em; }
+.t i, .nota i, .item i { font-style: italic; }
 .tono-v { color: var(--verde); } .tono-r { color: var(--rojo); } .tono-n { color: var(--naranja); }
-.tono-g { color: var(--gris); } .tono-a { color: var(--azul); } .tono-k { color: var(--tinta); }
-.encabezado { font-size: 50px; color: var(--gris); font-weight: 400; margin-bottom: 56px; }
-.nota { font-family: var(--mano); font-weight: 500; font-size: var(--tn, 64px); line-height: 1.15; color: var(--tinta-suave); max-width: var(--ancho-texto); }
+.tono-g { color: var(--gris); } .tono-a { color: var(--azul); } .tono-k { color: var(--tinta); } .tono-o { color: var(--oro); }
+.encabezado { font-size: var(--t-rotulo); color: var(--gris); font-weight: 400; margin-bottom: 56px; }
+.encabezado.entre { margin: 30px 0 14px; }   /* emoji → «Razón #1» → frase en negrita [34:25, 35:15] */
+.nota { font-family: var(--mano); font-weight: 500; font-size: var(--tn, 64px); line-height: 1.15; color: var(--tinta-suave); max-width: var(--ancho-texto); text-wrap: balance; }
 .nota b { font-weight: 700; color: var(--tinta); }
 .nota.roja { color: var(--rojo); }
 .mano { font-family: var(--mano); font-weight: 600; }
@@ -82,6 +92,9 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .gap-s { gap: 24px; } .gap-m { gap: 44px; } .gap-l { gap: 80px; }
 .mt-s { margin-top: 28px; } .mt-m { margin-top: 56px; } .mt-l { margin-top: 90px; }
 .mt-e { margin-top: 84px; }
+.mt-t { margin-top: 240px; }   /* frase bajo las teclas 1 2 3: ~266 px de aire en ref_115 */
+/* Listas y tarjetas que crecen: arrancan arriba y el hueco de abajo anuncia que viene más [ref_95, 3:25, 9:25] */
+.lienzo.arriba { justify-content: flex-start; padding-top: 150px; }
 
 /* ---------- emoji ---------- */
 .emo { position: relative; display: inline-block; width: var(--s); height: var(--s); flex: none; line-height: 1; vertical-align: middle; }
@@ -89,6 +102,7 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .emo > .emo-txt { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; font-size: calc(var(--s) * .86); line-height: var(--s); display: block; text-align: center; }
 .emo .insignia { position: absolute; width: 58%; height: 58%; right: -14%; bottom: -8%; }
 .emo .insignia.izq { right: auto; left: -12%; bottom: -6%; width: 46%; height: 46%; }
+.emo .insignia.izq.no { width: 62%; height: 62%; left: -8%; bottom: -2%; }   /* la ✕ cruza el cuarto inferior izquierdo [ref_628] */
 .emo .insignia > img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .emo .insignia > .emo-txt { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; font-size: calc(var(--s) * .5); line-height: calc(var(--s) * .58); display: block; text-align: center; }
 .emo .insignia.izq > .emo-txt { font-size: calc(var(--s) * .4); line-height: calc(var(--s) * .46); }
@@ -121,8 +135,9 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 /* ---------- tarjetas ---------- */
 .tarjetas { display: grid; grid-template-columns: repeat(var(--cols, 3), var(--tw, 420px)); gap: 36px; justify-content: center; }
 .tarjeta { background: var(--tarjeta); border-radius: var(--radio); box-shadow: var(--sombra-suave);
-  height: var(--th, 250px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
-  font-weight: 700; font-size: var(--tt, 46px); line-height: 1.15; padding: 18px; text-align: center; }
+  height: var(--th, 250px); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 24px;
+  font-weight: 700; font-size: var(--tt, 46px); line-height: 1.15; padding: 44px 18px 18px; text-align: center; }
+.tarjeta .rotulo { min-height: 2.3em; display: flex; align-items: flex-start; justify-content: center; }
 .tarjeta .emo { --s: 118px; }
 .tarjeta.tono-bv { background: #c9f7c3; } .tarjeta.tono-br { background: #f7c9c9; } .tarjeta.tono-bn { background: #fbe0c4; }
 
@@ -153,6 +168,14 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
   background: linear-gradient(180deg, #62cbb9, #2f9f8f); box-shadow: 0 16px 34px rgba(47, 159, 143, .35), inset 0 2px 0 rgba(255,255,255,.35); }
 .boton-ui .emo { --s: 84px; }
 
+/* ---------- stack (bento de lo que incluye) ---------- */
+.stack { display: grid; grid-template-columns: repeat(var(--cols, 3), var(--cw, 480px)); gap: 28px; justify-content: center; }
+.bento { position: relative; height: 190px; border-radius: 22px; background: #ececec; }
+.bento-lleno { position: absolute; inset: 0; border-radius: 22px; background: #f7f7f7; box-shadow: var(--sombra-suave);
+  display: flex; align-items: center; justify-content: center; gap: 26px; padding: 0 30px; font: 700 48px/1.1 var(--sans); text-align: left; }
+.bento-lleno.tono-bv { background: #c9f7c3; } .bento-lleno.tono-br { background: #f7c9c9; } .bento-lleno.tono-bn { background: #fbe0c4; }
+.f-vertical .bento { height: 170px; } .f-vertical .bento-lleno { font-size: 42px; gap: 18px; padding: 0 22px; }
+
 /* ---------- medidor ---------- */
 .medidor { position: relative; width: 900px; height: 66px; border-radius: 30px;
   background: linear-gradient(90deg, #19d63b 0%, #9be21c 30%, #ffd000 55%, #ff7a00 78%, #ff1010 100%);
@@ -176,14 +199,16 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .chat { display: flex; flex-direction: column; gap: 34px; width: 1500px; }
 .msj { display: flex; align-items: flex-end; gap: 22px; }
 .msj.yo { justify-content: flex-end; }
-.msj .burbuja { max-width: 1150px; padding: 32px 48px; border-radius: 48px; font-size: 54px; line-height: 1.3; text-align: left; }
-.msj.yo .burbuja { background: linear-gradient(180deg, #5bb8f7, #2f95e6); color: #fff; border-bottom-right-radius: 10px; }
-.msj.otro .burbuja { background: #e6e6ea; color: #222; border-bottom-left-radius: 10px; }
+.msj .burbuja { max-width: 1150px; padding: 32px 48px; border-radius: 48px; font-size: var(--tb, 54px); line-height: 1.3; text-align: left; }
+.msj.yo .burbuja { background: linear-gradient(180deg, #5bb8f7, #2f95e6); color: #fff; }
+.msj.otro .burbuja { background: linear-gradient(180deg, #aaaeb0, #8f9395); color: #fff; }   /* gris medio (RGB ~154-178) con letra blanca */
 .msj .yo-av, .msj .otro-av { width: 126px; height: 126px; border-radius: 50%; flex: none; display: grid; place-items: center; }
 .msj .yo-av { background: linear-gradient(180deg, #59b3f5, #2a8fe0); }
-.msj .otro-av { background: linear-gradient(180deg, #cfcfd4, #a9a9b0); }
-.burbuja .hueco { color: #fff3a0; font-weight: 700; }
-.msj.otro .burbuja .hueco { color: #9a5b00; font-weight: 700; }   /* el amarillo sobre gris no se lee (1.2:1) */
+.msj .otro-av { background: linear-gradient(180deg, #aaaeb0, #8f9395); }
+.msj .av-emo { background: #f1f1f3; }
+/* [huecos] de plantilla: resaltador amarillo con tinta negra, legible en la burbuja azul y en la gris (13:1) */
+.burbuja .hueco { color: #111; background: var(--amarillo); font-weight: 700; border-radius: .25em; padding: 0 .15em;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 
 /* ---------- prueba (capturas) ---------- */
 .pruebas { display: flex; align-items: center; justify-content: center; }
@@ -213,8 +238,9 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 
 /* ---------- calendario ---------- */
 .calendario { width: 1400px; border-radius: 26px; background: #f7f7f7; box-shadow: var(--sombra); overflow: hidden; }
-.calendario .barra { display: flex; justify-content: space-between; align-items: center; padding: 28px 40px; font: 800 50px/1 var(--sans); color: #fff; }
-.calendario .barra span { background: rgba(255,255,255,.3); padding: 12px 26px; border-radius: 14px; font-size: 40px; }
+.calendario .barra { display: flex; justify-content: flex-start; align-items: center; padding: 28px 40px; font: 800 50px/1 var(--sans); color: #fff; }
+.calendario .barra .sub { font-weight: 500; font-style: normal; font-size: 40px; margin-left: 60px; }
+.calendario .barra span { margin-left: auto; background: rgba(255,255,255,.3); padding: 12px 26px; border-radius: 14px; font-size: 40px; }
 .calendario .dias { display: grid; grid-template-columns: repeat(var(--cols, 5), 1fr); gap: 20px; padding: 30px 34px 36px; }
 .calendario .dia { border-radius: 16px; background: linear-gradient(180deg, #ffffff, #e9e9e9); box-shadow: var(--sombra-suave), inset 0 2px 0 #fff;
   height: 196px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
@@ -222,19 +248,28 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .calendario .dia b { font-size: 66px; font-weight: 800; line-height: 1; }
 .calendario .dia span { font-size: 26px; opacity: .8; }
 .calendario .dia.apagado { opacity: .3; }
+.calendario .dia.apagado.tinte { color: #555 !important; }   /* las fases no activas conservan su tinte, apagado [29:20] */
 
 /* ---------- oscura (revelación de producto u oferta) ---------- */
 .lamina.oscura { background: radial-gradient(120% 80% at 50% 110%, #5b2bd6 0%, #2a1370 32%, #07060d 70%); color: #fff; }
 .lamina.oscura .firma { color: #fff; opacity: .9; }
 .lamina.oscura .t { color: #fff; }
 .lamina.oscura .nota { color: #cfc8ff; }
+/* Sobre negro el énfasis va en blanco o dorado; el rojo sube de tono (el #c8101e queda en 3.4:1) */
+.lamina.oscura .tono-r, .lamina.oscura .nota.roja { color: #ff4d57; }
+.lamina.oscura.fondo-azul { background: radial-gradient(90% 60% at 50% -10%, #1f4dff 0%, #0a1a66 30%, #050508 65%); }
+.lamina.oscura.fondo-negro { background: #0b0b0e; }
 .titulo-marca { font-size: 132px; font-weight: 600; letter-spacing: -.03em; }
 
 /* ---------- sello ---------- */
+/* Etiqueta blanca OPACA (tapa lo que hay debajo, como en 6:45) y, dentro, la tinta con doble borde y grano leve.
+   La máscara va solo en la tinta: sus huecos dejan ver el blanco de la etiqueta, no el contenido. */
 .sello { position: absolute; left: 50%; top: 50%; z-index: 7; transform: translate(-50%, -50%) rotate(-5deg);
-  padding: 30px 60px; border: 9px solid var(--rojo); border-radius: 26px; color: var(--rojo);
-  font: 700 104px/1 'Sello', 'Rockwell', serif; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap;
-  background: rgba(255,255,255,.9); outline: 4px solid var(--rojo); outline-offset: -26px; mask-image: var(--grano); -webkit-mask-image: var(--grano); mask-size: 420px; -webkit-mask-size: 420px; }
+  background: #fff; padding: 7px; border-radius: 32px; white-space: nowrap; }
+.sello-tinta { padding: .29em .58em; border: 9px solid var(--rojo); border-radius: 26px; color: var(--rojo);
+  font: 700 104px/1 'Sello', 'Rockwell', serif; letter-spacing: .02em; text-transform: uppercase;
+  outline: 4px solid var(--rojo); outline-offset: -26px;
+  mask-image: var(--grano-suave); -webkit-mask-image: var(--grano-suave); mask-size: 420px; -webkit-mask-size: 420px; }
 
 /* ---------- cursor ---------- */
 .cursor { position: absolute; z-index: 8; width: 86px; height: 96px; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,.22)); }
@@ -244,6 +279,7 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
    El lienzo mide 1920 de alto: con los tamaños de 16:9 el contenido ocupaba 23-30% del alto. Todo crece
    ~1.2-1.35× conservando la jerarquía; un tam_texto explícito del deck sigue mandando (va en línea). */
 .f-vertical .t { --t: 90px; }
+.f-vertical .t.compacto { --t: 72px; }
 .f-vertical .t.chico { --t: 78px; }
 .f-vertical .t.medio { --t: 88px; }
 .f-vertical .t.grande { --t: 100px; }
@@ -251,9 +287,11 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .f-vertical .nota { font-size: var(--tn, 80px); }
 .f-vertical .encabezado { font-size: 60px; }
 .f-vertical .firma { right: 60px; }
-.f-vertical .firma.arriba { top: 96px; }
+/* 9:16: arriba al centro, bajo la barra de Reels (220 px) y lejos de la cámara de la esquina derecha */
+.f-vertical .firma.arriba { top: 226px; right: auto; left: 50%; transform: translateX(-50%); }
+.f-vertical .lienzo.arriba { padding-top: 340px; }
 .f-vertical .chat { width: 900px; }
-.f-vertical .msj .burbuja { font-size: 58px; max-width: 820px; padding: 36px 52px; }
+.f-vertical .msj .burbuja { font-size: var(--tb, 58px); max-width: 820px; padding: 36px 52px; }
 .f-vertical .msj .yo-av, .f-vertical .msj .otro-av { width: 96px; height: 96px; }
 .f-vertical .post { width: 900px; font-size: 38px; }
 .f-vertical .calendario { width: 920px; }

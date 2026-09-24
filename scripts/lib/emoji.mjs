@@ -104,11 +104,14 @@ export function resolverFluent(ch, dirSalida, aproximados) {
 const SIL = (x, s = 1) => `<circle cx="${12 * s + x}" cy="${8 * s}" r="${4.6 * s}" fill="url(#pz-sil)"/><path d="M${x + 3 * s} ${22 * s}c0-5 ${4 * s}-${8.2 * s} ${9 * s}-${8.2 * s}s${9 * s} ${3.2 * s} ${9 * s} ${8.2 * s}z" fill="url(#pz-sil)"/>`;
 // El degradado de las siluetas se define UNA vez fuera de las láminas (construir.mjs → DEFS_GLOBALES):
 // si viviera dentro de una lámina oculta, las demás láminas lo perderían en el presentador.
-export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#90a6be"/><stop offset="1" stop-color="#5c7390"/></linearGradient></defs></svg>';
+export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#90a6be"/><stop offset="1" stop-color="#5c7390"/></linearGradient><linearGradient id="pz-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45c91f"/><stop offset="1" stop-color="#1f9a0d"/></linearGradient></defs></svg>';
 const DEF_SIL = '';
+// La ✕ llena su caja (la insignia de «no:» cruza la esquina del emoji como en ref_628) y la ✅ es verde
+// saturado con palomita gruesa: el ✅ de Fluent es verde menta pálido y se perdía sobre el cuadrante verde.
+const EQUIS = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M3.5 3.5 20.5 20.5M20.5 3.5 3.5 20.5" stroke="#d3121f" stroke-width="3.6" stroke-linecap="round"/></svg>';
+const PALOMITA = '<svg viewBox="0 0 24 24" width="100%" height="100%"><rect x="1.5" y="1.5" width="21" height="21" rx="5" fill="url(#pz-ok)"/><path d="M6.6 12.4l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const GLIFOS_SVG = {
-  '❌': '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M5.2 5.2 18.8 18.8M18.8 5.2 5.2 18.8" stroke="#d3121f" stroke-width="4.4" stroke-linecap="round"/></svg>',
-  '✖': '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M5.2 5.2 18.8 18.8M18.8 5.2 5.2 18.8" stroke="#d3121f" stroke-width="4.4" stroke-linecap="round"/></svg>',
+  '❌': EQUIS, '✖': EQUIS, '✅': PALOMITA, '☑': PALOMITA, '✔': PALOMITA,
   '👤': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}${SIL(0)}</svg>`,
   '👥': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}<g opacity=".75">${SIL(5.2, 0.8)}</g>${SIL(-2.4, 0.86)}</svg>`,
 };
@@ -161,7 +164,7 @@ export class Emojis {
     const c = analizarCompuesto(spec);
     if (c.error) this.malformados.set(String(spec), c.error);
     const base = this.glifo(c.base);
-    const izq = c.prefijo ? `<span class="insignia izq">${this.glifo(c.prefijo === 'no' ? '❌' : '✅')}</span>` : '';
+    const izq = c.prefijo ? `<span class="insignia izq${c.prefijo === 'no' ? ' no' : ''}">${this.glifo(c.prefijo === 'no' ? '❌' : '✅')}</span>` : '';
     const der = c.insignia ? `<span class="insignia">${this.glifo(c.insignia)}</span>` : '';
     const tamCss = typeof tam === 'number' && Number.isFinite(tam) ? tam + 'px' : /^[\d.]+(px|em)$/.test(String(tam)) ? tam : '130px';
     return `<span class="emo ${escapar(extra)}" style="--s:${tamCss}">${base}${izq}${der}</span>`;
@@ -192,9 +195,28 @@ export class Emojis {
   }
 }
 
-// Tamaños con nombre (px en el lienzo de 1920 de ancho)
-export const TAM_EMOJI = { chico: 110, medio: 170, grande: 240, heroe: 300 };
+// Tamaños con nombre: la CAJA en px sobre el lienzo de 1920. El glifo 3D llena ~85% de su caja, así que
+// medio 230 se ve de ~197 (el 🏆 de ref_90) y heroe 360 de ~310 (el médico de ref_10).
+export const TAM_EMOJI = { chico: 150, medio: 230, grande: 290, heroe: 360 };
 export function tamEmoji(v, porOmision = 'medio') {
   if (typeof v === 'number') return v;
   return TAM_EMOJI[v] || TAM_EMOJI[porOmision];
+}
+
+// Emojis que casi desaparecen según el set y el fondo (muestrario de la ronda 1 sobre blanco, tarjeta,
+// cuadrantes y lámina oscura). QA avisa y propone el sustituto. Sin selector de variación (FE0F).
+export const BAJO_CONTRASTE = {
+  apple: {
+    claro: { '🏷': '💵', '✉': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩' },
+    oscura: { '🗨': '💬', '📞': '☎', '💲': '💵', '🎥': '📹', '🤍': '❤' },
+  },
+  fluent: {
+    claro: { '💬': '📲', '🗨': '📲', '💭': '💡', '✉': '📧', '📩': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩' },
+    oscura: { '🗣': '🎤', '🤍': '❤' },
+  },
+};
+// Devuelve el sustituto sugerido si el emoji es de bajo contraste en ese set y fondo, o '' si se ve bien.
+export function bajoContraste(ch, modo, fondo) {
+  const t = (BAJO_CONTRASTE[modo] || {})[fondo === 'oscura' ? 'oscura' : 'claro'] || {};
+  return t[String(ch || '').replace(/\uFE0F/g, '')] || '';
 }

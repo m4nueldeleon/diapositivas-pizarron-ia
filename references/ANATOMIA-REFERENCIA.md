@@ -69,7 +69,7 @@ Colores muestreados:
 | 6:35-6:45 | 500 cajas 📦 + «That's 500» + sello «A LOT OF SKILL» | `rejilla` + `sello` |
 | 7:15 | Medidor + «full-stack entrepreneur» | `medidor` |
 | 7:25 | Curvas escala contra costo de anuncios con «Your Margins» en verde | `grafica` + `banda` |
-| 7:30 | Columna de la tabla con flechas rojas que convergen en una pregunta manuscrita | `tabla` + notas |
+| 7:30 | Columna de la tabla con flechas rojas que convergen en una pregunta manuscrita | sin diseño todavía (`tabla` no dibuja flechas convergentes) |
 | 9:50 | Día 1 / 14 / 30 con «Ideal» en verde y «High likelihood of quitting» en rojo | `linea-tiempo` |
 | 10:10 | Seis ✅ + «one single solution» | `idea` |
 | 10:20-10:25 | Cuadrantes rojo y verde a sangre con emojis tachados o palomeados | `cuadrantes` |
@@ -80,7 +80,7 @@ Colores muestreados:
 | 11:25-11:30 | Artículos de prensa como captura con subrayado | `prueba` |
 | 12:45 | Creador → producto → audiencia → dinero; 70% y 30% | `flujo` |
 | 13:55-14:00 | Teléfonos con perfiles de creadores | `prueba` |
-| 14:25 | Perfil con «Last 24 hours $15,763» encerrado y flecha roja | `prueba` + `circulo` |
+| 14:25 | Perfil con «Last 24 hours $15,763» encerrado y flecha roja | `prueba` + `circulo` (la flecha que entra desde fuera aún no existe) |
 | 14:45 | 99 puntos verdes y 1 rojo | `rejilla` + `punto` |
 | 14:55 | Multitud de siluetas y «You» | `rejilla` + `destacar` |
 | 15:20 | Lámina anterior atenuada + frase manuscrita encima | `foco` |

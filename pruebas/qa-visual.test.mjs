@@ -32,6 +32,9 @@ test('QA: las reglas nuevas disparan en el fixture de defectos', { timeout: 120_
   assert.ok(hay(r.avisos, /sello-largo.*se redujo/), 'sello largo');
   assert.ok(hay(r.errores, /voz-corta.*1 textos y la lámina 2 pasos/), 'voz');
   assert.ok(hay(r.avisos, /azul.*contraste bajo \(2\.\d:1/), 'contraste');
+  assert.ok(hay(r.avisos, /emoji-bajo.*bajo contraste.*🏷 → 💵/), 'emoji de bajo contraste');
+  assert.ok(hay(r.avisos, /oscura-lista.*solo oscurece la revelación/), 'oscura fuera de una revelación');
+  assert.ok(hay(r.avisos, /objecion-lista.*la objeción va dentro/), 'objeción metida en una lista');
   // un error por DATO pendiente, no por aparición; «[nombre]» en minúsculas es plantilla y no cuenta
   assert.deepEqual(Object.keys(r.pendientes).sort(), ['[DÍAS]', '[PRECIO]']);
   assert.equal(r.errores.filter(e => /dato pendiente/.test(e)).length, 2);
@@ -52,7 +55,7 @@ test('QA: el demo no dispara ninguna regla de sello, cursor, flecha, marcas ni c
   assert.ok(!r.avisos.some(e => /sello|cursor|flecha|contraste|firma cae/.test(e)), r.avisos.join('\n'));
 });
 
-test('capa a mano: un renglón = un trazo; puntas llenas macizas; codo que no tacha el origen', { timeout: 120_000 }, async () => {
+test('capa a mano: un renglón = un trazo; puntas en V gruesas; codo que no tacha el origen', { timeout: 120_000 }, async () => {
   await conDeck({ emoji: 'apple', marca: false, laminas: [
     { tipo: 'lista', vineta: 'x', items: [{ texto: 'Mandar el catálogo completo de cuarenta fotos con precios y medidas a cada persona que te escribe', tachado: true }] },
     { tipo: 'lista', vineta: 'x', items: [{ texto: 'Corto', tachado: true }] },
@@ -72,7 +75,7 @@ test('capa a mano: un renglón = un trazo; puntas llenas macizas; codo que no ta
       const lam = window.PZ.lams[4], L = lam.getBoundingClientRect();
       const t = lam.querySelector('[data-a="o"]').getBoundingClientRect();
       const A = { x: t.left - L.left, y: t.top - L.top, w: t.width, h: t.height };
-      const puntas = [...lam.querySelectorAll('path[data-relleno]')].map(p => getComputedStyle(p).fill);
+      const puntas = [...lam.querySelectorAll('path[data-clase="punta"]')].map(p => ({ fill: getComputedStyle(p).fill, ancho: +p.getAttribute('stroke-width') }));
       const dentro = [...lam.querySelectorAll('path[data-clase="flecha"]')].some(p => {
         const n = p.getTotalLength();
         for (let s = 0; s <= n; s += 4) { const q = p.getPointAtLength(s); if (q.x > A.x && q.x < A.x + A.w && q.y > A.y && q.y < A.y + A.h) return true; }
@@ -81,7 +84,8 @@ test('capa a mano: un renglón = un trazo; puntas llenas macizas; codo que no ta
       return { puntas, dentro };
     });
     assert.equal(codo.puntas.length, 2);
-    assert.ok(codo.puntas.every(f => f !== 'none'), 'la punta llena sale hueca');
+    // la punta es una V abierta del mismo grosor que el trazo (~10 px, c_0635), no un triángulo hueco de 1 px
+    assert.ok(codo.puntas.every(q => q.fill === 'none' && q.ancho >= 9), JSON.stringify(codo.puntas));
     assert.equal(codo.dentro, false, 'el codo atraviesa el texto de origen');
   });
 });

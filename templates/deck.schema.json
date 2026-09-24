@@ -27,7 +27,7 @@
       "type": "object",
       "required": ["tipo"],
       "properties": {
-        "tipo": { "enum": ["idea", "lista", "cuadrantes", "cita", "cifra", "objeto", "oscura", "flujo", "pasos", "bifurcacion", "circulos", "tabla", "tarjetas", "grafica", "linea-tiempo", "medidor", "opciones", "rejilla", "reparto", "calendario", "chat", "prueba", "boton", "foco", "camara"] },
+        "tipo": { "enum": ["idea", "lista", "cuadrantes", "cita", "cifra", "objeto", "oscura", "flujo", "pasos", "bifurcacion", "circulos", "tabla", "tarjetas", "grafica", "linea-tiempo", "medidor", "opciones", "rejilla", "reparto", "calendario", "chat", "prueba", "boton", "stack", "foco", "camara"] },
         "id": { "type": "string" },
         "voz": { "$ref": "#/$defs/voz" },
         "anclas": { "type": "array", "items": { "type": "string" } },
@@ -42,7 +42,7 @@
         "firma": { "type": "boolean" },
         "texto": { "$ref": "#/$defs/texto" },
         "nota": { "$ref": "#/$defs/texto" },
-        "emoji": { "$ref": "#/$defs/emoji" },
+        "emoji": { "oneOf": [{ "$ref": "#/$defs/emoji" }, { "type": "array", "items": { "$ref": "#/$defs/emoji" }, "minItems": 1, "maxItems": 2, "description": "solo en idea: par antes/después [\"no:📚\", \"si:🤖\"]" }] },
         "encabezado": { "$ref": "#/$defs/texto" }
       }
     }

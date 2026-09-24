@@ -7,10 +7,10 @@ import fs from 'node:fs';
 
 const tipos = Object.keys(LAYOUTS);
 
-test('el demo es válido y usa los 25 diseños', () => {
+test('el demo es válido y usa los 26 diseños', () => {
   const deck = JSON.parse(fs.readFileSync(new URL('../ejemplos/demo/deck.json', import.meta.url)));
   assert.deepEqual(validarDeck(deck, tipos), []);
-  assert.equal(tipos.length, 25);
+  assert.equal(tipos.length, 26);
   const usados = new Set(deck.laminas.map(l => l.tipo));
   assert.deepEqual(tipos.filter(t => !usados.has(t)), []);
 });
@@ -62,8 +62,8 @@ test('campo que el diseño no usa: aviso suave con sugerencia (no error)', () =>
   const s = camposDesconocidos({ tipo: 'pasos', sello_pso: 2, emoji_tamano: 300, tam_texto: 'medio' }, 0);
   assert.equal(s.length, 2);
   assert.ok(s.some(x => /«sello_pso».*¿quisiste decir «sello_paso»\?/.test(x)));
-  assert.deepEqual(camposDesconocidos({ tipo: 'chat', tam_texto: '60px', _comentario: 'x' }, 0).length, 1);
-  const { avisos, sugerencias } = sanearDeck({ laminas: [{ tipo: 'chat', mensajes: [{ texto: 'a' }], tam_texto: '60px' }] });
+  assert.deepEqual(camposDesconocidos({ tipo: 'tabla', tam_texto: '60px', _comentario: 'x' }, 0).length, 1);
+  const { avisos, sugerencias } = sanearDeck({ laminas: [{ tipo: 'tabla', columnas: ['a'], filas: [['x', 'y']], tam_texto: '60px' }] });
   assert.equal(avisos.length, 0);
   assert.equal(sugerencias.length, 1);
 });

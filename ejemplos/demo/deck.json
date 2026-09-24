@@ -340,7 +340,8 @@
    "emoji": "📦",
    "total": 300,
    "anotacion": "Son 300",
-   "sello": "Mucha habilidad"
+   "sello": "Mucha habilidad",
+   "encabezado_estilo": "frase"
   },
   {
    "id": "escala",
@@ -524,22 +525,33 @@
    ],
    "fases": [
     {
-     "nombre": "Fase 1 · Calentamiento",
+     "nombre": "Fase 1",
+     "sub": "Calentamiento",
      "desde": 1,
      "hasta": 3,
      "color": "amarillo"
     },
     {
-     "nombre": "Fase 2 · Entregar valor",
+     "nombre": "Fase 2",
+     "sub": "Entregar valor",
      "desde": 4,
      "hasta": 9,
      "color": "azul"
     },
     {
-     "nombre": "Fase 3 · Carrito abierto",
+     "nombre": "Fase 3",
+     "sub": "Carrito abierto",
      "desde": 10,
      "hasta": 14,
      "color": "verde"
+    }
+   ],
+   "anotaciones": [
+    {
+     "dia": 1,
+     "texto": "«Me gusta su contenido»",
+     "lado": "izquierda",
+     "arriba": "12%"
     }
    ]
   },
@@ -619,6 +631,64 @@
    "texto": "Quiero ser ==100% transparente== aquí."
   },
   {
+   "id": "par",
+   "tipo": "idea",
+   "emoji": [
+    "no:📚",
+    "si:🤖"
+   ],
+   "apagar_emoji": 0,
+   "emoji_paso": 1,
+   "texto": "La IA ya hace **todo el trabajo pesado**",
+   "voz": [
+    "Antes necesitabas estudiar años",
+    "hoy la IA hace todo el trabajo pesado",
+    "lo que antes tomaba años de estudio"
+   ],
+   "nota": "Antes tomaba años de estudio.",
+   "texto_paso": 1,
+   "nota_paso": 2
+  },
+  {
+   "id": "preguntas",
+   "tipo": "flujo",
+   "flecha": "ninguna",
+   "nodos": [
+    {
+     "emoji": "📦",
+     "etiqueta": "1. Qué producto"
+    },
+    {
+     "emoji": "💵",
+     "etiqueta": "2. A qué precio"
+    },
+    {
+     "emoji": "📈",
+     "etiqueta": "3. Cómo crece"
+    }
+   ],
+   "voz": [
+    "Primero, qué producto",
+    "segundo, a qué precio",
+    "y tercero, cómo crece"
+   ]
+  },
+  {
+   "id": "objecion",
+   "tipo": "idea",
+   "emoji": "no:💻",
+   "encabezado": "Objeción #1",
+   "encabezado_pos": "entre",
+   "texto": "**«No sé nada de tecnología»**",
+   "voz": "La primera objeción: no sé nada de tecnología"
+  },
+  {
+   "id": "remate",
+   "tipo": "idea",
+   "texto": "Eso es lo que yo llamo un\n^^__plan de monetización__^^",
+   "voz": "Eso es lo que yo llamo un plan de monetización"
+  },
+  {
    "id": "camara",
    "tipo": "camara",
    "nota": "A cámara: la historia personal"
@@ -636,6 +706,64 @@
    "emoji": "🚀",
    "titulo": "Tu Programa",
    "texto": "Lo que hay dentro del programa insignia"
+  },
+  {
+   "id": "incluye",
+   "tipo": "stack",
+   "encabezado": "Lo que incluye:",
+   "items": [
+    {
+     "emoji": "🤖",
+     "texto": "Tu agente de ventas",
+     "doble": true
+    },
+    {
+     "emoji": "📚",
+     "texto": "Las 12 clases"
+    },
+    {
+     "emoji": "🗓️",
+     "texto": "4 llamadas en vivo"
+    },
+    {
+     "emoji": "👥",
+     "texto": "Grupo privado"
+    },
+    {
+     "emoji": "🧑‍🏫",
+     "texto": "Un mentor"
+    }
+   ],
+   "remate": "Hecho **contigo**",
+   "voz": [
+    "Esto es lo que incluye",
+    "tu agente de ventas",
+    "las doce clases",
+    "cuatro llamadas en vivo",
+    "el grupo privado",
+    "un mentor",
+    "y lo hacemos contigo"
+   ]
+  },
+  {
+   "id": "precio",
+   "tipo": "cifra",
+   "lineas": [
+    {
+     "texto": "Una recepcionista: {g:$9,000 al mes}",
+     "tam": "64px",
+     "peso": 500
+    },
+    {
+     "texto": "Tu agente: __$1,500 al mes__",
+     "tam": "120px",
+     "peso": 800
+    }
+   ],
+   "voz": [
+    "Una recepcionista te cuesta nueve mil al mes",
+    "tu agente, mil quinientos"
+   ]
   }
  ]
 }

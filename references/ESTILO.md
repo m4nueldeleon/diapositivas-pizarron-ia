@@ -32,11 +32,20 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
 | **La mano del profesor** (manuscrita) | Marcador delgado inclinado: Caveat, casi idéntica | Notas al margen, tablas, anotaciones y llaves. |
 
 - Tamaños medidos en un lienzo de 1920×1080:
-  - Frase normal: **72 a 80 px**, y se queda grande aunque la frase sea larga.
-  - Encabezado gris chico, como «Sin:» o «Ellos harán:»: 50 px.
+  - Frase normal: **84 a 90 px** (la frase de 14 palabras de c_0250 da un renglón de 78 px de
+    alto y ~1490 de ancho = Figtree 84). Frases de 16 a 25 palabras: 76 px. Solo por encima de
+    25 palabras baja a 68, nunca menos.
+  - Rótulo gris chico, como «Sin:», «Ellos harán:», «Paso 1» o «Objeción #2»: **56 px**, uno solo
+    en todo el estilo (`--t-rotulo`).
   - Nota manuscrita: 60 a 64 px.
   - Cifra protagonista: 120 a 140 px.
 - Casi nunca hay título. La lámina ES la frase.
+- **Jerarquía entrada → remate** [18:30, 17:15]: «That's what I call a» en regular y, en su propio
+  renglón, «Monetisation Gameplan.» en negrita a ~1.5× con subrayado rojo. Se escribe `^^remate^^`.
+- **Rótulo entre emoji y frase** [34:25, 35:15]: emoji → «Reason #1» gris chico → la frase en
+  negrita (`encabezado_pos: "entre"`).
+- **La voz del otro va en cursiva** [17:25]: la objeción que piensa el cliente, «"Iman, I don't
+  know any creators."», en Figtree cursiva bajo un 🤔 chico (`*texto*`).
 - **Contraste por peso, no por color**: el texto va siempre casi negro (`#111`). Lo importante
   se marca con negrita, nunca pintándolo de color.
 - Mayúsculas solo en UNA palabra para gritar: «NO IDEA», «ALREADY», «YOU».
@@ -62,17 +71,28 @@ Todo el color vive en la **capa a mano** y en los datos. El texto principal es n
 
 La tabla-marcador es un semáforo: verde, naranja y rojo. Se evalúa sin leer.
 
+**Sobre lámina oscura** el rojo #C8101E se hunde (3.4:1) y la referencia nunca subraya en rojo sobre
+negro [36:40]: el subrayado, la flecha y el círculo van en **blanco**, la negación (tachón, ✕) en
+rojo claro **#FF4D57**, y la cifra o el precio en **dorado #F2B33D** (`{o:$25,000}`). El sello
+conserva #C8101E porque lleva su propia etiqueta blanca.
+
 ## 4. Emojis: el ícono ES el concepto
 
 El emoji no decora: **nombra**. Estilo 3D brillante de Apple. En máquinas sin Mac se usa Fluent
 3D de Microsoft, con licencia MIT y aspecto equivalente.
 
-- **Uno por lámina**, arriba de la frase, grande: entre 170 y 250 px, y hasta 300 en el gancho.
+- **Uno por lámina**, arriba de la frase, grande: se VE de 200 a 250 px (el 🏆 de ref_90 mide ~197
+  visibles) y hasta ~310 en el gancho (el médico de ref_10). La caja mide ~15% más: el glifo 3D
+  llena ~85% (`medio` 230, `grande` 290, `heroe` 360).
+- **Par antes/después** [10:55]: dos emojis en fila, el negado atenuado: `["no:📚", "si:🤖"]`.
+- **Fila de conceptos numerados sin flechas** [19:10-19:15]: 📦 💵 📈, cada uno en su paso
+  (`flujo` con `flecha: "ninguna"`).
 - **Literal y universal**:
   - 💰 dinero, 🤝 alianza, 🤔 pregunta, 🏆 lo mejor.
   - ⏳ tiempo, 🔍 encontrar, 🚀 lanzar, 🤖 IA, 📦 producto.
   - ✅ sí, ❌ no.
-- **Emoji compuesto**: dos emojis cuentan una historia completa. Es la firma del estilo.
+- **Emoji compuesto**: dos emojis cuentan una historia completa. Es la firma del estilo. La ✕ de
+  «no:» mide ~55% del emoji y le CRUZA el cuarto inferior izquierdo [ref_628, 12:15].
   - 🧑‍⚕️ con 💰 encima: «gana como médico».
   - 🎥 con ❌: «sin hacer contenido».
   - 🙋 con ❌: «sin mostrar tu cara».
@@ -81,9 +101,11 @@ El emoji no decora: **nombra**. Estilo 3D brillante de Apple. En máquinas sin M
   texto.
 - **Emoji como cantidad**: 500 cajas 📦 hacen visible «tendrías que vender 500». 99 puntos
   verdes y uno rojo dicen «99%». Una multitud de 👤 con uno encendido dice «tú».
-- **Teclas numéricas 1️⃣ 2️⃣ 3️⃣** unidas por una ruta punteada son el «sistema de 3 pasos». La
-  imagen vuelve en cada sección con el paso activo encendido, los demás al 25% y ✅ bajo los
-  completados. Funciona como mapa del video.
+- **Teclas numéricas 1️⃣ 2️⃣ 3️⃣** unidas por una ruta punteada son el «sistema de 3 pasos», con
+  la frase ~240 px debajo [ref_115]. La ruta solo existe con las teclas; el mapa con íconos
+  (🔍 🛠️ 🚀) no lleva ruta [16:40, 28:00]. La imagen vuelve en cada sección con el paso activo
+  encendido, los demás al 20% y la ✅ bajo los completados **a todo color**: es la señal de
+  avance. Funciona como mapa del video.
 
 Diccionario completo en [EMOJIS.md](EMOJIS.md).
 
@@ -100,14 +122,14 @@ limpio:
 |---|---|---|
 | **Subrayado rojo** | Línea delgada y un poco ondulada bajo la frase clave en negrita | La frase que es la tesis de la lámina. |
 | **Flecha roja recta** | Plumón con punta abierta en V | Proceso A → B: identificar → aliarte. |
-| **Flecha negra curva** | Gruesa, en arco, con punta rellena | Bifurcación o salto: 1 alianza → $2,000 / $50,000. |
+| **Flecha negra curva** | Gruesa (≈10 px), en arco, con punta abierta en V del mismo grosor que el trazo | Bifurcación o salto: 1 alianza → $2,000 / $50,000. Nace por fuera de cada extremo de la frase y baja en diagonal hacia fuera [c_0635]. |
 | **Arco con ✕** | Arco negro con una ✕ roja al centro | «Esto NO lleva a aquello»: tus ahorros ✕→ apostarlos. |
-| **Flecha gris fina** | Curva delgada | Señalar una nota: «Son 500» →. |
+| **Flecha gris fina** | Curva delgada de 120-160 px que sale del borde y baja en gancho con la punta SOBRE la nota | Señalar una nota: «Son 500» [6:45]. |
 | **Llave roja** | Une dos cosas con una nota manuscrita abajo | Comparar dos valores: «Mismo trabajo». |
 | **Círculo o caja roja** | Óvalo o rectángulo redondeado alrededor de un dato | El número clave dentro de una captura. |
 | **Tachón rojo** | Línea sobre texto o ítem | Descartar opciones, como tachar Dropshipping o Trading. |
 | **Ruta punteada gris** | Curva sinuosa entre pasos | Un camino o un proceso en etapas. |
-| **Sello de goma** | Rectángulo rojo girado −5° con letra slab y grano | El remate: «MUCHA HABILIDAD» sobre una rejilla. |
+| **Sello de goma** | Etiqueta blanca opaca con doble borde rojo, girada −5°, letra slab con grano leve, centrada sobre lo que sella y ~60% de su ancho; no tapa notas ni flechas | El remate: «MUCHA HABILIDAD» sobre una rejilla [6:45]. |
 
 Reglas:
 
@@ -132,12 +154,17 @@ Reglas:
    - tarjetas de métricas gris suave.
 4. **Fotos o video de ambiente** solo para emoción: un laberinto para «perdido» o un escenario
    para «comunidad». Pocas.
-5. **Láminas oscuras**: fondo negro con brillo violeta. Se reservan para revelar el producto o
-   la oferta, y el cambio de fondo le avisa al ojo que eso es otra cosa.
+5. **Láminas oscuras**: fondo negro con brillo violeta (o azul arriba, o negro plano: `fondo`).
+   Son **solo para REVELAR la marca o el producto**: el nombre y el logo, una frase [36:15,
+   37:40, 37:50, 43:00]. El precio, lo que incluye, los entregables, la garantía y el llamado van
+   en blanco con el estilo normal (✅, cifras, barras) [38:10-42:25]. El cambio de fondo le avisa
+   al ojo que eso es otra cosa; si se usa para todo, deja de avisar.
 
 ## 7. Movimiento: casi nada, y siempre con propósito
 
 - **Corte seco**: sin transiciones. La lámina aparece.
+- **La lista crece hacia abajo desde arriba** [ref_95 «Without:», 3:25, 9:25]: arranca en el cuarto
+  superior y el hueco de abajo anuncia que viene más. Solo una lista que entra entera se centra.
 - **Revelado por acumulación**: cada frase dicha suma UN elemento y nada cambia de lugar. Las
   listas crecen renglón por renglón y la tabla se llena columna por columna.
 - Solo cuatro micro-efectos:
@@ -169,15 +196,16 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 
 | Pieza | 16:9 | 9:16 |
 |---|---|---|
-| texto chico / medio / grande / enorme | 62 / 72 / 80 / 120 px | 78 / 88 / 100 / 140 px |
+| texto compacto / chico / medio / grande / enorme | 68 / 76 / 84 / 90 / 120 px | 72 / 78 / 88 / 100 / 140 px |
 | nota manuscrita | 64 px | 80 px |
 | burbuja de chat | 54 px | 58 px, hasta 820 px de ancho |
-| emoji con tamaño con nombre (`medio`, `heroe`…) | 110-300 px | ×1.25 |
+| emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 |
 | lista | 58-72 px | ×1.2 |
-| encabezado gris | 50 px | 60 px |
-| firma | abajo a la derecha | arriba a la derecha |
+| rótulo gris | 56 px | 60 px |
+| margen de arriba y de abajo | 100 px | 320 px |
+| firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara |
 
-**Zona segura de Reels**: los ~320 px de abajo los tapan el caption y los botones, y la columna de
+**Zona segura de Reels**: arriba, la barra de Reels (~220 px); los ~320 px de abajo los tapan el caption y los botones, y la columna de
 botones ocupa unos 140 px a la derecha de la franja baja. QA avisa si algo entra ahí, y si una lámina
 de diagrama o lista ocupa menos del 35% del alto.
 

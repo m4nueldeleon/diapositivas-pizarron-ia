@@ -13,6 +13,7 @@ const REQUERIDOS = {
   cifra: ['lineas|valor'], cita: ['texto'], objeto: ['imagen|emoji'], tarjetas: ['items'], oscura: ['titulo|texto|imagen|emoji'],
   cuadrantes: ['items'], tabla: ['columnas', 'filas'], grafica: [], 'linea-tiempo': ['marcas'], medidor: [], opciones: [], rejilla: ['total'],
   prueba: ['capturas'], chat: ['mensajes'], reparto: ['total'], calendario: [], boton: [], circulos: [], camara: [], foco: ['texto|nota'],
+  stack: ['items'],
 };
 const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barras', 'marcas', 'tramos', 'partes', 'dias', 'fases',
   'anotaciones', 'capturas', 'mensajes', 'lineas', 'iconos', 'etiquetas', 'destacar', 'hechos', 'anclas', 'flechas', 'celdas'];
@@ -21,18 +22,19 @@ const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barra
 // Campos que lee cada diseño (además de los COMUNES). Si agregas un campo a un layout, agrégalo aquí:
 // pruebas/contrato.test.mjs revisa que todo «l.campo» de layouts-*.mjs esté en esta tabla.
 export const COMUNES = ['id', 'tipo', 'voz', 'dur', 'ancla', 'anclas', 'revelar', 'sello', 'sello_paso', 'sello_pos', 'sello_sobre',
-  'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura'];
+  'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar'];
 export const CAMPOS = {
-  idea: ['texto', 'texto_paso', 'tam_texto', 'emoji', 'emoji_tam', 'emoji_lado', 'encabezado', 'nota', 'nota_paso'],
+  idea: ['texto', 'texto_paso', 'tam_texto', 'emoji', 'emoji_tam', 'emoji_lado', 'emoji_paso', 'apagar_emoji', 'encabezado', 'encabezado_pos',
+    'nota', 'nota_paso'],
   lista: ['items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'encabezado', 'nota', 'nota_paso'],
   flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  bifurcacion: ['origen', 'ramas', 'llave', 'separacion'],
+  bifurcacion: ['origen', 'ramas', 'llave', 'separacion', 'tam_texto', 'emoji_tam'],
   cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
-  cita: ['texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso'],
+  cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso'],
   objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'encabezado', 'nota', 'nota_paso'],
-  oscura: ['imagen', 'alto', 'emoji', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
+  oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cuadrantes: ['items', 'columnas'],
   tabla: ['columnas', 'filas', 'vacias', 'fijas', 'esquina', 'ancho_etiqueta'],
   grafica: ['grafica', 'series', 'barras', 'banda', 'banda_paso', 'eje_x', 'eje_y', 'titulo', 'subtitulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
@@ -40,9 +42,10 @@ export const CAMPOS = {
   medidor: ['valor', 'tono', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   opciones: ['items', 'elegida', 'texto', 'texto_paso'],
   rejilla: ['total', 'aspecto', 'columnas', 'ancho', 'alto', 'destacar', 'emoji', 'punto', 'emoji_destacado', 'apagar_resto', 'tono',
-    'tono_destacado', 'anotacion', 'anotacion_paso', 'etiqueta_destacado', 'destacado_paso', 'emoji_etiqueta', 'encabezado', 'texto', 'texto_paso'],
-  prueba: ['capturas', 'encabezado', 'texto', 'texto_paso'],
-  chat: ['mensajes', 'encabezado'],
+    'tono_destacado', 'anotacion', 'anotacion_paso', 'etiqueta_destacado', 'destacado_paso', 'emoji_etiqueta', 'encabezado', 'encabezado_estilo',
+    'texto', 'texto_paso'],
+  prueba: ['capturas', 'encabezado', 'encabezado_estilo', 'texto', 'texto_paso'],
+  chat: ['mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro'],
   reparto: ['total', 'partes', 'separacion', 'titulo'],
   calendario: ['fases', 'fase_activa', 'color', 'dias', 'n', 'columnas', 'palabra_dia', 'anotaciones', 'titulo', 'rango'],
   boton: ['boton', 'emoji', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
@@ -50,6 +53,7 @@ export const CAMPOS = {
     'texto_paso', 'nota', 'nota_paso'],
   camara: ['nota'],
   foco: ['texto', 'nota', 'tam', 'opacidad'],
+  stack: ['items', 'columnas', 'encabezado', 'remate', 'remate_paso', 'total', 'nota', 'nota_paso'],
 };
 
 // Distancia de edición (para sugerir el campo que se quiso escribir)
@@ -84,17 +88,19 @@ const ELEMENTOS = {
   'tabla.filas': { claves: ['etiqueta', 'celdas'], lista: true },
   'opciones.items': { claves: ['texto'], texto: true },
   'prueba.capturas': { claves: ['src', 'post'] },
+  'stack.items': { claves: ['texto', 'emoji', 'imagen'], texto: true },
 };
 const vacio = v => v == null || (typeof v === 'string' && !v.trim());
 
 // Emojis: [no:|si:]base[+insignia]. Recorre la lámina entera (items, nodos, ramas, barras…).
-const CLAVE_EMOJI = k => k === 'emoji' || k === 'sobre' || k === 'centro' || (k.startsWith('emoji_') && !['emoji_tam', 'emoji_lado'].includes(k));
+const CLAVE_EMOJI = k => ['emoji', 'sobre', 'centro', 'avatar', 'avatar_yo', 'avatar_otro'].includes(k)
+  || (k.startsWith('emoji_') && !['emoji_tam', 'emoji_lado', 'emoji_paso'].includes(k));
 const PICTO = /\p{Extended_Pictographic}|\p{Emoji_Presentation}|\u20e3/u;
 function revisarEmojis(o, ruta, errores, avisos) {
   if (Array.isArray(o)) return o.forEach((x, i) => revisarEmojis(x, `${ruta}[${i}]`, errores, avisos));
   if (!o || typeof o !== 'object') return;
   for (const [k, v] of Object.entries(o)) {
-    const specs = CLAVE_EMOJI(k) && typeof v === 'string' ? [v] : k === 'iconos' && Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+    const specs = CLAVE_EMOJI(k) && typeof v === 'string' ? [v] : (k === 'iconos' || (k === 'emoji' && CLAVE_EMOJI(k))) && Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
     for (const sp of specs) {
       const c = analizarCompuesto(sp);
       if (c.error) errores.push(`${ruta}.${k}: emoji «${sp}» ${c.error}`);
@@ -136,6 +142,10 @@ export function validarDeck(deck, tipos) {
         if (!regla.claves.some(c => !vacio(x[c]))) e.push(`${donde} está vacío: le falta ${regla.claves.join(' o ')}`);
       });
     }
+    // El par antes/después [10:55] es solo de `idea`; en los demás diseños un emoji es uno
+    if (Array.isArray(l.emoji) && (l.tipo !== 'idea' || !l.emoji.length || l.emoji.some(x => typeof x !== 'string'))) {
+      e.push(l.tipo !== 'idea' ? `${n} (${l.tipo}): «emoji» como lista solo existe en idea (par antes/después); aquí va un solo emoji` : `${n}: «emoji» como lista lleva 1 o 2 emojis de texto`);
+    }
     if (l.tipo === 'bifurcacion' && l.origen != null && (typeof l.origen !== 'object' || Array.isArray(l.origen))) e.push(`${n}: «origen» debe ser un objeto { emoji, texto }`);
     revisarEmojis(l, n, e, []);
   });
@@ -143,23 +153,25 @@ export function validarDeck(deck, tipos) {
 }
 
 // ---------- saneamiento ----------
-const TONOS = new Set(['v', 'r', 'n', 'g', 'a', 'k', 'b', 'verde', 'gris', 'rojo', 'azul', 'naranja']);
+const TONOS = new Set(['v', 'r', 'n', 'g', 'a', 'k', 'o', 'b', 'verde', 'gris', 'rojo', 'azul', 'naranja']);
 const COLORES = new Set(['amarillo', 'azul', 'verde', 'rojo']);
 const ENUMS = {
-  cursor: ['mano', 'flecha'], flecha: ['recta', 'arco', 'arco-negro'], estilo: ['recta', 'arco', 'arco-negro'],
+  cursor: ['mano', 'flecha'], flecha: ['recta', 'arco', 'arco-negro', 'ninguna'], estilo: ['recta', 'arco', 'arco-negro'],
+  encabezado_pos: ['arriba', 'entre'], encabezado_estilo: ['rotulo', 'frase'], anclar: ['arriba', 'centro'], fondo: ['violeta', 'azul', 'negro'],
   lado: ['izquierda', 'derecha'], grafica: ['lineas', 'barras', 'crecimiento'], de: ['yo', 'otro'],
   revelar: ['todo', 'columnas', 'celdas', 'filas', 'ramas', 'series', 'barras', 'pasos'],
   sello_pos: ['centro', 'arriba', 'abajo', 'izquierda', 'derecha', 'arriba-izquierda', 'arriba-derecha', 'abajo-izquierda', 'abajo-derecha'],
   posicion: ['arriba', 'abajo'],
   forma: ['recta', 'exponencial', 'curva', 'plana', 's', 'baja'],
 };
-const TAM_TEXTO = new Set(['chico', 'medio', 'grande', 'enorme']);
+const TAM_TEXTO = new Set(['compacto', 'chico', 'medio', 'grande', 'enorme']);
 // Campos numéricos con su rango [mín, máx, entero]
 const NUMEROS = {
   separacion: [0, 1200], alto: [20, 1800], ancho: [100, 1900], aspecto: [0.2, 5], columnas: [1, 40, 1], vacias: [0, 8, 1],
   total: [1, 1200, 1], radio: [60, 520], radio_interior: [0, 480], personas: [0, 60, 1],
   opacidad: [0, 1], ancho_etiqueta: [0.05, 0.5], elegida: [0, 20, 1], activo: [0, 20, 1], clic: [0, 20, 1], n: [1, 12, 1],
   fase_activa: [0, 20, 1], desde: [0, 1e9], hasta: [0, 1e9], dia: [1, 400, 1], pos: [0, 1], emoji_tam: [16, 700],
+  apagar_emoji: [0, 1, 1], peso: [300, 900, 1],
 };
 const num = (v, [a, b, ent]) => {
   const x = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
@@ -211,7 +223,7 @@ function sanearObjeto(o, ruta, avisos) {
 const NORMALIZAR = {
   tarjetas: { items: x => ({ texto: x }) }, chat: { mensajes: x => ({ texto: x }) }, cuadrantes: { items: x => ({ texto: x }) },
   flujo: { nodos: x => ({ etiqueta: x }) }, bifurcacion: { ramas: x => ({ texto: x }) }, 'linea-tiempo': { marcas: x => ({ texto: x }) },
-  opciones: { items: x => ({ texto: x }) },
+  opciones: { items: x => ({ texto: x }) }, stack: { items: x => ({ texto: x }) },
   tabla: { filas: x => (Array.isArray(x) ? { etiqueta: x[0], celdas: x.slice(1) } : x) },
 };
 function normalizar(l) {

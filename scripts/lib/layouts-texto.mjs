@@ -4,21 +4,40 @@
 import { marcar, escapar, texto, nota, bloque, pasoDe } from './comun.mjs';
 import { tamTexto, palabras } from './markup.mjs';
 
+// Par antes/después [10:55]: dos emojis en fila; `apagar_emoji` (0|1) atenúa el negado y `emoji_paso`
+// revela el segundo en un paso aparte.
+function parEmoji(l, ctx) {
+  const [a, b] = l.emoji.slice(0, 2);
+  if (l.emoji.length > 2) ctx.avisos.push('«emoji» lleva más de 2 elementos: el par antes/después usa solo los dos primeros');
+  const apaga = i => (l.apagar_emoji === i ? ' style="opacity:.3"' : '');
+  const k2 = pasoDe(l, 'emoji_paso', 0);
+  return `<div class="fila" style="gap:110px;align-items:flex-end"${ctx.P(0)}${ctx.A('emoji')}><div${apaga(0)}>${ctx.emoji(a, l.emoji_tam, 'medio')}</div><div${apaga(1)}${k2 ? ctx.P(k2) : ''}>${ctx.emoji(b, l.emoji_tam, 'medio')}</div></div>`;
+}
+
 // IDEA — emoji arriba + frase (+ nota manuscrita). El diseño más usado del estilo.
+// `encabezado_pos: "entre"` pone el rótulo gris ENTRE el emoji y la frase [34:25 «Reason #1»].
 export function idea(l, ctx) {
   const tam = tamTexto(l.texto, l.tam_texto);
-  const emo = l.emoji ? ctx.emoji(l.emoji, l.emoji_tam, 'medio') : '';
+  const par = Array.isArray(l.emoji);
+  // al lado del texto el emoji va a ~2 veces la letra (170 px en 16:9), no al tamaño de protagonista
+  const tamE = l.emoji_lado && !l.emoji_tam ? (ctx.vertical ? 210 : 170) : l.emoji_tam;
+  const emo = !l.emoji ? '' : par ? '' : ctx.emoji(l.emoji, tamE, 'medio');
   const kTexto = pasoDe(l, 'texto_paso', 0);
   const kNota = pasoDe(l, 'nota_paso', l.texto ? kTexto + 1 : 0);
-  if (l.emoji_lado) {
-    return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
+  const entre = l.encabezado_pos === 'entre';
+  const rotulo = cls => (l.encabezado ? `<div class="encabezado${cls}"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : '');
+  if (l.emoji_lado && !par) {
+    return `<div class="pila">${rotulo('')}
       <div class="fila gap-s t ${tam}"${ctx.P(kTexto)}${ctx.A('texto')}><span${ctx.A('emoji')}>${emo.replace('class="emo ', 'class="emo en-linea ')}</span><span>${marcar(l.texto)}</span></div>
       ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
   }
+  const vis = par ? parEmoji(l, ctx) : emo ? `<div${ctx.P(0)}${ctx.A('emoji')}>${emo}</div>` : '';
+  const hayEmo = Boolean(vis);
   return `<div class="pila">
-    ${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    ${emo ? `<div${ctx.P(0)}${ctx.A('emoji')}>${emo}</div>` : ''}
-    ${texto(ctx, l.texto, tam + (emo ? ' mt-e' : ''), kTexto, ctx.A('texto'))}
+    ${entre ? '' : rotulo('')}
+    ${vis}
+    ${entre ? rotulo(' entre') : ''}
+    ${texto(ctx, l.texto, tam + (hayEmo && !(entre && l.encabezado) ? ' mt-e' : ''), kTexto, ctx.A('texto'))}
     ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
 }
 
@@ -44,21 +63,24 @@ export function lista(l, ctx) {
 export function flujo(l, ctx) {
   const nodos = l.nodos || [];
   const n = nodos.length;
-  const tamE = l.emoji_tam || (n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
-  const gap = l.separacion || (ctx.vertical ? 150 : n <= 2 ? 380 : n === 3 ? 260 : n === 4 ? 170 : 96);
-  const te = n >= 5 ? '40px' : n === 4 ? '54px' : '76px';
-  const estilo = ctx.vertical ? 'recta' : (l.flecha || 'recta');
+  // `flecha: "ninguna"`: una fila de conceptos numerados sin causa→efecto [19:10-19:15]; nodos más chicos y
+  // etiqueta regular, cada uno en su paso.
+  const sinFlecha = l.flecha === 'ninguna';
+  const tamE = l.emoji_tam || (sinFlecha ? 120 : n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
+  const gap = l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 260 : n === 4 ? 170 : 96);
+  const te = n >= 5 ? '40px' : n === 4 ? '54px' : sinFlecha ? '60px' : '76px';
+  const estilo = sinFlecha ? 'ninguna' : ctx.vertical ? 'recta' : (l.flecha || 'recta');
   const html = nodos.map((nd, i) => {
     const k = i === 0 ? 0 : i;
     const vis = nd.imagen ? `<img src="${ctx.img(nd.imagen)}" style="height:${nd.alto || 300}px;width:auto;display:block" alt="">` : ctx.emoji(nd.emoji, tamE);
-    if (i > 0) {
+    if (i > 0 && !sinFlecha) {
       const fl = Array.isArray(l.flechas) ? (l.flechas[i - 1] || {}) : {};
       ctx.con({ de: 'n' + (i - 1), a: 'n' + i, estilo: fl.estilo || estilo, tachada: !!fl.tachada, etiqueta: fl.etiqueta, p: k });
     }
     const aNodo = ctx.vertical ? ctx.A('n' + i) : '', aVis = ctx.vertical ? '' : ctx.A('n' + i);
     return `<div class="nodo" style="--te:${te}"${ctx.P(k)}${aNodo}>
       <div${aVis}>${vis}</div>
-      ${nd.etiqueta ? `<div class="etiqueta ${nd.normal ? 'normal' : ''}">${marcar(nd.etiqueta)}</div>` : ''}
+      ${nd.etiqueta ? `<div class="etiqueta ${nd.normal || sinFlecha ? 'normal' : ''}">${marcar(nd.etiqueta)}</div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;
   }).join('');
   const dir = ctx.vertical ? 'pila' : 'fila';
@@ -72,6 +94,8 @@ export function flujo(l, ctx) {
 // con el paso activo encendido y los anteriores con ✅.
 // Por omisión todo entra en un solo corte (teclas, título y nota), como en la referencia [1:55]; con
 // `revelar: "pasos"` cada tecla entra en su propio paso y la ruta se dibuja tramo por tramo.
+// Mapa con íconos [16:40, 28:00]: SIN ruta punteada por omisión, los pasos no activos al 20% y la ✅ de
+// los hechos SIEMPRE a todo color (va fuera de la parte atenuada: es la señal de avance).
 export function pasos(l, ctx) {
   const n = l.n || (l.iconos ? l.iconos.length : 3);
   const activo = l.activo || 0;
@@ -79,27 +103,28 @@ export function pasos(l, ctx) {
   const rev = l.revelar === 'pasos' && !activo && !l.hechos;
   const cols = [];
   for (let i = 0; i < n; i++) {
-    const apagado = activo && activo !== i + 1 ? ' style="opacity:.28"' : '';
+    const apagado = activo && activo !== i + 1 ? ' style="opacity:.2"' : '';
     const sobre = l.sobre ? `<div style="margin-bottom:10px">${ctx.emoji(l.sobre, 120)}</div>` : '';
     let cab;
     if (l.iconos) {
       cab = `<div${ctx.A('k' + i)}>${ctx.emoji(l.iconos[i], 180)}</div>
-        ${l.prefijo !== false ? `<div style="font-size:46px;color:var(--gris);margin-top:22px">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
-        ${l.etiquetas ? `<div style="font-size:80px;font-weight:700;letter-spacing:-.02em;line-height:1.05">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
+        ${l.prefijo !== false ? `<div style="font-size:62px;color:var(--gris);margin-top:60px;line-height:1.05">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
+        ${l.etiquetas ? `<div style="font-size:86px;font-weight:700;letter-spacing:-.02em;line-height:1.05${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
       cab = `<div class="tecla" style="--s:${ctx.vertical ? 150 : 170}px"${ctx.A('k' + i)}>${i + 1}</div>
         ${l.etiquetas ? `<div style="font-size:56px;font-weight:700;margin-top:28px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
     const ok = hechos.has(i + 1) ? `<div style="margin-top:26px">${ctx.emoji('✅', 90)}</div>` : '';
-    cols.push(`<div class="pila"${apagado}${rev ? ctx.P(i) : ''}>${sobre}${cab}${ok}</div>`);
-    if (i > 0 && l.ruta !== false) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: rev ? i : 0 });
+    cols.push(`<div class="pila"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
+    const ruta = l.ruta ?? !l.iconos;
+    if (i > 0 && ruta) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: rev ? i : 0 });
   }
   const kt = pasoDe(l, 'texto_paso', rev ? n : 0);
   // con etiquetas bajo la tecla, la mano aprieta la parte de arriba para no taparlas
   if (l.clic) ctx.clic = { a: 'k' + (l.clic - 1), p: pasoDe(l, 'clic_paso', kt + 1), ...(l.etiquetas && !l.iconos ? { pos: [0.6, 0.4] } : {}) };
   const gapP = ctx.vertical ? (l.iconos ? 70 : 110) : (l.iconos ? 230 : 330);
   return `<div class="pila"><div class="fila"${rev ? '' : ctx.P(0)} style="gap:${gapP}px;align-items:flex-start">${cols.join('')}</div>
-    ${texto(ctx, l.texto, (l.tam_texto || 'grande') + ' mt-e', kt)}
+    ${texto(ctx, l.texto, (l.tam_texto || 'grande') + (l.iconos ? ' mt-e' : ' mt-t'), kt)}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
 }
 
@@ -110,24 +135,31 @@ export function bifurcacion(l, ctx) {
   ramas.forEach((r, i) => ctx.con({ de: 'o', a: 'r' + i, estilo: 'codo', p: l.revelar === 'ramas' ? 1 + i : 1 }));
   const kLlave = l.revelar === 'ramas' ? ramas.length + 1 : 2;
   if (l.llave) ctx.con({ de: 'r0', a: 'r' + (ramas.length - 1), via: 'llave-et', estilo: 'llave', p: kLlave });
+  const tamE = l.emoji_tam || 124;
+  const tamT = l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : ctx.vertical ? '76px' : '88px';
   const rs = ramas.map((r, i) => `<div class="nodo"${ctx.P(l.revelar === 'ramas' ? 1 + i : 1)}${ctx.A('r' + i)}>
-      ${r.emoji ? ctx.emoji(r.emoji, 124) : ''}
+      ${r.emoji ? ctx.emoji(r.emoji, tamE) : ''}
       ${r.valor ? `<div class="valor">${marcar(r.valor)}</div>` : ''}
       ${r.texto ? `<div class="etiqueta normal" style="--te:54px">${marcar(r.texto)}</div>` : ''}</div>`).join('');
   return `<div class="pila">
-    <div class="nodo"${ctx.P(0)}>${o.emoji ? ctx.emoji(o.emoji, 124) : ''}
-      <div class="t grande"${ctx.A('o')} style="font-size:88px">${marcar(o.texto || '')}</div></div>
+    <div class="nodo"${ctx.P(0)}>${o.emoji ? ctx.emoji(o.emoji, tamE) : ''}
+      <div class="t grande"${ctx.A('o')} style="font-size:${tamT}">${marcar(o.texto || '')}</div></div>
     <div class="fila" style="gap:${l.separacion || (ctx.vertical ? 200 : 640)}px;margin-top:100px;align-items:flex-start">${rs}</div>
     ${l.llave ? `<div class="nota roja"${ctx.P(kLlave)}${ctx.A('llave-et')} style="margin-top:120px;--tn:76px;font-weight:600">${marcar(l.llave)}</div>` : ''}</div>`;
 }
 
-// CIFRA — números y ecuaciones grandes. Una línea por paso.
+// CIFRA — números y ecuaciones grandes. Una línea por paso. Cada línea puede ser texto o un objeto
+// { texto, tam, peso, tono } para jerarquizar: un ancla chica y gris arriba y el precio grande abajo.
+const TONO_LINEA = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)', o: 'var(--oro)' };
 export function cifra(l, ctx) {
-  const lineas = l.lineas || (l.valor ? [l.valor] : []);
+  const lineas = (l.lineas || (l.valor ? [l.valor] : [])).map(x => (x && typeof x === 'object' ? x : { texto: x }));
   const unica = lineas.length === 1 && !l.tam;
   const tc = l.tam || (unica ? '140px' : '84px');
   const peso = unica ? 800 : 500;
-  const html = lineas.map((x, i) => `<div class="cifra"${ctx.P(i)}${ctx.A('l' + i)} style="--tc:${tc};font-weight:${peso};${i ? 'margin-top:34px' : ''}">${marcar(x)}</div>`).join('');
+  const html = lineas.map((x, i) => {
+    const col = TONO_LINEA[x.tono] ? `color:${TONO_LINEA[x.tono]};` : '';
+    return `<div class="cifra"${ctx.P(i)}${ctx.A('l' + i)} style="--tc:${x.tam || tc};font-weight:${x.peso || peso};${col}${i ? 'margin-top:34px' : ''}">${marcar(x.texto)}</div>`;
+  }).join('');
   const k = Math.max(0, lineas.length - 1);
   return `<div class="pila">
     ${l.arriba ? `<div class="nota" ${ctx.P(0)} style="margin-bottom:40px">${marcar(l.arriba)}</div>` : ''}
@@ -142,7 +174,7 @@ export function cita(l, ctx) {
   ctx.con({ de: 'icono', a: 'cita', estilo: 'curva-roja', p: 0 });
   return `<div class="pila">
     <div${ctx.P(0)}${ctx.A('icono')}>${ctx.emoji(l.emoji || '📝', l.emoji_tam, 'medio')}</div>
-    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:80px;color:var(--tinta);margin-top:130px;margin-left:80px;max-width:1500px">${marcar(l.texto)}</div>
+    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px">${marcar(l.texto)}</div>
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', 1), 'mt-m')}</div>`;
 }
 
@@ -165,15 +197,16 @@ export function tarjetas(l, ctx) {
   const cols = l.columnas || (angosto && items.length >= 4 ? 2 : items.length <= 4 ? items.length : 3);
   const tw = Math.min(l.ancho || (items.length <= 3 ? 520 : 480), Math.floor((ctx.util - (cols - 1) * 36) / Math.max(1, cols)));
   const tt = l.tam_texto && /px$/.test(l.tam_texto) ? `;--tt:${l.tam_texto}` : '';
-  const html = items.map((it, i) => `<div class="tarjeta ${['v', 'r', 'n'].includes(it.tono) ? 'tono-b' + it.tono : ''}"${ctx.P(i)}>${it.emoji ? ctx.emoji(it.emoji, 104) : ''}<div>${marcar(it.texto)}</div></div>`).join('');
-  return `<div class="pila">${l.encabezado ? `<div class="encabezado" style="color:var(--tinta-suave);font-size:54px"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
+  // Emoji arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia abajo [9:25]
+  const html = items.map((it, i) => `<div class="tarjeta ${['v', 'r', 'n'].includes(it.tono) ? 'tono-b' + it.tono : ''}"${ctx.P(i)}>${it.emoji ? ctx.emoji(it.emoji, 104) : ''}<div class="rotulo">${marcar(it.texto)}</div></div>`).join('');
+  return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     <div class="tarjetas" style="--cols:${cols};--tw:${tw}px;--th:${items.length <= 3 ? 320 : 280}px${tt}">${html}</div>
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}</div>`;
 }
 
 // OSCURA — revelación de producto u oferta: fondo negro con brillo violeta. Rompe el blanco a propósito.
 export function oscura(l, ctx) {
-  const logo = l.imagen ? `<img src="${ctx.img(l.imagen)}" style="height:${l.alto || 150}px;width:auto" alt="">` : (l.emoji ? ctx.emoji(l.emoji, 150) : '');
+  const logo = l.imagen ? `<img src="${ctx.img(l.imagen)}" style="height:${l.alto || 150}px;width:auto" alt="">` : (l.emoji ? ctx.emoji(l.emoji, l.emoji_tam || 150) : '');
   return `<div class="pila">${logo ? `<div${ctx.P(0)}>${logo}</div>` : ''}
     ${l.titulo ? `<div class="titulo-marca"${ctx.P(0)} style="${logo ? 'margin-top:30px' : ''}">${marcar(l.titulo)}</div>` : ''}
     ${texto(ctx, l.texto, 'chico mt-m', pasoDe(l, 'texto_paso', 0))}

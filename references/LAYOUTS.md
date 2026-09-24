@@ -11,16 +11,23 @@ ese diseño.
   tiempos, anclas y QA.
 - `dur`: segundos por paso, como número o como lista.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
-- `sello`: texto de sello de goma que cae en un paso extra. Por omisión va al centro del lienzo
-  (en `rejilla`, centrado sobre las cajas, como en [6:35]). Se mueve con:
-  - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas));
+- `sello`: texto de sello de goma que cae en un paso extra. Es una etiqueta blanca OPACA con doble
+  borde rojo: tapa lo que queda debajo, como en [6:45]. Por omisión va al centro del lienzo (en
+  `rejilla`, centrado sobre las cajas). Se mueve con:
+  - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
+    ~60% de su ancho (letra de 72 a 140 px). No lo pongas sobre notas ni flechas: QA lo avisa;
   - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,
     `arriba-derecha`, `abajo-izquierda` o `abajo-derecha`.
   Siempre queda dentro del lienzo y, si es muy largo para el formato, se reduce (QA avisa bajo 70%:
   un sello lleva 1 o 2 palabras).
 - `clic`: el ancla que el cursor va a presionar; `cursor` elige entre `mano` y `flecha`.
   `clic_pos: [x, y]` (de 0 a 1 dentro del ancla) mueve la punta del dedo. En un `boton` la punta cae
-  por omisión en el relleno de la derecha, bajo el emoji y sin tapar el texto.
+  por omisión a la derecha del emoji, a media altura, con el emoji entero a la vista [23:15].
+- `anclar: "arriba" | "centro"`: dónde arranca el contenido. Por omisión, `lista` y `tarjetas` que
+  se revelan de a uno arrancan ARRIBA y crecen hacia abajo [ref_95, 3:25, 9:25]; lo demás va
+  centrado. `"centro"` lo devuelve al centro [15:35].
+- `oscura: true` pone la lámina en negro, y `fondo` elige el brillo: `violeta` (por omisión),
+  `azul` (arriba, [37:40]) o `negro` (plano, [36:15]). Solo para revelar la marca o el producto.
 - `_comentario` (o cualquier campo que empiece con `_`): notas tuyas; el motor las ignora. Un campo
   que ese diseño no usa se ignora también, pero QA lo avisa y sugiere el nombre correcto.
 - `firma: false`: oculta la firma en esa lámina.
@@ -37,9 +44,24 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   "texto": "La gente la usa para\n__ganar lo mismo que un médico__",
   "nota": "Sin experiencia previa en negocios." }
 ```
-- `emoji_tam`: `chico` (110), `medio` (170, por omisión), `grande` (240), `heroe` (300) o un número.
-- `emoji_lado: true` pone el emoji a la izquierda en la misma línea [10:15].
-- `encabezado`: texto gris chico arriba.
+- `emoji_tam`: `chico` (150), `medio` (230, por omisión), `grande` (290), `heroe` (360) o un número.
+  Es la caja: el glifo se ve ~85% (medio ≈ 197 visibles, como el 🏆 de ref_90).
+- `emoji_lado: true` pone el emoji a la izquierda en la misma línea [10:15] (170 px por omisión).
+- **Par antes/después** [10:55]: `"emoji": ["no:📚", "si:🤖"]` pone dos emojis en fila;
+  `apagar_emoji: 0` atenúa el primero (el negado) y `emoji_paso: 1` revela el segundo después.
+  Solo en `idea`.
+- `encabezado`: rótulo gris chico arriba. Con `encabezado_pos: "entre"` va ENTRE el emoji y la
+  frase [34:25 «Reason #1»].
+- **Objeción o «Razón #N»** [34:25, 35:15] — una forma para todas las del deck:
+  ```json
+  { "tipo": "idea", "emoji": "no:💻", "encabezado": "Objeción #1", "encabezado_pos": "entre",
+    "texto": "**«No sé nada de tecnología»**" }
+  ```
+  La respuesta va en la lámina siguiente (`idea` con `si:…` o `lista` con `vineta: "check"`); con
+  contraste, pregunta → «Sí.» → «Pero…» en láminas de una frase [34:35-34:45]. Nunca dentro del
+  `encabezado` de una lista ni pegada al texto de un `boton` (QA lo avisa).
+- **Entrada y remate** [18:30]: `"Eso es lo que yo llamo un\n^^__plan de monetización__^^"`: el
+  remate va en su renglón, en negrita y ~1.5×. El tamaño automático cuenta solo la entrada.
 - `nota_paso`: por omisión la nota aparece en el paso 1.
 - Sin emoji es una **frase sola** [3:20 «So let's get started.»].
 
@@ -51,6 +73,7 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - `vineta`: `x` (❌), `check` (✅) o cualquier emoji. También puede ir un `emoji` por ítem.
 - Un ítem con `"tachado": true` recibe un tachón rojo. Con `"tachar_despues": true` en la lista,
   los tachones llegan después de que aparece todo [4:05].
+- Arranca arriba y crece hacia abajo (`anclar`); con `revelar: "todo"` se centra.
 
 ### `cuadrantes` — bloques de color a sangre  ·  [10:20]
 Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un bloque por paso.
@@ -65,6 +88,9 @@ Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un
 ```json
 { "tipo": "cita", "emoji": "📝", "texto": "«Así es EXACTAMENTE como puedes ganar $10k–50k…»" }
 ```
+El ícono va centrado y la flecha es un gancho corto (≤ 340 px) que sale a su izquierda y cae sobre
+el primer cuarto del primer renglón. La cita va a 64 px en renglones parejos (`tam_texto` en px la
+cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
 
 ### `cifra` — números y ecuaciones grandes, una línea por paso  ·  [3:10, 14:10]
 ```json
@@ -73,6 +99,14 @@ Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un
 - Con una sola línea sale enorme, a 140 px.
 - `arriba`: nota manuscrita encima. `abajo`: etiqueta chica, como «Seguidores».
 - `[[palabra]]` pone una palabra en letra de mano dentro de la ecuación: `100-250 [[ventas]] × $100`.
+- Cada línea puede ser un objeto `{ "texto", "tam", "peso", "tono" }` para jerarquizar. **Precio con
+  ancla** — el ancla es algo real que el público ya vio (la columna cara de la tabla, un sueldo, tu
+  nivel superior), chica y gris; el precio, grande y abajo. Nunca un «Valor» inventado:
+  ```json
+  { "tipo": "cifra", "lineas": [
+    { "texto": "Una recepcionista: {g:$9,000 al mes}", "tam": "64px", "peso": 500 },
+    { "texto": "Tu agente: __$1,500 al mes__", "tam": "120px", "peso": 800 } ] }
+  ```
 
 ### `objeto` — foto real recortada o emoji gigante  ·  [1:40, 23:20]
 ```json
@@ -80,8 +114,11 @@ Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un
 ```
 Para recortar el fondo de una foto se usa rembg (ver PROTOCOLO.md).
 
-### `oscura` — revelación de producto u oferta  ·  [36:20, 37:40]
-Fondo negro con brillo violeta. Solo para el momento «esto es lo que vendo».
+### `oscura` — revelación de la marca o el producto  ·  [36:15, 36:20, 37:40, 43:00]
+Fondo negro con brillo violeta (`fondo`: `azul` o `negro` para las otras dos variantes). Solo para
+el momento «esto es lo que vendo»: nombre, logo y una frase. El precio, lo que incluye y el llamado
+van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachón en rojo claro y
+`{o:…}` pinta una cifra en dorado [36:40]. `emoji_tam` cambia el tamaño del emoji (150).
 ```json
 { "tipo": "oscura", "imagen": "assets/logo.png", "titulo": "Tu Programa", "texto": "Lo que hay dentro" }
 ```
@@ -92,7 +129,9 @@ Fondo negro con brillo violeta. Solo para el momento «esto es lo que vendo».
 ```json
 { "tipo": "flujo", "nodos": [{ "emoji": "🕵️", "etiqueta": "Identificar" }, { "emoji": "🤝", "etiqueta": "Aliarte" }] }
 ```
-- `flecha`: `recta` (plumón rojo, por omisión), `arco` (arco rojo) o `arco-negro`.
+- `flecha`: `recta` (plumón rojo, por omisión), `arco` (arco rojo), `arco-negro` o `ninguna`: una
+  fila de conceptos numerados sin causa→efecto, con nodos más chicos y etiqueta regular, cada uno
+  en su paso [19:10-19:15]. El número va en la etiqueta: `"1. Qué producto"`.
 - `flechas: [{ "tachada": true, "etiqueta": "no" }]` va por flecha: el arco tachado se lee
   «esto NO lleva a aquello» [1:45].
 - Un nodo acepta `imagen` (foto recortada), `sub` (texto gris) y `normal: true`, que quita la
@@ -108,8 +147,12 @@ Fondo negro con brillo violeta. Solo para el momento «esto es lo que vendo».
   ```json
   { "tipo": "pasos", "iconos": ["🔍", "🛠️", "🚀"], "etiquetas": ["Encontrar", "Construir", "Lanzar"], "activo": 1 }
   ```
-- `activo`: número del paso encendido; los demás quedan al 28%.
-- `hechos`: lista de pasos con ✅, por ejemplo `[1, 2]`.
+- `activo`: número del paso encendido; los demás quedan al 20% [ref_1040].
+- `hechos`: lista de pasos con ✅, por ejemplo `[1, 2]`. La ✅ va siempre a todo color, aunque su
+  columna esté atenuada por `activo`: es la señal de avance [28:00-28:05].
+- Con `iconos`, «Paso N» va gris a 62 px y la etiqueta a 86 px en negrita, y NO hay ruta punteada
+  (la referencia no la dibuja en el mapa); `ruta: true` la fuerza.
+- Con teclas, la frase va ~240 px debajo [ref_115] y la ruta punteada se dibuja por omisión.
 - `sobre: "✋"` pone un emoji arriba de cada tecla. `clic: 2` hace que el cursor presione la
   tecla 2. `ruta: false` quita la ruta punteada.
 - Por omisión teclas, texto y nota entran en un solo corte, como en la referencia [1:55]; el cursor
@@ -124,6 +167,12 @@ Fondo negro con brillo violeta. Solo para el momento «esto es lo que vendo».
   "llave": "Mismo trabajo" }
 ```
 `revelar: "ramas"` hace que cada rama aparezca en su propio paso.
+- Las flechas negras (~10 px, punta en V del mismo grosor) nacen justo por fuera de cada extremo de
+  la frase, a la altura de la línea base, y bajan en diagonal hacia fuera hasta ~40 px sobre el
+  emoji de la rama [c_0635]. Si la rama cae bajo la frase (ramas juntas, 9:16), nacen debajo del
+  texto sin pasar de su extremo interior.
+- `tam_texto` (px) cambia la frase del origen: 88 px en 16:9, 76 en 9:16. `emoji_tam` cambia los
+  emojis (124). `separacion` sigue mandando sobre la distancia entre ramas.
 
 ### `circulos` — la audiencia: anillo de personas y círculo interior  ·  [10:45, 14:05]
 ```json
@@ -160,6 +209,8 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 - El ancho sale del ancho útil del formato (1620 px en 16:9, 900 en vertical): hasta 4 tarjetas van
   en una fila (4 en 16:9 miden ~378 px) y en vertical, con 4 o más, van de 2 en 2.
 - `columnas`, `ancho` (px por tarjeta) y `tam_texto` (px, por omisión 46) ajustan a mano.
+- El emoji va arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia
+  abajo [9:25]. Las tarjetas arrancan arriba de la lámina (`anclar`).
 
 ### `grafica` — líneas, barras o crecimiento  ·  [6:15, 7:25, 16:15, 38:10]
 ```json
@@ -206,6 +257,13 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   { "tipo": "rejilla", "emoji": "👤", "total": 40, "columnas": 10, "destacar": [14], "emoji_destacado": "🧑‍💻", "etiqueta_destacado": "Tú" }
   ```
 - Con `apagar_resto: true` todo lo que no está destacado queda gris.
+- `destacado_paso: N` hace que el color de las destacadas aparezca en el paso N, sobre la rejilla ya
+  vista [43:15] (sin `etiqueta_destacado`).
+- `encabezado` sale como rótulo gris; `encabezado_estilo: "frase"` lo pone negro a tamaño de frase,
+  como la rejilla de 6:35 («To make $10k/month…»). Igual en `prueba` y `chat`.
+- La `anotacion` va a la derecha, más abajo que el centro, con una flecha gris de 120-160 px que
+  sale del borde de la rejilla y baja en gancho sobre la nota [6:45]. QA avisa si una flecha de
+  anotación mide menos de 60 px.
 
 ### `reparto` — pastilla verde que se parte  ·  [15:25, 22:15]
 ```json
@@ -219,13 +277,17 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 ```json
 { "tipo": "calendario", "titulo": "Calendario de 14 días", "fase_activa": 2,
   "dias": [{ "sub": "Inversión" }, { "sub": "Identificación" }],
-  "fases": [{ "nombre": "Fase 1 · Calentamiento", "desde": 1, "hasta": 3, "color": "amarillo" },
-            { "nombre": "Fase 2 · Valor", "desde": 4, "hasta": 9, "color": "azul" }],
-  "anotaciones": [{ "texto": "«Me gusta su contenido»", "dia": 1, "lado": "izquierda", "arriba": 260 }] }
+  "fases": [{ "nombre": "Fase 1", "sub": "Calentamiento", "desde": 1, "hasta": 3, "color": "amarillo" },
+            { "nombre": "Fase 2", "sub": "Entregar valor", "desde": 4, "hasta": 9, "color": "azul" }],
+  "anotaciones": [{ "texto": "«Me gusta su contenido»", "dia": 1, "lado": "izquierda", "arriba": "12%" }] }
 ```
 - `color`: `amarillo`, `azul`, `verde` o `rojo`.
-- `fase_activa` cuenta desde 1, igual que `activo` en `pasos` y `dia` en `anotaciones`. Sin ella,
-  todos los días se ven iguales.
+- `fase_activa` cuenta desde 1, igual que `activo` en `pasos` y `dia` en `anotaciones`. Sin
+  `fase_activa` los días van en gris (la lámina que presenta el calendario, [28:45]); con ella, la
+  fase activa va saturada y las demás con su tinte apagado al 30% [29:05-29:25].
+- `sub` de cada fase: subtítulo regular junto al nombre en la barra («PHASE 2 · Value Delivery»).
+- Anotaciones: `tam` en px (56 por omisión, medido en m_1740) y `arriba` en px o en porcentaje
+  (`"12%"`). Con anotaciones el calendario se angosta para que la nota quede fuera.
 - Repite la lámina cambiando `fase_activa` para recorrer las fases.
 
 ## Interfaz y prueba
@@ -234,9 +296,13 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 ```json
 { "tipo": "chat", "mensajes": [{ "de": "yo", "texto": "¿Quieres trabajar conmigo?" }, { "de": "otro", "texto": "¡Sí, me interesa!" }] }
 ```
-Un texto entre corchetes dentro de una burbuja se resalta, como `[nombre]`: sirve para plantillas
-de mensaje. En minúsculas es plantilla; en MAYÚSCULAS (`[PRECIO]`) es un dato pendiente y QA lo
+La burbuja de «otro» es gris medio con letra blanca y las dos son pastillas redondas [19:00, 22:00].
+Un texto entre corchetes dentro de una burbuja sale con resaltador amarillo, como `[nombre]`, legible
+en la azul y en la gris: sirve para plantillas de mensaje (escríbelos sobre todo en los mensajes «yo»). En minúsculas es plantilla; en MAYÚSCULAS (`[PRECIO]`) es un dato pendiente y QA lo
 marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{ "texto": … }`.
+- Avatar: silueta por omisión. `avatar_yo` / `avatar_otro` (o `avatar` en un mensaje) con un emoji la
+  cambian, por ejemplo `"avatar_otro": "🤖"` para la IA; `false` la quita.
+- `tam_texto` (px) cambia la letra de las burbujas (54 en 16:9, 58 en 9:16).
 
 ### `prueba` — capturas reales o un post armado, con el dato encerrado  ·  [0:35, 15:45, 19:30]
 ```json
@@ -252,6 +318,20 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 { "tipo": "boton", "boton": "Generar", "emoji": "🤖", "texto": "Solo das clic en el **agente correcto**…" }
 ```
 `cursor` acepta `mano` (por omisión) o `flecha`.
+
+### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:45]
+Un bento de tarjetas gris claro de tamaño desigual: todas las casillas se ven vacías al cortar y cada
+pieza se llena en su propio paso. `remate` (con ✅) cierra en el paso siguiente y `total` va debajo,
+chico. Va en blanco, no en lámina oscura.
+```json
+{ "tipo": "stack", "encabezado": "Lo que incluye:",
+  "items": [{ "emoji": "🤖", "texto": "Tu agente de ventas", "doble": true }, { "emoji": "📚", "texto": "Las 12 clases" },
+            { "emoji": "🗓️", "texto": "4 llamadas en vivo" }, { "imagen": "assets/logo.png", "texto": "Grupo privado" }],
+  "remate": "Hecho **contigo**" }
+```
+- Un ítem lleva `emoji` o `imagen` (un logo real), `texto`, `doble: true` (ocupa dos columnas) y
+  `tono` (`v`, `r`, `n`).
+- `columnas`: 3 en 16:9 y 2 en 9:16 por omisión. `remate_paso`, `nota_paso` mueven el cierre.
 
 ## Especiales
 
@@ -282,7 +362,11 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 | `sello_paso` | cualquiera con `sello` | Paso del sello; por omisión, uno extra al final. |
 | `banda_paso` · `anotacion_paso` · `destacado_paso` · `centro_paso` · `interior_paso` | grafica · rejilla · rejilla · circulos · circulos | Paso de ese elemento. |
 | `paso` | ítems de `marcas`, `tramos`, `anotaciones` | Lo mismo, por ítem. |
-| `tam_texto` | idea, lista, flujo, pasos, objeto, tarjetas, medidor, boton | `chico`, `medio`, `grande`, `enorme` o un tamaño en px (`"70px"`). |
+| `tam_texto` | idea, lista, flujo, pasos, objeto, tarjetas, medidor, boton; en px: bifurcacion, cita, chat | `compacto`, `chico`, `medio`, `grande`, `enorme` o un tamaño en px (`"70px"`). |
+| `encabezado_pos` | idea | `arriba` (por omisión) o `entre` (entre el emoji y la frase). |
+| `encabezado_estilo` | rejilla, prueba, chat | `rotulo` (gris chico, por omisión) o `frase` (negro, a tamaño de frase). |
+| `anclar` | cualquiera | `arriba` o `centro`: dónde arranca el contenido. |
+| `fondo` | lámina oscura | `violeta`, `azul` o `negro`. |
 | `tam` | cifra y foco | Tamaño de letra en px. |
 | `separacion` | lista, flujo, bifurcacion, reparto | Espacio entre elementos, en px. |
 | `alto`, `ancho` | objeto, flujo (nodo), prueba, rejilla, tarjetas (`ancho`) | Tamaño en px. |
@@ -301,7 +385,7 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 ## Anclas
 
 `sello_sobre`, `clic` y las flechas apuntan a anclas. Las que existen por diseño:
-`texto` y `emoji` (idea), `i0`, `i1`… (lista), `n0`… (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
+`texto` y `emoji` (idea), `s0`, `s1`… (stack), `i0`, `i1`… (lista), `n0`… (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
 `l0`… (cifra), `icono` y `cita` (cita), `objeto`, `medidor`, `op0`… (opciones), `rejilla`, `anot` y
 `d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`.
 
@@ -313,7 +397,9 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 | `__frase__` | negrita + subrayado rojo a mano |
 | `==frase==` | negrita + resaltador amarillo |
 | `~~frase~~` | tachón rojo |
-| `{v:texto}` `{r:}` `{n:}` `{g:}` `{a:}` | color semántico: verde, rojo, naranja, gris o azul |
+| `*frase*` | cursiva: la voz de otro (una objeción) [17:25]. El asterisco va pegado al texto: `5 * 3` no cambia |
+| `^^frase^^` | remate en su propio renglón, en negrita y ~1.5× [18:30]; puede llevar `__` o `==` dentro |
+| `{v:texto}` `{r:}` `{n:}` `{g:}` `{a:}` `{o:}` | color semántico: verde, rojo, naranja, gris, azul o dorado (cifra sobre lámina oscura) |
 | `[[texto]]` | letra manuscrita dentro de la línea |
 | `\n` | salto de línea. Una marca puede abarcar el salto: `**mejor\nmodelo**` va en negrita en los dos renglones, y el subrayado o el tachón se dibujan renglón por renglón |
 
@@ -325,5 +411,9 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 | `"no:🎥"` | base + ❌ abajo a la izquierda |
 | `"si:💸"` | base + ✅ abajo a la izquierda |
 | `"no:🧑‍⚕️+💰"` | las dos: ❌ a la izquierda y 💰 a la derecha |
+| `["no:📚", "si:🤖"]` | solo en `idea`: el par antes/después en fila [10:55] |
+
+La ✕ de `no:` mide ~62% del emoji y le cruza la esquina inferior izquierda [ref_628]; la ✅ es verde
+saturado y se dibuja igual en Apple y en Fluent.
 
 Un solo «+». Tres partes o un prefijo que no sea `no:`/`si:` es error de contrato (ver EMOJIS.md).

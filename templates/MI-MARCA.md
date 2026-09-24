@@ -39,6 +39,13 @@ llamar «final» al deck hasta que se llene.
 - Llamado (palabra clave y canal: WhatsApp, link o DM):
 - Credenciales o pruebas con permiso:
 
+## Precios (cómo se escriben en la lámina)
+- Símbolo de moneda (sí / no):
+- Peso de la letra del precio (regular / negrita):
+- Formato de los pagos (p. ej. «4 quincenas de …»):
+- El ancla es algo que el público ya vio (la alternativa cara, un sueldo, tu nivel superior), nunca un
+  «Valor» inventado. Se escribe con `cifra` y líneas-objeto (LAYOUTS.md).
+
 ## Pruebas disponibles (solo reales y con permiso)
 - Carpeta de capturas: `assets/pruebas/`
 - Qué dato encerrar en cada una:

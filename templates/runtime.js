@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   const NS = 'http://www.w3.org/2000/svg';
-  const C = { rojo: '#c8101e', negro: '#161616', gris: '#7d7d7d', grisClaro: '#9a9a9a' };
+  const C = { rojo: '#c8101e', rojoClaro: '#ff4d57', negro: '#161616', gris: '#7d7d7d', grisClaro: '#9a9a9a' };
   const avisos = (window.__avisos = []);
 
   // ---------- azar con semilla (mismo dibujo en cada render) ----------
@@ -92,10 +92,6 @@
     const a1 = ang + Math.PI - abre + j, a2 = ang + Math.PI + abre + j;
     return `M${(Q[0] + Math.cos(a1) * len).toFixed(1)} ${(Q[1] + Math.sin(a1) * len).toFixed(1)} L${Q[0].toFixed(1)} ${Q[1].toFixed(1)} L${(Q[0] + Math.cos(a2) * len * 0.92).toFixed(1)} ${(Q[1] + Math.sin(a2) * len * 0.92).toFixed(1)}`;
   }
-  function cabezaLlena(Q, ang, len) {
-    const a1 = ang + Math.PI - 0.42, a2 = ang + Math.PI + 0.42, b = [Q[0] + Math.cos(ang + Math.PI) * len * 0.72, Q[1] + Math.sin(ang + Math.PI) * len * 0.72];
-    return `M${Q[0]} ${Q[1]} L${Q[0] + Math.cos(a1) * len} ${Q[1] + Math.sin(a1) * len} Q${b[0]} ${b[1]} ${Q[0] + Math.cos(a2) * len} ${Q[1] + Math.sin(a2) * len} Z`;
-  }
 
   // ---------- pintar trazos ----------
   function defs(svg, lam) {
@@ -106,10 +102,16 @@
       <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="${3 + (+lam.dataset.i || 0)}" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter></defs>`);
   }
+  // Sobre una lámina oscura el rojo #c8101e queda en 3.4:1 y la referencia nunca subraya en rojo sobre
+  // negro: el subrayado, la flecha y el círculo van en BLANCO; la negación (tachón, ✕) en rojo claro [36:40, 39:40].
+  function tinta(svg, color, no) {
+    if ((color || C.rojo) !== C.rojo || !svg.closest('.lamina.oscura')) return color || C.rojo;
+    return no ? C.rojoClaro : '#ffffff';
+  }
   function trazo(svg, d, o) {
     const e = document.createElementNS(NS, 'path');
     e.setAttribute('d', d);
-    e.setAttribute('stroke', o.color || C.rojo);
+    e.setAttribute('stroke', tinta(svg, o.color, o.no));
     e.setAttribute('stroke-width', o.ancho || 6);
     e.setAttribute('fill', o.relleno || 'none');
     // La punta «llena» es maciza: el estilo en línea le gana a la regla de CSS que deja los trazos sin relleno
@@ -117,6 +119,7 @@
     if (o.textura !== false && !o.relleno) e.setAttribute('filter', `url(#${svg.dataset.filtro})`);
     e.dataset.p = o.p || 0;
     if (o.clase) e.dataset.clase = o.clase;   // qa.mjs revisa que las flechas no crucen texto
+    if (o.estilo) e.dataset.estilo = o.estilo; // y que las anotaciones no se reduzcan a un garabato
     if (o.cabeza) { e.dataset.cabeza = '1'; }
     else if (o.dash) {
       e.setAttribute('stroke-dasharray', o.dash);
@@ -136,12 +139,12 @@
     const t = document.createElementNS(NS, 'text');
     t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', 'middle');
     t.setAttribute('font-family', 'Caveat'); t.setAttribute('font-weight', '600'); t.setAttribute('font-size', o.tam || 46);
-    t.setAttribute('fill', o.color || C.rojo); t.dataset.p = o.p || 0; t.textContent = s; svg.appendChild(t);
+    t.setAttribute('fill', tinta(svg, o.color)); t.dataset.p = o.p || 0; t.textContent = s; svg.appendChild(t);
   }
   function equis(svg, M, r, p, tam = 22) {
     const j = () => (r() - 0.5) * 4;
-    trazo(svg, `M${M[0] - tam + j()} ${M[1] - tam + j()} L${M[0] + tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 8, p, dur: 120 });
-    trazo(svg, `M${M[0] + tam + j()} ${M[1] - tam + j()} L${M[0] - tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 8, p, dur: 120 });
+    trazo(svg, `M${M[0] - tam + j()} ${M[1] - tam + j()} L${M[0] + tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 8, p, dur: 120, no: true });
+    trazo(svg, `M${M[0] + tam + j()} ${M[1] - tam + j()} L${M[0] - tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 8, p, dur: 120, no: true });
   }
 
   // ---------- conexiones entre anclas ----------
@@ -152,28 +155,42 @@
     const ea = ancla(esc, c.de), eb = ancla(esc, c.a);
     if (!ea || !eb) { avisos.push(`lámina ${+lam.dataset.i + 1}: falta el ancla «${!ea ? c.de : c.a}»`); return; }
     const A = caja(ea, lam), B = caja(eb, lam), p = c.p || 0;
-    let pts, cab = 'v', color = C.rojo, ancho = 7, len = 30;
+    let pts, color = C.rojo, ancho = 7, len = 30, abre = 0.5;
     switch (c.estilo) {
       case 'arco': case 'arco-negro': {
         const P = [A.cx + A.w * 0.22, A.y - 16], Q = [B.cx - B.w * 0.22, B.y - 16];
         const d = Math.hypot(Q[0] - P[0], Q[1] - P[1]);
         pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2, Math.min(P[1], Q[1]) - d * 0.36]);
-        if (c.estilo === 'arco-negro') { color = C.negro; ancho = 6; cab = 'llena'; len = 26; }
+        // flecha negra: trazo grueso (~10 px, medido en c_0635) y punta en V abierta del mismo grosor
+        if (c.estilo === 'arco-negro') { color = C.negro; ancho = 10; len = 40; abre = 0.6; }
         break;
       }
       case 'codo': {
-        // Sale del costado del texto de origen y baja hacia la rama. Si la rama cae BAJO el texto (origen
-        // ancho, ramas juntas, 9:16), el tramo horizontal tacharía las letras: entonces nace del borde de
-        // abajo, un poco hacia el centro, y abre hacia fuera, como en la referencia [10:30].
-        const izq = B.cx < A.cx, Qx = B.cx + (izq ? 20 : -20), Q = [Qx, B.y - 30];
-        let P = [izq ? A.x - 34 : A.x + A.w + 34, A.cy + 6];
-        if (Qx > A.x - 20 && Qx < A.x + A.w + 20) P = [Math.min(A.x + A.w - 30, Math.max(A.x + 30, Qx + (izq ? 70 : -70))), A.y + A.h + 16];
-        pts = cuadratica(P, Q, [Qx, P[1]]); color = C.negro; ancho = 8; cab = 'llena'; len = 34; break;
+        // Bifurcación [c_0635 «1 Partnership»]: nace justo por fuera del extremo de la frase, a la altura de
+        // la línea base, y baja en diagonal hacia fuera con un arco que sale casi horizontal y llega casi
+        // vertical, ~40 px sobre el emoji de la rama. Si la rama cae BAJO la frase (ramas juntas, 9:16), el
+        // arco nace debajo del texto, sin pasar del extremo interior, para no tachar las letras.
+        const sg = B.cx < A.cx ? -1 : 1;
+        const Q = [B.cx - sg * Math.min(20, B.w * 0.1), B.y - 40];
+        let P = [sg < 0 ? A.x - 26 : A.x + A.w + 26, A.y + A.h * 0.8];
+        if ((Q[0] - P[0]) * sg < 70) {
+          const x = Q[0] - sg * 70;
+          P = [sg < 0 ? Math.max(x, A.x + A.w * 0.12) : Math.min(x, A.x + A.w * 0.88), A.y + A.h + 14];
+        }
+        pts = cuadratica(P, Q, [P[0] + (Q[0] - P[0]) * 0.75, P[1] + (Q[1] - P[1]) * 0.2]);
+        color = C.negro; ancho = 10; len = 40; abre = 0.6; break;
       }
       case 'fina': {
-        const P = borde(A, [B.cx, B.cy], 20), Q = borde(B, [A.cx, A.cy], 18);
-        const dx = Q[0] - P[0], dy = Q[1] - P[1];
-        pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2 - dy * 0.3, (P[1] + Q[1]) / 2 + dx * 0.3]);
+        // Anotación de la rejilla [6:45 «That's 500»]: sale del borde derecho a media altura, se arquea y
+        // baja en gancho con la punta SOBRE la nota. Por debajo de 80 px sería un garabato: se estira y se avisa.
+        const P = [A.x + A.w + 10, A.y + A.h * 0.42];
+        let Q = [B.x + Math.min(B.w * 0.25, 60), B.y - 14];
+        const d = Math.hypot(Q[0] - P[0], Q[1] - P[1]);
+        if (d < 80) {
+          avisos.push(`lámina ${+lam.dataset.i + 1}: la flecha de la anotación mide ${Math.round(d)} px (< 80); separa la nota`);
+          const k = 80 / (d || 1); Q = [P[0] + (Q[0] - P[0]) * k, P[1] + Math.max(20, (Q[1] - P[1]) * k)];
+        }
+        pts = cubica(P, [P[0] + (Q[0] - P[0]) * 0.55, P[1] - 28], [Q[0] + 10, P[1] + (Q[1] - P[1]) * 0.2], Q);
         color = C.gris; ancho = 3.6; len = 20; break;
       }
       case 'fina-abajo': {
@@ -181,10 +198,19 @@
         pts = linea(P, Q, r, 1.5, 4); color = C.gris; ancho = 3.6; len = 18; break;
       }
       case 'curva-roja': {
-        const P = borde(A, [B.cx, B.cy], 16), Q = c.a && c.a.startsWith('cita') ? [B.x + 30, B.y - 14] : borde(B, [A.cx, A.cy], 12);
+        if (c.a && c.a.startsWith('cita')) {
+          // Nota al margen [18:25]: un gancho corto que sale a la izquierda del ícono y CAE sobre el primer
+          // cuarto del primer renglón (la letra, no la caja). Nunca más de 340 px.
+          const r0 = rectsTexto(eb, lam)[0] || B;
+          const Q = [r0.x + r0.w * 0.22, r0.y - 16];
+          let P = [A.x - 14, A.cy];
+          const d = Math.hypot(P[0] - Q[0], P[1] - Q[1]);
+          if (d > 340) P = [Q[0] + (P[0] - Q[0]) * 340 / d, Q[1] + (P[1] - Q[1]) * 340 / d];
+          pts = cuadratica(P, Q, [Q[0] + (P[0] - Q[0]) * 0.2, P[1] - 8]); ancho = 5; len = 24; break;
+        }
+        const P = borde(A, [B.cx, B.cy], 16), Q = borde(B, [A.cx, A.cy], 12);
         const dx = Q[0] - P[0], dy = Q[1] - P[1], s = c.curva || (Q[0] < P[0] ? 1 : -1);
-        const K = c.a && c.a.startsWith('cita') ? [Math.min(P[0], Q[0]) - 120, P[1] + (Q[1] - P[1]) * 0.25] : [(P[0] + Q[0]) / 2 + dy * 0.35 * s, (P[1] + Q[1]) / 2 - dx * 0.35 * s];
-        pts = cuadratica(c.a && c.a.startsWith('cita') ? [A.x - 18, A.cy] : P, Q, K); ancho = 5; len = 24; break;
+        pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2 + dy * 0.35 * s, (P[1] + Q[1]) / 2 - dx * 0.35 * s]); ancho = 5; len = 24; break;
       }
       case 'punteada': {
         const o = c.onda || 1, arriba = o < 0;
@@ -216,10 +242,10 @@
         pts = linea(P, Q, r, 2.6); ancho = 7; len = 30;
       }
     }
-    trazo(svg, suave(pts), { color, ancho, p, dur: 300, clase: 'flecha' });
+    trazo(svg, suave(pts), { color, ancho, p, dur: 300, clase: 'flecha', estilo: c.estilo || 'recta' });
     const Q = pts[pts.length - 1], ang = angulo(pts);
-    if (cab === 'llena') trazo(svg, cabezaLlena(Q, ang, len), { relleno: color, color, ancho: 1, p, cabeza: true, clase: 'punta' });
-    else trazo(svg, cabezaV(Q, ang, len, 0.5, r), { color, ancho, p, cabeza: true, clase: 'punta' });
+    // La punta es siempre una V abierta con el mismo trazo (grosor, extremos redondos y textura) [c_0635]
+    trazo(svg, cabezaV(Q, ang, len, abre, r), { color, ancho, p, cabeza: true, clase: 'punta' });
     const M = pts[Math.floor(pts.length / 2)];
     if (c.tachada) equis(svg, M, r, p);
     if (c.etiqueta) texto(svg, M[0], M[1] - (c.tachada ? 44 : 26), c.etiqueta, { p });
@@ -240,7 +266,7 @@
       }
       rs.forEach(b => {
         const y = b.y + b.h * 0.54;
-        trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240 });
+        trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240, no: true });
       });
     });
   }
@@ -283,8 +309,15 @@
     let tx = b.x + b.w * (mano ? (b.w > 300 ? 0.84 : 0.6) : 0.74), ty = b.y + b.h * (mano ? 0.56 : 0.62);
     if (Array.isArray(spec.pos)) { tx = b.x + b.w * spec.pos[0]; ty = b.y + b.h * spec.pos[1]; }   // clic_pos manda
     else if (mano && el.classList.contains('boton-ui')) {
-      // botón: la punta del dedo en el relleno de la derecha, por debajo del emoji y sin tapar el texto
-      tx = b.x + b.w - Math.max(40, b.h * 0.35); ty = b.y + b.h * 0.72;
+      // botón [23:15]: la punta del dedo a la derecha del emoji (~0.45 de su ancho), a media altura; el emoji
+      // se ve entero. Sin emoji, en el relleno de la derecha sin tapar el texto.
+      const emo = el.querySelector('.emo');
+      tx = b.x + b.w - Math.max(40, b.h * 0.35); ty = b.y + b.h * 0.6;
+      if (emo) {
+        const e = caja(emo, lam);
+        tx = Math.min(Math.max(tx, e.x + e.w * 1.45), b.x + b.w * 0.95);
+        if (tx < e.x + e.w * 1.1) { tx = e.x + e.w * 1.1; ty = e.y + e.h * 0.95; }
+      }
     }
     const px = tx - W * (mano ? 0.41 : 0.08), py = ty - H * (mano ? 0.03 : 0.05);
     Object.assign(cur.style, { width: W + 'px', height: H + 'px', left: px + 'px', top: py + 'px' });
@@ -316,16 +349,25 @@
   // en un ancla (sello_sobre), en una zona (sello_pos) o en el lienzo, y se acota a los bordes.
   const ZONAS = { centro: [0.5, 0.5], arriba: [0.5, 0.27], abajo: [0.5, 0.73], izquierda: [0.28, 0.5], derecha: [0.72, 0.5],
     'arriba-izquierda': [0.28, 0.27], 'arriba-derecha': [0.72, 0.27], 'abajo-izquierda': [0.28, 0.73], 'abajo-derecha': [0.72, 0.73] };
+  // Sobre un ancla, el sello mide ~60% de su ancho [6:45 «A LOT OF SKILL» sobre la rejilla]: se ajusta
+  // el cuerpo de la tinta entre 72 y 140 px antes de medir.
   function colocarSello(lam) {
     const s = lam.querySelector(':scope > .sello'); if (!s) return;
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
-    const w = s.offsetWidth, h = s.offsetHeight;
-    const k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
     let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
     if (s.dataset.sobre) {
       const el = ancla(lam, s.dataset.sobre);
-      if (el) { const b = caja(el, lam); cx = b.cx; cy = b.cy; } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
+      if (el) {
+        const b = caja(el, lam), tinta = s.querySelector('.sello-tinta');
+        cx = b.cx; cy = b.cy;
+        if (tinta) {
+          const fs = parseFloat(getComputedStyle(tinta).fontSize) || 104;
+          tinta.style.fontSize = clamp(fs * (b.w * 0.6) / (s.offsetWidth || 1), 72, 140).toFixed(1) + 'px';
+        }
+      } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
     }
+    const w = s.offsetWidth, h = s.offsetHeight;
+    const k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
     const bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2, bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
     cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, m + bh, H - m - bh);
     Object.assign(s.style, { left: cx + 'px', top: cy + 'px' });
