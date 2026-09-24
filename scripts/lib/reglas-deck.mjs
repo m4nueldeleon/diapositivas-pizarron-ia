@@ -1,9 +1,10 @@
+import { reglaNoNegociable, validarAceptaciones } from './contrato-superficies.mjs';
 import { reglasMarcasYSuperficies, reglasEscalaTiempo, reglasIconosInversa, reglasCapaExpresiva } from './reglas-marcas.mjs';
 import { avisosProcedencia } from './imagenes.mjs';
 import { reglasVariantes } from './variantes.mjs';
 import { reglasQr } from './reglas-qr.mjs';
 export { reglasQr } from './reglas-qr.mjs';
-import { reglasEstilo, reglasLogos, encabezadoSeccion } from './reglas-estilo.mjs';
+import { reglasEstilo, reglasLogos, encabezadoSeccion, encabezadoExento } from './reglas-estilo.mjs';
 export { reglasEstilo, reglasLogos } from './reglas-estilo.mjs';
 import { reglasAritmetica } from './aritmetica.mjs';
 export { reglasAritmetica } from './aritmetica.mjs';
@@ -22,7 +23,7 @@ import { analizarCompuesto, analizarTrazo, PARECIDOS, esCampoEmoji, specsDeCampo
 import { RELLENO, esFirmaRelleno, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
 import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
-import { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reelSinComo, reglasContrato, reglasPagoGancho, arcoDeck } from './reglas-arco.mjs';
+import { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reelSinComo, reglasContrato, reglasPagoGancho, arcoDeck, reglasGolpes } from './reglas-arco.mjs';
 export { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reglasContrato, reglasPagoGancho, arcoDeck, lineaArco, contratoDeTiempo, ensenaComo, prometeComo } from './reglas-arco.mjs';
 export { reglasTasa, reglasPromesa, esPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 
@@ -32,8 +33,8 @@ export const nombre = (deck, i) => `lámina ${i + 1} (${deck.laminas[i].id || de
 // Campos que no son texto a la vista: ahí no se buscan frases
 const NO_VISIBLE = new Set(['tipo', 'id', 'como', 'paga', 'voz', 'accion', 'si_falla', 'procedencia', 'excepcion_persona', 'anclas', 'ancla', 'emoji', 'iconos', 'sobre', 'centro', 'imagen', 'src', 'logo', 'clic',
   'url', 'cursor', 'revelar', 'fondo', 'sello_sobre', 'sello_pos', 'anclar', 'color', 'estilo', 'flecha', 'de', 'a', 'forma', 'grafica', 'lado',
-  'encabezado_pos', 'encabezado_estilo', 'posicion', 'fuente']);
-const noVisible = k => NO_VISIBLE.has(k) || /^(emoji_|avatar|tono|tam)/.test(k);
+  'encabezado_pos', 'encabezado_estilo', 'posicion', 'fuente', 'datos', '_comentario']);
+const noVisible = k => NO_VISIBLE.has(k) || k.startsWith('_') || /^(emoji_|avatar|tono|tam)/.test(k);
 
 // Textos visibles de una lámina, en orden (planos: sin marcas)
 export function textosVisibles(l) {
@@ -48,6 +49,45 @@ export function textosVisibles(l) {
   return out;
 }
 const vozDe = l => (Array.isArray(l.voz) ? l.voz.join(' ') : typeof l.voz === 'string' ? l.voz : '');
+
+// Un hueco se escribe dentro de la frase final: el estado vive en datos y en la entrega.
+const FRASE_DATO_FALTANTE = /\bpor confirmar\b|\bfalta(?:n)? (?:ese|este|el|la|los|las) (?:dato|datos|base|cifra|cifras)\b|\b(?:est[aá]|queda|sigue)n? pendientes? de (?:cotizaci[oó]n|aprobaci[oó]n|confirmar|definir|validar)\b/i;
+const FUTURO_DATO = /\b(?:confirmaremos|verificaremos|validaremos|definiremos)\b/i;
+export function reglasDatosAnunciados(deck) {
+  const errores = [], avisos = [];
+  deck.laminas.forEach((l, i) => {
+    for (const [origen, texto] of [['lámina', textosVisibles(l).join(' ')], ['voz', vozDe(l)]]) {
+      const falta = texto.match(FRASE_DATO_FALTANTE);
+      const futuro = (deck.datos != null || deck.pieza === 'propuesta') && texto.match(FUTURO_DATO);
+      if (!falta && !futuro) continue;
+      const destino = falta && (deck.en_vivo === true || deck.pieza === 'propuesta') ? errores : avisos;
+      destino.push(`L${i + 1}: la ${origen} anuncia un dato que falta («${(falta || futuro)[0]}»); escríbela como si el dato estuviera, con {{CLAVE}} declarada en datos (SKILL §0.4, GUION §3)`);
+    }
+  });
+  return { errores, avisos };
+}
+
+export function reglasQuienEntrega(deck) {
+  const inicio = deck.laminas.findIndex(l => l.tipo === 'oscura' || l.oscura || l.tipo === 'stack');
+  const texto = sinAcentos(deck.laminas.slice(Math.max(0, inicio)).flatMap(l => [...textosVisibles(l), vozDe(l)]).join(' '));
+  const propio = /\b(?:la hago|lo hago|te acompano|lo configuro|te atiendo|yo mismo)\b/.test(texto);
+  const tercero = /\b(?:un|tu) (?:asesor|mentor|coach|consultor|especialista)\b|\bel equipo (?:te|lo)\b/.test(texto);
+  return { errores: [], avisos: propio && tercero ? ['¿quién entrega? decláralo en datos.QUIEN_ENTREGA y alinea el rótulo de la llamada y la razón de la escasez (GUION §7)'] : [] };
+}
+
+export function reglasAtribucionRevista(deck) {
+  const avisos = [];
+  deck.laminas.forEach((l, i) => {
+    const voz = sinAcentos(vozDe(l)), fuente = sinAcentos(l.fuente);
+    const institucion = voz.match(/\bsegun (?:el |la )?(harvard|stanford|mit|oxford|yale|cambridge)\b/)?.[1];
+    if (!institucion || /\b(?:estudio|revista|review|publicado|investigador)\b/.test(voz)) return;
+    const revista = new RegExp(`\\b${institucion} (?:business review|technology review|social innovation review|sloan)\\b`, 'g');
+    const medios = fuente.match(revista);
+    if (!medios || new RegExp(`\\b${institucion}\\b`).test(fuente.replace(revista, ''))) return;
+    avisos.push(`${nombre(deck, i)}: la voz atribuye a la universidad un dato de revista: di «un estudio publicado en ${medios[0]}» (GUION §3)`);
+  });
+  return { errores: [], avisos };
+}
 
 // ---------- apoyo privado del ponente (PROTOCOLO, presentación en vivo) ----------
 const notasDe = valor => Array.isArray(valor) ? valor : [valor || ''];
@@ -646,7 +686,12 @@ export function reglasPropuesta(deck, { crudo } = {}) {
   const avisos = [];
   if (deck.pieza !== 'propuesta') return { errores: [], avisos };
   const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
-  if (!L.some(l => textosVisibles(l).some(t => NO_INCLUYE.test(sinAcentos(t))))) avisos.push('la propuesta no dice qué NO incluye: una `lista` con encabezado «No incluye» evita el malentendido al firmar (ARCOS.md, propuesta, bloque 6)');
+  const primeras = C.filter(l => l.tipo !== 'camara').slice(0, 3);
+  const dolor = primeras.some(l => /perdid|pierde|retrabajo|sin respuesta|costo|horas/i.test(textosVisibles(l).join(' '))
+    || (l.tipo === 'cifra' && conTexto(l.fuente)) || /costo/i.test(l.id || ''));
+  // Un id «diagnostico» no basta: suele ser la lista de actividades del diagnóstico, no el problema [r7, liderazgo]
+  if (!dolor) avisos.push('la propuesta abre sin el problema del cliente: antes de las actividades, el síntoma y su número (ARCOS, propuesta, bloque 1)');
+  if (!L.some(l => textosVisibles(l).some(t => NO_INCLUYE.test(sinAcentos(t))))) avisos.push('la propuesta no dice qué NO incluye: una `lista` con encabezado «No incluye:» evita el malentendido al firmar (ARCOS.md, propuesta, bloque 6)');
   if (!L.some(l => VIGENCIA.test(todoTexto(l)))) avisos.push('la propuesta no trae fecha ni vigencia: el siguiente paso lleva {{FECHA}} de arranque y «vigente hasta {{VIGENCIA}}» (ARCOS.md, propuesta, bloque 9)');
   if (!L.some(l => SALIDA.test(todoTexto(l)))) avisos.push('la propuesta no dice qué pasa si no funciona: una garantía con plazo y condición medible, una condición de salida o «riesgos y cómo se cuidan» (ARCOS.md, propuesta, bloque 8)');
   // Inversión anclada: el costo de no hacer nada, en dinero, en la misma lámina o en la anterior
@@ -793,7 +838,14 @@ export function emojisDeLamina(l) {
 // Inventario para qa.json → iconos: { "emoji (concepto de EMOJIS.md)": ["lámina N · texto", …] }. Quien revisa ve
 // «💬 (comentar una palabra): lámina 14 · Te preguntan» y lo cambia por 📲. No hay regla automática que compare el texto
 // con el concepto: se probó y daba ~27 alertas por 2 aciertos (el texto describe la frase, no el ícono).
-export const claveIcono = (x, spec) => `${x} (${conceptoDe(spec || x) || 'fuera del diccionario'})`;
+// El inventario se publica con emoji RGI; el índice interno sigue sin selectores.
+const iconoRGI = spec => String(spec).replace(/([#*0-9])(?=\u20E3)/g, '$1\uFE0F').replace(/\p{Extended_Pictographic}(?![\uFE0F\u{1F3FB}-\u{1F3FF}])/gu,
+  c => /\p{Emoji_Presentation}/u.test(c) ? c : c + '\uFE0F');
+export const claveIcono = (x, spec, conceptos = {}) => {
+  const exacta = sinSelector(spec || x), declarado = Object.entries(conceptos).find(([k]) => sinSelector(k) === exacta);
+  const dic = conceptoDe(spec || x) || 'fuera del diccionario';
+  return declarado ? `${iconoRGI(spec || x)} (deck: ${declarado[1]} · dic: ${dic})` : `${iconoRGI(x)} (${dic})`;
+};
 export function inventarioIconos(deck) {
   const inv = {};
   const etiquetas = new Map(), polaridades = new Map();
@@ -805,14 +857,15 @@ export function inventarioIconos(deck) {
     polaridades.set(e.base, new Set([...(polaridades.get(e.base) || []), e.prefijo === 'no' ? 'no' : 'si']));
     const palabras = sinAcentos(e.texto).match(/[a-z0-9]+/g) || [];
     const significativas = palabras.filter(p => !comunes.has(p)), etiqueta = significativas.join(' ');
-    if (significativas.length <= 5 && etiqueta) etiquetas.set(e.base, new Set([...(etiquetas.get(e.base) || []), etiqueta]));
+    const esEtiqueta = e.campo !== 'vineta' && !/^avatar/.test(e.campo) && !/^\(?avatar\b/i.test(e.texto);
+    if (esEtiqueta && significativas.length <= 5 && etiqueta) etiquetas.set(e.base, new Set([...(etiquetas.get(e.base) || []), etiqueta]));
     for (const [x, sp] of [[base, spec], [e.insignia, conceptoDe(e.insignia) ? e.insignia : spec]].filter(([x]) => x)) {
-      const k = claveIcono(x, sp), r = `lámina ${i + 1}${e.texto ? ` · ${e.texto}` : ''}`;
+      const k = claveIcono(x, sp, deck.conceptos), r = `lámina ${i + 1}${e.texto ? ` · ${e.texto}` : ''}`;
       (inv[k] = inv[k] || []).includes(r) || inv[k].push(r);
     }
   }));
   for (const k of Object.keys(inv)) {
-    const b = k.split(' (')[0].replace(/^(no|si):/, ''), n = etiquetas.get(b)?.size || 0;
+    const b = sinSelector(k.split(' (')[0]).replace(/^(no|si):/, '').split('+')[0], n = etiquetas.get(b)?.size || 0;
     const lista = [...(etiquetas.get(b) || [])].map(t => new Set(t.split(' ')));
     const disjuntas = lista.some((a, i) => lista.slice(i + 1).some(c => ![...a].some(p => c.has(p))));
     if (n > 1 && disjuntas) inv[k].push(`revisar: ${n} etiquetas`);
@@ -888,7 +941,12 @@ export function reglasVinetasPlan(deck) {
 export function reglasEyebrows(deck) {
   const secciones = deck.laminas.filter(l => encabezadoSeccion(l.encabezado || ''));
   const mapa = deck.laminas.some(l => l.como && ['pasos', 'linea-tiempo', 'lista', 'calendario'].includes(l.tipo) && (l.activo != null || l.hechos != null || l.fase_activa != null));
-  return { errores: [], avisos: secciones.length >= 3 && !mapa ? [`${secciones.length} láminas nombran su sección con un rótulo encima: abre cada sección con el mapa que vuelve (como + activo, ESTILO §8)`] : [] };
+  const avisos = secciones.length >= 3 && !mapa ? [`${secciones.length} láminas nombran su sección con un rótulo encima: abre cada sección con el mapa que vuelve (como + activo, ESTILO §8)`] : [];
+  const visibles = deck.laminas.filter(l => l.tipo !== 'camara');
+  const encabezadas = visibles.filter(l => l.encabezado && !encabezadoExento(l));
+  // En piezas cortas (un reel de 11) tres «Le escribes:» bien puestos ya son 27 %: la proporción solo cuenta desde 12
+  if (visibles.length >= 12 && encabezadas.length / visibles.length > 0.25) avisos.push(`más del 25 % de láminas llevan encabezado no exento (${encabezadas.length}/${visibles.length}): reserva la frase introductoria para cuando los ítems la completan (ESTILO §2)`);
+  return { errores: [], avisos };
 }
 
 export function reglasTrazosPropios(deck) {
@@ -1240,7 +1298,7 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
   const origen = reglasOrigenCredibilidad(deck, { crudo, credenciales });
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck, { crudo, credenciales }), reglasDescargo(deck), reglasIconos(deck),
-    reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
+    reglasDatosAnunciados(deck), reglasQuienEntrega(deck), reglasAtribucionRevista(deck), reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck), reglasPagoGancho(deck), reglasNotasPonente(deck, pasos), reglasAnclaPrecio(deck, { crudo }),
     reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasEyebrows(deck), reglasVinetasPlan(crudo || deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo })];
   return {
@@ -1259,7 +1317,7 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
 
 // Reglas del deck completo (qa.mjs con la capa a mano medida en el DOM; qa-texto con la estimada del HTML)
 export function reglasDeckCompleto(deck, { manoPorLamina = [], tiposPorLamina = [] } = {}) {
-  const avis = [...reglasCapaExpresiva(deck, tiposPorLamina).avisos];
+  const avis = [...reglasCapaExpresiva(deck).avisos, ...reglasGolpes(deck).avisos];
   const nombre = i => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
   const porLamina = deck.laminas.map((l,i) => ({tipo:l.tipo, i, mano:manoPorLamina[i]}));
   const sinCamara = porLamina.filter(l => l.tipo !== 'camara');
@@ -1268,8 +1326,7 @@ export function reglasDeckCompleto(deck, { manoPorLamina = [], tiposPorLamina = 
   for (let i = 1; i < tipos.length; i++) { racha = tipos[i] === tipos[i - 1] ? racha + 1 : 1; if (racha === 4) avis.push(`«${tipos[i]}» se usa 4 veces seguidas (desde la lámina ${sinCamara[i - 3].i + 1}): alterna diseños`); }
   const conteo = tipos.reduce((m, t) => ((m[t] = (m[t] || 0) + 1), m), {});
   Object.entries(conteo).forEach(([t, c]) => { if (tipos.length >= 8 && c / tipos.length > 0.45) avis.push(`«${t}» es el ${Math.round((c / tipos.length) * 100)}% del deck (máximo 45%)`); });
-  let sinMano = 0;
-  porLamina.forEach(r => { if (r.tipo === 'camara') return; sinMano = r.mano ? 0 : sinMano + 1; if (sinMano === 4) avis.push(`4 láminas seguidas sin capa a mano (hasta la ${r.i + 1}): suma una nota, un subrayado o una flecha`); });
+  if (tipos.length >= 12 && (conteo.lista || 0) / tipos.length > .25) avis.push('«lista» supera el 25 % del deck: convierte cantidades en rejilla y relaciones en flujo; conserva listas para instrucciones y fronteras (ESTILO §5)');
   const oscuras = deck.laminas.filter(l => l.tipo === 'oscura' || l.oscura).length;
   // La referencia solo oscurece REVELACIONES de marca o producto [36:15, 37:40, 43:00]; precio, qué incluye,
   // garantía y llamado van en blanco [38:10-42:25]
@@ -1307,12 +1364,31 @@ function laminasDelAviso(aviso) {
   }
   return [...new Set(numeros)];
 }
+function coincideAceptacion(aviso, aceptacion) {
+  const patrones = {
+    laminas_fijadas: /(?:laminas fijadas|numero de laminas|conteo de laminas)/,
+    duracion: /(?:laminas cubren|duracion|objetivo es|voz estimada|fuera del rango|dura \d)/,
+    revelacion: /(?=.*(?:revelacion|oferta))(?=.*\d\s*%)(?!.*oscura)/,
+  };
+  if (aceptacion.decision != null || aceptacion.pedido != null) {
+    const coincide = patrones[aceptacion.regla]?.test(sinAcentos(aviso));
+    return Boolean(coincide && (!aceptacion.texto || String(aviso).includes(aceptacion.texto)));
+  }
+  const texto = aceptacion.texto || aceptacion.regla;
+  return typeof texto === 'string' && texto.trim() && String(aviso).includes(texto);
+}
+export function fichaReglasCliente(deck, avisos = []) {
+  const { aceptados } = clasificarAvisos(avisos, deck.avisos_aceptados);
+  const rechazadas = (deck.avisos_aceptados || []).filter(a => a.decision === 'rechazada');
+  return [...rechazadas, ...aceptados.map(a => ({ ...a, decision: 'aceptada', estado: 'excepción pedida por el cliente' }))];
+}
+
 export function clasificarAvisos(avisos = [], aceptaciones = []) {
   const aceptados = [], pendientes = [];
   for (const aviso of avisos) {
     const laminas = laminasDelAviso(String(aviso));
-    const aceptacion = (Array.isArray(aceptaciones) ? aceptaciones : []).find(a => a && typeof a.motivo === 'string' && a.motivo.trim()
-      && typeof (a.texto || a.regla) === 'string' && (a.texto || a.regla).trim() && String(aviso).includes(a.texto || a.regla)
+    const aceptacion = !reglaNoNegociable(aviso) && (Array.isArray(aceptaciones) ? aceptaciones : []).find(a => a && a.decision !== 'rechazada' && !validarAceptaciones([a]).length && typeof a.motivo === 'string' && a.motivo.trim()
+      && coincideAceptacion(aviso, a)
       && (!a.laminas || (laminas.length && laminas.every(n => a.laminas.includes(n)))));
     if (aceptacion) aceptados.push({ aviso, ...aceptacion }); else pendientes.push(aviso);
   }

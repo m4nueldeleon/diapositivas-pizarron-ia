@@ -35,6 +35,10 @@ Si necesitas un vocabulario propio, declara `conceptos` en el deck: por ejemplo,
 una sola línea informativa cuando falta declarar alguno usado. Sin `conceptos` no exige completar
 ese mapa. El inventario puede señalar `revisar: N etiquetas` cuando un mismo emoji acompaña
 varias etiquetas cortas; es información para revisar el sentido, no una penalización.
+Si hay una declaración exacta (incluidos prefijo y compuesto), el inventario muestra
+`🤖 (deck: el agente de citas · dic: automatizar, IA)`. Los selectores de presentación no cambian
+la coincidencia. Las viñetas por alias no exigen declarar su concepto; los encabezados de viñeta
+y los rótulos de avatar no cuentan como etiquetas distintas.
 
 | Concepto | Emoji | Notas |
 |---|---|---|
@@ -51,9 +55,10 @@ varias etiquetas cortas; es información para revisar el sentido, no una penaliz
 | factura, comprobante, recibo | 🧾 | SVG blanco con borde dentado, renglones grises y total verde; sin texto impreso en los dos sets |
 | producto | 📦 | |
 | producto digital (ebook, plantilla) | 💻 · 📘 | el curso o programa es 🎓 |
-| alianza, trato, socio | 🤝 | como en la referencia: «1 Partnership» [10:30], «Partner» (ref_1040). La venta cerrada es `si:🤝` o 💵: 🤝 solo, sin marca, no es venta |
+| alianza, trato, socio, acuerdo, compromiso | 🤝 | como en la referencia: «1 Partnership» [10:30], «Partner» (ref_1040). La venta cerrada es `si:🤝` o 💵: 🤝 solo, sin marca, no es venta |
 | cliente | 🧑‍💼 | |
 | empresa | 🏢 | |
+| diagnóstico de un equipo o una empresa (no la llamada de diagnóstico, que es 📞) | 🩺 | medido: Apple 90/88 y Fluent 99/98 en claro/tarjeta; en oscura 28/39: pide halo |
 | empleo o sueldo fijo | 👔 | |
 | apostar | 🎰 | |
 | dropshipping, envío de producto | 🚚 | |
@@ -92,7 +97,7 @@ el rodeo de usar 🏾.
 ## Acciones y proceso
 | Concepto | Emoji |
 |---|---|
-| encontrar, buscar | 🔍 [16:40, «Find»] |
+| encontrar, buscar | 🔍 [16:40, «Find»] (en Apple es pálido: 41 sobre blanco) |
 | identificar, detectar a alguien | 🕵️ (ref_1040, «Identify») |
 | construir | 🛠️ |
 | lanzar | 🚀 |
@@ -119,7 +124,8 @@ el rodeo de usar 🏾.
 | Concepto | Emoji | Notas |
 |---|---|---|
 | celular | 📱 | se dibuja igual en los dos modos; si representa WhatsApp, usa su logo real o un hueco de logo declarado (SKILL, regla 10) |
-| varias conversaciones a la vez | una `rejilla` de 📲, o el mismo 📲 con nota «×10»; «conversación» en sí: `📱+💬` si la insignia se ve (si no, 📲) | nunca 👥: se lee «personas» |
+| varias conversaciones a la vez | `rejilla` | de 📲, o el mismo 📲 con nota «×10»; nunca 👥: se lee «personas» |
+| conversación por chat | `📱+💬` | la insignia debe verse en render; si no se distingue, usa 📲; no representa conversación cara a cara |
 | notificación | 🔔 | |
 | correo | 📧 | |
 | bandeja de entrada, lo que llega y espera | 📥 | pálido en Apple sobre tarjeta (53): mejor en lámina blanca |
@@ -128,7 +134,9 @@ el rodeo de usar 🏾.
 | una persona sin rol: un prospecto, un lead, alguien que asiste, un integrante o un vendedor de un equipo | 👤 | la audiencia son 👥 o una `rejilla` de 👤; «N vendedores» = una `rejilla` de 👤 (40 vendedores = `total: 40`); el cliente ya es 🧑‍💼 |
 | atraer prospectos | 🧲 | |
 | seguimiento, recordatorio | ⏰ | |
-| objeción | «me falta X» («No tengo dinero», «No tengo tiempo»): el emoji de lo que falta, negado → `no:💰`. Pregunta o duda («¿Por qué subiste?», «¿Y si no funciona?»): 🤔 sin prefijo (❓ en `fluent`). «Ya lo intenté y no funcionó»: lo que intentó, negado | la receta de GUION §2. **Nunca** niegues un emoji que el deck usa en afirmativo (un ícono de `pasos`, un `si:X`): se lee «no hagas el paso N» y QA lo avisa; 🙅‍♂️ es «sin mostrar la cara» |
+| objeción «me falta X» | receta `no:X` | el emoji de lo que falta, negado; «ya lo intenté» usa lo que intentó, negado. **Nunca** niegues un ícono del mapa de `pasos` ni un emoji afirmado con `si:X` en la oferta (GUION §2) |
+| objeción «no tengo dinero» | `no:💰` | la falta de dinero, no una pregunta retórica |
+| objeción o duda del público («¿y si…?», «¿por qué…?») | 🤔 · ❓ en `fluent` | sin prefijo; una pregunta que interpela al público usa 👊 o 👉 |
 | garantía | 🛡️ | con plazo y condición medible (GUION §7) |
 | testimonio | sin emoji | es una `prueba` con captura real |
 | boleto, lugar apartado, cupos | 🎟️ | se dibuja como un boleto ámbar liso en los dos sets (el de Apple dice «ADMIT ONE»; el de Fluent es rosa y se funde con el tachado rojo). Cupos solo si son reales, con `rejilla` (GUION §7). Usa 🎟️, no 🎫 |
@@ -148,11 +156,11 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 |---|---|---|
 | curso, programa, certificación | 🎓 | |
 | alumno | 🧑‍🎓 | 🧑‍💻 es «tú» |
-| tarea, ejercicio, práctica | 📋 | |
+| tarea, ejercicio, práctica | 📋 | pálido sobre blanco (31–47): en un nodo de `flujo`, prefiere 🎯 si representa la meta de la práctica u otro ícono literal con contraste ≥80 |
 | examen, evaluación | 💯 | 📝 ya es «escribir, plan» |
 | certificado | 📜 | |
 | recursos, material | 📚 | |
-| progreso, niveles | 🪜 | |
+| progreso, niveles, ascenso, puesto nuevo | 🪜 | en Fluent oscura mide 42: requiere halo para esta aplicación; sin halo, úsalo en claro |
 | ejemplo, «mira esto» | 👀 | |
 
 ## Finanzas
@@ -201,6 +209,7 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | insignia «grabando» (solo como insignia: `🎥+🔴`, `📱+🔴`, `🎤+🔴`) | 🔴 | sola no dice nada (ver «Evita») |
 | grabar audio: una junta o una llamada (con permiso de todos, y la condición en pantalla) | `🎤+🔴` | 🎤 sola sigue siendo «voz, narrar» |
 | tomas, clips de video, stock | 🎞️ | 🎥 es «grabar video». Pálido en Apple (≈45 en claro y en tarjeta): no lo pongas en tarjeta con Apple |
+| editar o cortar video | `🎥+✂️` | cámara con insignia de tijeras; acompáñalo de nota «Editar video». ✂️ sola sigue siendo descuento; 🎞️ son tomas y clips |
 | música de fondo | 🎵 | no en lámina oscura (26 en Apple, 33 en Fluent); 🔊 se lee «volumen» y en Fluent es gris |
 | borrar, descartar | 🗑️ | en Fluent es gris (32 en claro, 22 en tarjeta): no en tarjeta ni sobre un cuadrante de color; o tacha el elemento |
 | cámara de fotos o profesional | 📸 | «grabar video» sigue siendo 🎥 |
@@ -212,7 +221,8 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | Concepto | Emoji | Notas |
 |---|---|---|
 | dolor, cansancio: el «hoy» | 😩 | |
-| antes/después | par de estados | `idea` con `["😩", "😌"]`: dolor → alivio; cada emoji conserva su concepto |
+| estado de la persona antes/después | sin emoji propio | `idea` con `["😩", "😌"]`: dolor → alivio; cada emoji conserva su concepto |
+| antes/después de un ejemplo | receta `no:X` / `si:X` | `cuadrantes` con el mismo concepto: `no:🪝` tono `r` / `si:🪝` tono `v` = sin gancho / con gancho (LAYOUTS, cuadrantes) |
 | gancho, anzuelo, lo que atrapa la atención | 🪝 | |
 | alivio: el «después» | 😌 | |
 | miedo | 😰 | la pena es 😳 |
@@ -233,17 +243,22 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | transmisión en vivo abierta (live, webinar, directo en redes) | `🎥+🔴` | una llamada o sesión DEL PROGRAMA es 📞. 🔴 sola no dice nada (en Fluent es una esfera rosa 3D): va como insignia de «grabando» |
 | lección, módulo, clase grabada del programa | 📖 | la sesión EN VIVO es 📞; 📚 es «recursos, material»; 🎓 el programa completo |
 | logro, meta cumplida | 🏅 | 🏆 es «el mejor» |
+| delegar | `flujo` | 👑 → 👤: del líder a una persona del equipo |
+| conversación 1 a 1, retroalimentación | `👤+💬` | cara a cara; confirma en render que se ve la insignia. `📱+💬` es chat |
+| retrabajo | `flujo` | con `retornos`, sin emoji; las flechas vuelven al paso que se repite |
 
 Una persona del equipo sin rol (vendedor, integrante) es 👤, y el equipo 🧑‍🤝‍🧑 (Personas); el cliente sigue siendo 🧑‍💼.
+Diagnóstico de equipo o empresa usa 🩺 (Negocio), no el teléfono de una llamada.
+Acuerdo y compromiso usan 🤝; práctica 📋 con su precaución de contraste; ascenso 🪜 con la nota de halo.
 
 ## Reacciones (la lámina «pregunta»)
 | Concepto | Emoji |
 |---|---|
-| pregunta retórica | 🤔 · ❓ en modo `fluent` |
+| pregunta retórica que no apela a nadie | sin emoji |
 | sorpresa | 😮 · 🤯 |
-| «esto va para ti» | 👊 · 👉 |
+| «esto va para ti», pregunta que interpela al público («¿Y tú?», «¿Tiene sentido para su equipo?») | 👊 · 👉 |
 | celebración | 🎉 |
-| «¿qué pasa?», duda | 🤷 |
+| «¿qué pasa?», desconcierto | 🤷 |
 | fuego, tendencia | 🔥 |
 | saludo, alto | ✋ |
 
@@ -264,6 +279,9 @@ Sirve donde se acepta emoji (`idea`, `pasos`, `flujo`, `stack`, `lista`). Para u
 
 ## Compuestos útiles
 La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**.
+Un antes/después de un ejemplo conserva el concepto: `cuadrantes` con `no:🪝` (tono `r`)
+y `si:🪝` (tono `v`), sin gancho / con gancho. 😩/😌 solo cuentan el estado de la persona
+(dolor → alivio), no la calidad del ejemplo; ver LAYOUTS, cuadrantes.
 
 **El prefijo dice lo mismo en todo el deck** [ref_628]:
 - En `cuadrantes` va con el tono: `si:` en verde («esto sí, esto basta») y `no:` en rojo («esto no lo necesitas»).
@@ -336,6 +354,8 @@ para una secuencia usa un `flujo`.
 
 Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si el deck usa dos del mismo grupo
 (`PARECIDOS` en `scripts/lib/emoji.mjs`; con `auto`, en cualquiera de los dos sets):
+Si el deck ya usa 😩/😌 en una fórmula, no los repitas como antes/después: reserva ese par al estado
+de la persona y compara el ejemplo con `no:X` / `si:X`.
 
 | Set | Grupo | Qué hacer |
 |---|---|---|
@@ -351,7 +371,7 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 |---|---|---|---|
 | 📱 | teléfono | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos |
 | 📲 | celular con flecha | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos (el mismo celular, con una flecha azul que entra) |
-| 🤔 | pensativo | con ojos de alarma | para la pregunta retórica en modo `fluent`, ❓ |
+| 🤔 | pensativo | con ojos de alarma | para la objeción o duda en modo `fluent`, ❓; interpelar al público usa 👊 o 👉 |
 | 🗣️ | perfil que habla | silueta negra pesada, muy distinta al resto de la lámina | para «voz», 🎤 en los dos sets; 🗣️ solo con Apple en lámina clara y no junto a 👤 o 👥 grises |
 | 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | 3D, sin fecha, encabezado azul y distintos (liso, argollas, espiral) | en Apple se dibujan en SVG, un calendario sin fecha con volumen (también dentro del texto); en Fluent salen nativos. Usa 📅 |
 | 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | 🎟️ se dibuja en SVG, un boleto ámbar liso, en los dos sets (el rosa de Fluent y el rojo de antes se fundían con el tachado y el círculo rojos [ref_255]); 🎫 igual en Apple y nativo (amarillo) en Fluent |

@@ -81,9 +81,13 @@ test('r7: el verbo de un paso no redefine el concepto de su icono', () => {
 test('r7: secciones repetidas piden mapa y los encabezados válidos quedan libres', () => {
   const secciones = ['Módulo 1', 'Semana 2', 'Bloque 3'].map(encabezado => ({ tipo: 'idea', encabezado, texto: 'Una frase' }));
   assert.match(reglasEyebrows(deck(...secciones)).avisos[0], /3 láminas.*mapa que vuelve/);
-  assert.deepEqual(reglasEyebrows(deck(...secciones, { tipo: 'pasos', como: 'mapa', activo: 1 })).avisos, []);
+  // 12 láminas: 4 con encabezado no exento (33 %) aunque haya mapa
+  const relleno = [{ tipo: 'idea', encabezado: 'Módulo 4', texto: 'Una frase' }, ...[...Array(7)].map(() => ({ tipo: 'idea', texto: 'Una frase' }))];
+  const conMapa = reglasEyebrows(deck(...secciones, { tipo: 'pasos', como: 'mapa', activo: 1 }, ...relleno)).avisos;
+  assert.ok(!conMapa.some(a => /mapa que vuelve/.test(a)));
+  assert.ok(conMapa.some(a => /25 %/.test(a)), 'el mapa no exime los encabezados de las demás láminas');
   assert.equal(reglasEstilo(deck(...secciones)).avisos.length, 3);
-  const validos = ['Sin:', 'Incluye:', 'Ellos harán:', 'La idea…', 'Módulo 1:', 'La pregunta?', 'Objeción #1', 'Paso 1'].map(encabezado => ({ tipo: 'idea', encabezado, encabezado_pos: 'entre' }));
+  const validos = ['Sin:', 'Incluye:', 'Ellos harán:', 'La idea…', 'La pregunta?', 'Objeción #1', 'Paso 1'].map(encabezado => ({ tipo: 'idea', encabezado, encabezado_pos: 'entre' }));
   assert.deepEqual(reglasEstilo(deck(...validos)).avisos, []);
   for (const tipo of ['lista', 'flujo', 'chat', 'cifra']) assert.ok(reglasEstilo(deck({ tipo, encabezado: 'Lección · semana 2' })).avisos.some(a => /eyebrow/.test(a)));
 });

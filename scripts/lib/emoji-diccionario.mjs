@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { esCampoEmoji, specsDeCampo, analizarCompuesto, analizarTrazo } from './emoji.mjs';
+import { esCampoEmoji, specsDeCampo, analizarCompuesto, analizarTrazo, ALIAS_VINETA } from './emoji.mjs';
 
 const RUTA = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'references', 'EMOJIS.md');
 const sinSel = e => String(e).trim().replace(/️/g, '');
@@ -26,7 +26,9 @@ export function filasConcepto(md) {
       const limpia = col.replace(/\([^)]*\)/g, ' ').replace(/\[[^\]]*\]/g, ' ');
       const specs = limpia.split(/\s+·\s+|\s+o\s+/).map(p => p.replace(/`/g, '').trim()).map(p => p.match(TOKEN)).filter(Boolean)
         .map(m => sinSel(`${m[1] || ''}${m[2]}${m[3] || ''}`));
-      if (specs.length) filas.push({ seccion, concepto: conc, specs });
+      // Conserva también recetas y «sin emoji»: la prueba exige una excepción explícita,
+      // en vez de omitir silenciosamente una fila que el lector no pudo interpretar.
+      filas.push({ seccion, concepto: conc, specs, indicacion: col });
     });
   }
   return filas;
@@ -63,7 +65,11 @@ export function infoConceptos(deck) {
     if (Array.isArray(o)) return o.forEach(ir);
     if (!o || typeof o !== 'object') return;
     for (const [k, v] of Object.entries(o)) {
-      if (esCampoEmoji(k)) specsDeCampo(k, v).forEach(s => usados.add(sinSel(s)));
+      if (esCampoEmoji(k)) {
+        const valores = Array.isArray(v) ? v : [v];
+        const literales = k === 'vineta' ? valores.filter(x => !Object.hasOwn(ALIAS_VINETA, x)) : valores;
+        specsDeCampo(k, literales).forEach(s => usados.add(sinSel(s)));
+      }
       else if (v && typeof v === 'object' && !['voz', 'accion', 'si_falla', 'conceptos'].includes(k)) ir(v);
     }
   };

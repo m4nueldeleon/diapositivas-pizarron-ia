@@ -230,7 +230,7 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
   const errores = [...erroresComo, ...validarDeck(crudo, Object.keys(LAYOUTS))];
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
   // {{CLAVE}} → valor de «datos» (o «[CLAVE]», que QA cuenta como pendiente). Luego, listas cerradas.
-  const { deck: conDatos, faltan, propuestos, declarados } = sustituirDatos(crudo);
+  const { deck: conDatos, faltan, propuestos, declarados, fuentes } = sustituirDatos(crudo);
   const { deck, avisos: avisosSaneo, sugerencias: sugSaneo } = sanearDeck(conDatos);
   const sugerencias = [...avisosComo, ...sugSaneo];
   fs.mkdirSync(dirSalida, { recursive: true });
@@ -304,5 +304,5 @@ ${secciones.join('\n')}
 <script>${runtime}</script>
 <script>${presentador}</script>
 </body></html>`;
-  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, crudoResuelto: crudo, pasos: armadas.map(a => a.pasos), revela: armadas.map(a => a.revela), faltan, propuestos, declarados };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, crudoResuelto: crudo, pasos: armadas.map(a => a.pasos), revela: armadas.map(a => a.revela), faltan, propuestos, declarados, fuentes };
 }

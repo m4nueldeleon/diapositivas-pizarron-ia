@@ -51,6 +51,7 @@ deducir.
    **Lo que diseñas tú y lo que confirma el cliente**: el contenido (el programa, los módulos, las sesiones, el
    orden) lo escribes normal; los datos de la oferta (precio, fechas, cupos, garantía, bonos, cifras del cliente)
    van como hueco `{{CLAVE}}` hasta que alguien los confirme.
+   La pantalla y la voz se escriben como si el dato ya estuviera, con el hueco dentro: «Lo imparte {{FACILITADOR}}», «Arrancamos el {{FECHA_INICIO}}», «La inversión es {{PRECIO}}» o «Si en {{PLAZO}} no ves {{CONDICION}}, {{REMEDIO}}». Nunca «por confirmar», «pendiente de…», «falta ese dato», «confirmaremos» o «verificaremos» como sustituto del dato. El motivo va en `datos.X.motivo` y en la entrega, no en pantalla ni en voz. Las notas del PDF conservan la voz: aunque se llene el dato, una frase de pendiente escrita en prosa seguiría ahí.
    Si el deck lleva oferta, toma sus datos de la sección «Oferta» de MI-MARCA o del guion. Si faltan
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
    usuario prefiere dejarlos para después, escribe `{{PRECIO}}` en el texto y declara el hueco:
@@ -67,7 +68,7 @@ deducir.
    nunca como valor liso: un comentario `_datos` no cuenta. Precio, garantía, cupos, fechas límite,
    descuentos, bonos, testimonios y cifras de resultados o credibilidad **nunca** se proponen: van como
    hueco `{{CLAVE}}`. Una **objeción** (y su respuesta) que no dio el usuario sí se propone:
-   `"OBJECION_1": { "valor": "No sé nada de tecnología", "propuesto": true }` y la lámina usa `{{OBJECION_1}}`, así
+   `"OBJECION_1": { "valor": "<derivada del nicho y del producto>", "propuesto": true }` y la lámina usa `{{OBJECION_1}}`, así
    sale en `por_confirmar`; se dice sin frecuencia («Objeción número uno: …», nunca «la que más oigo»).
    Un **resultado propio en primera persona** («me hizo cobrar el doble», «gané», «facturé») es un CASO: si no
    está confirmado, escríbelo como `{{CASO_PROPIO}}` o confírmalo en `datos.CASO_PROPIO` (o pon `fuente` en la
@@ -78,7 +79,7 @@ deducir.
    objetivo; una clase de 15-30 min es `clase-corta`. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si
    no, es la única pregunta. Van en el deck como `pieza`, `duracion_objetivo` y `en_vivo`. Una **clase express**
    (menos de 15 min) es `tutorial` con `"clase": true`. **Si el encargo fija el número de láminas**, la duración sale
-   de ahí (~6.5-9.5 s por lámina; planea con 7.5 s) y la pieza, de la tabla de ARCOS.md («Láminas fijadas»): 6-12 reel,
+   de ahí (~6.5-9.5 s por lámina; planea con 7.5 s) y la pieza, de la tabla de ARCOS.md («Láminas fijadas»): 6-12 reel solo sin otra pieza nombrada y en 9:16,
    13-15 `tutorial` o `libre`, 16-60 `tutorial` (`vsl-corto` si vende), 60-150 `video` o `vsl` y 90-200 con tramos en
    vivo `clase-corta`. **Si el número de láminas contradice la pieza pedida, dilo en una línea ANTES de escribir**, con
    la duración estimada (láminas × 7.5 s): «30 láminas son ~4 min, no un webinar de 60-90: lo armo como `vsl-corto`, la
@@ -86,6 +87,7 @@ deducir.
    cambias la pieza en silencio. No fuerces
    `duracion_objetivo` sobre una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas
    cosas; más de 60% en tramos es error aunque sea en vivo).
+   **La conversión cambia la duración y la pieza, no la modalidad**: un webinar o una clase convertido a `vsl-corto`/`clase-corta` conserva `"en_vivo": true` salvo que el pedido diga grabado, evergreen o anuncio. Si el autor decide que es video, lo dice: «lo armo como vsl-corto grabado». Un VSL pedido como VSL sigue sin `en_vivo`; un webinar evergreen tampoco se vuelve en vivo.
 6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 32 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
@@ -96,9 +98,11 @@ las tipografías.
 
 Antes de escribir, congela el trato y las reglas del cliente; declara `persona` y conserva la misma persona en pantalla y voz (GUION §1).
 
+Antes del guion, copia a `avisos_aceptados` todo lo explícito del encargo que choque con una regla: es la ficha de reglas del cliente, con pedido, decisión y motivo (LAYOUTS, «Cierre de QA»). No hay un segundo campo `reglas_cliente`.
+
 | Fase | Qué haces | Sale |
 |---|---|---|
-| **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). En `vsl`, `vsl-corto` y `webinar`, ANTES de los beats, la **ficha de venta** en 7 líneas: público y dolor con sus palabras · la promesa (resultado + plazo + «sin…») · el mecanismo con nombre · la prueba disponible · **promesa → qué la prueba → qué mide esa fuente** (si mide otra cosa, la voz la dice como dato del mercado y la lámina nombra lo que se midió) · una objeción real y cómo se DEMUESTRA la respuesta · un solo llamado (botón o palabra clave). Lo que falte va como dato pendiente, igual que un `{{…}}`. | beats |
+| **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). En `vsl`, `vsl-corto` y `webinar`, ANTES de los beats, la **ficha de venta** en 8 líneas: público y dolor con sus palabras · la promesa (resultado + plazo + «sin…») · el mecanismo con nombre · la prueba disponible · **promesa → qué la prueba → qué mide esa fuente** (si mide otra cosa, la voz la dice como dato del mercado y la lámina nombra lo que se midió) · una objeción real y cómo se DEMUESTRA la respuesta · un solo llamado (botón o palabra clave) · **quién entrega: yo, mi equipo o un asesor/mentor**, guardado en `datos.QUIEN_ENTREGA` (`"yo"`, `"equipo"` o `"asesor"`), nunca como clave de raíz. Lo que falte va como dato pendiente, igual que un `{{…}}`. | beats |
 | **2. Beats → diseños** | Cada beat de 2 a 3 s es un paso. Mismo tema, mismo paso de la misma lámina; tema nuevo, lámina nueva. Elige el diseño con la tabla de GUION-A-LAMINAS §2. **Fija el diccionario del deck antes de escribir**: un emoji por concepto (EMOJIS.md), y que ninguno diga lo contrario en otra lámina (la silla vacía de una rejilla no es «llegó» después). | lista de láminas |
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
@@ -124,8 +128,8 @@ En la fase 2 entrega la lista de láminas + `conceptos` (emoji → concepto cort
    hay causa→efecto). Las láminas de datos (cifra, tabla, línea de tiempo, calendario, gráfica) no
    llevan emoji protagonista.
 5. **Un énfasis por lámina**: subrayado rojo, resaltador o círculo. Dos es el tope.
-6. **La capa a mano es la firma**: cada 3 o 4 láminas debe haber una nota, flecha, llave,
-   tachón o sello.
+6. **La capa roja a mano es la firma**: cada 3 o 4 láminas debe haber subrayado rojo, flecha, anotación, llave,
+   tachón, óvalo o sello. La nota gris y la tabla por sí solas no cuentan (ESTILO §5).
 7. **Objetos que vuelven**: la tabla-marcador crece columna por columna y el mapa 1-2-3 abre
    cada sección. El objeto que vuelve se declara una vez y se reúsa con `"como": "<id>"` (LAYOUTS.md).
 8. **Láminas oscuras solo para REVELAR la marca o el producto** (nombre y logo, una frase). El
@@ -197,6 +201,8 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   Todos llevan los datos que faltan como huecos declarados.
 
 ## 4. Qué entregar al usuario
+
+Para cada choque registrado: «Pediste X; lo hice Y porque Z». Incluye las excepciones aplicadas y las decisiones rechazadas que QA conserva en `reglas_cliente`. Firma de relleno, prueba o cifra inventada y regla 8 de oscuras nunca se exceptúan.
 
 `node <skill>/scripts/render.mjs <proyecto> --qa` renderiza y corre QA sobre la misma salida: la nota, el ESTADO,
 `falta_para_final` y la línea del arco (contrato de tiempo contra la voz, revelación y llamados en %, `qa.json → arco`).

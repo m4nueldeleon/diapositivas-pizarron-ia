@@ -10,12 +10,16 @@ function textos(l) {
     : v && typeof v === 'object' ? leer(v.texto || v.etiqueta || '') : [];
   return CAMPOS.flatMap(k => leer(l[k]));
 }
+export const encabezadoExento = l => l.encabezado_estilo === 'frase'
+  || (l.encabezado_pos === 'entre' && /(?:#\s*\d|\bpaso\s+\d)/i.test(l.encabezado || ''))
+  || (l.tipo === 'lista' && (l.activo != null || l.hechos != null || l.como != null || l.oscura === true));
 export function reglasEstilo(deck) {
   const avisos = [];
   deck.laminas.forEach((l, i) => {
     const cab = plano(l.encabezado || '');
-    if (encabezadoSeccion(cab) && ((l.tipo === 'idea' && l.encabezado_pos !== 'entre') || l.tipo === 'flujo')) avisos.push(`lámina ${i+1}: rótulo de sección encima del titular (eyebrow): quítalo y usa el mapa que vuelve, o encabezado_pos:"entre" (ESTILO §8)`);
-    else if (/\s[·|]\s/.test(cab) && !/[:…?]$|\.\.\.$/.test(cab.trim())) avisos.push(`lámina ${i+1}: el encabezado «${cab}» lleva metadatos separados por “·” (eyebrow); preséntalo con “:” o numéralo, y pasa la semana o el “ejemplo” al texto, a la línea de tiempo o a la voz (ESTILO §2)`);
+    const exento = encabezadoExento(l);
+    if (cab && /[·]|\b(?:semana|modulo)\s*\d|\b(?:por confirmar|pendiente|ficticio|ejemplo)\b|\{\{/.test(normal(l.encabezado))) avisos.push(`lámina ${i+1}: el encabezado «${cab}» lleva metadatos o estado (eyebrow); quítalos y lleva la procedencia a fuente o nota (ESTILO §2)`);
+    else if (cab && !exento && !/[:…?]$|\.\.\.$/.test(cab.trim())) avisos.push(`lámina ${i+1}: el encabezado «${cab}» debe arrancar la frase que completan los ítems y terminar en «:», «…» o «?» (ESTILO §2)`);
 
     const nombre = `lámina ${i + 1} (${l.id || l.tipo})`;
     for (const t of textos(l)) {

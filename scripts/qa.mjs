@@ -63,7 +63,7 @@ import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, HALO_INSUFICIENTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable, PISOS } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, infoPersona, lineaArco } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, infoPersona, lineaArco, fichaReglasCliente } from './lib/reglas-deck.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
@@ -820,7 +820,12 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
     const clasesTrazo = { subrayado: 'subrayado', tachon: 'tachón', llave: 'llave', flecha: 'flecha', circulo: 'círculo', ovalo: 'círculo' };
     r.trazos = [...new Set(visiblesTinta('.capa-mano path[data-clase]').map(e => clasesTrazo[e.dataset.clase]).filter(Boolean))];
     if (visiblesTinta(':scope > .sello').length) r.trazos.push('sello');
-    // «capa a mano» (láminas seguidas sin tinta) sigue contando todo lo manuscrito; `trazos` distingue la función
+    // El conteo rojo excluye notas grises y tablas; la geometría sigue midiéndose aparte.
+    r.rojo = visiblesTinta('.capa-mano path, .sello, [data-sub], .circ').filter(e => {
+      const c = getComputedStyle(e), color = e.tagName.toLowerCase() === 'path' ? c.stroke : c.color;
+      const rgb = color.match(/[\d.]+/g)?.map(Number) || [];
+      return rgb.length >= 3 && rgb[0] > rgb[1] * 1.4 && rgb[0] > rgb[2] * 1.3;
+    }).length;
     r.mano = visiblesTinta('.capa-mano path, .nota, .tabla, .sello, .t-mano, .mano, [data-sub], mark, .circ').length;
     r.contenedores = visiblesTinta('.nota, .tabla').length;
     r.enfasis = lam.querySelectorAll('[data-sub], mark, .circ').length;
@@ -847,7 +852,8 @@ await browser.close();
 // `avisDatos`: los datos por confirmar (huecos declarados, datos propuestos, resultado propio o entregable sin
 // confirmar, capturas por conseguir). Se imprimen y van a qa.json → datos_por_confirmar, pero NO restan nota: ya los
 // representa el tope de BORRADOR (restarlos castigaba dos veces el hueco honesto y empujaba a borrar la prueba).
-const errores = [], avis = [], avisDatos = [];
+const errores = [], avisDatos = [];
+let avis = [];
 avisos.forEach(a => errores.push(a));
 avisosBuild.forEach(a => errores.push('construcción: ' + a));
 sugerencias.forEach(a => avis.push(a));
@@ -881,7 +887,7 @@ const enLaminas = (ls = []) => `${ls.length > 1 ? 'las láminas' : 'la lámina'}
 Object.entries(pendientes).forEach(([t, ls]) => {
   const k = t.replace(/^\[|\]$/g, '');
   if (Object.hasOwn(declarados, k)) {
-    porConfirmar[k] = { valor: '', laminas: ls, motivo: declarados[k].motivo, pendiente: true };
+    porConfirmar[k] = { ...declarados[k], valor: '', laminas: ls, pendiente: true };
     avisDatos.push(`dato pendiente a propósito ${t} (${declarados[k].motivo}) en ${enLaminas(ls)}: el deck es borrador hasta llenarlo`);
   } else {
     // El texto puede traer ya {{CLAVE}} (el deck la escribió bien y falta el valor) o un [CLAVE] a mano
@@ -893,7 +899,7 @@ Object.entries(pendientes).forEach(([t, ls]) => {
 // Datos PROPUESTOS ({ "valor", "propuesto": true }): se pintan, pero el deck no es final hasta confirmarlos
 Object.entries(propuestos).forEach(([k, ls]) => {
   const v = crudo.datos && crudo.datos[k] && typeof crudo.datos[k] === 'object' ? crudo.datos[k].valor : '';
-  porConfirmar[k] = { valor: v, laminas: ls };
+  porConfirmar[k] = { valor: v, laminas: ls, ...(crudo.datos[k].fuente ? {fuente:crudo.datos[k].fuente} : {}) };
   avisDatos.push(`dato propuesto ${k} («${v}») en ${enLaminas(ls)}: confírmalo y quita "propuesto"; mientras tanto el deck no es final`);
 });
 // Voz y anclas contra los pasos (una frase por paso; si no cuadran, los cortes del montaje se desalinean)
@@ -919,6 +925,9 @@ Object.entries(delDeck.porConfirmar || {}).forEach(([k, v]) => {
 avis.push(...reglasDeckCompleto(deck, { manoPorLamina: porLamina.map(r => r.mano), tiposPorLamina: porLamina.map(r => r.trazos) }).avisos);
 
 // Con datos propuestos sin confirmar el deck es BORRADOR: la nota no pasa de TOPE_BORRADOR
+const revisionAvisos = clasificarAvisos(avis, deck.avisos_aceptados);
+const reglasCliente = fichaReglasCliente(deck, avis);
+avis = revisionAvisos.pendientes;
 const nota = notaQA({ errores, avisos: avis, porConfirmar });
 const borrador = Object.keys(porConfirmar).length > 0;
 const objetivo = minutosObjetivo(deck.duracion_objetivo);
@@ -929,7 +938,6 @@ const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDec
 // confirmar). Un loop o un agente de fondo lee `estado` y `listo_salvo_datos` (o corre con --estricto): «listo» es el
 // ÚNICO estado que se entrega como final (SKILL §6).
 const falta = delDeck.faltaParaFinal || [];
-const revisionAvisos = clasificarAvisos(avis, deck.avisos_aceptados);
 const estado = estadoQA({ errores, borrador, nota, falta, avisos: avis, aceptados: deck.avisos_aceptados, notaFinal: NOTA_FINAL });
 // Sin el tope del borrador: ¿quedan avisos por corregir? `listo_salvo_datos` = mismo criterio que «listo», ignorando el tope
 const sinTope = notaSinTope({ errores, avisos: avis });
@@ -942,9 +950,10 @@ const infoContraste = [
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
 const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
+info.push(...revisionAvisos.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`));
 const informe = { medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
-  avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
-  tinta: porLamina.map(r => ({ lamina: r.i + 1, trazos: r.trazos, contenedores: r.contenedores })),
+  avisos: avis, datos_por_confirmar: porConfirmar, datos_fuentes: prep.fuentes || {}, reglas_cliente: reglasCliente, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
+  tinta: porLamina.map(r => ({ lamina: r.i + 1, rojo: r.rojo, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));

@@ -91,28 +91,40 @@
    "id": "portada",
    "tipo": "idea",
    "emoji": "🏢",
-   "texto": "Propuesta para **{{CLIENTE}}**",
+   "texto": "**{{CLIENTE}}**:\nmenos chats sin respuesta",
    "nota": "Ventas por WhatsApp con IA",
    "voz": [
-    "Esta es la propuesta para {{CLIENTE}}.",
+    "Menos chats sin respuesta para {{CLIENTE}}.",
     "Ventas por WhatsApp con inteligencia artificial."
    ]
   },
   {
-   "id": "temario",
-   "tipo": "lista",
-   "encabezado": "Hoy vemos:",
-   "vineta": "numero",
-   "items": [
-    "Lo que nos **dieron**",
-    "Cómo lo **resolvemos**",
-    "**Inversión** y arranque"
+   "id": "escena",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "¿Me mandan la cotización?"
+    },
+    {
+     "de": "yo",
+     "texto": "Aún busco el precio"
+    }
+   ],
+   "anotaciones": [
+    {
+     "a": "m0",
+     "texto": "Sin respuesta hoy",
+     "lado": "abajo",
+     "paso": 2
+    }
    ],
    "voz": [
-    "Hoy vemos tres cosas: lo que nos dieron en la llamada,",
-    "cómo lo resolvemos",
-    "y la inversión con la fecha de arranque."
-   ]
+    "El comprador pide la cotización esta tarde.",
+    "Su vendedor busca quién tiene el precio.",
+    "El comprador sigue esperando su cotización."
+   ],
+   "excepcion_persona": "uno-a-uno"
   },
   {
    "id": "diagnostico",
@@ -134,7 +146,7 @@
    "id": "chats",
    "tipo": "idea",
    "emoji": "📲",
-   "texto": "**{{CHATS_SIN_RESPUESTA}} chats**\nsin respuesta al mes",
+   "texto": "**{{CHATS_SIN_RESPUESTA}} chats**\n__sin respuesta__ al mes",
    "fuente": "WhatsApp Business del equipo",
    "voz": [
     "Y estos chats se quedan sin respuesta cada mes."
@@ -157,11 +169,19 @@
    "arriba": "Hoy, cada mes:",
    "lineas": [
     "{{HORAS_MES}} h × {{COSTO_HORA}} la hora",
-    "Son __{{COSTO_MES}} al mes__"
+    "Son **{{COSTO_MES}} al mes**"
    ],
    "voz": [
-    "Esas horas, por lo que les cuesta cada hora,",
-    "es lo que hoy les cuesta no hacer nada."
+    "Esas horas por {{COSTO_HORA}}, lo que cuesta cada hora.",
+    "Son {{COSTO_MES}} al mes.",
+    "Horas que se pierden cada mes."
+   ],
+   "anotaciones": [
+    {
+     "a": "l1",
+     "texto": "Horas que se pierden",
+     "paso": 2
+    }
    ]
   },
   {
@@ -171,7 +191,7 @@
    "texto": "Y el mes que sigue\n**se vuelve a perder**",
    "voz": [
     "Y el mes que sigue, se vuelve a perder.",
-    "Cada caja representa un mes.",
+    "Cada billete es un mes.",
     "El costo se repite."
    ],
    "total": 12,
@@ -179,7 +199,7 @@
    "ancho": 1050,
    "alto": 380,
    "texto_paso": 0,
-   "anotacion": "Una caja por mes",
+   "anotacion": "Un mes cada uno",
    "anotacion_paso": 1,
    "sello": "Se repite",
    "sello_paso": 2
@@ -204,12 +224,15 @@
    "id": "sesiones",
    "tipo": "idea",
    "emoji": "📞",
-   "texto": "8 sesiones en vivo,\n**una por semana**",
-   "nota": "Con sus chats, no con ejemplos",
+   "texto": "8 sesiones en vivo,\n**((una por semana))**",
+   "nota": "Con sus propios chats",
    "voz": [
-    "Son ocho sesiones en vivo, una por semana.",
-    "Trabajamos con sus chats, no con ejemplos."
-   ]
+    "Son ocho sesiones en vivo.",
+    "Una por semana.",
+    "Trabajamos con sus propios chats."
+   ],
+   "circulo_paso": 1,
+   "nota_paso": 2
   },
   {
    "id": "demo",
@@ -264,7 +287,16 @@
    "voz": [
     "Les escriben,",
     "el agente propone la respuesta",
-    "y su vendedor la revisa y la envía."
+    "y su vendedor la revisa y la envía.",
+    "El vendedor decide qué enviar."
+   ],
+   "anotaciones": [
+    {
+     "a": "et2",
+     "texto": "El vendedor decide",
+     "lado": "abajo",
+     "paso": 3
+    }
    ]
   },
   {
@@ -309,7 +341,15 @@
    "emoji": "🧑‍🏫",
    "texto": "Más de **{{EMPRESAS}} empresas**\ncapacitadas desde {{DESDE}}",
    "voz": [
-    "Lo imparte un equipo que ya capacitó a más de {{EMPRESAS}} empresas."
+    "Lo imparte un equipo que ya capacitó a más de {{EMPRESAS}} empresas.",
+    "Esa experiencia la trae el equipo que les acompaña."
+   ],
+   "anotaciones": [
+    {
+     "a": "texto",
+     "texto": "Experiencia del equipo",
+     "paso": 1
+    }
    ]
   },
   {
@@ -330,7 +370,7 @@
    "id": "meta",
    "tipo": "idea",
    "emoji": "🎯",
-   "texto": "Tiempo de respuesta: de {{HOY}} a {{META}}",
+   "texto": "Tiempo de respuesta:\nde {{HOY}} a __{{META}}__",
    "nota": "Medido en la semana 4",
    "voz": [
     "La meta es bajar el tiempo de respuesta a lo que acordemos.",
@@ -372,6 +412,13 @@
     "Hasta la cuatro, aprenden.",
     "De la cuatro a la ocho, aplican y medimos."
    ]
+  },
+  {
+   "id": "participantes",
+   "tipo": "rejilla",
+   "multitud": true,
+   "voz": "Participan {{VENDEDORES}} vendedores con el mismo método.",
+   "etiqueta_destacado": "**{{VENDEDORES}} vendedores**"
   },
   {
    "id": "incluye",
@@ -445,27 +492,23 @@
     }
    ],
    "voz": [
-    "Hoy pierden esto cada mes.",
-    "La inversión es esta."
+    "Hoy pierden {{COSTO_MES}} cada mes.",
+    "La inversión es {{PRECIO}}."
    ]
   },
   {
    "id": "salida",
    "tipo": "idea",
    "emoji": "🛡️",
-   "texto": "Si en la semana {{SEMANA_SALIDA}} no hay avance,\n**cancelan sin penalización**",
+   "texto": "Si en la semana {{SEMANA_SALIDA}} no hay avance,\n__cancelan sin penalización__",
    "voz": [
-    "Si en esa semana no medimos avance, cancelan sin penalización.",
-    "Sin penalización."
-   ],
-   "sello": "Sin penalización",
-   "sello_sobre": "emoji",
-   "sello_paso": 1
+    "Si en la semana {{SEMANA_SALIDA}} no hay avance, cancelan sin penalización."
+   ]
   },
   {
    "id": "pregunta",
    "tipo": "idea",
-   "emoji": "🤔",
+   "emoji": "👊",
    "texto": "¿Tiene sentido\n**para su equipo**?",
    "voz": [
     "¿Tiene sentido para su equipo? Los escucho antes de seguir."
@@ -502,8 +545,8 @@
    "texto": "Arrancamos el **{{FECHA_ARRANQUE}}**",
    "nota": "Vigente hasta el {{VIGENCIA}}",
    "voz": [
-    "Podemos arrancar en esta fecha.",
-    "La propuesta está vigente hasta este día."
+    "Arrancamos el {{FECHA_ARRANQUE}}.",
+    "La propuesta está vigente hasta el {{VIGENCIA}}."
    ]
   }
  ],

@@ -38,7 +38,7 @@ const { opt, flag, pos } = argumentos(process.argv);
 if (flag('--pdf-pasos') && flag('--finales')) { console.error('✗ --pdf-pasos es incompatible con --finales: exporta todos los pasos o solo los finales'); process.exit(2); }
 if (flag('--pdf-pasos') && flag('--pasos')) console.warn('⚠ --pasos solo imprime el mapa y sale antes del navegador; quita --pasos para generar laminas-pasos.pdf');
 let prep;
-try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
+try { prep = prepararSalida(pos[0], opt('--salida'), { forzar: flag('--forzar') }); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos, revela = [] } = prep;
 if (flag('--pasos')) {
   // Mapa de pasos: numerado desde 1 como la hoja; entre corchetes, cuántos textos trae la voz
@@ -62,7 +62,9 @@ else if (prep.crudo.marca === undefined) console.log(`ℹ ${mensajeSinFirma({ fi
 (prep.infoDatosFicha || []).forEach(x => console.log(`ℹ ${x}`));
 if (prep.avisoFirma) console.warn('⚠ ' + prep.avisoFirma);
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
-if (flag('--solo-html')) process.exit(0);
+if (prep.evidencia.invalido) fs.writeFileSync(path.join(dirSalida, 'NO-VALE.txt'), `deck_sha: ${prep.evidencia.deck_sha}\nla fidelidad se mide con node scripts/comparar.mjs <carpeta-ref>\n`);
+else if (flag('--forzar')) fs.rmSync(path.join(dirSalida, 'NO-VALE.txt'), { force: true });
+if (flag('--solo-html')) process.exit(prep.evidencia.invalido ? 3 : 0);
 
 const escala = Number(opt('--escala', 1));
 const soloFinales = flag('--finales');
@@ -175,9 +177,9 @@ console.log(`Presentador: abre ${htmlPath} (→ avanza, ← regresa, N notas, O 
 if (flag('--qa')) {
   const { spawnSync } = await import('node:child_process');
   const q = spawnSync(process.execPath, [path.join(path.dirname(fileURLToPath(import.meta.url)), 'qa.mjs'), prep.jsonPath, '--salida', dirSalida], { stdio: 'inherit' });
-  process.exit(errores.length ? 1 : q.status ?? 1);
+  process.exit(errores.length ? 1 : prep.evidencia.invalido ? 3 : q.status ?? 1);
 }
-process.exit(errores.length ? 1 : 0);
+process.exit(errores.length ? 1 : prep.evidencia.invalido ? 3 : 0);
 
 } catch (error) {
   if (!(error instanceof ErrorNavegador)) throw error;

@@ -24,8 +24,9 @@ export function medidasTrazos(lam) {
       if (e && caja(e).height===0) avisos.push(`el ancla ${id} de una conexión mide 0 px de alto; ancla la conexión al texto o al ícono visible`);
     }
   });
+  // El gancho de una anotación (curva-roja) o una flecha que entra no es una flecha del flujo.
   if (lam.dataset.tipo === 'flujo') lam.querySelectorAll('path[data-clase="flecha"]').forEach(f => {
-    if (!visible(f) || ['retorno','arco','arco-negro'].includes(f.dataset.estilo)) return;
+    if (!visible(f) || ['retorno','arco','arco-negro','curva-roja','entrada'].includes(f.dataset.estilo)) return;
     const a = buscar(f.dataset.de), b = buscar(f.dataset.a); if (!a || !b) return;
     const A = caja(a), B = caja(b), F = caja(f), cy = (F.top+F.bottom)/2;
     if (lienzo.width > lienzo.height && A.height && B.height && (cy < Math.max(A.top,B.top)-4 || cy > Math.min(A.bottom,B.bottom)+4)) avisos.push('la flecha del flujo queda fuera de la banda vertical común de sus anclas; alinea los nodos y sus etiquetas');

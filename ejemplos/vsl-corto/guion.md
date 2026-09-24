@@ -1,7 +1,7 @@
 # Agenda Llena — VSL corto de ejemplo (3-6 min)
 
 Modelo que se copia para un `vsl`, un `vsl-corto` o un `webinar` (`deck.json` en esta carpeta). El demo
-(`ejemplos/demo/`) es el catálogo de diseños; este es el **guion**. Copia el arco y la forma de cada beat, no las
+(`ejemplos/demo/`) es el catálogo de diseños; este es el **guion**. Copia el arco y la forma de cada beat; NO el nicho, la hora, los rótulos ni las frases. No copies las
 cifras: los datos que nadie ha confirmado van como huecos declarados en `"datos"`
 (`{ "pendiente": true, "motivo": "…" }`), así QA lo deja en BORRADOR y los lista al entregar.
 
@@ -10,20 +10,19 @@ cifras: los datos que nadie ha confirmado van como huecos declarados en `"datos"
 - Set de emojis fijado: `"emoji": "apple"` (se exporta en Mac). Animación `seco`, como la referencia.
 - Sin firma (`marca`): la toma de tu ficha MI-MARCA.md si existe (SKILL §0.4).
 - Ficha de venta (SKILL, fase 1): dueños de negocios de citas que contestan WhatsApp de noche · citas agendadas toda
-  la noche sin contestar tú · «Agenda en automático» · un caso real ({{CASO_…}}, pendiente) · «No sé nada de
-  tecnología» (propuesta) · un solo llamado: el botón «Aplica aquí».
+  la noche sin contestar tú · «Agenda en automático» · un caso real ({{CASO_…}}, pendiente) · «Mi agenda cambia todos los días» (propuesta) · quien entrega: yo (`datos.QUIEN_ENTREGA`, propuesto) · un solo llamado: el botón «Aplica aquí».
 
 | # | Beat (GUION §6.1 y §7) | Láminas | Qué enseña |
 |---|---|---|---|
 | 1 | **Gancho con conflicto antes del segundo 10** | 1 `chat` | la hora de los dos extremos y el sello pegado a la burbuja culpable: se entiende sin sonido |
 | 2 | **Promesa con su «sin…» (0:09-0:21)** | 2-3 | `idea` con el resultado y `lista` «Sin:» [0:10-0:19] |
 | 3 | **Mecanismo con nombre, de pasada (0:21)** | 4 | el término entre «comillas» y __subrayado__: «ahorita te enseño cómo funciona» [0:23] |
-| 4 | Filtro y credibilidad (0:26-0:41) | 5-6 | «Es para ti si:» y «Más de {{CLIENTES}} negocios»: el lugar de la cifra real, pendiente hasta que la dé quien vende |
+| 4 | Filtro y credibilidad (0:26-0:41) | 5-6 | frontera `lista.columnas` Sí/No con llave y «Más de {{CLIENTES}} negocios»: el lugar de la cifra real, pendiente hasta que la dé quien vende |
 | 5 | Problema y costo de no hacer nada, DESPUÉS de la promesa | 7-10 | `idea` negada, `cifra` con la condición en `arriba` y la tasa como {{TASA_…}} (GUION §3.8), «Lo que ya intentaste:» y el dolor 😩 |
 | 6 | Cómo funciona: el mapa 1-2-3 | 11-14 | el mapa entra UNA vez, ya en el paso 2 (el 1, «te escriben», es el gancho); cada paso demostrado (`chat`) y el regreso al mapa trae el titular de su bloque en `texto` («La cita cae **sola** en tu calendario»): nunca el mismo mapa dos veces seguidas ni un regreso vacío tras una lámina (ARCOS «Las plantillas») |
-| 7 | **Objeción #1 y su respuesta, antes de la revelación** | 15-16 | `idea` con `no:⌨️` y «Objeción #1» entre el emoji y la frase; la objeción es `{{OBJECION_1}}` propuesta, dicha sin frecuencia («Objeción número uno: …»); la respuesta DEMUESTRA con un `flujo` (📄 Llenas una hoja → 🤖 El agente la lee), no con una `idea` que afirma (GUION §2) |
+| 7 | **Objeción #1 y su respuesta, antes de la revelación** | 15-16 | `idea` con 🤔 y «Objeción #1» entre el emoji y la frase; la objeción es `{{OBJECION_1}}` propuesta, dicha sin frecuencia («Objeción número uno: …»); la respuesta DEMUESTRA con un `flujo` (📄 Actualizas horarios → 🤖 El agente los lee), no con una `idea` que afirma (GUION §2) |
 | 8 | **Revelación al ~59%** | 17 `oscura` | la ÚNICA oscura: nombre y una frase |
-| 9 | Qué incluye | 18-20 | `stack` con el bono al final (`sub: "Bono #1"`, `{{BONO_1}}`), un componente desarrollado y la pregunta de sí 🤔 |
+| 9 | Qué incluye | 18-20 | `stack` con el bono al final (`sub: "Bono #1"`, `{{BONO_1}}`), un componente desarrollado y la pregunta de sí 👊 |
 | 10 | **Prueba**: sustituto b) de GUION §7 | 21 `cifra` | un caso PROPIO con números y `fuente` ({{CASO_…}}, {{FUENTE_CASO}}): `qa.json → prueba` dice `propia`; un dato publicado de terceros sería `mercado` y respalda la oportunidad, no tu resultado; nunca una maqueta `ejemplo: true` |
 | 11 | Precio anclado y garantía | 22-24 | el ancla es algo real que el público ya paga; 🛡️ con plazo y condición, y `pasos` con cómo se reclama |
 | 12 | **Llamado 1 con qué pasa después del clic** | 25-26 | `boton` «Aplica aquí» (📝: el cursor ya es la mano) + `flujo` ✍️ Aplicas → 📞 Llamada → 🚀 Arrancas |
@@ -35,3 +34,5 @@ solo 3 lugares» escritos a mano son error de QA.
 
 Antes de entregar: llena los datos en `"datos"`, quita `"propuesto"` al nombre del producto y corre
 `node scripts/qa.mjs ejemplos/vsl-corto --estricto`.
+
+Si este modelo adapta un webinar o una clase en vivo, conserva `en_vivo: true` salvo pedido grabado, evergreen o anuncio; un VSL pedido como VSL sigue grabado. Aplica la receta de acceso en vivo de ARCOS: URL corta ≥64 px o palabra en el chat debajo del botón, `qr` en sala y respaldo en `si_falla`; la voz dice la URL o palabra. La garantía lleva huecos y no se sella hasta confirmar sus datos.

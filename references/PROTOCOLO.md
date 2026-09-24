@@ -25,6 +25,8 @@ Antes del guion congela «Trato y reglas del cliente» de MI-MARCA: persona, gra
 
 ## 1. Ficha de marca
 
+La cifra de credibilidad lleva su fuente; nunca se propone. No portes horas, nombres, frases ni el reparto de otro deck, ejemplo o conferencia: porta el mecanismo.
+
 Lee `MI-MARCA.md`: la primera que exista entre la carpeta del deck, la de arriba, `$PIZARRON_MARCA` y la
 ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md` (`bash scripts/setup.sh` la crea; render y QA usan la
 misma cadena, `scripts/lib/marca.mjs`, y un deck sin `marca` toma la firma de ahí). De
@@ -270,3 +272,5 @@ Antes de presentar, abre la URL corta y estable del `qr` y prueba el código pro
 El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha`; cada aviso restante se corrige o entra en `avisos_aceptados` con su motivo. `garantia: false` requiere una lámina de condición de salida si hay precio público.
 
 Las láminas marcadas NO-VALE nunca son evidencia.
+
+Los PNG de `render.mjs` de una réplica no son evidencia: si ves `laminas-NO-VALE/`, corre `node scripts/comparar.mjs <carpeta-ref>` y publica su `comparar.json`.

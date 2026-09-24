@@ -18,14 +18,19 @@ export function invitacion(l, ctx) {
 }
 export function listaContraste(l, ctx) {
   const porColumna = l.revelar === 'columna', columnas = l.columnas;
-  const offsets = columnas.map((_,i) => columnas.slice(0,i).reduce((n,c) => n+c.items.length,0));
-  const total = porColumna ? columnas.length : columnas.reduce((n,c) => n+c.items.length,0);
+  const indices = columnas.map((_,i) => columnas.slice(0,i).reduce((n,c) => n+c.items.length,0));
+  const offsets = columnas.map((_,i) => columnas.slice(0,i).reduce((n,c) => n+(porColumna ? 1 : c.items.length)+(c.llave ? 1 : 0),0));
+  const total = columnas.reduce((n,c) => n+(porColumna ? 1 : c.items.length)+(c.llave ? 1 : 0),0);
   const html = columnas.map((c,j) => {
     const filas = c.items.map((item,i) => {
       const o = typeof item === 'string' ? {texto:item} : item, e = o.emoji || (c.vineta === 'cruz' ? '❌' : '✅');
-      return `<div class="item"${ctx.P(porColumna ? j : offsets[j]+i)}${ctx.A('i'+(offsets[j]+i))}>${ctx.em.html(e,'1.12em')}<span>${marcar(o.texto)}</span></div>`;
+      return `<div class="item"${ctx.P(offsets[j]+(porColumna ? 0 : i))}${ctx.A('i'+(indices[j]+i))}>${ctx.em.html(e,'1.12em')}<span>${marcar(o.texto)}</span></div>`;
     }).join('');
-    return `<div class="contraste-col"${ctx.A('c'+j)}${l.apagar === j ? ' data-contraste-apagado="1"' : ''}><div class="contraste-titulo tono-${c.tono || 'n'}"${ctx.P(porColumna ? j : offsets[j])}>${marcar(c.titulo)}</div><div class="lista">${filas}</div></div>`;
+    const k = offsets[j]+(porColumna ? 1 : c.items.length);
+    // La llave une los límites inferiores de la lista; su nota aparece después del último ítem.
+    if (c.llave) ctx.con({de:`ci${j}`,a:`cd${j}`,via:`cn${j}`,estilo:'llave',p:ctx.paso(k)});
+    const llave = c.llave ? `<div class="contraste-llave"><span${ctx.A('ci'+j)}></span><span${ctx.A('cd'+j)}></span></div><div class="nota roja"${ctx.A('cn'+j)}${ctx.P(k)} style="margin-top:120px">${marcar(c.llave)}</div>` : '';
+    return `<div class="contraste-col"${ctx.A('c'+j)}${l.apagar === j ? ' data-contraste-apagado="1"' : ''}><div class="contraste-titulo tono-${c.tono || (j ? 'r' : 'v')}"${ctx.P(offsets[j])}>${marcar(c.titulo)}</div><div class="lista">${filas}</div>${llave}</div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}<div class="contraste">${html}</div>${nota(ctx,l.nota,pasoDe(l,'nota_paso',total),'mt-m')}${fuente(ctx,l.fuente,pasoDe(l,'fuente_paso',total-1))}</div>`;
 }

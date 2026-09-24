@@ -739,6 +739,8 @@ body.sala .objeto-logos img { height: 52px !important; }
 /* Superficies de interfaz [19:00, 19:25, 41:25–41:30, 43:50]: tamaños propios, sin alterar tokens base. */
 .contraste { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:120px; }
 .contraste-col { min-width:0; position:relative; }
+.contraste-llave { display:flex; justify-content:space-between; width:100%; height:1px; margin-top:20px; }
+.contraste-llave > span { width:1px; height:1px; }
 .contraste-titulo { font-size:78px; font-weight:800; margin-bottom:42px; }
 .contraste-col .lista { --t:60px; --gap-lista:44px; color:var(--tinta); }
 .contraste-col[data-contraste-apagado] { opacity:max(var(--apagado),.3); }
@@ -765,7 +767,7 @@ body.sala .objeto-logos img { height: 52px !important; }
 .mensajes-superpuestos { position:absolute; bottom:15%; left:14%; width:1100px; max-width:72%; z-index:4; }
 .mensajes-superpuestos .chat { width:100%; --tb:54px; --av:90px; gap:24px; }.mensajes-superpuestos .burbuja { box-shadow:0 10px 28px #0002; }
 .mensajes-centro { left:50%; transform:translateX(-50%); }.mensajes-der { left:auto; right:8%; }
-.f-vertical .contraste { gap:50px; }.f-vertical .contraste-col .lista { --t:48px; }.f-vertical .contraste-titulo { font-size:62px; }
+.f-vertical .contraste { gap:50px; grid-template-columns:1fr; }.f-vertical .contraste-col .lista { --t:48px; }.f-vertical .contraste-titulo { font-size:62px; }
 .f-vertical .chat.chat-muro { width:900px; grid-template-columns:1fr; --tb:48px; --av:90px; }
 .f-vertical .chat-celular { flex-direction:column; gap:30px; }.f-vertical .celular { width:448px; height:896px; }
 .f-vertical .celular-pantalla .chat { width:100%; --tb:30px; --av:48px; }.f-vertical .celular-pantalla .burbuja { padding:18px; }

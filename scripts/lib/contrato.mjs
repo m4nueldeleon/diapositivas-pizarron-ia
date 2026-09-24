@@ -1,4 +1,4 @@
-import { validarSuperficies, sanearAceptaciones } from './contrato-superficies.mjs';
+import { validarSuperficies, sanearAceptaciones, validarAceptaciones } from './contrato-superficies.mjs';
 import { validarQr } from './qr.mjs';
 // contrato.mjs — valida y sanea deck.json antes de construir.
 //
@@ -313,7 +313,7 @@ export function validarDeck(deck, tipos) {
   if (deck.formato && !['16:9', '9:16', '1:1', '4:5'].includes(deck.formato)) e.push(`formato «${deck.formato}» no existe (usa 16:9, 9:16, 1:1 o 4:5)`);
   if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe: usa "apple" (Mac, lo más fiel) o "fluent" (Linux, nube, HTML compartido); "auto" solo en decks heredados`);
   if (deck.piel != null && !['🏻', '🏼', '🏽', '🏾', '🏿', 'ninguno'].includes(deck.piel)) e.push(`piel «${deck.piel}» no existe (usa 🏻, 🏼, 🏽, 🏾, 🏿 o "ninguno")`);
-  e.push(...validarDatos(deck.datos));
+  e.push(...validarDatos(deck.datos), ...validarAceptaciones(deck.avisos_aceptados));
   // `libre` vale null (sin rango): se valida que la clave EXISTA, sin tomar claves del prototipo («toString»)
   if (deck.pieza != null && (typeof deck.pieza !== 'string' || !Object.hasOwn(PIEZAS, deck.pieza))) e.push(`pieza «${deck.pieza}» no existe (usa ${Object.keys(PIEZAS).join(', ')})`);
   if (deck.duracion_objetivo != null && minutosObjetivo(deck.duracion_objetivo) == null) e.push(`duracion_objetivo «${deck.duracion_objetivo}» no se entiende: minutos (45) o "mm:ss" ("0:45")`);
@@ -331,6 +331,7 @@ export function validarDeck(deck, tipos) {
     e.push(...validarSuperficies(l,deck.formato || '16:9',n));
     for (const req of REQUERIDOS[l.tipo] || []) {
       if (l.tipo === 'boton' && l.variante === 'invitacion') continue;
+      if (l.tipo === 'rejilla' && l.multitud === true && req === 'total') continue;
       const alt = req.split('|');
       // un texto vacío o solo espacios cuenta como ausente (una `idea` con texto "" salía en blanco)
       if (!alt.some(k => l[k] != null && !(Array.isArray(l[k]) && !l[k].length) && !(typeof l[k] === 'string' && !l[k].trim()))) e.push(`${n} [${l.tipo}]: falta ${alt.join(' o ')}`);
@@ -466,6 +467,7 @@ function sanearObjeto(o, ruta, avisos, tipo) {
     if ((tipo === 'agenda' && ['semana','dia','inicio','semanas'].includes(k) && !Array.isArray(v)) || k === 'apagar') { const rango = k === 'dia' ? [1,7,1] : NUMEROS[k]; const x = num(v,rango,recorte(rango)); if (x === undefined) aviso(); else r[k] = x; continue; }
     if (k === 'semanas' && Array.isArray(v)) { r[k] = v.map(n => num(n,[1,6,1])).filter(n => n != null); continue; }
     if (k === 'llave' && ruta.includes('anotaciones')) { if (Array.isArray(v) && v.length === 2 && v.every(x => typeof x === 'string' && /^(?:i|m|l|w)\d+$/.test(x))) r[k] = [...v]; else aviso(); continue; }
+    if (k === 'llave' && tipo === 'lista' && ruta.includes('.columnas')) { if (typeof v === 'string' && v.trim()) r[k] = v; else aviso(); continue; }
     if (['escala','marco','mensajes_pos'].includes(k)) { if (ENUMS[k].includes(v)) r[k] = v; else aviso(); continue; }
     if (k === 'vineta' && tipo === 'lista' && ruta.includes('.columnas')) { if (['check','cruz'].includes(v)) r[k] = v; else aviso(); continue; }
     if (k === 'tono' && tipo === 'agenda') { if (['azul','verde','morado'].includes(v)) r[k] = v; else aviso(); continue; }

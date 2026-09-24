@@ -107,12 +107,17 @@ test('F: render deja PNG y manifiestos de réplica vieja en NO-VALE', {timeout:1
   const dir=temporal(t),salida=path.join(dir,'salida');
   fs.writeFileSync(path.join(dir,'deck.json'),JSON.stringify({marca:false,emoji:'apple',pieza:'libre',laminas:[1,2,3].map(n => ({id:`r${n}`,tipo:'idea',texto:`Paso ${n}`}))}));
   const r=spawnSync(process.execPath,[path.join(DIR_SKILL,'scripts/render.mjs'),dir,'--salida',salida],{encoding:'utf8'});
-  assert.equal(r.status,0,r.stderr); assert.match(r.stdout+r.stderr,/láminas NO VALE/);
+  assert.equal(r.status,3,r.stderr); assert.match(r.stdout+r.stderr,/láminas NO VALE/);
+  assert.match(fs.readFileSync(path.join(salida,'NO-VALE.txt'),'utf8'),/deck_sha: [a-f0-9]+\nla fidelidad se mide con node scripts\/comparar.mjs <carpeta-ref>/);
   assert.ok(fs.readdirSync(path.join(salida,'laminas-NO-VALE')).every(n => n.startsWith('NO-VALE-')));
   assert.ok(!fs.existsSync(path.join(salida,'laminas')));
   assert.equal(JSON.parse(fs.readFileSync(path.join(salida,'hojas.json'))).laminas_dir,'laminas-NO-VALE');
   const pasos=JSON.parse(fs.readFileSync(path.join(salida,'pasos.json')));
   assert.ok(pasos.every(p => p.laminas_dir==='laminas-NO-VALE' && p.archivo.startsWith('laminas-NO-VALE/NO-VALE-')));
+  const forzado=spawnSync(process.execPath,[path.join(DIR_SKILL,'scripts/render.mjs'),dir,'--salida',salida,'--forzar'],{encoding:'utf8'});
+  assert.equal(forzado.status,0,forzado.stderr);
+  assert.ok(fs.existsSync(path.join(salida,'laminas')));
+  assert.ok(!fs.existsSync(path.join(salida,'laminas-NO-VALE')));
 });
 
 test('A/B: mixto sin etiqueta, tarjetas con ancho propio y flujo vertical sin falso aviso', {timeout:120000}, async t => {

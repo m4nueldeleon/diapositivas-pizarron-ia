@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { revisarDeck, esLlamadoVisible, inicioOferta } from '../scripts/lib/reglas-deck.mjs';
 import { demuestraRespuesta, ensenaComo } from '../scripts/lib/reglas-arco.mjs';
@@ -68,7 +69,7 @@ test('vsl-corto r4: revelación entre el 55 y el 60%, ningún llamado antes, un 
   const llamados = deck.laminas.filter(esLlamadoVisible);
   assert.ok(llamados.length >= 2 && llamados.every(l => l.tipo === 'boton'), llamados.map(l => l.id).join(', '));
   // la objeción es un dato propuesto y va antes de la revelación, con su respuesta en la siguiente
-  assert.deepEqual(crudo.datos.OBJECION_1, { valor: 'No sé nada de tecnología', propuesto: true });
+  assert.deepEqual(crudo.datos.OBJECION_1, { valor: 'Mi agenda cambia todos los días', propuesto: true });
   const k = deck.laminas.findIndex(l => l.id === 'objecion');
   assert.ok(k > 0 && k < i && /^Objeción número uno/.test(deck.laminas[k].voz));
   // la promesa y el mecanismo, antes del segundo 25
@@ -138,7 +139,7 @@ test('reel r5: 9:16, 30-60 s, el prompt a la vista, un solo llamado y sin avisos
 import { prepararSalida } from '../scripts/lib/pipeline.mjs';
 import { revisarTexto } from '../scripts/lib/qa-texto.mjs';
 test('r7: los cuatro modelos construyen sin errores y transforman una composición en 3–4 pasos', t => {
-  const raiz = '/private/tmp/pz-loop/r7/codex-impl-estilo-iconos/pruebas-ejemplos';
+  const raiz = path.join(os.tmpdir(), 'pz-pruebas-ejemplos');
   fs.mkdirSync(raiz, { recursive: true });
   const carpeta = fs.mkdtempSync(path.join(raiz, 'modelos-'));
   t.after(() => fs.rmSync(carpeta, { recursive: true, force: true }));
@@ -150,5 +151,22 @@ test('r7: los cuatro modelos construyen sin errores y transforman una composici�
     const i = prep.deck.laminas.findIndex(l => l.id === id);
     assert.ok(prep.pasos[i] >= 3 && prep.pasos[i] <= 4, `${nombre}: ${prep.pasos[i]} pasos`);
     assert.ok(prep.revela[i].every(p => p.length > 0), `${nombre}: hay un paso vacío`);
+  }
+});
+
+// La variedad se comprueba sobre el mismo HTML y deck que usa QA sin navegador.
+test('r7 conocimiento: demo y modelos sin avisos, con golpes y capa roja distribuida', t => {
+  const raiz = path.join(os.tmpdir(), 'pz-pruebas-ejemplos');
+  fs.mkdirSync(raiz, { recursive: true });
+  const carpeta = fs.mkdtempSync(path.join(raiz, 'variedad-'));
+  t.after(() => fs.rmSync(carpeta, { recursive: true, force: true }));
+  for (const nombre of ['demo', 'propuesta', 'vsl-corto', 'clase-express', 'reel']) {
+    const prep = prepararSalida(path.join(RAIZ, 'ejemplos', nombre), path.join(carpeta, nombre));
+    const revision = revisarTexto(prep);
+    assert.deepEqual(revision.errores, [], nombre);
+    assert.deepEqual(revision.avisos, [], nombre);
+    assert.ok(revision.arco.golpes.mayorTramoSin < 8, nombre);
+    const listas = prep.deck.laminas.filter(l => l.tipo === 'lista').length;
+    assert.ok(listas / prep.deck.laminas.length <= .25, nombre);
   }
 });

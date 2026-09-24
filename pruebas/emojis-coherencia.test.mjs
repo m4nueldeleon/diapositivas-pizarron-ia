@@ -38,7 +38,36 @@ test('EMOJIS.md: ningún emoji o compuesto está en dos filas de concepto distin
   assert.match(de('🎥'), /grabar/);
   assert.match(de('no:🙅‍♂️'), /sin mostrar la cara/);
   assert.match(de('📄'), /documento/);
+  assert.match(de('🤔'), /objeción|duda/);
+  assert.match(de('❓'), /objeción|duda/);
+  assert.match(de('👊'), /para ti/);
   assert.equal(de('no:🙋'), '', '«sin mostrar la cara» ya no es no:🙋');
+});
+
+test('cada fila de concepto se interpreta o declara sin emoji, flujo, rejilla o receta', () => {
+  const filas = filasConcepto(EMOJIS);
+  for (const f of filas) assert.ok(f.specs.length || /sin emoji|`flujo`|`rejilla`|receta `no:X`/i.test(f.indicacion),
+    `${f.seccion}: «${f.concepto}» no tiene spec ni excepción explícita`);
+  const objeciones = new Set(filas.filter(f => /objeci[oó]n/i.test(f.concepto)).flatMap(f => f.specs));
+  const retoricas = filas.filter(f => /pregunta ret[oó]rica/i.test(f.concepto)).flatMap(f => f.specs);
+  assert.deepEqual(retoricas.filter(s => objeciones.has(s)), []);
+  for (const c of ['ingresos recurrentes', 'varias conversaciones a la vez', 'testimonio']) {
+    assert.ok(filas.some(f => f.concepto === c), `el lector omite «${c}»`);
+  }
+});
+
+test('contenido y capacitación: editar es un compuesto; estado y ejemplo conservan conceptos distintos', () => {
+  assert.match(conceptoDe('🎥+✂️', true), /editar|cortar video/);
+  assert.match(conceptoDe('✂️', true), /descuento/);
+  assert.match(conceptoDe('🎞️', true), /tomas.*clips/);
+  assert.match(conceptoDe('👤+💬', true), /1 a 1.*retroalimentación/);
+  assert.match(conceptoDe('📱+💬', true), /chat/);
+  assert.match(conceptoDe('🤝', true), /acuerdo.*compromiso/);
+  assert.match(conceptoDe('🪜', true), /ascenso.*puesto/);
+  assert.match(EMOJIS, /😩\/😌 solo cuentan el estado de la persona/);
+  assert.match(EMOJIS, /`no:🪝`.*tono `r`/);
+  assert.match(EMOJIS, /`si:🪝`.*tono `v`/);
+  assert.match(EMOJIS, /si el deck ya usa|Si el deck ya usa/);
 });
 
 test('los demás documentos solo citan emojis que están en EMOJIS.md', () => {

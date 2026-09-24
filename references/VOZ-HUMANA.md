@@ -1,5 +1,7 @@
 # Voz humana en una lámina de pizarrón
 
+**Datos que faltan.** La pantalla y la voz se escriben como si el dato ya estuviera, con el hueco dentro: «Lo imparte {{FACILITADOR}}», «Arrancamos el {{FECHA_INICIO}}», «La inversión es {{PRECIO}}» o «Si en {{PLAZO}} no ves {{CONDICION}}, {{REMEDIO}}». Nunca «por confirmar», «pendiente de…», «falta ese dato», «confirmaremos» o «verificaremos» como sustituto del dato. El motivo va en `datos.X.motivo` y en la entrega, no en pantalla ni en voz. Las notas del PDF conservan la voz: aunque se llene el dato, una frase de pendiente escrita en prosa seguiría ahí (GUION §3).
+
 Portado de `carruseles-virales-ia/references/COPY-VOZ-HUMANA.md` (§4-§6), recortado al tamaño de una
 lámina. Aplica a la `nota` de remate, al `foco`, a los ítems y, antes que nada, **al guion**: la lámina
 usa las mismas palabras que se dicen (GUION §3.5), así que una frase de IA se corrige en la `voz` y en la

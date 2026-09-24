@@ -107,13 +107,12 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   con la frase `medio` de 84): en el video el 👥 mide ~66 px junto a una frase de ~60, no el doble. `emoji_tam` lo fija.
 - **Par antes/después** [10:55]: `"emoji": ["no:📚", "si:🤖"]` pone dos emojis en fila;
   `apagar_emoji: 0` atenúa el primero (el negado) y `emoji_paso: 1` revela el segundo después.
-  Solo en `idea`.
-- `encabezado`: presenta lo que sigue con “:” o “…”, o numera («Paso 1», «Objeción #2»). Nunca lleva módulo, semana o «ejemplo» separados por “·” o “|”: eso es un eyebrow. Esos datos van al texto, a una línea de tiempo o una sola vez a la voz. Contraejemplo: «Módulo 2 · semana 3 · delegación». Rótulo gris arriba. Con `encabezado_pos: "entre"` va ENTRE el emoji y la
-  frase [34:25 «Reason #1»].
+  Solo en `idea`. Para comparar un EJEMPLO, conserva el mismo concepto: `cuadrantes` con `no:🪝` (tono `r`) y `si:🪝` (tono `v`) = sin gancho / con gancho. 😩/😌 es el estado de una persona (dolor / alivio), no el resultado de dos ejemplos.
+- `encabezado`: arranca la frase que completan los ítems y termina en «:», «…», «...» o «?». Excepciones: numeración con `encabezado_pos: "entre"`, listas mapa (`activo`, `hechos`, `como`, `oscura`) y `encabezado_estilo: "frase"`. No lleva metadatos (módulo, semana, fecha, N personas, « · »), nombre de sección ni estados («por confirmar», «pendiente», «ficticio», «ejemplo», `{{…}}`). Usa «No incluye:». Procedencia en `fuente` o nota; `procedencia` se ignora en idea/chat. QA avisa también si, en decks de 12 láminas o más, más del 25% lleva encabezado no exento. Con `encabezado_pos: "entre"` va entre emoji y frase; por omisión es un rótulo gris arriba.
 - **Objeción o «Razón #N»** [34:25, 35:15] — una forma para todas las del deck:
   ```json
   { "tipo": "idea", "emoji": "no:⌨️", "encabezado": "Objeción #1", "encabezado_pos": "entre",
-    "texto": "**«No sé nada de tecnología»**" }
+    "texto": "**«Nunca conecté dos aplicaciones»**" }
   ```
   El emoji es lo que dice que le falta, negado (EMOJIS.md, «Compuestos útiles»: suelto, `no:X` es la objeción). Si la
   objeción es una pregunta («¿Por qué subiste?»), 🤔 sin prefijo; nunca niegues el ícono de un paso del mapa (QA avisa).
@@ -125,6 +124,7 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - `nota_paso`: por omisión la nota aparece en el paso 1.
 - `tachar_paso: 1`: el `~~tachado~~` del texto cae un paso DESPUÉS del texto (ver [Marcas](#marcas-de-texto)).
 - Sin emoji es una **frase sola** [3:20 «So let's get started.»].
+- Una palabra sola sin emoji cuenta como golpe con `tam_texto: "enorme"` o un tamaño explícito de al menos `"140px"`; el nombre `gigante` no pertenece al contrato.
 - `estrellas: { "valor": 1, "max": 5 }` en lugar del emoji pone una fila suelta de estrellas sobre la
   frase, sin tarjeta [4:10]. Para calificar varias opciones usa [`calificacion`](#calificacion).
 
@@ -158,16 +158,13 @@ en negrita, después del emoji explícito de cada ítem: emoji → letra → tex
 
 #### Lista a dos columnas: contraste
 
-Para Sí/No o antes/después usa `lista.columnas`, con dos objetos. Cada columna lleva `titulo`,
-`tono` (`v`, `r`, `n`), `vineta` (`check`, `cruz`), `items` y opcional `sello`/`sello_paso`.
-Primero se revela la ganadora completa, un ítem por paso, luego la perdedora.
-`revelar: "columna"` muestra una columna por paso; `apagar: 1` atenúa la segunda (índice desde 0).
-Anclas `c0`/`c1` para sellos y `i0`… para ítems; `nota` añade el remate manuscrito.
-Un par de conceptos cabe en `idea` con dos emojis no:/si:; `cuadrantes` compara bloques de igual peso.
-El `encabezado` presenta o numera, igual que en `idea`; no es un eyebrow.
+Para Sí/No o antes/después usa `lista.columnas`, máximo dos objetos, sin `items` en la raíz: son alternativas excluyentes. Cada columna lleva `titulo`, `tono` (`v`, `r`, `n`), `vineta` (`check`, `cruz`), `items` y opcional `sello`/`sello_paso` o `llave` (texto de la nota roja). El encabezado de color se revela con su primer ítem: un ítem por paso, izquierda completa y después derecha. La llave entra tras los ítems de su columna.
+`revelar: "columna"` muestra una columna por paso; `apagar: 1` atenúa la segunda (índice desde 0). En 9:16 se apilan. `como` conserva las columnas y sus llaves.
+
+Anclas `c0`/`c1` para columnas e `i0`… para ítems; `nota` añade el remate manuscrito gris. Un par de conceptos cabe en `idea` con `no:X`/`si:X`; `cuadrantes` tiene un concepto por bloque. Si hay varios por lado, usa `lista.columnas`.
 
 ```json
-{"tipo":"lista","columnas":[{"titulo":"SÍ","tono":"v","vineta":"check","items":["Una tarea concreta","Una fecha"]},{"titulo":"NO","tono":"r","vineta":"cruz","items":["Pedir todo junto","Dejarlo abierto"]}],"nota":"Empieza por una tarea"}
+{"tipo":"lista","columnas":[{"titulo":"SÍ","tono":"v","vineta":"check","items":["Una tarea concreta","Una fecha"],"llave":"Un resultado observable"},{"titulo":"NO","tono":"r","vineta":"cruz","items":["Pedir todo junto","Dejarlo abierto"]}],"nota":"Empieza por una tarea"}
 ```
 
 ### Fuente de un dato o un estudio (`idea`, `lista`, `objeto`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
@@ -204,6 +201,8 @@ el primer cuarto del primer renglón. La cita va a 64 px en renglones parejos (`
 cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
 
 ### `cifra` — números y ecuaciones grandes, una línea por paso  ·  [3:10, 14:10]
+
+Escena con hora (GUION §6.1): hora sola grande con `arriba` → en el siguiente paso cambia un solo dígito (08:42 → 08:43) → teléfono/`chat` con esa misma hora → la hora vuelve en el pago. Porta el mecanismo, no la hora ni las frases de otro deck.
 ```json
 { "tipo": "cifra", "arriba": "Si te contrata el 0.1-0.3%:",
   "lineas": ["1 millón × **0.1-0.3%** = 1-3 mil", "1-3 mil × $25,000 = __$25-75 millones__"] }
@@ -926,6 +925,8 @@ de la oferta, ANTES de su `lista` o de su pieza en el `stack` (que no reemplaza:
   siempre con `marcar()`.
 - Pasos: tarjetas → rótulos → texto → nota (`texto_paso`, `nota_paso`). Anclas: `t0`, `t1`… (TÚ primero) y `texto`.
 
+El rótulo humano sale de `datos.QUIEN_ENTREGA`: `yo` usa el nombre o «Yo»; `equipo`/`asesor`, quien de verdad entrega.
+
 ### `meses` — rejilla a sangre de meses, con emojis que pasan a valores  ·  [16:45 → 16:50]
 La cantidad que se acumula mes a mes: 4 columnas × 3 filas a sangre (3 × 4 en 9:16, entre la firma y la zona de
 Reels), líneas grises finas, el mes en mayúsculas grises arriba a la izquierda y, al centro, 1-3 emojis
@@ -1120,6 +1121,12 @@ Acepta i*, m*, l* y w*: deben estar en columna. La nota va a la derecha; QA rech
 
 ## Datos que se llenan una vez
 
+En un dato objeto, `tipo` es opcional y solo acepta `credibilidad`, `resultado`, `precio`, `proceso` o `nombre`; un tipo desconocido es error. Con `propuesto: true`, credibilidad, resultado y precio son error aunque la clave tenga otro nombre. La clave sigue siendo una red de respaldo: años, experiencia, clientes, alumnos, eventos, ventas, facturación, ganancias, ingresos, miembros, seguidores o promedios nunca se proponen.
+
+`fuente` es texto opcional no vacío: viaja a `qa.json → datos_por_confirmar[k].fuente` y, para datos confirmados, a `datos_fuentes`. Ejemplo de estructura: `"CLIENTES": { "pendiente": true, "tipo": "credibilidad", "fuente": "Registro de atención", "motivo": "cotejar el total" }`. Una fuente nombrada no confirma el valor.
+
+`datos.QUIEN_ENTREGA` guarda `"yo"`, `"equipo"` o `"asesor"`; el rótulo de `llamada` y la razón de escasez deben corresponder (GUION §7).
+
 Un dato que falta o que se repite (precio, días, WhatsApp) se escribe como `{{CLAVE}}` en cualquier
 texto y se llena UNA vez en `datos`, arriba del deck:
 
@@ -1138,7 +1145,7 @@ texto y se llena UNA vez en `datos`, arriba del deck:
   ```json
   { "datos": { "TIEMPO_LLAMADA": { "valor": "30 minutos", "propuesto": true }, "PRECIO": "$4,997" } }
   ```
-  Precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios y resultados **nunca** se
+  Precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios, resultados y credibilidad **nunca** se
   proponen (es error de contrato): van como hueco `{{CLAVE}}`. Un comentario `_datos` no cuenta.
 - **Hueco a propósito**: `"PRECIO": { "pendiente": true, "motivo": "lo define dirección el lunes" }` se pinta como
   `[PRECIO]`, QA lo lista en `qa.json → datos_por_confirmar` y deja el deck en borrador (no como error de olvido).
@@ -1295,10 +1302,16 @@ con `procedencia: "ejemplo"`; esa excepción didáctica no representa a una pers
 
 ### Cierre de QA
 
-`garantia: false` declara que no hay garantía comercial, pero con precio visible exige una lámina
-que explique qué pasa si no funciona. `avisos_aceptados` es una lista de `{ "texto": "subcadena del aviso",
-"laminas": [2], "motivo": "justificación concreta" }`; también acepta `regla` en lugar de `texto`.
-El motivo es obligatorio; `laminas` es opcional. Cada aviso restante se corrige o se acepta con motivo.
+El QA de composición cuenta desde el deck: `arco.golpes` publica `{total, laminas:[{lamina, tipos}], mayorTramoSin}`. La lista cerrada de golpes y sus umbrales están en GUION §5. El conteo de capa roja usa subrayado, flecha roja, llave, círculo/óvalo, tachón, sello y cruz roja; excluye fuentes, voz, procedencia, notas grises, tablas y flechas negras/verdes. En 12+ láminas sin `camara`, avisa menos de tres tipos o cuatro seguidas sin rojo. `lista` por encima de 25% tiene aviso propio. Sin navegador queda pendiente la **geometría** de la tinta, no su conteo; el render medido además publica `tinta[].rojo`.
+
+`garantia: false` declara que no hay garantía comercial, pero con precio visible exige una lámina que explique qué pasa si no funciona. `avisos_aceptados` reutiliza la ficha de reglas del cliente; no se crea un campo paralelo en el deck.
+
+```json
+{"avisos_aceptados":[{"regla":"duracion","pedido":"Una pieza de 90 segundos","decision":"aceptada","motivo":"El canal exige ese máximo"},{"regla":"firma_relleno","pedido":"Usar una firma inventada","decision":"rechazada","motivo":"La firma debe ser real"}]}
+```
+
+`regla` usa ids cerrados negociables: `laminas_fijadas`, `duracion`, `revelacion`. `pedido`, `decision` (`aceptada` o `rechazada`) y `motivo` conservan la decisión; `laminas: [2]` limita opcionalmente su alcance. Una aceptada pasa a información como «excepción pedida por el cliente», sin descuento. `firma_relleno`, `prueba_inventada`, `cifra_inventada` y `oscura_regla_8` solo admiten rechazo; aceptarlas da error «esta regla no se exceptúa; regístrala como rechazada».
+Se mantiene el formato anterior `{ "texto": "subcadena del aviso", "laminas": [2], "motivo": "justificación concreta" }` para revisión motivada, sin saltarse reglas no negociables. El motivo siempre es obligatorio. `qa.json → reglas_cliente` lista rechazadas y excepciones aplicadas. En la entrega: «Pediste X; lo hice Y porque Z».
 Un aviso sin resolver impide `estado: listo`, aunque la nota sea mayor de 90.
 
 ### Símbolo propio que vuelve

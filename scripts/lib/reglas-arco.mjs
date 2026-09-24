@@ -2,6 +2,7 @@
 // la respuesta a una objeción, el «cómo» de un reel y las métricas del arco que qa.json expone (contrato de tiempo, la
 // revelación y los llamados en %). reglas-deck.mjs las suma en revisarDeck. Pruebas en pruebas/arco-r5.test.mjs.
 import { plano } from './markup.mjs';
+import { tiposRojos } from './reglas-marcas.mjs';
 import { tiemposSecuenciales, duracionTotal, mmss } from './tiempos.mjs';
 import { sinAcentos, nombre, textosVisibles, conTexto, esLlamadoVisible, inicioOferta, esObjecion } from './reglas-deck.mjs';
 
@@ -134,7 +135,7 @@ export function arcoDeck(deck, pasos) {
   const L = deck.laminas, t = tiemposSecuenciales(deck, pasos), dur = duracionTotal(deck, pasos);
   const pct = i => { const s = t.find(x => x.lamina === i); return s && dur > 0 ? Math.round((s.inicio / dur) * 100) : null; };
   const c = contratoDeTiempo(deck);
-  const arco = { contrato: c, duracion_s: Math.round(dur), desvio_pct: c ? Math.round((dur / (c.min * 60) - 1) * 100) : null };
+  const arco = { contrato: c, duracion_s: Math.round(dur), desvio_pct: c ? Math.round((dur / (c.min * 60) - 1) * 100) : null, golpes: golpesDeck(deck) };
   if (PIEZAS_OFERTA.includes(deck.pieza)) {
     const rev = L.findIndex(esOscura), ini = inicioOferta(L);
     arco.oferta = rev >= 0 || ini >= 0 ? { revelacion_lamina: rev >= 0 ? rev + 1 : null, revelacion_pct: rev >= 0 ? pct(rev) : null, inicio_pct: ini >= 0 ? pct(ini) : null } : null;
@@ -179,4 +180,35 @@ export function reglasPagoGancho(deck) {
   });
   if (!L.slice(inicioCierre).some(l => apuntaGancho(l.paga) || apuntaGancho(l.como))) avisos.push('falta el pago del gancho: en el último 25 % retoma un objeto del primer 20 % con paga o como, el mismo diseño y emoji, resuelto o reafirmado (ARCOS.md, siembra y pago; GUION §6)');
   return { errores: [], avisos };
+}
+
+// Un golpe tiene una forma fuerte, distinta de la cuota de tinta roja. Lista cerrada del contrato.
+export function tiposGolpe(l) {
+  if (l.tipo === 'camara' || esOscura(l)) return [];
+  const rojos = tiposRojos(l), tipos = rojos.filter(t => ['sello','tachón','círculo','llave'].includes(t));
+  if (l.tipo === 'rejilla' || l.multitud === true) tipos.push('rejilla');
+  if (l.tipo === 'circulos') tipos.push('círculos');
+  if (l.tipo === 'cifra') tipos.push('cifra');
+  if (l.tipo === 'idea' && !l.emoji && plano(l.texto || '').trim().split(/\s+/).length === 1
+    && (parseFloat(l.tam_texto) >= 140 || l.tam_texto === 'enorme')) tipos.push('palabra');
+  if (l.anotaciones?.some(a => !a.llave && a.a && (a.texto || a.entra))) tipos.push('anotación');
+  if (['objeto','tarjetas','boton'].includes(l.tipo) || l.nodos?.some(n => n.tarjeta)) tipos.push('objeto');
+  return [...new Set(tipos)];
+}
+export function golpesDeck(deck) {
+  const laminas = [];
+  let tramo = 0, mayorTramoSin = 0;
+  deck.laminas.forEach((l,i) => {
+    if (l.tipo === 'camara' || esOscura(l)) return;
+    const tipos = tiposGolpe(l);
+    if (tipos.length) { laminas.push({ lamina:i+1, tipos }); tramo = 0; }
+    else { tramo++; mayorTramoSin = Math.max(mayorTramoSin,tramo); }
+  });
+  return { total:laminas.length, laminas, mayorTramoSin };
+}
+export function reglasGolpes(deck) {
+  const g = golpesDeck(deck), avisos = [], n = deck.laminas.length;
+  if (n >= 12 && g.mayorTramoSin >= 8) avisos.push(`golpes visuales: ${g.mayorTramoSin} láminas seguidas sin golpe; coloca sello, tachón, rejilla, llave con nota u objeto cada 4–6 láminas (GUION §5)`);
+  if (n >= 20 && g.total && g.laminas.filter(l => l.tipos.includes('cifra')).length / g.total > .6) avisos.push('golpes visuales: más del 60 % son cifra; alterna con llave con nota, rejilla o anotación con flecha (GUION §5)');
+  return { errores:[], avisos };
 }

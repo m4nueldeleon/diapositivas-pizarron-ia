@@ -209,7 +209,7 @@ test('QA r3: un hueco declarado a propósito es aviso y borrador, no error', { t
     laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }, { tipo: 'idea', emoji: '💡', texto: 'Otra' }] }));
   const r = qa(dir);
   assert.ok(!r.errores.some(e => /dato pendiente/.test(e)), r.errores.join('\n'));
-  assert.ok(r.datos_por_confirmar.some(a => /pendiente a propósito \[PRECIO\] \(lo define dirección\)/.test(a)));
+  assert.equal(r.datos_por_confirmar.PRECIO.motivo, 'lo define dirección');
   assert.equal(r.estado, 'borrador');
   assert.ok(r.por_confirmar.PRECIO && r.nota <= 90);
 });
@@ -288,7 +288,7 @@ test('QA r4: el modelo vsl-corto (huecos declarados) da 90, borrador, sin errore
   assert.deepEqual(r.errores, []);
   assert.deepEqual(r.falta_para_final, []);
   assert.ok(!r.avisos.some(a => /^dato pendiente a propósito|^dato propuesto/.test(a)), r.avisos.join('\n'));
-  assert.ok(r.datos_por_confirmar.length >= 10);
+  assert.ok(Object.keys(r.datos_por_confirmar).length >= 10);
   const dir = tmp();
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: false, laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }] }));
   assert.equal(qa(dir).estado, 'con errores');

@@ -225,7 +225,7 @@ test('iconos: 🏦 y 🏛️ en fluent avisan (en apple no); 🧑‍💼 y 👨�
 });
 
 // La clave del inventario es «emoji (concepto)»: se busca por el emoji
-const de = (inv, e) => inv[Object.keys(inv).find(k => k.split(' (')[0] === e)];
+const de = (inv, e) => inv[Object.keys(inv).find(k => k.split(' (')[0].replace(/\uFE0F/g, '') === e.replace(/\uFE0F/g, ''))];
 test('iconos: la base de una rejilla que sale como si:🪑 en otra lámina avisa (rol contrario)', () => {
   const sala = { tipo: 'rejilla', id: 'sala', total: 100, emoji: '🪑', emoji_destacado: '👤', destacar: [1, 2, 3] };
   const r = reglasIconos({ emoji: 'apple', laminas: [sala, idea('Que **sí lleguen**', { emoji: 'si:🪑' }), idea('Los que faltan', { emoji: 'no:👤' })] });

@@ -102,7 +102,7 @@ test('datos propuestos: se pintan con su valor, se listan en propuestos y QA los
   const q = JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));
   assert.deepEqual(q.por_confirmar, { TIEMPO_LLAMADA: { valor: '30 minutos', laminas: [1] } });
   // el dato propuesto va en datos_por_confirmar (no resta nota: el tope de borrador ya lo representa)
-  assert.ok(q.datos_por_confirmar.some(a => /dato propuesto TIEMPO_LLAMADA .*el deck no es final/.test(a)));
+  assert.deepEqual(q.datos_por_confirmar.TIEMPO_LLAMADA, { valor: '30 minutos', laminas: [1] });
   assert.ok(!q.avisos.some(a => /dato propuesto/.test(a)));
   assert.equal(q.nota, 90);
 });
@@ -116,4 +116,22 @@ test('datos: { pendiente, motivo } es un hueco declarado (va en declarados, no e
   assert.equal(r.deck.laminas[0].valor, 'Inversión: [PRECIO]');
   assert.deepEqual(r.declarados, { PRECIO: { motivo: 'lo define dirección', laminas: [1] } });
   assert.deepEqual(r.faltan, { FALTA: [2] });
+});
+
+test('datos: credibilidad y resultados no se proponen, por clave ni por tipo', () => {
+  for (const clave of ['ANOS', 'AÑOS', 'EXPERIENCIA', 'CLIENTES', 'ALUMNOS', 'EVENTOS', 'VENTAS', 'FACTURA', 'GANANCIA', 'INGRESOS', 'MIEMBROS', 'SEGUIDORES', 'PROMEDIO']) assert.ok(validarDatos({ [clave]: { valor: 3, propuesto: true } }).some(e => /no se proponen/.test(e)), clave);
+  for (const tipo of ['credibilidad', 'resultado', 'precio']) assert.ok(validarDatos({ X: { valor: 3, propuesto: true, tipo } }).some(e => /no se proponen/.test(e)), tipo);
+  for (const tipo of ['proceso', 'nombre']) assert.deepEqual(validarDatos({ X: { valor: 'Una opción', propuesto: true, tipo } }), []);
+  assert.ok(validarDatos({ X: { valor: 3, tipo: 'otro' } }).some(e => /tipo debe/.test(e)));
+  assert.ok(validarDatos({ X: { valor: 3, fuente: '' } }).some(e => /fuente/.test(e)));
+  assert.deepEqual(validarDatos({ QUIEN_ENTREGA: 'asesor' }), []);
+  assert.ok(validarDatos({ QUIEN_ENTREGA: 'inventado' }).length);
+});
+
+test('datos: fuente confirmada y pendiente se conservan sin mutar el deck', () => {
+  const original = { datos: { BASE: { valor: 42, tipo: 'credibilidad', fuente: 'Registro interno' }, PRECIO: { pendiente: true, motivo: 'Lo define dirección', tipo: 'precio', fuente: 'Cotización del proveedor' }, NOMBRE: { valor: 'Programa', propuesto: true, fuente: 'Propuesta editorial' } }, laminas: [{ tipo: 'idea', texto: '{{BASE}} personas; {{PRECIO}}; {{NOMBRE}}' }] };
+  const antes = JSON.stringify(original), r = sustituirDatos(original);
+  assert.deepEqual(r.fuentes, { BASE: 'Registro interno' });
+  assert.equal(r.declarados.PRECIO.fuente, 'Cotización del proveedor');
+  assert.equal(JSON.stringify(original), antes);
 });

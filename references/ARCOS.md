@@ -59,15 +59,19 @@ escribir con **~6.5-9.5 s por lámina; planea con 7.5 s** (2.2 pasos × 2.9 s po
 
 | Láminas fijadas | Pieza |
 |---|---|
-| 6-12 | `reel` (la misma cifra que la tabla de arriba: 11 láminas miden ~55 s) |
+| 6-12 | `reel` solo sin otra pieza nombrada y en 9:16 (11 láminas miden ~55 s) |
 | 13-15 | `tutorial` o `libre` |
 | 16-24 y vende | `vsl-corto` compacto: revelación al 55-60 %, una objeción antes |
 | 16-60 que no vende | `tutorial` (si vende con 25-50 láminas: `vsl-corto`) |
 | 60-150 | `video` o `vsl` |
 | 90-200 más tramos en vivo | `clase-corta` |
-| una pieza larga pedida (webinar, clase, VSL) con MENOS láminas que su mínimo | su versión corta: webinar o VSL → `vsl-corto`; clase → `clase-corta`, o `tutorial` con `"clase": true` |
+| una pieza larga pedida (webinar, clase, VSL) con MENOS láminas que su mínimo | su versión corta: webinar o VSL → `vsl-corto`; clase → `clase-corta`, o `tutorial` con `"clase": true`; conserva la modalidad en vivo salvo pedido grabado/evergreen/anuncio |
 
-**Nunca se cambia la pieza en silencio.** «Un webinar de 30 láminas» son ~3.5-4.5 min (láminas × 7.5 s), no 60-90: se arma
+**Nunca se cambia la pieza en silencio.**
+
+La conversión cambia la duración y la pieza, no la modalidad: un webinar o una clase convertido a `vsl-corto`/`clase-corta` conserva `"en_vivo": true` salvo que el pedido diga grabado, evergreen o anuncio. Si el autor decide que es video, lo dice: «lo armo como vsl-corto grabado». Un VSL pedido como VSL sigue sin `en_vivo`; un webinar evergreen tampoco se vuelve en vivo.
+
+«Un webinar de 30 láminas» son ~3.5-4.5 min (láminas × 7.5 s), no 60-90: se arma
 como `vsl-corto` (la parte de la oferta del webinar) y se dice ANTES de escribir, en una línea, con la duración estimada
 («30 láminas son ~4 min, no un webinar de 60-90: lo armo como `vsl-corto`»). En un loop o un agente de fondo, donde no
 se puede preguntar, esa línea va en la entrega y en `_comentario`. Del webinar se conservan, dentro del `vsl-corto`, las
@@ -230,9 +234,12 @@ el deck en borrador (`por_confirmar.PUENTE`), igual que quitar el puente. No hay
    «Únete a {{COMUNIDAD}}»). `llamado: true` es para la flecha al link o la palabra clave, no para la tarea.
 
 ### VSL corto (3-6 min)
+
+Con N láminas, presupuesta la revelación en ≈ 0.55-0.60 × N. Quedan ≈ 0.4 × N para stack, prueba, precio, dos llamados y pago del gancho. Verifica también el porcentaje de duración con QA: no todas las láminas duran igual.
+
 La apertura sigue la tabla de GUION §6.1 (la referencia da la promesa de 0:08 a 0:19, el nombre del mecanismo a
 0:23 y el «te voy a enseñar a…» de 0:29 a 0:36): en un anuncio de 3-4 min los primeros 30 s deciden si se quedan.
-1. **0:00-0:10, el conflicto o la escena concreta** (el gancho en `chat`, con la hora a la vista).
+1. **0:00-0:10, el conflicto o la escena concreta** (elige un arquetipo de GUION §6.1; si es chat, con la hora a la vista).
 2. **0:10-0:25, la promesa**: resultado, plazo si es real, y su «sin…» (`idea` + `lista` «Sin:»), más el nombre del
    mecanismo entre «comillas» y __subrayado__, dicho de pasada («más de eso en un minuto»).
 3. **0:25-0:35, a quién va dirigido** (el filtro «Es para ti si:») con una credibilidad breve (la cifra real o su
@@ -257,17 +264,19 @@ La apertura sigue la tabla de GUION §6.1 (la referencia da la promesa de 0:08 a
 ### Propuesta (3-20 min; la corta, 3-8 min y 20-60 láminas, se presenta en vivo con conversación)
 Nueve bloques. Se reenvía a directores que no estuvieron en la junta: el porqué va en la `voz` y se manda con
 `laminas-notas.pdf` (`render.mjs --pdf`).
-1. **Diagnóstico con los números del cliente**: vienen de la llamada de diagnóstico, con `fuente: "llamada de
-   diagnóstico"` o como `{{CLAVE}}` en `"datos"` (pendiente si aún no hay llamada), o «se mide en la semana 1».
+
+Pantalla y voz llevan la frase resuelta con `{{CLAVE}}`; el motivo de lo que falta vive solo en `datos.X.motivo` y la entrega (GUION §3). Capa roja: sello en garantía confirmada, óvalo en inversión y tachado o ✕ en «No incluye:»; ver ESTILO §5.
+
+1. **Lo que les pasa hoy, con sus números**: escena concreta que reconozcan (quién, qué hace mal y cuándo), su consecuencia y su número, con `fuente: "llamada de diagnóstico"` o `{{CLAVE}}` en `datos`. La escena escrita es obligatoria aunque falten números. Entrevistas y autoevaluación son actividades de solución o `linea-tiempo`, no el problema. La portada lleva el resultado o el costo para el cliente, no solo el programa; el problema aparece a más tardar en la lámina 3 y no hay temario antes.
    Nunca «Pongamos que cada vendedor pierde 1-2 h»: la excepción de GUION §3.8 d es para clases y VSL.
 2. **Costo de no hacer nada, en dinero u horas y con sus números**: «{{HORAS_PERDIDAS}} h × {{COSTO_HORA}} =
    {{COSTO_MES}} al mes». Es el ancla de la inversión.
 3. **Solución y cómo funciona**, con una demostración si la hay (`chat`, `prueba` con material real, `boton`).
 4. **Quién la imparte y prueba**: una cifra real de años, clientes o eventos («desde 2016, 23,000 clientes»), o un
    caso parecido al suyo con números y `fuente`. Si no hay, un sustituto de GUION §7 («Sin prueba real, en este
-   orden»). Nunca inventada: sin dato, `{{CLIENTES}}` o `{{CASO}}` declarados como pendientes.
+   orden»). Nunca inventada: sin datos, una sola `idea` con `{{CREDENCIAL}}` declarado, no una lista de tres huecos.
 5. **Metas medibles**: «de {{HOY}} a …, medido en la semana N» (`cifra`, `linea-tiempo` o `tarjetas`).
-6. **Alcance**: qué incluye (`stack` o `lista` ✅) y qué NO incluye (`lista` con encabezado «No incluye»).
+6. **Alcance**: qué incluye (`stack` o `lista` ✅) y qué NO incluye (`lista` con encabezado «No incluye:»).
 7. **Inversión anclada**: una `cifra` con el costo del bloque 2 arriba y en gris, `{{PRECIO}}` grande y el desglose
    por persona, por día o en quincenas (LAYOUTS.md, `cifra`, «Inversión anclada»).
 8. **Garantía o condición de salida** con plazo y condición medible (`idea` 🛡️ o `cifra` + `pasos`); si no la hay,
@@ -286,6 +295,6 @@ concreto: hora, cifra, chat, cita o captura. La lista de quiénes cuentan para c
 
 Las herramientas de una escena usan sus logos reales; si falta uno, declara `imagen: "{{LOGO_X}}"` (regla 10).
 
-En vivo, el **cómo se entra** es un `qr`, una URL corta grande (≥ 64 px) o una palabra clave. Un botón por sí solo sirve en video o PDF; en una sala o por Zoom necesita una forma de acceso que el público pueda usar. La receta del QR está en LAYOUTS.md.
+En vivo, el **cómo se entra** es un `qr`, una URL corta grande (≥ 64 px) o una palabra clave. El `boton` lleva debajo una URL corta ≥ 64 px (`{{URL_CORTA}}` si falta) o «Escribe PALABRA en el chat». En sala se suma `qr`; `si_falla`: «pega el link en el chat». La voz dice la URL o la palabra. Un botón por sí solo sirve en video o PDF; en una sala o por Zoom necesita una forma de acceso que el público pueda usar. La receta del QR está en LAYOUTS.md.
 
 En las plantillas de mapa, activo y texto iguales en dos láminas seguidas repiten la misma lámina. Si activo avanza, falta contenido entre bloques: añade al menos una lámina o une los mapas.

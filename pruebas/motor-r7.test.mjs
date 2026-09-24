@@ -146,8 +146,8 @@ test('P: HTML real cuenta tachones y conexiones; la racha sin mano se estima sin
   const conMano=construir(t,laminas), cantidades=manoDesdeHTML(conMano.html);
   assert.ok(cantidades.every(n => n>0));
   assert.ok(!reglasDeckCompleto(conMano.deck,{manoPorLamina:cantidades}).avisos.some(a => /capa a mano/.test(a)));
-  const sinMano=laminas.map(l => JSON.parse(JSON.stringify(l).replaceAll('~~','')));
-  assert.ok(revisarTexto(preparar(t,sinMano)).avisos.some(a => /^estimado:.*4 láminas.*capa a mano/.test(a)));
+  const sinMano=Array.from({length:12},(_,i) => JSON.parse(JSON.stringify(laminas[i%laminas.length]).replaceAll('~~','')));
+  assert.ok(revisarTexto(preparar(t,sinMano)).avisos.some(a => /4 láminas.*capa roja/.test(a)));
 });
 test('Q: avisos pendientes bloquean listo y las aceptaciones respetan motivo y alcance', () => {
   const avisos=['lámina 1: uno','lámina 2: dos','lámina 3: tres'];

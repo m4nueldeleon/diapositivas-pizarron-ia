@@ -107,7 +107,7 @@
    "id": "busca",
    "tipo": "idea",
    "emoji": "🔍",
-   "texto": "Busca los chats que\n**preguntaron precio**",
+   "texto": "Busca los chats que\n__preguntaron precio__",
    "nota": "y ya no contestaron",
    "voz": [
     "Busca los chats que preguntaron precio,",
@@ -208,7 +208,7 @@
    "id": "retoma",
    "tipo": "idea",
    "emoji": "📝",
-   "texto": "Retoma **lo que te preguntó**",
+   "texto": "Retoma __lo que te preguntó__",
    "nota": "Con su nombre y una opción concreta",
    "voz": [
     "Lo que sí funciona: retoma lo que te preguntó.",
@@ -261,7 +261,15 @@
    ],
    "voz": [
     "Así se ve: Ana, el curso que preguntaste arranca el martes.",
-    "Y contesta, porque le preguntaste algo que se contesta con un sí."
+    "Y contesta, porque le preguntaste algo que se contesta con un sí.",
+    "Pide una decisión."
+   ],
+   "anotaciones": [
+    {
+     "a": "m1",
+     "texto": "Pide una decisión",
+     "paso": 2
+    }
    ]
   },
   {
@@ -303,7 +311,7 @@
    "id": "manda",
    "tipo": "idea",
    "emoji": "📲",
-   "texto": "Mándalos **hoy**,\nno mañana",
+   "texto": "Mándalos __hoy__,\nno mañana",
    "nota": "Cada día que pasa se enfría",
    "voz": [
     "Mándalos hoy, no mañana.",
@@ -315,10 +323,17 @@
    "tipo": "idea",
    "emoji": "⏰",
    "texto": "Mándalo **a la hora\nen que te escribió**",
-   "nota": "A esa hora ya sabes que lee",
    "voz": [
     "Mándalo a la hora en que te escribió.",
-    "A esa hora ya sabes que lee."
+    "A esa hora ya sabes que lee.",
+    "Cuando suele leer."
+   ],
+   "anotaciones": [
+    {
+     "a": "texto",
+     "texto": "Cuando suele leer",
+     "paso": 2
+    }
    ]
   },
   {
@@ -348,7 +363,7 @@
    "id": "si-no",
    "tipo": "idea",
    "emoji": "🤷",
-   "texto": "Si no contesta:\n**uno más en 3 días**",
+   "texto": "Si no contesta:\n__uno más en 3 días__",
    "nota": "Y ahí lo dejas",
    "voz": [
     "Si no contesta, le mandas uno más en tres días.",
@@ -391,7 +406,7 @@
    "id": "tarea",
    "tipo": "idea",
    "emoji": "📋",
-   "texto": "Tu tarea: **manda tus 3 mensajes** hoy",
+   "texto": "Tu tarea: __manda tus 3 mensajes__ hoy",
    "nota": "Y cuéntame cuántos contestaron",
    "voz": [
     "Tu tarea: manda tus tres mensajes hoy.",

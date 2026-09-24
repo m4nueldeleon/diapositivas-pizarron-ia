@@ -41,12 +41,13 @@ test('apagado: mide la tinta compuesta sobre blanco al 35 %, sin contar transpar
 
 test('capa expresiva: contenedores no bastan, variedad y marcas de venta sí cuentan', () => {
   const sinTinta = { laminas: Array.from({length:12},(_,i) => ({...idea(i ? 'Frase' : 'Garantía'),nota:'Comentario'})) };
-  assert.equal(reglasCapaExpresiva(sinTinta).avisos.length,2);
-  assert.equal(notaSinTope({avisos:reglasCapaExpresiva(sinTinta).avisos}),100);
+  assert.ok(reglasCapaExpresiva(sinTinta).avisos.some(a => /menos de 3/.test(a)));
+  assert.ok(reglasCapaExpresiva(sinTinta).avisos.some(a => /4 láminas seguidas sin capa roja/.test(a)));
+  assert.ok(notaSinTope({avisos:reglasCapaExpresiva(sinTinta).avisos}) < 100);
   const html = analizarHTML('<section><p class="nota">Nota</p><div class="tabla">Tabla</div><b data-sub>Clave</b></section>')[0];
   assert.deepEqual(html.trazos,['subrayado']);
   assert.equal(html.contenedores,2);
-  const conTinta = { laminas: sinTinta.laminas.map((l,i) => i===0 ? {...l,sello:'Protegido'} : i===1 ? {...l,texto:'((Cifra))'} : l) };
+  const conTinta = { laminas: sinTinta.laminas.map((l,i) => i===0 ? {...l,sello:'Protegido'} : i===1 ? {...l,texto:'((Cifra))'} : i%3===0 ? {...l,texto:'~~Descartado~~'} : l) };
   assert.deepEqual(reglasCapaExpresiva(conTinta).avisos,[]);
   assert.equal(reglasCapaExpresiva({laminas:[idea('No incluye servicios')]}).avisos.length,1);
   assert.deepEqual(reglasCapaExpresiva({laminas:[idea('~~No incluye servicios~~')]}).avisos,[]);

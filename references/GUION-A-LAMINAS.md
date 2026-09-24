@@ -46,7 +46,7 @@ apunta a esa marca; sin coincidencia, entra en el último paso de los tramos. La
 entran en 0. Un `paso` explícito manda; QA avisa si adelanta la marca de color a su tramo.
 En láminas de tres pasos o más, evita poner el sello, la nota roja o el tachado de remate en 0.
 
-**La fuente se ve cuando la nombras.** Si «Según Stanford…» está en `voz[0]`, usa
+**La fuente se ve cuando la nombras.** Si «Según un estudio de…» (o el medio: «según Forbes…») está en `voz[0]`, usa
 `fuente_paso: 0` para que la atribución acompañe ese beat, aunque el dato termine de revelarse
 después. QA avisa si una fuente bibliográfica identificable se cita antes de entrar en pantalla.
 
@@ -63,7 +63,7 @@ Para requisitos, comisiones o políticas de plataforma, `fuente` lleva origen y 
 | Escala | Rejilla o multitud con sello |
 | Pausa | Descanso de una sola palabra |
 
-El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso 0. Cada modelo incluye una secuencia de 3–4 pasos que transforma la misma composición. QA distingue trazos de énfasis de contenedores como nota o tabla; avisa sin restar si un deck de 12 láminas usa menos de dos tipos, o deja precio, garantía o «no incluye» sin trazo.
+El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso 0. Cada modelo incluye una secuencia de 3–4 pasos que transforma la misma composición. QA distingue los golpes visuales (§5) de la capa roja: la nota gris y la tabla solas no cuentan como rojo. En 12+ láminas avisa con menos de tres tipos de capa roja o cuatro láminas seguidas sin ella; los avisos de trazos de precio, garantía o «no incluye» orientan su colocación.
 
 
 | Si el guion dice… | Dibuja… | Diseño |
@@ -93,13 +93,15 @@ El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso
 | un mensaje o conversación | burbujas | `chat` |
 | «tú te quedas con el 30%» | pastilla que se parte | `reparto` |
 | un testimonio o prueba | captura con el dato encerrado | `prueba` |
-| lo que NO necesitas / lo que SÍ | bloques rojo y verde | `cuadrantes` |
-| una pregunta retórica | 🤔 + la pregunta | `idea` |
+| lo que NO necesitas / lo que SÍ | un concepto por bloque; con más de uno por lado, lista con columnas | `cuadrantes` / `lista` con `columnas` |
+| lo que resuelve / lo que no; incluye / no incluye; qué hace la IA y qué no | frontera de dos columnas, con llave y nota | `lista` con `columnas` |
+| instrucción para la IA de 2-4 reglas | un renglón por regla, nunca cajas | `lista` con `vineta: "letras"` + `letras` |
+| una pregunta que interpela al público | 👊 o 👉 + «¿Y tú?»; si la retórica no apela a nadie, sin emoji | `idea` |
 | una objeción del cliente | emoji negado si es «me falta X»; 🤔 si la objeción es una pregunta (EMOJIS.md, objeción) + «Objeción #N» entre el emoji y la frase + la objeción en negrita y entre comillas; la respuesta en la lámina SIGUIENTE, que DEMUESTRA: su primera lámina no es `idea` (§7, «objeción → respuesta») | `idea` con `encabezado_pos: "entre"` |
 | por qué falla la mayoría | la misma forma con «Razón #N» [34:25, 35:15] | `idea` |
 | credibilidad (años, clientes) [36:10] | la cifra real sobre una foto o captura real | `prueba` u `objeto` |
 | componente numerado «#N» de la oferta [41:10, 41:40] | «#4» + el componente, en blanco | `idea` |
-| pregunta de sí después de un componente [41:00, 41:35] | 🤔 + «¿Ves cómo…?» | `idea` |
+| pregunta de sí después de un componente [41:00, 41:35] | 👊 + «¿Ves cómo…?» | `idea` |
 | lo que incluye la oferta, el stack que crece [42:30] | bento que se llena pieza por pieza | `stack`, `tarjetas` o `rejilla` |
 | credibilidad con año o cifra | cifra encerrada y nota manuscrita colgada | `idea` con ((cifra)), mejor en ^^remate^^, + anotación con `a: "ovalo"` |
 | la cifra que hay que recordar | óvalo sobre la cifra | ((…)) |
@@ -114,7 +116,13 @@ El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso
 | la revelación del producto o la marca (SOLO eso: el resto de la oferta va en blanco, §7) | lámina oscura (nombre, logo, una frase) | `oscura` |
 | historia personal, confesión o llamado | nada: cámara | `camara` |
 
+**Recetas portables con contenido inventado**: objeción dicha por el público con el nombre del ponente («Lucía, ¿y si mi catálogo cambia?») → `cita`; precedente histórico con profecía tachada («El correo iba a desaparecer» → siguió) → `lista`/`flujo` con tachado; A × B = C con un factor en cero y sello sobre el resultado → `cifra`; lo que el humano conserva y la IA no (decidir la prioridad) → `cuadrantes`/`idea` con sello; frontera sí/no → `lista.columnas`; bucle abierto («Al final vuelve esta caja») → `objeto` y pago; dato que ubica al público («¿Y tú?») → `rejilla` + `destacar`. Una receta no confirma una cifra ni una profecía: verifica cualquier afirmación histórica que vayas a presentar como dato.
+
 ## 3. Cómo escribir el texto de la lámina
+
+La pantalla y la voz se escriben como si el dato ya estuviera, con el hueco dentro: «Lo imparte {{FACILITADOR}}», «Arrancamos el {{FECHA_INICIO}}», «La inversión es {{PRECIO}}» o «Si en {{PLAZO}} no ves {{CONDICION}}, {{REMEDIO}}». Nunca «por confirmar», «pendiente de…», «falta ese dato», «confirmaremos» o «verificaremos» como sustituto del dato. El motivo va en `datos.X.motivo` y en la entrega, no en pantalla ni en voz. Las notas del PDF conservan la voz: aunque se llene el dato, una frase de pendiente escrita en prosa seguiría ahí.
+
+QA: una frase inequívoca de dato pendiente es error en propuesta o `en_vivo: true` y aviso en video, incluso con el dato lleno. «Confirmaremos», «verificaremos», «validaremos» o «definiremos» solo avisan si hay `datos` o es propuesta. No aplica al motivo ni a las instrucciones del operador.
 
 1. **No transcribas: comprime.** La lámina lleva las palabras clave que se dicen, no la oración
    entera. Por ejemplo, se dice «hay un grupo de personas que lo está aprovechando para ganar
@@ -204,8 +212,9 @@ El trazo sigue a la frase: un énfasis por lámina, ninguno de remate en el paso
 ## 5. Ritmo y variedad
 
 - **No repitas el mismo diseño 4 veces seguidas.** Alterna texto, proceso y dato.
-- **Cada 3 o 4 láminas debe haber algo a mano**: subrayado, flecha, nota, tabla o sello. Es la
-  firma del estilo.
+- **Capa roja a mano cada 3 o 4 láminas**: subrayado rojo, flecha, anotación, sello, círculo/encerrado/óvalo, tachón, llave o ✕ roja. La nota gris, la tabla y la letra manuscrita gris no cuentan. Es una medida distinta del golpe.
+- **Un golpe cada 4-6 láminas**: sello; tachón (`~~`, `tachado`, `tachar_despues`); `rejilla` o `multitud: true`; `circulos`; `cifra` o palabra sola gigante; llave con nota (`bifurcacion.llave` o llave de lista/chat/anotación); `anotaciones` con flecha; objeto dibujado (`objeto`, tarjeta, `boton`); óvalo `((…))`, `circulo` en celda/prueba o `encerrar` en rejilla. Subrayado, nota suelta y viñeta NO son golpe. No repitas el mismo TIPO en dos láminas seguidas, salvo que sea la misma lámina construyéndose. Sigue valiendo máximo un énfasis por lámina (ESTILO §5).
+- QA guarda `arco.golpes = { total, laminas, mayorTramoSin }` aun sin navegador. `camara` y `oscura` no suman ni cortan el tramo. Avisa con 8+ láminas sin golpe en piezas de 12+, y en piezas de 20+ si las `cifra` son más del 60% de los golpes. Procura `lista` en no más del 25% de las láminas: variar solo el texto conserva la monotonía.
 - **La cámara es el respiro.** Tramos de unos 4 s, cada 30 a 60 s, en los momentos personales.
 - **Las láminas oscuras son solo para revelar la marca o el producto.** Si aparecen antes, o se
   usan para el precio y la lista de lo que incluye, pierden su efecto.
@@ -254,6 +263,10 @@ del **webinar o video largo**:
 
 ### 6.1 Los primeros 10 segundos
 
+No portes horas, nombres, frases ni el reparto de otro deck, ejemplo o conferencia; porta el mecanismo. El chat es un arquetipo entre varios, no el default. Si conoces el deck anterior del creador, procura otro arquetipo: escena con hora, dato contraintuitivo con fuente, resultado «sin…», error en vivo, pregunta al espectador, antes/después, objeto o cifra enorme, cita que se contradice.
+
+**Escena con hora**: hora sola grande (`cifra` con `arriba`, o `idea`) → el siguiente paso cambia un solo dígito (por ejemplo 08:42 → 08:43) → teléfono/`chat` con la misma hora → la hora vuelve en el cierre o pago. Otros nichos: a las 16:18 el comprador B2B sigue esperando una cotización; a las 09:26 un paquete llega con la pieza equivocada; a las 13:54 la tienda vende un artículo que ya no tiene. Son situaciones inventadas: elige la del encargo.
+
 - **Antes del segundo ~10 el espectador ya vio el resultado o el conflicto concreto.** Nada de saludo,
   «bienvenido», presentación personal ni el título de la clase («Cómo…») como primera lámina. La
   bienvenida y el «quién soy» van después de la primera prueba: en la referencia el nombre llega en 1:26.
@@ -286,9 +299,20 @@ del **webinar o video largo**:
 
 ## 7. La oferta, beat por beat (referencia 36:00-44:50)
 
+Nunca uses tal cual la objeción de un ejemplo. Derívala del nicho, el producto y la respuesta que puedes demostrar:
+
+| Tipo | Pregunta al encargo | Emoji (EMOJIS) |
+|---|---|---|
+| Tiempo | ¿Qué actividad impide aplicarlo? | `no:⏳` |
+| Dinero | ¿Qué inversión no puede asumir? | `no:💰` |
+| ¿Me sirve a mí/a mi giro? | ¿Qué diferencia cree que lo excluye? | 🤔 |
+| ¿Y si sale mal? | ¿Qué riesgo necesita cubrir? | 🤔 (❓ en `fluent`) |
+| Ya lo intenté | ¿Qué falló en el intento anterior? | `no:X` con lo que intentó |
+| Tecnología | ¿Qué tarea técnica no sabe hacer? | `no:⌨️` |
+
 La regla de fondo: **oscura SOLO en la revelación de la marca o el producto** (36:15-37:55 y 43:00).
 Todo lo demás va en lámina **blanca con emoji**, con la capa a mano de siempre: la lista «They will:»,
-las preguntas 🤔, los «#4» y «#5», la lista de espera y el «2 minutes» son blancos. La oferta escala con
+las preguntas al público 👊, los «#4» y «#5», la lista de espera y el «2 minutes» son blancos. La oferta escala con
 la pieza (ARCOS.md): un reel no lleva oferta y una clase solo un puente al siguiente paso. **Todo dato es
 real**: si no hay cifra de credibilidad, prueba o escasez real, el beat se omite o se cambia por un sustituto
 honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
@@ -299,8 +323,8 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
 | 2 | Credibilidad con cifra y años (formato de la referencia: «desde 2016, más de 23,000 clientes», no datos que copiar). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
 | 3 | Ancla con un costo real, opcional: dinero que el espectador paga o pierde, en la misma unidad y periodo que el precio (regla abajo) | 36:30-36:40 | `cifra` |
-| 4 | Revelación del producto, en 1 paso; en oscura pueden seguir sus pilares (lista blanca con emoji que vuelve con uno activo) y para quién es. Si el programa es «hecho contigo», la videollamada «TÚ + tu mentor» lo presenta [36:45] | 36:15-37:55, 43:00 | `oscura` · `lista` + `oscura` · `llamada` |
-| 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`; un componente humano —mentor, consultor, llamadas en vivo— con `llamada` antes de su `lista` [40:10, 41:15]) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` / `llamada` |
+| 4 | Revelación del producto, en 1 paso; en oscura pueden seguir sus pilares (lista blanca con emoji que vuelve con uno activo) y para quién es. Si el programa es «hecho contigo», la videollamada «TÚ + quien entrega de verdad» lo presenta [36:45] | 36:15-37:55, 43:00 | `oscura` · `lista` + `oscura` · `llamada` |
+| 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`; un componente humano —mentor, consultor, llamadas en vivo— con `llamada` antes de su `lista` [40:10, 41:15]) y cierra con una pregunta de sí 👊 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` / `llamada` |
 | 6 | Prueba real: el muro de capturas (con `src` o `fuente`). Sin prueba real, un sustituto de la tabla de abajo; nunca una maqueta `ejemplo: true` | 42:00 | `prueba` |
 | 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el remate es un título en su propio corte: ✓ verde sin caja + frase en 800 a ~140 px [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
 | 7b | **Bonos** (solo si la oferta los tiene): en el MISMO `stack`, después de las piezas base, cada uno con `sub: "Bono #N"` y su nombre desde `{{BONO_N}}` (LAYOUTS.md, `stack`). No hay diseño de bono aparte: la referencia no los tiene | — | `stack` |
@@ -308,6 +332,8 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `boton` variante `invitacion` + `idea` 🧭 |
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
+
+**Quién entrega (beats 4, 5 y 8)**: el rótulo humano sale de `datos.QUIEN_ENTREGA`; con `yo`, usa el nombre o «Yo». «La hago yo contigo» solo corresponde al creador que entrega. En beats 4 y 5, la llamada es «TÚ + quien entrega de verdad». Con equipo/asesor, la razón de la escasez es su capacidad real («cada asesor lleva {{CASOS_POR_ASESOR}} casos»), con el dato declarado. El nosotros inclusivo «lo configuramos juntos» no cambia quién entrega.
 
 **Regla del ancla del precio.** El ancla es dinero que el espectador PAGA o PIERDE, en la misma unidad y periodo que el precio: alternativa cara, sueldo, nivel superior, costo de financiarse o lo que nunca cobra, con fuente. Nunca un saldo que sí llegará (cuentas por cobrar, «en la calle», facturación o ventas brutas). Si el dinero llega tarde, ancla con su costo: {{TASA_…}} en `datos` con fuente, u horas de cobranza × {{COSTO_HORA}}. Un total calculado en una `cifra` «Si…» sigue permitido si es un costo. Contraejemplo inválido: «En la calle hoy: $60-90 mil» → «[producto]: [precio]».
 
@@ -331,7 +357,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   VSL de 8 min o más, 2-3 en un webinar. No se inventan objeciones ni respuestas: salen del público real (en un
   VSL de eventos, «mi público no paga apartado» o «ya mando recordatorios y aun así no llegan»). QA avisa si no
   hay ninguna `idea` «Objeción #N» o «Razón #N» antes del llamado. **Si no puedes preguntar** (loop, agente de fondo),
-  la objeción que no dio el usuario se PROPONE: `"datos": { "OBJECION_1": { "valor": "No sé nada de tecnología",
+  la objeción que no dio el usuario se PROPONE: `"datos": { "OBJECION_1": { "valor": "<derivada del nicho y del producto>",
   "propuesto": true } }` y la lámina dice `**«{{OBJECION_1}}»**`, así sale en `por_confirmar`. Y se introduce sin
   frecuencia: «Objeción número uno: …» o «Quizá estés pensando: …», nunca «la de siempre» ni «la que más oigo» sin un
   dato (QA lo avisa; VOZ-HUMANA.md).
@@ -355,7 +381,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   |---|---|---|
   | a | Demostración del mecanismo con material real del creador: su calendario, su cuenta, su chat | `prueba` con `src`, o `objeto` con `imagen` |
   | b | Caso propio con números y su `fuente`. Receta: `cifra` con `arriba` «Ana, nutrióloga:», la línea «de 12 a __31 pacientes__ al mes en 8 semanas» y `fuente: "caso real, con permiso"` | `cifra` con `fuente` o `prueba` con `fuente` |
-  | c | **Prueba de mercado**: una nota de prensa o un dato publicado real (INEGI, un estudio, un medio) que respalda la OPORTUNIDAD, no el resultado del producto [11:25 «$250 billion Creator Economy», 11:30 Forbes citando a Goldman Sachs, 12:00 creadores reales con su logo]. Se busca y se abre con WebSearch o WebFetch, **nunca un número de memoria**. En la voz se dice como dato del mercado («según INEGI…»), nunca como caso propio, y la lámina **nombra lo que se midió** («Pagaron el certificado → terminó: 46%», no «Pagando el certificado: 46%»). La `fuente` va como «Autor, «obra», medio (año)»; si solo se abrió una fuente secundaria (la primaria dio 403), «… vía <medio>»; si no se abrió ninguna, el dato no entra. Su sitio natural es el tramo de «por qué ahora», antes de la revelación; no sustituye el muro de capturas del beat 6 cuando lo hay | `prueba` con la captura del artículo en `src` y su `fuente` (medio y fecha), con el subrayado o el círculo rojo en la frase clave; o `cifra` con `fuente` |
+  | c | **Prueba de mercado**: una nota de prensa o un dato publicado real (INEGI, un estudio, un medio) que respalda la OPORTUNIDAD, no el resultado del producto [11:25 «$250 billion Creator Economy», 11:30 Forbes citando a Goldman Sachs, 12:00 creadores reales con su logo]. Se busca y se abre con WebSearch o WebFetch, **nunca un número de memoria**. La voz atribuye a quien publicó o midió, con las palabras de `fuente`: «un estudio publicado en Harvard Business Review, con datos de 42 empresas». Nunca «según Harvard/Stanford/el MIT» cuando la fuente es una revista de esa marca (Harvard Business Review, MIT Technology Review, Stanford Social Innovation Review, MIT Sloan), una empresa o un investigador. Repite la misma magnitud y unidad que la lámina: no convierte probabilidad en conteo ni porcentaje en «la mayoría». En la voz se dice como dato del mercado («según INEGI…»), nunca como caso propio, y la lámina **nombra lo que se midió** («Pagaron el certificado → terminó: 46%», no «Pagando el certificado: 46%»). La `fuente` va como «Autor, «obra», medio (año)»; si solo se abrió una fuente secundaria (la primaria dio 403), «… vía <medio>»; si no se abrió ninguna, el dato no entra. Su sitio natural es el tramo de «por qué ahora», antes de la revelación; no sustituye el muro de capturas del beat 6 cuando lo hay | `prueba` con la captura del artículo en `src` y su `fuente` (medio y fecha), con el subrayado o el círculo rojo en la frase clave; o `cifra` con `fuente` |
   | d | Prueba lógica: la cuenta con la condición en `arriba` (§3.8). La tasa va DENTRO de la condición, dicha como hipótesis («Si te contrata el 0.1-0.3%:»), o con `fuente` (puede ser la misma nota de c). Una tasa escrita en la cuenta sin origen («10 × 20% compran») es una cifra de resultado inventada: QA la deja en borrador («tasa sin origen») y el deck no es final | `cifra` sin `fuente`, con `arriba` que empieza con la condición («Si…», «Cuando…», «Con…») y un número, y un rango en `arriba` o en `lineas` |
   | e | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ con plazo real («30 días»; un `{{GARANTIA_DIAS}}` sin llenar no cuenta) y condición («si…») |
 

@@ -437,7 +437,14 @@
    "id": "dificultad",
    "tipo": "medidor",
    "valor": 90,
-   "texto": "Algunos modelos dejan ganar millones,\npero son **muy difíciles para empezar**."
+   "texto": "Algunos modelos dejan ganar millones,\npero son **muy difíciles para empezar**.",
+   "anotaciones": [
+    {
+     "a": "medidor",
+     "texto": "El costo de empezar",
+     "paso": 1
+    }
+   ]
   },
   {
    "id": "elige",
@@ -507,6 +514,15 @@
      "valor": "$9,000",
      "pct": "30%",
      "tono": "verde"
+    }
+   ],
+   "anotaciones": [
+    {
+     "a": "parte0",
+     "texto": "Acuerda el porcentaje",
+     "x": "41%",
+     "y": "84%",
+     "paso": 2
     }
    ]
   },
@@ -751,7 +767,7 @@
   {
    "id": "foco",
    "tipo": "foco",
-   "texto": "Sigues cobrando mientras el creador siga promoviendo el producto."
+   "texto": "Sigues cobrando mientras el creador siga __promoviendo el producto__."
   },
   {
    "id": "barras",
@@ -780,7 +796,7 @@
   {
    "id": "descargo",
    "tipo": "idea",
-   "texto": "Que yo tenga estos resultados\n==no significa que tú los tengas==",
+   "texto": "Que yo tenga estos resultados\n__no significa que tú los tengas__",
    "voz": "Que yo tenga estos resultados no significa que tú los vayas a tener."
   },
   {
@@ -832,18 +848,24 @@
    "emoji": "no:⌨️",
    "encabezado": "Objeción #1",
    "encabezado_pos": "entre",
-   "texto": "**«No sé nada de tecnología»**",
-   "voz": "La primera objeción: no sé nada de tecnología"
+   "texto": "**«Nunca he escrito una instrucción»**",
+   "voz": "Primera objeción: nunca he escrito una instrucción."
   },
   {
    "id": "respuesta",
    "tipo": "idea",
    "emoji": "si:🤖",
    "texto": "No hace falta programar:\n**le escribes al agente lo que quieres**",
-   "nota": "Paso 1: copias la plantilla y cambias tu nombre",
    "voz": [
     "No necesitas saber programar: le escribes al agente lo que quieres.",
-    "Paso uno: copias la plantilla y le cambias tu nombre."
+    "Primero copias la plantilla y cambias tu nombre."
+   ],
+   "anotaciones": [
+    {
+     "a": "texto",
+     "texto": "Copia la plantilla",
+     "paso": 1
+    }
    ]
   },
   {

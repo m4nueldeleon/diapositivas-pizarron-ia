@@ -60,7 +60,11 @@
    "motivo": "10 × la tasa real de abandono: se calcula cuando esté TASA_ABANDONO"
   },
   "OBJECION_1": {
-   "valor": "No sé nada de tecnología",
+   "valor": "Mi agenda cambia todos los días",
+   "propuesto": true
+  },
+  "QUIEN_ENTREGA": {
+   "valor": "yo",
    "propuesto": true
   }
  },
@@ -68,19 +72,20 @@
   {
    "id": "gancho",
    "tipo": "chat",
-   "procedencia": "ejemplo",
    "sello": "Tarde",
    "sello_sobre": "m1",
    "mensajes": [
     {
      "de": "otro",
      "hora": "11:40 pm",
-     "texto": "¿Tienes cita mañana temprano?"
+     "texto": "¿Tienes cita mañana temprano?",
+     "ejemplo": true
     },
     {
      "de": "yo",
      "hora": "9:05 am",
-     "texto": "¡Buen día! Sí, a las 10"
+     "texto": "¡Buen día! Sí, a las 10",
+     "ejemplo": true
     }
    ],
    "voz": [
@@ -126,17 +131,33 @@
   {
    "id": "paraquien",
    "tipo": "lista",
-   "encabezado": "Es para ti si:",
-   "vineta": "check",
-   "items": [
-    "Vives de **citas**",
-    "Te escriben **por WhatsApp**",
-    "Hoy contestas **tú**"
-   ],
    "voz": [
-    "Es para ti si vives de citas: consultorio o salón.",
-    "Si tus clientes te escriben por WhatsApp.",
-    "Y si hoy contestas tú, a cualquier hora."
+    "Sí: citas por WhatsApp.",
+    "Y dudas de horario.",
+    "Siempre con tus horarios definidos.",
+    "No: resolver urgencias.",
+    "Ni cambiar tus precios."
+   ],
+   "columnas": [
+    {
+     "titulo": "SÍ",
+     "tono": "v",
+     "vineta": "check",
+     "items": [
+      "Citas por **WhatsApp**",
+      "Dudas de **horario**"
+     ],
+     "llave": "Con tus horarios"
+    },
+    {
+     "titulo": "NO",
+     "tono": "r",
+     "vineta": "cruz",
+     "items": [
+      "Resolver **urgencias**",
+      "Cambiar **precios**"
+     ]
+    }
    ]
   },
   {
@@ -146,9 +167,15 @@
    "texto": "Más de **{{CLIENTES}} negocios**\nya agendan así",
    "voz": [
     "Más de {{CLIENTES}} negocios ya agendan así.",
-    "Contestan de noche sin desvelarse."
+    "Atienden mientras descansan."
    ],
-   "nota": "Contestan de noche sin desvelarse"
+   "anotaciones": [
+    {
+     "a": "texto",
+     "texto": "Atienden mientras descansan",
+     "paso": 1
+    }
+   ]
   },
   {
    "id": "costo",
@@ -225,18 +252,19 @@
   {
    "id": "contesta",
    "tipo": "chat",
-   "procedencia": "ejemplo",
    "avatar_yo": "🤖",
    "mensajes": [
     {
      "de": "otro",
      "hora": "11:40 pm",
-     "texto": "¿Tienes cita mañana temprano?"
+     "texto": "¿Tienes cita mañana temprano?",
+     "ejemplo": true
     },
     {
      "de": "yo",
      "hora": "11:40 pm",
-     "texto": "¡Sí! Tengo 9:00 o 10:30, ¿cuál te aparto?"
+     "texto": "¡Sí! Tengo 9:00 o 10:30, ¿cuál te aparto?",
+     "ejemplo": true
     }
    ],
    "voz": [
@@ -247,26 +275,36 @@
   {
    "id": "califica",
    "tipo": "chat",
-   "procedencia": "ejemplo",
    "avatar_yo": "🤖",
    "mensajes": [
     {
      "de": "yo",
-     "texto": "¿Es tu primera vez con nosotros?"
+     "texto": "¿Es tu primera vez con nosotros?",
+     "ejemplo": true
     },
     {
      "de": "otro",
-     "texto": "Sí, me recomendó una amiga"
+     "texto": "Sí, me recomendó una amiga",
+     "ejemplo": true
     },
     {
      "de": "yo",
-     "texto": "¡Qué gusto! Te aparto 30 minutos para la valoración"
+     "texto": "¡Qué gusto! Te aparto 30 minutos para la valoración",
+     "ejemplo": true
     }
    ],
    "voz": [
     "Luego te hace las preguntas que tú harías.",
     "Si es cliente nuevo,",
-    "le aparta el tiempo que necesita."
+    "le aparta el tiempo que necesita.",
+    "Así aparta el tiempo correcto."
+   ],
+   "anotaciones": [
+    {
+     "a": "m2",
+     "texto": "Aparta el tiempo correcto",
+     "paso": 3
+    }
    ]
   },
   {
@@ -282,38 +320,38 @@
     "Y el paso tres: la cita cae sola en tu calendario.",
     "Y te llega el aviso."
    ],
-   "texto": "La cita cae **sola**\nen tu calendario",
+   "texto": "La cita cae __sola__\nen tu calendario",
    "nota": "Y a ti te llega el aviso",
    "nota_paso": 1
   },
   {
    "id": "objecion",
    "tipo": "idea",
-   "emoji": "no:⌨️",
+   "emoji": "🤔",
    "encabezado": "Objeción #1",
    "encabezado_pos": "entre",
    "texto": "**«{{OBJECION_1}}»**",
-   "voz": "Objeción número uno: no sé nada de tecnología."
+   "voz": "Objeción número uno: mi agenda cambia todos los días."
   },
   {
    "id": "respuesta",
    "tipo": "flujo",
-   "texto": "No programas **nada**",
+   "texto": "Cambias **una sola hoja**",
    "nodos": [
     {
      "emoji": "📄",
-     "etiqueta": "Llenas una hoja"
+     "etiqueta": "Actualizas horarios"
     },
     {
      "emoji": "🤖",
-     "etiqueta": "El agente la lee"
+     "etiqueta": "El agente los lee"
     }
    ],
-   "nota": "Tus horarios y tus precios",
+   "nota": "Tus horarios del día",
    "voz": [
-    "No programas nada: llenas una hoja.",
-    "Tu agente la lee de ahí.",
-    "Solo tus horarios y tus precios."
+    "Actualizas tus horarios en una sola hoja.",
+    "El agente los lee desde ahí.",
+    "Usa tus horarios del día."
    ],
    "texto_paso": 0,
    "nota_paso": 2
@@ -368,7 +406,7 @@
    "id": "componente",
    "tipo": "idea",
    "emoji": "🤖",
-   "texto": "Tu agente contesta\n**desde tu mismo WhatsApp**",
+   "texto": "Tu agente contesta\n__desde tu mismo WhatsApp__",
    "nota": "Tus clientes no notan el cambio",
    "voz": [
     "Tu agente contesta desde tu mismo WhatsApp.",
@@ -378,7 +416,7 @@
   {
    "id": "pregunta",
    "tipo": "idea",
-   "emoji": "🤔",
+   "emoji": "👊",
    "texto": "¿Ves cómo **ya no dependes**\nde contestar tú?",
    "voz": "¿Ves cómo ya no dependes de contestar tú?"
   },
@@ -406,7 +444,7 @@
      "peso": 500
     },
     {
-     "texto": "{{PRODUCTO}}: __{{PRECIO}}__",
+     "texto": "{{PRODUCTO}}: (({{PRECIO}}))",
      "tam": "120px",
      "peso": 800
     }
@@ -420,16 +458,12 @@
    "id": "garantia",
    "tipo": "idea",
    "emoji": "🛡️",
-   "texto": "Garantía de **{{GARANTIA_DIAS}} días**",
+   "texto": "Garantía de __{{GARANTIA_DIAS}} días__",
    "nota": "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero",
    "voz": [
     "Tienes {{GARANTIA_DIAS}} días de garantía.",
-    "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero.",
-    "Esa es tu garantía."
-   ],
-   "sello": "Garantía",
-   "sello_sobre": "emoji",
-   "sello_paso": 2
+    "Si {{GARANTIA_CONDICION}}, te devuelvo tu dinero."
+   ]
   },
   {
    "id": "reclama",

@@ -26,10 +26,7 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
 
 ## 2. Tipografía: dos voces
 
-El encabezado presenta lo que sigue (termina en “:” o “…”, como «Sin:») o numera («Objeción #2», «Paso 1»).
-Nunca lleva metadatos separados por “·”: módulo, semana, tema, «ficticio», «ejemplo» o «por confirmar» son un eyebrow.
-Contraejemplo: «Módulo 2 · semana 3 · delegación». Semana y módulo van en el texto o una `linea-tiempo`;
-que es ejemplo se dice una vez en la voz. Si no hay dato, {{MARCADOR}}.
+El encabezado arranca la frase que completan los ítems y termina en «:», «…», «...» o «?». Excepciones: `encabezado_pos: "entre"` con #N/Paso N, listas mapa (`activo`, `hechos`, `como`, `oscura`) y `encabezado_estilo: "frase"`. Nunca metadatos (semana, módulo, fecha, N personas, « · »), nombre de sección ni estados («por confirmar», «pendiente», «ficticio», «ejemplo»). La procedencia va en `fuente` o nota, nunca en un `procedencia` que idea/chat ignoran. Usa «No incluye:». QA avisa los metadatos, la puntuación ausente y más de 25% de encabezados no exentos.
 
 
 | Voz | Letra | Uso |
@@ -136,6 +133,17 @@ todos lo leen igual en cualquier idioma. Es codificación dual (Paivio): la idea
 imagen y por la palabra al mismo tiempo.
 
 ## 5. La capa a mano: el profesor en el pizarrón
+
+Meta en el momento clave: ~1 golpe fuerte cada 3-4 láminas; sigue valiendo máximo un énfasis por lámina. En el arco completo se pide uno cada 4-6 (GUION §5). La capa ROJA —subrayado, flecha, anotación, sello, círculo/óvalo/encerrado, tachón, llave, ✕— es distinta de una nota gris o tabla. Referencia aproximada: ~1 de cada 2 láminas con marca roja; en decks de 12+ QA avisa menos de tres tipos o cuatro láminas seguidas sin rojo, sin contar `camara`.
+
+| Momento de una propuesta | Marca que pide |
+|---|---|
+| Problema | Llave con nota |
+| Costo | Anotación con flecha |
+| Inversión | Óvalo |
+| No incluye | Tachado o ✕ |
+| Garantía confirmada | Sello; no sellar un hueco |
+| Participantes | Multitud o rejilla |
 
 El óvalo `((…))` cuenta como el único énfasis: no se combina con subrayado ni resaltador.
 Receta de credibilidad: cifra encerrada + nota colgada del óvalo.

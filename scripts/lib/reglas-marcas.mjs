@@ -44,7 +44,7 @@ export function reglasIconosInversa(deck) {
   return { errores: [], avisos };
 }
 function textos(o, clave = '') {
-  if (/^(voz|fuente|id|tipo|imagen|src|app|accion|si_falla|_)/.test(clave)) return [];
+  if (/^(voz|fuente|id|tipo|imagen|src|app|accion|si_falla|procedencia|datos|_)/.test(clave)) return [];
   if (typeof o === 'string') return [o];
   if (!o || typeof o !== 'object') return [];
   return Object.entries(o).flatMap(([k,v]) => textos(v,k));
@@ -81,22 +81,45 @@ export function reglasMarcasYSuperficies(deck) {
   return { errores, avisos };
 }
 
+// Lista cerrada de marcas rojas reales: la tipografía manuscrita gris no aporta tinta roja.
+export function tiposRojos(l) {
+  if (l.tipo === 'camara') return [];
+  const t = textos(l).join(' '), tipos = new Set();
+  const objetos = o => !o || typeof o !== 'object' ? [] : [o, ...Object.entries(o)
+    .filter(([k]) => !/^(voz|fuente|accion|si_falla|procedencia|_)/.test(k)).flatMap(([,v]) => objetos(v))];
+  const os = objetos(l), agregar = (si, tipo) => { if (si) tipos.add(tipo); };
+  agregar(os.some(o => o.sello), 'sello');
+  agregar(/__[^]*?__/.test(t), 'subrayado');
+  agregar(/\(\([^]*?\)\)/.test(t) || os.some(o => o.circulo || o.clave)
+    || (l.tipo === 'rejilla' && Number.isInteger(l.encerrar)) || (l.tipo === 'pasos' && l.letras?.length && l.activo)
+    || (l.tipo === 'chat' && l.mensajes?.some((m,i) => m.de === 'prompt' && l.letras?.[i])), 'círculo');
+  agregar(/~~[^]*?~~/.test(t) || os.some(o => o.tachado || o.tachar?.length), 'tachón');
+  agregar((l.tipo === 'bifurcacion' && l.llave) || (l.tipo === 'lista' && l.columnas?.some(c => c.llave))
+    || l.anotaciones?.some(a => a.llave && (!a.tono || a.tono === 'r')), 'llave');
+  agregar(l.anotaciones?.some(a => !a.llave && ((a.a && (a.texto?.trim() || a.entra)) || (l.tipo === 'calendario' && a.dia)) && (!a.tono || a.tono === 'r'))
+    || (l.tipo === 'rejilla' && (l.anotacion || l.flecha_etiqueta))
+    || (l.tipo === 'flujo' && l.flecha !== 'ninguna' && l.nodos?.length > 1
+      && l.nodos.slice(1).some((_,i) => !l.flechas?.[i]?.signo && (l.flechas?.[i]?.estilo || l.flecha) !== 'arco-negro'))
+    || (l.tipo !== 'flujo' && l.flechas?.some(f => f.de && f.a && f.estilo !== 'arco-negro'))
+    || (l.tipo === 'flujo' && l.retornos?.some(r => r.tono === 'r'))
+    || (l.tipo === 'cita' && l.emoji) || (l.tipo === 'llamada' && l.nota), 'flecha');
+  agregar(os.some(o => ['x','no','cruz','❌'].includes(o.vineta)
+    || [].concat(o.emoji || []).some(e => /^(no:|❌)/.test(e))), 'cruz');
+  return [...tipos];
+}
+
 // Variedad de tinta sin cuota por recurso: los contenedores no cuentan como énfasis.
 export function reglasCapaExpresiva(deck, tiposPorLamina) {
-  const tipos = deck.laminas.map((l, i) => {
-    if (tiposPorLamina?.[i]) return new Set(tiposPorLamina[i]);
-    const t = textos(l).join(' '), encontrados = [];
-    if (l.sello) encontrados.push('sello');
-    if (/\(\(/.test(t) || l.circulo || l.circulo_img) encontrados.push('círculo');
-    if (/~~/.test(t) || l.tachon || l.tachon_img || l.items?.some(it => it?.tachado)) encontrados.push('tachón');
-    if (/__/.test(t)) encontrados.push('subrayado');
-    const conexiones = [...(l.flechas || []), ...(l.anotaciones || [])];
-    if (conexiones.some(c => c.estilo === 'llave' || c.llave)) encontrados.push('llave');
-    if (conexiones.some(c => c.estilo !== 'llave' && !c.llave) || ['flujo', 'bifurcacion', 'converger'].includes(l.tipo)) encontrados.push('flecha');
-    return new Set(encontrados);
-  });
+  const tipos = deck.laminas.map(l => new Set(tiposRojos(l)));
   const avisos = [], distintos = new Set(tipos.flatMap(t => [...t]));
-  if (deck.laminas.length >= 12 && distintos.size < 2) avisos.push('capa expresiva: el deck usa menos de 2 tipos de trazo de énfasis; añade una marca donde el guion concluya, descarte o agrupe (ESTILO)');
+  const visibles = deck.laminas.filter(l => l.tipo !== 'camara');
+  if (visibles.length >= 12 && distintos.size < 3) avisos.push('capa expresiva roja: el deck usa menos de 3 tipos de marca roja; añade llave, flecha, óvalo, tachón o sello según el momento (ESTILO §5)');
+  let tramo = 0;
+  deck.laminas.forEach((l,i) => {
+    if (l.tipo === 'camara') return;
+    tramo = tipos[i].size ? 0 : tramo + 1;
+    if (visibles.length >= 12 && tramo === 4) avisos.push(`4 láminas seguidas sin capa roja (hasta la lámina ${i+1}): añade subrayado, llave o flecha; una nota gris o tabla no cuentan (ESTILO §5)`);
+  });
   deck.laminas.forEach((l, i) => {
     const t = textos(l).join(' ');
     const precio = l.precio || /^(?:precio|inversi[oó]n|pago)(?:-|$)/i.test(l.id || '') || (!['chat', 'tabla', 'reparto', 'meses', 'cuadrantes'].includes(l.tipo) && /\[\[?PRECIO\]?\]|\{\{PRECIO\}\}|(?:cuesta|precio|inversi[oó]n)\s*[:：]?\s*(?:\$|\[)/i.test(t));

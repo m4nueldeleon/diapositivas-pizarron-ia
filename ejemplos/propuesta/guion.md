@@ -14,15 +14,17 @@ QA deja el deck en BORRADOR y los lista al entregar. **Nunca «Pongamos que cada
 
 | # | Bloque (ARCOS.md) | Láminas | Qué enseña |
 |---|---|---|---|
-| — | Portada y temario | 1-2 | el nombre del cliente desde `{{CLIENTE}}` y los tres temas de la junta |
-| 1 | **Diagnóstico con sus números** | 3-5 | `cifra` con `fuente: "Llamada de diagnóstico"` y los números como `{{…}}`; el dolor con sus palabras |
+| — | Portada y escena del problema | 1-2 | menos chats sin respuesta para el cliente y un comprador que espera la cotización mientras su vendedor busca el precio |
+| 1 | **Lo que les pasa hoy, con sus números** | 3-5 | `cifra` con `fuente: "Llamada de diagnóstico"` y los números como `{{…}}`; el dolor con sus palabras |
 | 2 | **Costo de no hacer nada** | 6-7 | `{{HORAS_MES}} h × {{COSTO_HORA}}`: el ancla de la inversión, en la misma unidad y periodo |
 | 3 | Solución y cómo funciona | 8-14 | el mapa 1-2-3 que vuelve con `como` y el titular de su bloque en `texto` (un regreso vacío tras una o dos láminas es un vaivén: ARCOS «Las plantillas»), la demostración en `chat`, el `flujo` y lo que se mide (`tarjetas`) |
 | 4 | **Quién la imparte y un caso** | 15-16 | «Más de {{EMPRESAS}} empresas desde {{DESDE}}» y un caso parecido con `fuente` ({{FUENTE_CASO}}) |
 | 5 | Metas medibles | 17-18 | de {{HOY}} a {{META}}, medido en la semana 4, y la `linea-tiempo` de 8 semanas |
-| 6 | **Alcance** | 19-20 | `lista` «Incluye:» y `lista` «No incluye:» (evita el malentendido al firmar) |
-| 7 | **Inversión anclada** | 21 | `cifra`: el costo de no hacer nada arriba, chico y gris; `{{PRECIO}}` grande |
-| 8 | Condición de salida | 22 | 🛡️ con la semana y la condición medible («si no hay avance, cancelan») |
-| 9 | **Siguiente paso con fecha y vigencia** | 23-25 | la pregunta 🤔 para conversar, el `flujo` Firman → Agendamos → Arrancamos con `"llamado": true` y la fecha con «Vigente hasta {{VIGENCIA}}» |
+| 6 | **Alcance y participantes** | 19-21 | multitud con `{{VENDEDORES}}`, `lista` «Incluye:» y `lista` «No incluye:» (evita el malentendido al firmar) |
+| 7 | **Inversión anclada** | 22 | `cifra`: el costo de no hacer nada arriba, chico y gris; `{{PRECIO}}` grande |
+| 8 | Condición de salida | 23 | 🛡️ con la semana y la condición medible («si no hay avance, cancelan») |
+| 9 | **Siguiente paso con fecha y vigencia** | 24-26 | la pregunta 👊 para conversar, el `flujo` Firman → Agendamos → Arrancamos con `"llamado": true` y la fecha con «Vigente hasta {{VIGENCIA}}» |
 
 Antes de mandarla: llena los datos en `"datos"` y corre `node scripts/qa.mjs ejemplos/propuesta --estricto`.
+
+La garantía pendiente no lleva sello: el sello se incorpora solo cuando plazo y condición estén confirmados. Las marcas de costo, llave del problema y óvalo de inversión enseñan la capa roja, además de las notas grises.

@@ -22,7 +22,9 @@ const CLAVE_VALIDA = /^[A-ZÁÉÍÓÚÑÜ0-9_][A-ZÁÉÍÓÚÑÜ0-9 _-]{0,30}$/;
 // Campos que no son texto visible ni voz: ahí nunca se sustituye
 const INTACTOS = new Set(['tipo', 'id', 'src', 'imagen', 'logo']);
 // Datos que nunca se proponen: se confirman con quien vende o quedan como hueco
-export const NO_PROPONIBLE = /PRECIO|GARANT|CUPO|FECHA|L[IÍ]MITE|DESCUENTO|BONO|TESTIMONI|RESULTAD|CASO|ENTREGABLE/;
+export const NO_PROPONIBLE = /PRECIO|GARANT|CUPO|FECHA|L[IÍ]MITE|DESCUENTO|BONO|TESTIMONI|RESULTAD|CASO|ENTREGABLE|A[NÑ]OS|EXPERIENCIA|CLIENTES|ALUMNOS|EVENTOS|VENTAS|FACTURA|GANANCIA|INGRES|MIEMBROS|SEGUIDORES|PROMEDIO/;
+export const TIPOS_DATO = ['credibilidad', 'resultado', 'precio', 'proceso', 'nombre'];
+const TIPOS_NO_PROPONIBLES = new Set(['credibilidad', 'resultado', 'precio']);
 const esValor = v => (typeof v === 'string' && v.trim() !== '') || (typeof v === 'number' && Number.isFinite(v));
 const esPropuesta = v => v && typeof v === 'object' && !Array.isArray(v) && v.pendiente !== true;
 const esPendiente = v => v && typeof v === 'object' && !Array.isArray(v) && v.pendiente === true;
@@ -34,6 +36,11 @@ export function validarDatos(datos) {
   const e = [];
   for (const [k, v] of Object.entries(datos)) {
     if (!CLAVE_VALIDA.test(k)) e.push(`datos: la clave «${k}» va en MAYÚSCULAS (letras, números, _ o -), como {{PRECIO}}`);
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      if (v.tipo != null && !TIPOS_DATO.includes(v.tipo)) e.push(`datos.${k}: tipo debe ser ${TIPOS_DATO.join('|')}`);
+      if (v.fuente != null && !(typeof v.fuente === 'string' && v.fuente.trim())) e.push(`datos.${k}: fuente debe ser texto no vacío`);
+    }
+    if (k === 'QUIEN_ENTREGA' && !esPendiente(v) && !['yo', 'equipo', 'asesor'].includes(esPropuesta(v) ? v.valor : v)) e.push('datos.QUIEN_ENTREGA: usa yo|equipo|asesor');
     if (esPendiente(v)) {
       if (v.muestra != null && !(typeof v.muestra === 'string' && v.muestra.length <= 120)) e.push(`datos.${k}: muestra debe ser texto de hasta 120 caracteres`);
       if (!(typeof v.motivo === 'string' && v.motivo.trim())) e.push(`datos.${k}: un hueco a propósito dice por qué: { "pendiente": true, "motivo": "lo define dirección" }`);
@@ -43,7 +50,7 @@ export function validarDatos(datos) {
     } else if (esPropuesta(v)) {
       if (!esValor(v.valor)) e.push(`datos.${k}: el objeto lleva "valor" (texto o número): { "valor": "30 minutos", "propuesto": true }`);
       if (v.propuesto != null && typeof v.propuesto !== 'boolean') e.push(`datos.${k}: "propuesto" es true o false`);
-      else if (v.propuesto === true && NO_PROPONIBLE.test(k)) e.push(`datos.${k}: precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios y resultados no se proponen; déjalo como {{${k}}} (hueco) hasta confirmarlo`);
+      else if (v.propuesto === true && (NO_PROPONIBLE.test(k) || TIPOS_NO_PROPONIBLES.has(v.tipo))) e.push(`datos.${k}: precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios, credibilidad y resultados no se proponen; déjalo como {{${k}}} (hueco) hasta confirmarlo`);
     } else if (!(typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v)))) e.push(`datos.${k}: el valor debe ser texto o número (o { "valor", "propuesto": true })`);
   }
   return e;
@@ -57,7 +64,7 @@ export function sustituirDatos(deck) {
   const valor = (clave, lamina) => {
     const d = datos[clave];
     if (esPendiente(d)) {
-      if (lamina != null) (declarados[clave] = declarados[clave] || { motivo: String(d.motivo || '').trim(), laminas: new Set() }).laminas.add(lamina + 1);
+      if (lamina != null) (declarados[clave] = declarados[clave] || { motivo: String(d.motivo || '').trim(), ...(d.fuente ? { fuente: d.fuente } : {}), laminas: new Set() }).laminas.add(lamina + 1);
       return `[${clave}]`;
     }
     const propuesto = esPropuesta(d) && d.propuesto === true;
@@ -80,6 +87,7 @@ export function sustituirDatos(deck) {
   const laminas = Array.isArray(deck.laminas) ? deck.laminas.map((l, i) => recorrer(l, i, null)) : deck.laminas;
   const titulo = typeof deck.titulo === 'string' ? recorrer(deck.titulo, null, 'titulo') : deck.titulo;
   const lista = o => Object.fromEntries(Object.entries(o).map(([k, s]) => [k, [...s]]));
-  const decl = Object.fromEntries(Object.entries(declarados).map(([k, d]) => [k, { motivo: d.motivo, laminas: [...d.laminas] }]));
-  return { deck: { ...deck, titulo, laminas }, faltan: lista(faltan), propuestos: lista(propuestos), declarados: decl };
+  const decl = Object.fromEntries(Object.entries(declarados).map(([k, d]) => [k, { motivo: d.motivo, ...(d.fuente ? { fuente: d.fuente } : {}), laminas: [...d.laminas] }]));
+  const fuentes = Object.fromEntries(Object.entries(datos).filter(([, d]) => esPropuesta(d) && d.propuesto !== true && esValor(d.valor) && typeof d.fuente === 'string' && d.fuente.trim()).map(([k, d]) => [k, d.fuente.trim()]));
+  return { fuentes, deck: { ...deck, titulo, laminas }, faltan: lista(faltan), propuestos: lista(propuestos), declarados: decl };
 }

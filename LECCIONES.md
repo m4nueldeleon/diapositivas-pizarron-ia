@@ -194,3 +194,8 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 ## 2026-09-24 · Estilo e íconos: recetas de una conferencia real (ronda 7)
 
 - **Regla:** el sello libre remata cerca y centrado bajo el bloque, con margen y firma protegidos; la ✅ afirma inclusión o algo hecho, mientras planes y pendientes llevan números o su emoji literal. El tramo en vivo conserva tres niveles: reloj de segmentos, consigna e ítems espaciados. Los prompts seguidos comparten tarjeta sin borde. Los íconos pendientes mantienen su color y un piso de 35 %, separado de la etiqueta. Un término propio puede volver como figura negra con rótulo estable; el óvalo encierra hasta cuatro palabras sin invadir otro renglón. Cada sección se abre con el mapa que vuelve, sin eyebrow. Los modelos enseñan la transformación por pasos con sello, tachón, círculo y llave, conservando los datos pendientes y el arco. Se generalizan los aprendizajes sin incorporar nombres, cifras ni materiales del evento.
+
+## 2026-09-24 · El modelo plano produce decks planos
+- **Regla**: los modelos alternan golpes fuertes (sello confirmado, tachón, llave, anotación con flecha, óvalo, objeto y escala), no solo listas e ideas. Un golpe cada 4-6 láminas y ~3-4 en el momento clave, un énfasis por lámina.
+- **Porqué**: quien copia un modelo copia su ritmo; cambiar el texto de una sucesión de listas conserva la monotonía. La nota gris no sustituye una marca roja.
+- **Verificación**: QA cuenta golpes y capa roja desde el deck, también sin navegador; los datos todavía sin confirmar permanecen como huecos, sin sello de garantía.

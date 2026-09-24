@@ -61,7 +61,7 @@ test('QA de texto nunca lanza Chromium, nunca entrega listo y conserva el QA vis
     assert.equal(q.medido, false);
     assert.equal(q.estado, 'sin-medir');
     assert.equal(q.nota_es_provisional, true);
-    assert.deepEqual(q.comprobaciones_visuales_pendientes, ['contraste', 'desbordes', 'capa a mano', 'emojis', 'hoja']);
+    assert.deepEqual(q.comprobaciones_visuales_pendientes, ['contraste', 'desbordes', 'geometría de la capa a mano', 'emojis', 'hoja']);
     assert.ok(q.ritmo && q.arco);
     assert.match(r.stdout, /Faltan las medidas visuales/);
     assert.equal(fs.readFileSync(path.join(salida, 'qa.json'), 'utf8'), 'medición previa');

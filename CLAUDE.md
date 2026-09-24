@@ -97,7 +97,8 @@ SKILL.md.
 - `reglas-marcas.mjs` contiene las reglas puras de óvalo, escala temporal e iconos; `medidas-trazos.mjs` las comprobaciones de geometría inyectadas en QA. `mano-html.mjs` estima la tinta del HTML en QA sin navegador.
 - Credenciales: `leerCredenciales` lee MI-MARCA; `credibilidadConfirmada` comprueba cada cifra contra su marcador, fuente o ficha. La firma de relleno se omite y queda como FIRMA por confirmar.
 - `reglasDeckCompleto` comparte la composición entre ambos QA; las aceptaciones de avisos requieren motivo y respetan el alcance de láminas. Los pendientes se acumulan en todos los pasos y se unen con los estructurales.
-- Réplica vieja: `evidenciaReplica.laminas_dir` gobierna las rutas de PNG, pasos y hojas. `video.mjs` recaptura HTML; no consume esa carpeta. Pruebas de esta ronda: `motor-r7.test.mjs`, `qa-r7.test.mjs` y `ejemplos-render.test.mjs` (omiten Chromium solo cuando no arranca).
+- Réplica vieja: `evidenciaReplica.laminas_dir` gobierna las rutas de PNG, pasos y hojas. `video.mjs` recaptura HTML; no consume esa carpeta. Pruebas de esta ronda: `motor-r7.test.mjs`, `qa-r7.test.mjs`, `ejemplos-render.test.mjs` (omiten Chromium solo cuando no arranca), `golpes-columnas-r7.test.mjs`, `conocimiento-datos-r7.test.mjs` e `inventario-conceptos-r7.test.mjs`.
+- Golpes y capa roja: `reglas-arco.mjs → golpesDeck/reglasGolpes` (qa.json → `arco.golpes`) y `reglas-marcas.mjs → tiposRojos` cuentan desde el deck, también sin navegador; la nota gris y la tabla no son capa roja. `reglas-deck.mjs` suma dato anunciado como faltante, quién entrega, atribución de revista y la apertura de la propuesta. La ficha de reglas del cliente reutiliza `avisos_aceptados` (`contrato-superficies.mjs → REGLAS_NEGOCIABLES`).
 
 ## Reglas de mantenimiento
 1. **Un diseño nuevo exige cinco cosas**:

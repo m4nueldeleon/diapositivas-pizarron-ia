@@ -15,7 +15,7 @@ for (const s of [process.stdout, process.stderr]) s.on('error', e => { if (e.cod
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--pdf-pasos', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa', '--sin-navegador']);
+const BOOLEANAS = new Set(['--forzar', '--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--pdf-pasos', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa', '--sin-navegador']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);
@@ -39,7 +39,7 @@ export function leerDeck(entrada) {
 // Un deck SIN «marca» (ausente, no `false`) toma la firma de la ficha MI-MARCA.md (marca.mjs: carpeta del deck → la de
 // arriba → $PIZARRON_MARCA → ~/.config/diapositivas-pizarron-ia/MI-MARCA.md). `crudo` sigue siendo el deck.json tal cual;
 // `firmaDe` dice de qué ficha salió la firma (render y QA lo imprimen).
-export function prepararSalida(entrada, salida) {
+export function prepararSalida(entrada, salida, { forzar = false } = {}) {
   const { deck: leido, jsonPath, dirDeck } = leerDeck(entrada);
   const dirSalida = path.resolve(salida || path.join(dirDeck, 'salida'));
   const f = firmaParaDeck(leido, dirDeck);
@@ -52,7 +52,7 @@ export function prepararSalida(entrada, salida) {
   fs.writeFileSync(htmlPath, r.html);
   // `crudo`: el deck.json con los `como` ya resueltos, antes de sustituir `datos` (las reglas leen de ahí los {{MARCADORES}})
   return { ...r, credenciales: buscarMarca(dirDeck)?.credenciales || [], crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
-    evidencia: evidenciaReplica(leido, jsonPath, fs.readFileSync(jsonPath)), avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
+    evidencia: evidenciaReplica(leido, jsonPath, fs.readFileSync(jsonPath), { forzar }), avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
 }
 
 // Un deck cuyas láminas son TODAS «r<seg>», sin `_cuadro` y fuera de pruebas/replica parece la réplica vieja de
@@ -77,9 +77,9 @@ export async function abrir(htmlPath, W, H, { escala = 1, modo = 'render' } = {}
 }
 
 // La huella se calcula sobre los bytes del archivo, antes de sanear o sustituir datos.
-export function evidenciaReplica(deck, jsonPath, contenido = JSON.stringify(deck)) {
+export function evidenciaReplica(deck, jsonPath, contenido = JSON.stringify(deck), { forzar = false } = {}) {
   const deck_sha = crypto.createHash('sha256').update(contenido).digest('hex').slice(0, 12);
-  const invalido = Boolean(avisoReplica(deck, jsonPath));
+  const invalido = !forzar && Boolean(avisoReplica(deck, jsonPath));
   return { invalido, deck_sha, laminas_dir: invalido ? 'laminas-NO-VALE' : 'laminas', sello: invalido ? `NO VALE · réplica vieja · sha ${deck_sha}` : '' };
 }
 
