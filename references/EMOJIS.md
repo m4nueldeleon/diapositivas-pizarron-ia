@@ -148,7 +148,7 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 |---|---|---|
 | curso, programa, certificación | 🎓 | |
 | alumno | 🧑‍🎓 | 🧑‍💻 es «tú» |
-| tarea, ejercicio | 📋 | |
+| tarea, ejercicio, práctica | 📋 | |
 | examen, evaluación | 💯 | 📝 ya es «escribir, plan» |
 | certificado | 📜 | |
 | recursos, material | 📚 | |

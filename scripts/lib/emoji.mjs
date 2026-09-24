@@ -454,7 +454,7 @@ export const esMano = e => MANO_EMOJI.test(String(e || '').replace(/^(no|si):/, 
 // Todo campo que se dibuja como ícono: `emoji`, `iconos`, la viñeta de una lista, los avatares del chat, `sobre`
 // y `centro`, y los `emoji_*` que no son un tamaño, un lado o un paso. La viñeta acepta alias (x, no, check, si).
 export const NO_EMOJI = ['emoji_tam', 'emoji_lado', 'emoji_paso'];
-export const ALIAS_VINETA = { x: '❌', no: '❌', check: '✅', si: '✅' };
+export const ALIAS_VINETA = { x: '❌', cruz: '❌', no: '❌', check: '✅', si: '✅' };
 const CAMPOS_EMOJI = new Set(['emoji', 'iconos', 'vineta', 'avatar', 'avatar_yo', 'avatar_otro', 'sobre', 'centro']);
 export const esCampoEmoji = k => typeof k === 'string' && (CAMPOS_EMOJI.has(k) || (k.startsWith('emoji_') && !NO_EMOJI.includes(k)));
 // Los textos de emoji de un campo (lista si es lista, alias de viñeta ya traducidos); [] si no es un campo de emoji

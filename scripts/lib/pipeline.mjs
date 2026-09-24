@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { construirHTML } from './construir.mjs';
 import { cargarPlaywright } from './playwright.mjs';
-import { firmaParaDeck, datosParaDeck } from './marca.mjs';
+import { firmaParaDeck, datosParaDeck, buscarMarca } from './marca.mjs';
 
 // Si el lector de la tubería se va («render.mjs … | head -1»), escribir en stdout daba EPIPE y el proceso moría a
 // media escritura (con hojas.json apuntando a hojas ya borradas). render, qa y video importan este módulo: aquí se
@@ -51,7 +51,7 @@ export function prepararSalida(entrada, salida) {
   const htmlPath = path.join(dirSalida, 'index.html');
   fs.writeFileSync(htmlPath, r.html);
   // `crudo`: el deck.json con los `como` ya resueltos, antes de sustituir `datos` (las reglas leen de ahí los {{MARCADORES}})
-  return { ...r, crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
+  return { ...r, credenciales: buscarMarca(dirDeck)?.credenciales || [], crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
     evidencia: evidenciaReplica(leido, jsonPath, fs.readFileSync(jsonPath)), avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
 }
 
@@ -80,7 +80,7 @@ export async function abrir(htmlPath, W, H, { escala = 1, modo = 'render' } = {}
 export function evidenciaReplica(deck, jsonPath, contenido = JSON.stringify(deck)) {
   const deck_sha = crypto.createHash('sha256').update(contenido).digest('hex').slice(0, 12);
   const invalido = Boolean(avisoReplica(deck, jsonPath));
-  return { invalido, deck_sha, sello: invalido ? `NO VALE · réplica vieja · sha ${deck_sha}` : '' };
+  return { invalido, deck_sha, laminas_dir: invalido ? 'laminas-NO-VALE' : 'laminas', sello: invalido ? `NO VALE · réplica vieja · sha ${deck_sha}` : '' };
 }
 
 export class ErrorNavegador extends Error {

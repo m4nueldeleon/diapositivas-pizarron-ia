@@ -1,5 +1,5 @@
 // Sincronía entre lo que entra en pantalla y la voz: reglas puras sobre el mapa real del motor.
-import { plano } from './markup.mjs';
+import { plano, sinCitas } from './markup.mjs';
 
 const normal = t => plano(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const nombre = (l, i) => `lámina ${i + 1} (${l.id || l.tipo})`;
@@ -106,7 +106,7 @@ const SINGULAR = /\b(tu|tus|te|ti|contigo|tomalo|escanealo|llevate|grabate)\b/;
 // Lista explícita: nunca inferimos ustedes por una terminación -an/-en ni por su/sus/son/van.
 const PLURAL = /\b(ustedes|miren|imaginen|anoten|levanten|escriban|hagan|tomenlo|tomenle|grabense|llevense)\b|\bles (dejo|pido|propongo|muestro|recomiendo|invito|comparto|digo)\b/;
 const personaDe = (t, excepciones) => {
-  const s = excepciones.reduce((texto, frase) => texto.replace(new RegExp(`(?<![a-z0-9])${frase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`, 'g'), ''), normal(String(t || '').replace(/«[^»]*»/g, '')));
+  const s = excepciones.reduce((texto, frase) => texto.replace(new RegExp(`(?<![a-z0-9])${frase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`, 'g'), ''), normal(sinCitas(t)));
   return { tu: SINGULAR.test(s), ustedes: PLURAL.test(s) };
 };
 export const infoPersona = deck => !deck.persona && deck.en_vivo !== true

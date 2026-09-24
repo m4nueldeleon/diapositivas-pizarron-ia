@@ -69,7 +69,8 @@ const soloFinales = flag('--finales');
 // Primero arranca Chromium. Los archivos anteriores sobreviven a cualquier fallo de captura.
 const { browser, page, errores, avisos } = await abrir(htmlPath, W, H, { escala });
 const temporal = fs.mkdtempSync(path.join(dirSalida, '.render-'));
-const dirPng = path.join(temporal, 'laminas');
+const laminasDir = prep.evidencia.laminas_dir, prefijoPng = prep.evidencia.invalido ? 'NO-VALE-' : '';
+const dirPng = path.join(temporal, laminasDir);
 fs.mkdirSync(dirPng, { recursive: true });
 try {
 avisos.forEach(a => console.warn('⚠ ' + a));
@@ -78,14 +79,14 @@ const lams = await page.$$('section.lamina');
 for (let i = 0; i < lams.length; i++) {
   const l = deck.laminas[i];
   const n = await page.evaluate(k => window.PZ.pasos(window.PZ.lams[k]), i);
-  if (l.tipo === 'camara' && l.vivo !== true) { manifiesto.push({ lamina: i, id: l.id || 'camara', tipo: 'camara', paso: 0, pasos: 1, archivo: null }); continue; }
+  if (l.tipo === 'camara' && l.vivo !== true) { manifiesto.push({ lamina: i, id: l.id || 'camara', tipo: 'camara', paso: 0, pasos: 1, laminas_dir: laminasDir, archivo: null }); continue; }
   // Tramo en vivo: se captura lo que ve el público (la consigna con su reloj congelado en `dur`), no un cuadro gris
   if (l.tipo === 'camara') {
-    const nombre = `${String(i + 1).padStart(2, '0')}-${String(l.id || 'vivo').replace(/[^\w-]/g, '') || 'vivo'}-1.png`;
+    const nombre = `${prefijoPng}${String(i + 1).padStart(2, '0')}-${String(l.id || 'vivo').replace(/[^\w-]/g, '') || 'vivo'}-1.png`;
     await page.evaluate(k => window.PZ.lams[k].classList.add('captura-vivo'), i);
     await lams[i].screenshot({ path: path.join(dirPng, nombre), type: 'png' });
     await page.evaluate(k => window.PZ.lams[k].classList.remove('captura-vivo'), i);
-    manifiesto.push({ lamina: i, id: l.id || 'vivo', tipo: 'camara', vivo: true, dur: duracionVivo(l), paso: 0, pasos: 1, archivo: `laminas/${nombre}`, revela: ['consigna en vivo'] });
+    manifiesto.push({ lamina: i, id: l.id || 'vivo', tipo: 'camara', vivo: true, dur: duracionVivo(l), paso: 0, pasos: 1, laminas_dir: laminasDir, archivo: `${laminasDir}/${nombre}`, revela: ['consigna en vivo'] });
     continue;
   }
   // pasos clave: un layout cuyo cierre tapa lo anterior (stack a sangre + remate) marca data-clave-paso
@@ -94,13 +95,13 @@ for (let i = 0; i < lams.length; i++) {
   for (let p = 0; p < n; p++) {
     if (soloFinales && p < n - 1 && !claves.has(p)) continue;
     await page.evaluate(([k, q]) => window.PZ.mostrar(window.PZ.lams[k], q, Infinity), [i, p]);
-    const nombre = `${String(i + 1).padStart(2, '0')}-${String(l.id || l.tipo).replace(/[^\w-]/g, '') || 'lamina'}-${p + 1}.png`;
+    const nombre = `${prefijoPng}${String(i + 1).padStart(2, '0')}-${String(l.id || l.tipo).replace(/[^\w-]/g, '') || 'lamina'}-${p + 1}.png`;
     await lams[i].screenshot({ path: path.join(dirPng, nombre), type: 'png' });
-    manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}`, revela: (revela[i] || [])[p] || [], ...(claves.has(p) ? { clave: true } : {}) });
+    manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, laminas_dir: laminasDir, archivo: `${laminasDir}/${nombre}`, revela: (revela[i] || [])[p] || [], ...(claves.has(p) ? { clave: true } : {}) });
   }
 }
 fs.writeFileSync(path.join(temporal, 'pasos.json'), JSON.stringify(manifiesto, null, 2));
-console.log(`PNG → ${path.join(dirSalida, 'laminas')} (${manifiesto.filter(m => m.archivo).length} imágenes de ${lams.length} láminas)`);
+console.log(`PNG → ${path.join(dirSalida, laminasDir)} (${manifiesto.filter(m => m.archivo).length} imágenes de ${lams.length} láminas)`);
 
 // Captura de una hoja de contacto (HTML temporal junto a los PNG)
 async function capturar(html, ancho, destino) {
@@ -113,11 +114,12 @@ async function capturar(html, ancho, destino) {
   fs.unlinkSync(hp);
   console.log(`Hoja → ${path.join(dirSalida, path.basename(destino))}`);
 }
+if (prep.evidencia.invalido) console.warn('⚠ láminas NO VALE: la fidelidad se mide con node scripts/comparar.mjs <carpeta-ref>');
 const cuadros = cuadrosHoja(manifiesto);
 // El manifiesto se prepara junto a las capturas nuevas y se publica al terminar todas las hojas.
 const hojasJson = path.join(temporal, 'hojas.json');
 if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
-  const hojas = { hojas: [], pasos: [], invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha };
+  const hojas = { laminas_dir: laminasDir, hojas: [], pasos: [], invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha };
   const total = deck.laminas.length;
   const paginas = paginar(cuadros, POR_HOJA);
   for (let k = 0; k < paginas.length; k++) {
@@ -144,7 +146,7 @@ if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
 }
 
 // Publica únicamente después de capturar todas las hojas y todos los pasos.
-fs.readdirSync(dirSalida).filter(f => f === 'laminas' || f === 'pasos.json' || f === 'hojas.json' || /^hoja(-pasos)?(-\d+)?\.jpg$/.test(f))
+fs.readdirSync(dirSalida).filter(f => f === 'laminas' || f === 'laminas-NO-VALE' || f === 'pasos.json' || f === 'hojas.json' || /^hoja(-pasos)?(-\d+)?\.jpg$/.test(f))
   .forEach(f => fs.rmSync(path.join(dirSalida, f), { recursive: true, force: true }));
 for (const archivo of fs.readdirSync(temporal)) fs.renameSync(path.join(temporal, archivo), path.join(dirSalida, archivo));
 } catch (error) {

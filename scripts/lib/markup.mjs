@@ -4,6 +4,7 @@
 //   __subrayado__      negrita + subrayado rojo a mano
 //   ==resaltado==      negrita + resaltador amarillo
 //   ~~tachado~~        tachón rojo a mano
+//   ((cifra))         óvalo a mano sobre una palabra o cifra; ancla fija «ovalo»
 //   *cursiva*          la voz de otro: una objeción, lo que piensa el cliente [17:25]
 //   ^^remate^^         el remate en su propio renglón, en negrita y ~1.5× la entrada [18:30]
 //   {v:texto}          color semántico: v verde · r rojo · n naranja · g gris · a azul · k negro · o dorado
@@ -37,6 +38,7 @@ export function marcar(texto) {
   // el sufijo va antes que el tono: «{v:$50k{s:/año}}» deja el sufijo dentro del verde
   h = h.replace(/\{s:([^{}]+?)\}/g, '<span class="sufijo">$1</span>');
   h = h.replace(/\{([vrngako]):([^{}]+?)\}/g, (m, t, x) => (TONOS.has(t) ? `<span class="tono-${t}">${x}</span>` : m));
+  h = h.replace(/\(\(([\s\S]*?)\)\)/g, (_, x) => x.trim() ? `<b class="circ" data-circulo="linea" data-a="ovalo">${x}</b>` : '');
   // [\s\S] y no «.»: una marca puede cruzar un salto de línea real (el \n de un deck.json). El salto
   // se vuelve <br> al final, así queda DENTRO de <b>, <s> o <mark>.
   h = h.replace(/\[\[([\s\S]+?)\]\]/g, '<span class="mano">$1</span>');
@@ -66,7 +68,7 @@ export function plano(texto) {
   return String(texto ?? '')
     .replace(/\{s:([^{}]+?)\}/g, '$1')   // el sufijo puede ir dentro de un tono: primero el de adentro
     .replace(/\{[vrngakos]:([^{}]+?)\}/g, '$1')
-    .replace(/\[\[|\]\]|__|==|~~|\*\*|\^\^/g, '')
+    .replace(/\[\[|\]\]|__|==|~~|\*\*|\^\^|\(\(|\)\)/g, '')
     .replace(/(^|[^*\w])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![*\w])/g, '$1$2')
     .replace(/\\n|\n/g, ' ')
     .replace(/\s+/g, ' ')
@@ -102,3 +104,5 @@ export function enfasis(texto) {
 // Marcas que quedaron sin convertir en el texto que se VE (una marca sin cerrar, o partida). La usa qa.mjs
 // dentro del navegador: por eso es una cadena de regex y no una RegExp compartida.
 export const MARCA_LITERAL = String.raw`\*\*|~~|__|\^\^|\[\[|\]\]|==\S[\s\S]*?==|\{[vrngakos]:`;
+
+export const sinCitas = s => String(s || '').replace(/«[^»]*»|“[^”]*”|"[^"]*"/g, '');

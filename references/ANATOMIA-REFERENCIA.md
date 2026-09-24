@@ -97,7 +97,7 @@ Colores muestreados:
 | 18:25 | Documento 📝 + flecha roja curva + promesa manuscrita | `cita` |
 | 18:30 | «Monetisation Gameplan.» subrayado | `idea` |
 | 18:50 | Checklist ✅ de lo que incluye | `lista` |
-| 19:00 | Una decena de respuestas grises: «Yes, I'm down» | `chat` |
+| 19:00 | Muro de respuestas grises (ejemplo inventado: «Ya quedó») | `chat` + variante `muro` |
 | 20:00-27:40 | Grabación de pantalla con la cara en círculo abajo a la izquierda | fuera del alcance: tu editor |
 | 23:15 | Botón «Generate 🤖» + cursor de mano | `boton` |
 | 28:00 | Step 1 ✅ Step 2 ✅ Step 3 Launch | `pasos` + `hechos` |
@@ -118,6 +118,7 @@ Colores muestreados:
 | 40:15-40:50 | «They will:» — lista en blanco que crece renglón por renglón | `lista` |
 | 41:00 · 41:35 | Pregunta de sí después de cada componente: 🤔 «Can you see how…» / «How much easier…» | `idea` |
 | 41:10 · 41:40 | Componentes numerados «#4» y «#5», en blanco | `idea` |
+| 41:25-41:30 | Agenda de semanas y días, series azules y verdes por paso | `agenda` |
 | 41:15-41:20 | Una tarjeta «Expert» (Caveat arriba) + «4 live consulting calls with experts for 6 months.» | `llamada` |
 | 42:00 | Muro de capturas reales de resultados | `prueba` |
 | 42:30-42:45 | Bento de valor que se llena pieza por pieza | `stack` |
@@ -127,7 +128,7 @@ Colores muestreados:
 | 43:30 | «Waitlist months long» | `idea` |
 | 43:35 · 44:30 | Flecha roja al link (sobre una captura real, no sobre fondo oscuro de plantilla); el link sale dos veces | `prueba` + flecha, o `boton` |
 | 43:40 | «2 minutes»: cuánto tarda aplicar | `idea` ⏱️ |
-| 43:50 | La invitación de calendario: qué pasa después del clic | `calendario` o `prueba` |
+| 43:50 | Invitación azul con hora y botón blanco | `boton` variante `invitacion` |
 | 44:05 | «If it's not, we'll point you in the right direction»: la salida honesta (la referencia no muestra emoji propio aquí; la skill usa 🧭, «orientación», EMOJIS.md) | `idea` 🧭 |
 | 44:20-44:25 | Resumen del stack | `lista` |
 | 44:35-44:40 | Por qué ahora y cierre de identidad; 44:45 a cámara | `idea`, luego `camara` |

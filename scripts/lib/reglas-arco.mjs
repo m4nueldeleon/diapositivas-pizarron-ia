@@ -37,17 +37,21 @@ export function reglasRetornoMapa(deck, pasos) {
   const L = deck.laminas, t = tiemposSecuenciales(deck, pasos);
   const inicio = i => (t.find(s => s.lamina === i) || { inicio: 0 }).inicio;
   const fin = i => { const s = t.filter(x => x.lamina === i); return s.length ? s[s.length - 1].fin : inicio(i); };
-  const seguidos = [], vaivenes = [];
+  const seguidos = [], vaivenes = [], sinContenido = [];
   for (const g of gruposDeMapa(deck)) {
     for (let k = 1; k < g.length; k++) {
       const a = g[k - 1], b = g[k];
-      if (b === a + 1) { seguidos.push(b); continue; }
+      if (b === a + 1) {
+        if ((L[a].activo || 0) === (L[b].activo || 0) && plano(L[a].texto) === plano(L[b].texto)) seguidos.push(b);
+        else if ((L[b].activo || 0) > (L[a].activo || 0)) sinContenido.push(b);
+        continue;
+      }
       if (conTexto(plano(String(L[b].texto || '')))) continue;
       const entre = L.slice(a + 1, b).length, s = Math.max(0, inicio(b) - fin(a));
       if (s < BLOQUE_MAPA.segundos || (entre < BLOQUE_MAPA.laminas && s < BLOQUE_MAPA.segundosConPocas)) vaivenes.push({ b, entre, s });
     }
   }
-  const avisos = [];
+  const avisos = sinContenido.map(b => `${nombre(deck,b)}: el paso ${L[b].activo} no tiene contenido: el mapa avanza sin lámina entre medio; mete al menos una lámina del bloque o une los dos mapas`);
   if (seguidos.length) avisos.push(`mapa repetido seguido (lámina ${seguidos.map(b => `${b} → ${b + 1}`).join(', ')}): es la misma lámina dos veces; pon \`activo: 1\` en el primero y quita el segundo (ARCOS «Las plantillas», GUION §5)`);
   if (vaivenes.length) avisos.push(`el mapa vuelve sin nada nuevo en ${vaivenes.map(v => `la ${nombre(deck, v.b)} (${v.entre} ${v.entre === 1 ? 'lámina' : 'láminas'}, ~${Math.round(v.s)} s desde el anterior)`).join(', ')}: mete el titular del bloque en el \`texto\` del mapa (como el reel) o quita el regreso y marca el avance con una nota «Paso N de 3»; el regreso sin texto es para bloques de 3 láminas o 20 s de voz o más, como los de minutos de la referencia [16:35 → 23:08] (ARCOS «Las plantillas», GUION §5)`);
   return { errores: [], avisos };

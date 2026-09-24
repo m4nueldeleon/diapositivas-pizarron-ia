@@ -42,7 +42,7 @@ SKILL.md.
   qa.mjs lo imprime con `lineaArco`). Pruebas en `pruebas/arco-r5.test.mjs`. `render.mjs --qa` corre QA al terminar.
 - `scripts/lib/reglas-venta.mjs`: tasas sin origen, promesas sin descargo visible y el cierre de una clase (tarea +
   puente con su DATO: cuándo o cómo se entra; sin él, `por_confirmar.PUENTE`); reglas-deck.mjs las re-exporta y las suma
-  en `revisarDeck`. `estadoQA` (reglas-deck) fija el orden del estado: con errores → borrador → bajo-90 → falta-venta → listo.
+  en `revisarDeck`. `estadoQA` (reglas-deck) fija el orden del estado: con errores → borrador → bajo-90 → avisos-pendientes → falta-venta → listo.
 - El fondo del `foco` copia en runtime (copiarExtrasAlClon) el sello y las anotaciones YA colocados de la lámina anterior:
   preparar() arma primero las láminas normales y después los focos.
 - `scripts/lib/marca.mjs`: la ficha MI-MARCA.md (firma y palabras vetadas) con UNA cadena de búsqueda (carpeta del
@@ -92,6 +92,12 @@ SKILL.md.
 - `references/EMOJIS.md` es la única fuente de verdad de los emojis. `pruebas/emojis-coherencia.test.mjs` falla
   si un emoji queda en dos filas de concepto, si otro documento cita un emoji que no está en el diccionario o
   si un sustituto de `BAJO_CONTRASTE` cambia de concepto. Los grupos de `PARECIDOS` (emoji.mjs) van en su tabla.
+
+- `layouts-interfaces.mjs` dibuja agenda, invitación y contraste; `burbujas.mjs` comparte la burbuja de chat entre muro, celular y foto/captura. Sus límites viven en `contrato-superficies.mjs` y sus campos en `contrato.mjs`.
+- `reglas-marcas.mjs` contiene las reglas puras de óvalo, escala temporal e iconos; `medidas-trazos.mjs` las comprobaciones de geometría inyectadas en QA. `mano-html.mjs` estima la tinta del HTML en QA sin navegador.
+- Credenciales: `leerCredenciales` lee MI-MARCA; `credibilidadConfirmada` comprueba cada cifra contra su marcador, fuente o ficha. La firma de relleno se omite y queda como FIRMA por confirmar.
+- `reglasDeckCompleto` comparte la composición entre ambos QA; las aceptaciones de avisos requieren motivo y respetan el alcance de láminas. Los pendientes se acumulan en todos los pasos y se unen con los estructurales.
+- Réplica vieja: `evidenciaReplica.laminas_dir` gobierna las rutas de PNG, pasos y hojas. `video.mjs` recaptura HTML; no consume esa carpeta. Pruebas de esta ronda: `motor-r7.test.mjs`, `qa-r7.test.mjs` y `ejemplos-render.test.mjs` (omiten Chromium solo cuando no arranca).
 
 ## Reglas de mantenimiento
 1. **Un diseño nuevo exige cinco cosas**:

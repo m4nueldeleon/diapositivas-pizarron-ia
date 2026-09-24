@@ -71,7 +71,7 @@ export function negritasPlanas(lam) {
   const BLOQUE = '.nota, .t, .item, .cifra, .etiqueta, .tarjeta, .burbuja, .rotulo-paso, .b-texto, td, th, .titulo-marca, .opcion, .cal-texto, .cuadro, .post p, .fuente, .llamada-rotulo';
   lam.querySelectorAll('b, strong').forEach(b => {
     // los <b> estructurales (el nombre de la fase del calendario, el dato de la pastilla, el usuario del post) no son énfasis
-    if (b.closest('.escena.clon, svg, mark, [data-sub], .emo, .t-remate, .mayus, .hueco, .calendario, .pastilla, .post .cab') || b.matches('.sub, [data-sub]') || !visible(b)) return;
+    if (b.closest('.escena.clon, svg, mark, [data-sub], .emo, .t-remate, .mayus, .hueco, .calendario, .pastilla, .post .cab') || b.matches('.sub, [data-sub], .circ') || !visible(b)) return;   // el óvalo ((…)) ya es el énfasis: lo marca la elipse
     const padre = b.parentElement; if (!padre) return;
     const cb = getComputedStyle(b), cp = getComputedStyle(padre);
     if (cb.color !== cp.color) return;

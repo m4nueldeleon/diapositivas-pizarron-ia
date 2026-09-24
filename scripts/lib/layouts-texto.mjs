@@ -1,3 +1,5 @@
+import { listaContraste } from './layouts-interfaces.mjs';
+import { mensajesSobre } from './burbujas.mjs';
 // layouts-texto.mjs — diseños de idea, lista, flujo, pasos, bifurcación, cifra, cita, objeto, tarjetas.
 // Cada diseño devuelve el HTML interior del lienzo. Los pasos de revelado se asignan con ctx.P(k):
 // el paso 0 es lo que se ve al cortar a la lámina; cada paso siguiente suma UN elemento.
@@ -65,6 +67,7 @@ export const listaCentrada = l => l.alinear === 'centro' || (l.alinear !== 'izqu
 
 // LISTA — encabezado gris chico + viñetas (❌ ✅ o emoji). Una viñeta por paso.
 export function lista(l, ctx) {
+  if (Array.isArray(l.columnas)) return listaContraste(l,ctx);
   const items = l.items || [];
   const largo = Math.max(0, ...items.map(i => palabras(typeof i === 'string' ? i : i.texto)));
   const px = largo <= 6 ? 72 : largo <= 10 ? 66 : 58;
@@ -81,12 +84,12 @@ export function lista(l, ctx) {
   const mapa = activo || hechos.size;
   const filas = items.map((it, i) => {
     const o = typeof it === 'string' ? { texto: it } : it;
-    const e = l.vineta === 'letras' ? '' : o.emoji || vin[l.vineta] || l.vineta || '';
+    const e = l.vineta === 'letras' ? o.emoji || '' : o.emoji || vin[l.vineta] || l.vineta || '';
     const letra = l.vineta === 'letras' ? `<b class="vineta-letra">${escapar((l.letras || [])[i] || '')}</b>` : '';
     const kT = o.tachado ? ` data-tachar="caja" data-tachar-p="${ctx.paso(i + (l.tachar_despues ? items.length : 0))}"` : '';
     const apagado = activo && activo !== i + 1 && !hechos.has(i + 1) ? ' style="opacity:max(var(--apagado),.25)"' : '';
     const ok = hechos.has(i + 1) ? ctx.em.html('✅', '.9em', 'ok-item') : '';
-    return `<div class="item"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}${apagado}>${letra}${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}<span>${marcar(o.texto)}</span>${ok}</div>`;
+    return `<div class="item"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}${apagado}>${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}${letra}<span>${marcar(o.texto)}</span>${ok}</div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', mapa ? 0 : Math.max(0, items.length - 1)))}</div>`;
@@ -117,6 +120,7 @@ function pilaCantidad(ctx, emoji, n, tamE) {
 export function flujo(l, ctx) {
   const nodos = l.nodos || [];
   const n = nodos.length;
+  const conTexto = !ctx.vertical && nodos.some(nd => !nd.emoji && !nd.imagen && !nd.cantidad);
   // `flecha: "ninguna"`: una fila de conceptos numerados sin causa→efecto [19:10-19:15]; nodos más chicos y
   // etiqueta regular, cada uno en su paso.
   const sinFlecha = l.flecha === 'ninguna';
@@ -125,7 +129,7 @@ export function flujo(l, ctx) {
   const todoSignos = n > 1 && Array.from({ length: n - 1 }, (_, i) => signoDe(i + 1)).every(Boolean);
   const tamE = l.emoji_tam || (sinFlecha ? 120 : n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
   // con columnas iguales (todas del ancho del nodo más ancho) el hueco baja un poco para que 3 nodos con sub quepan
-  const gap = l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 210 : n === 4 ? 130 : 80);
+  const gap = Math.max(conTexto ? 188 : 0, l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 210 : n === 4 ? 130 : 80));
   const te = n >= 5 ? '40px' : n === 4 ? '54px' : sinFlecha ? '60px' : '76px';
   const estilo = sinFlecha ? 'ninguna' : ctx.vertical ? 'recta' : (l.flecha || 'recta');
   const signos = [];
@@ -137,13 +141,14 @@ export function flujo(l, ctx) {
     if (sg) signos.push(`<div class="signo" data-signo="${i}"${ctx.P(k)} style="--ts:${Math.round(tamE * 0.45)}px">${escapar(sg)}</div>`);
     else if (i > 0 && !sinFlecha) {
       const fl = flechas[i - 1] || {};
-      ctx.con({ de: 'n' + (i - 1), a: 'n' + i, estilo: fl.estilo || estilo, tachada: !!fl.tachada, etiqueta: fl.etiqueta, p: k });
+      const mixta = !ctx.vertical && ((!nodos[i - 1].emoji && !nodos[i - 1].imagen) || (!nd.emoji && !nd.imagen));
+      ctx.con({ de: (mixta && nodos[i-1].etiqueta ? 'et' : 'n') + (i - 1), a: (mixta && nd.etiqueta ? 'et' : 'n') + i, estilo: fl.estilo || estilo, tachada: !!fl.tachada, etiqueta: fl.etiqueta, p: k });
     }
     const aNodo = ctx.vertical ? ctx.A('n' + i) : ctx.A('nodo' + i), aVis = ctx.vertical ? '' : ctx.A('n' + i);
     const normal = nd.normal || sinFlecha || (todoSignos && nd.normal !== false);
     return `<div class="nodo${nd.tarjeta === true ? ' nodo-tarjeta' : ''}" style="--te:${te}"${ctx.P(k)}${aNodo}>
-      <div${aVis}>${vis}</div>
-      ${nd.etiqueta ? `<div class="etiqueta ${normal ? 'normal' : ''}${corta(nd.etiqueta)}">${marcar(nd.etiqueta)}</div>` : ''}
+      ${vis ? `<div${aVis}>${vis}</div>` : ''}
+      ${nd.etiqueta ? `<div class="etiqueta ${normal ? 'normal' : ''}${corta(nd.etiqueta)}"><span${!vis && !ctx.vertical ? aVis : ''}><span${ctx.A('et' + i)}>${marcar(nd.etiqueta)}</span></span></div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;
   }).join('');
   // Retornos y nodo aparte (solo en horizontal; en 9:16 se ignoran y QA avisa desde contrato.mjs)
@@ -158,12 +163,13 @@ export function flujo(l, ctx) {
     return cont ? `<div class="nota retorno-et tono-${['n', 'v', 'r'].includes(r.tono) ? r.tono : 'n'}" data-retorno="${j}"${ctx.P(kr)}>${cont}</div>` : '';
   }).join('');
   const kAp = (() => { const j = rets.findIndex(r => r.hasta === 'aparte'); return j >= 0 ? pasoDe(rets[j], 'paso', kUlt + j + 1) : kUlt; })();
-  const aparte = ap ? `<div class="nodo nodo-aparte" style="--te:${te}"${ctx.P(kAp)}><div${ctx.A('aparte')}>${ctx.emoji(ap.emoji || '🙋', Math.round(tamE * 0.85))}</div>${ap.etiqueta ? `<div class="etiqueta${corta(ap.etiqueta)}">${marcar(ap.etiqueta)}</div>` : ''}</div>` : '';
+  const visAp = ap ? (ap.imagen ? imagenRecortada(ctx, ap.imagen, ap.alto || 220, 'nodo') : ap.emoji ? ctx.emoji(ap.emoji, Math.round(tamE * 0.85)) : '') : '';
+  const aparte = ap ? `<div class="nodo nodo-aparte" style="--te:${te}"${ctx.P(kAp)}>${visAp ? `<div${ctx.A('aparte')}>${visAp}</div>` : ''}${ap.etiqueta ? `<div class="etiqueta${corta(ap.etiqueta)}"><span${!visAp ? ctx.A('aparte') : ''}>${marcar(ap.etiqueta)}</span></div>` : ''}</div>` : '';
   const arriba = rets.some(r => r.hasta !== 'aparte' && r.lado !== 'abajo');
   // En horizontal, columnas IGUALES (todas del ancho del nodo más ancho): los emojis quedan equidistantes y las
   // flechas, que van de emoji a emoji, miden lo mismo aunque un nodo lleve un sub largo [17:00, 17:20].
   const fila = ctx.vertical ? `<div class="pila fila-flujo" style="gap:${gap}px;align-items:center;position:relative">`
-    : `<div class="fila fila-igual fila-flujo"${l.separacion ? ' data-sep-fija="1"' : ''} style="gap:${gap}px;position:relative${arriba ? ';margin-top:190px' : ''}${ap ? ';row-gap:120px' : ''}">`;
+    : `<div class="fila fila-igual fila-flujo${conTexto ? ' flujo-con-texto' : ''}"${l.separacion ? ' data-sep-fija="1"' : ''} data-gap-min="${conTexto ? 188 : 90}" style="gap:${gap}px;position:relative${arriba ? ';margin-top:190px' : conTexto && l.encabezado ? ';margin-top:48px' : ''}${ap ? ';row-gap:120px' : ''}">`;
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     ${fila}${html}${aparte}${signos.join('')}${etqs}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto || 'medio') + ' mt-l', pasoDe(l, 'texto_paso', Math.max(0, n - 1)))}
@@ -391,12 +397,12 @@ export function objeto(l, ctx) {
 // FOTO — imagen completa con velo blanco; conserva la frase y el revelado del pizarrón.
 export function foto(l, ctx) {
   const k = pasoDe(l, 'texto_paso', 0);
-  return `<div class="foto-completa velo-${l.velo === 'banda' ? 'banda' : 'blanco'}"><img class="foto-fondo" src="${ctx.img(l.imagen)}" alt=""${ctx.P(0)}><div class="foto-velo"></div><div class="foto-contenido">${texto(ctx, l.texto, 'medio', k)}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', k))}${rotuloProcedencia(l.procedencia)}</div></div>`;
+  return `<div class="foto-completa velo-${l.velo === 'banda' ? 'banda' : 'blanco'}"><img class="foto-fondo" src="${ctx.img(l.imagen)}" alt=""${ctx.P(0)}><div class="foto-velo"></div><div class="foto-contenido">${texto(ctx, l.texto, 'medio', k)}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', k))}${rotuloProcedencia(l.procedencia)}</div>${mensajesSobre(l,ctx)}</div>`;
 }
 
 // ANFITRIÓN — retrato recortado aportado por el usuario. El demo utiliza una silueta declarada como ejemplo.
 export function anfitrion(l, ctx) {
-  return `<div class="anfitrion lado-${l.lado === 'izq' ? 'izq' : 'der'}"><div class="anfitrion-retrato"${ctx.P(0)}>${imagenRecortada(ctx, l.imagen, 950, 'anfitrion')}</div><div class="anfitrion-contenido">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0))}${rotuloProcedencia(l.procedencia)}</div></div>`;
+  return `<div class="anfitrion lado-${l.lado === 'izq' ? 'izq' : 'der'}"><div class="anfitrion-retrato"${ctx.P(0)}>${imagenRecortada(ctx, l.imagen, 950, 'anfitrion')}</div><div class="anfitrion-contenido">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0))}${rotuloProcedencia(l.procedencia)}</div>${mensajesSobre(l,ctx)}</div>`;
 }
 
 // TARJETAS — criterios o métricas en tarjetas gris suave con emoji. Una por paso.

@@ -68,6 +68,7 @@
   {
    "id": "gancho",
    "tipo": "chat",
+   "procedencia": "ejemplo",
    "sello": "Tarde",
    "sello_sobre": "m1",
    "mensajes": [
@@ -193,7 +194,7 @@
    "id": "dolor",
    "tipo": "idea",
    "emoji": "😩",
-   "texto": "Si contestas todo tú,\n**tu negocio cierra cuando duermes**",
+   "texto": "Si contestas todo tú,\n__tu negocio cierra cuando duermes__",
    "voz": "Si contestas todo tú, tu negocio cierra cuando duermes."
   },
   {
@@ -219,6 +220,7 @@
   {
    "id": "contesta",
    "tipo": "chat",
+   "procedencia": "ejemplo",
    "avatar_yo": "🤖",
    "mensajes": [
     {
@@ -240,6 +242,7 @@
   {
    "id": "califica",
    "tipo": "chat",
+   "procedencia": "ejemplo",
    "avatar_yo": "🤖",
    "mensajes": [
     {

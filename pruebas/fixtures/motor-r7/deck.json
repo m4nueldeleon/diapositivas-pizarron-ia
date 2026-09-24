@@ -1,0 +1,199 @@
+{
+  "marca": false,
+  "emoji": "apple",
+  "pieza": "libre",
+  "laminas": [
+    {
+      "tipo": "flujo",
+      "id": "solo-texto",
+      "encabezado": "Así funciona:",
+      "nodos": [
+        {
+          "etiqueta": "Resultado"
+        },
+        {
+          "etiqueta": "Responsable"
+        },
+        {
+          "etiqueta": "Revisión"
+        }
+      ]
+    },
+    {
+      "tipo": "flujo",
+      "id": "mixto",
+      "nodos": [
+        {
+          "emoji": "📋",
+          "etiqueta": "Ordena"
+        },
+        {
+          "etiqueta": "Revisa"
+        },
+        {
+          "emoji": "💯",
+          "etiqueta": "Evalúa"
+        }
+      ]
+    },
+    {
+      "tipo": "flujo",
+      "id": "anchos-propios",
+      "nodos": [
+        {
+          "emoji": "📋",
+          "etiqueta": "tus mesas vacías del lunes"
+        },
+        {
+          "emoji": "💯",
+          "etiqueta": "Revisa"
+        }
+      ]
+    },
+    {
+      "tipo": "idea",
+      "id": "ovalo",
+      "texto": "Recuerda ^^((2032))^^",
+      "anotaciones": [
+        {
+          "a": "ovalo",
+          "texto": "Registro propio",
+          "lado": "derecha"
+        }
+      ]
+    },
+    {
+      "tipo": "lista",
+      "id": "llave",
+      "items": [
+        "Responsable",
+        "Fecha"
+      ],
+      "anotaciones": [
+        {
+          "llave": [
+            "i0",
+            "i1"
+          ],
+          "texto": "Acordados"
+        }
+      ]
+    },
+    {
+      "tipo": "chat",
+      "id": "muro",
+      "variante": "muro",
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "Respuesta 1",
+          "hora": "10:00"
+        },
+        {
+          "de": "otro",
+          "texto": "Respuesta 2",
+          "hora": "10:00"
+        },
+        {
+          "de": "otro",
+          "texto": "Respuesta 3",
+          "hora": "10:00"
+        },
+        {
+          "de": "otro",
+          "texto": "Respuesta 4",
+          "hora": "10:00"
+        },
+        {
+          "de": "otro",
+          "texto": "Respuesta 5",
+          "hora": "10:00"
+        },
+        {
+          "de": "otro",
+          "texto": "Respuesta 6",
+          "hora": "10:00"
+        }
+      ]
+    },
+    {
+      "tipo": "chat",
+      "id": "celular",
+      "marco": "celular",
+      "encabezado": "Conversación:",
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Confirmo la fecha."
+        },
+        {
+          "de": "otro",
+          "texto": "Queda agendada."
+        },
+        {
+          "de": "yo",
+          "texto": "Gracias."
+        }
+      ]
+    },
+    {
+      "tipo": "prueba",
+      "id": "superpuesta",
+      "capturas": [
+        {
+          "src": "captura.svg",
+          "circulo": [
+            5,
+            5,
+            32,
+            18
+          ]
+        }
+      ],
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "La fecha ya está acordada."
+        }
+      ],
+      "mensajes_pos": "der"
+    },
+    {
+      "tipo": "idea",
+      "id": "subrayado-pendiente",
+      "texto": "Una frase con __[CITAS_PENDIENTES]__\nen el siguiente renglón"
+    },
+    {
+      "tipo": "agenda",
+      "id": "agenda",
+      "dias": [
+        "Mar",
+        "Mié",
+        "Jue",
+        "Vie"
+      ],
+      "semanas": 4,
+      "inicio": 24,
+      "hoy": {
+        "semana": 2,
+        "dia": 2
+      },
+      "series": [
+        {
+          "dia": 1,
+          "texto": "Cita",
+          "sub": "10:00",
+          "tono": "azul",
+          "paso": 1
+        },
+        {
+          "dia": 2,
+          "texto": "Revisión",
+          "sub": "Equipo",
+          "tono": "verde",
+          "paso": 2
+        }
+      ]
+    }
+  ]
+}

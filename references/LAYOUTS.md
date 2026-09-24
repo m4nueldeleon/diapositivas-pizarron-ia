@@ -4,7 +4,7 @@ Cada lámina de `deck.json` es un objeto con `tipo` más sus campos. Todo texto 
 [markup](#marcas-de-texto). Entre corchetes va el momento del video de referencia donde aparece
 ese diseño.
 
-Son **31 diseños**: 29 de lámina (texto e ideas, procesos y relaciones, datos, interfaz y prueba) y 2 especiales,
+Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos, interfaz y prueba) y 2 especiales,
 `foco` y `camara`. `ejemplos/demo/deck.json` los usa todos.
 
 **Campos del deck** (arriba de `laminas`)
@@ -15,7 +15,7 @@ Son **31 diseños**: 29 de lámina (texto e ideas, procesos y relaciones, datos,
 - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
   `marca.posicion: "arriba" | "abajo"` coloca la firma; `firma: false` la oculta por lámina.
   **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
-  «@tuusuario», «<…>») es error de QA.
+  «@tuusuario», «<…>») se omite del render y deja FIRMA por confirmar (borrador).
 - `pieza`: `reel`, `tutorial` (2-8 min), `vsl-corto` (3-6 min), `clase-corta` (15-30 min), `video`, `vsl`,
   `clase`, `webinar`, `propuesta` o `libre`; `duracion_objetivo`: minutos (`45`) o `"mm:ss"`; `en_vivo: true`
   si se presenta en vivo. QA mide la voz contra eso ([ARCOS.md](ARCOS.md)): un objetivo fuera del rango de su
@@ -108,7 +108,7 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - **Par antes/después** [10:55]: `"emoji": ["no:📚", "si:🤖"]` pone dos emojis en fila;
   `apagar_emoji: 0` atenúa el primero (el negado) y `emoji_paso: 1` revela el segundo después.
   Solo en `idea`.
-- `encabezado`: rótulo gris chico arriba. Con `encabezado_pos: "entre"` va ENTRE el emoji y la
+- `encabezado`: presenta lo que sigue con “:” o “…”, o numera («Paso 1», «Objeción #2»). Nunca lleva módulo, semana o «ejemplo» separados por “·” o “|”: eso es un eyebrow. Esos datos van al texto, a una línea de tiempo o una sola vez a la voz. Contraejemplo: «Módulo 2 · semana 3 · delegación». Rótulo gris arriba. Con `encabezado_pos: "entre"` va ENTRE el emoji y la
   frase [34:25 «Reason #1»].
 - **Objeción o «Razón #N»** [34:25, 35:15] — una forma para todas las del deck:
   ```json
@@ -131,10 +131,10 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 ### `lista` — encabezado gris + viñetas, una por paso  ·  [1:35, 13:35, 40:15]
 
 Para cerrar un mapa de letras, usa `vineta: "letras"` y una letra por ítem. Las letras se dibujan
-en negrita, sin convertirlas en emojis; `como` conserva el mapa y sus letras.
+en negrita, después del emoji explícito de cada ítem: emoji → letra → texto. Sin emoji conserva el cierre anterior. `como` solo hereda del mismo tipo; no convierte un `pasos` en `lista`.
 
 ```json
-{"tipo":"lista","vineta":"letras","letras":["R","E","C"],"items":["Rol","Encargo","Contexto"]}
+{"tipo":"lista","vineta":"letras","letras":["R","E","C"],"items":[{"emoji":"🎭","texto":"Rol"},{"emoji":"📋","texto":"Encargo"},{"emoji":"🧭","texto":"Contexto"}]}
 ```
 ```json
 { "tipo": "lista", "encabezado": "Sin:", "vineta": "x",
@@ -154,6 +154,20 @@ en negrita, sin convertirlas en emojis; `como` conserva el mapa y sus letras.
   `hechos: [1, 2]` los deja encendidos con su ✅ al final. La lista se declara una vez y vuelve con
   `"como": "<id>"` (hereda `items`, `encabezado`, `tam_texto`, `separacion` y `vineta`). Una lista con `activo`,
   `hechos`, `como` u `oscura` va centrada. Ejemplo en `oscura`.
+
+#### Lista a dos columnas: contraste
+
+Para Sí/No o antes/después usa `lista.columnas`, con dos objetos. Cada columna lleva `titulo`,
+`tono` (`v`, `r`, `n`), `vineta` (`check`, `cruz`), `items` y opcional `sello`/`sello_paso`.
+Primero se revela la ganadora completa, un ítem por paso, luego la perdedora.
+`revelar: "columna"` muestra una columna por paso; `apagar: 1` atenúa la segunda (índice desde 0).
+Anclas `c0`/`c1` para sellos y `i0`… para ítems; `nota` añade el remate manuscrito.
+Un par de conceptos cabe en `idea` con dos emojis no:/si:; `cuadrantes` compara bloques de igual peso.
+El `encabezado` presenta o numera, igual que en `idea`; no es un eyebrow.
+
+```json
+{"tipo":"lista","columnas":[{"titulo":"SÍ","tono":"v","vineta":"check","items":["Una tarea concreta","Una fecha"]},{"titulo":"NO","tono":"r","vineta":"cruz","items":["Pedir todo junto","Dejarlo abierto"]}],"nota":"Empieza por una tarea"}
+```
 
 ### Fuente de un dato o un estudio (`idea`, `lista`, `objeto`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
 `"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
@@ -331,6 +345,21 @@ de la revelación [36:30-36:40]. El precio final, lo que incluye en detalle, la 
     "retornos": [{ "desde": 3, "hasta": 0, "tono": "n", "etiqueta": "70%", "emoji": "💵" },
                  { "desde": 3, "hasta": "aparte", "tono": "v", "etiqueta": "30%", "emoji": "💵" }] }
   ```
+
+#### Nodos de solo texto
+
+Sin `emoji`, `imagen` ni `cantidad`, el ancla rodea el texto en línea; no una columna vacía.
+El motor conserva al menos 188 px de hueco y separa el encabezado 48 px de la fila.
+En nodos mixtos las flechas conectan las etiquetas a su misma altura. El encabezado presenta
+lo que sigue con “:” o numera; módulo y semana no van como eyebrow.
+
+```json
+{"tipo":"flujo","encabezado":"Define:","nodos":[{"etiqueta":"Resultado"},{"etiqueta":"Responsable"},{"etiqueta":"Revisión"}]}
+```
+
+Contraste: `{ "etiqueta": "❌ Prompt **malo**" }` → `{ "etiqueta": "resultado **malo**" }`.
+Si no caben columnas iguales, antes de reducir letra se prueban columnas propias centradas
+(`data-columnas="propias"`). Reduce `separacion` solo si la fijaste por encima del piso.
 
 ### `pasos` — el sistema de N pasos (teclas 1 2 3 + ruta punteada)  ·  [1:55, 11:00, 16:35, 28:00]
 
@@ -548,6 +577,12 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   fuera del lienzo.
 - Cada tramo aparece en su propio paso.
 
+Las marcas de `linea-tiempo` son **FRONTERAS (instantes)**, no rótulos de periodo.
+Un periodo de una unidad va de su marca a la siguiente o a `"fin"`: «Semana 6» usa marcas 6 y 7,
+o `hasta: "fin"`. Si los números importan, usa `pos` o `escala: "proporcional"`; un `pos` escrito manda.
+Si solo narra hitos (Día 1/14/30), déjalas equidistantes como en [9:50].
+Marcas neutras = paso 1; N tramos = N+1 pasos → N+1 voces.
+
 ### `medidor` — barra verde → rojo con pin  ·  [4:20]
 ```json
 { "tipo": "medidor", "valor": 90, "texto": "Algunos modelos dejan ganar millones,\npero son **muy difíciles para empezar**." }
@@ -687,6 +722,19 @@ En sala: máximo 14 días (2 semanas), sin reducción automática; divide los ca
   (`"12%"`). Con anotaciones el calendario se angosta para que la nota quede fuera.
 - Repite la lámina cambiando `fase_activa` para recorrer las fases.
 
+### `agenda` — semanas × días, a sangre  ·  [41:25–41:30]
+
+Una agenda mensual sin eje de horas: líneas finas grises, números de día arriba a la derecha y
+punto rojo en `hoy`. A diferencia de `calendario` (fases de un proceso), muestra citas recurrentes.
+`dias` es obligatorio (1–7; en 9:16 se ven los primeros 3, y una serie/evento fuera de ellos exige dividir la agenda); `semanas` va de 1 a 6; `inicio` (1–31) fija el primer día.
+`hoy` contiene `semana` y `dia`, desde 1. `series` repite un bloque en sus `semanas` (todas por omisión),
+y cada serie entra completa en su `paso`; `eventos` permite citas sueltas con `semana`, `dia` y `paso`.
+Cada bloque lleva `texto`, `sub` opcional y `tono`: `azul`, `verde` o `morado`. No admite referencias fuera de la rejilla.
+
+```json
+{"tipo":"agenda","dias":["Mar","Mié","Jue","Vie"],"semanas":4,"inicio":24,"hoy":{"semana":2,"dia":2},"series":[{"dia":1,"texto":"Revisión de equipo","sub":"10:00","tono":"azul","semanas":[1,2,3,4],"paso":1},{"dia":2,"texto":"Sesión 1:1","sub":"Mentor","tono":"verde","paso":2}]}
+```
+
 ## Interfaz y prueba
 
 ### `chat` — burbujas, un mensaje por paso  ·  [17:45, 19:00, 21:50]
@@ -729,6 +777,28 @@ hasta que lo llenes; así una variable de la lección nunca se confunde con un d
   contrario al avatar, o a un lado—, sin tapar su texto, las horas, las otras burbujas ni el avatar. No uses
   `sello_pos` en un chat: el sello cae sobre lo que haya en esa zona (un avatar tapado es error de QA).
 
+#### Muro, celular y procedencia del chat
+
+`variante: "muro"` muestra 6–12 mensajes de `otro` en dos columnas, por filas de izquierda a derecha
+[19:00]. En 9:16 usa una columna; más de 8 pide partir. Una fila por paso; `revelar: "rafaga"`
+los escalona en un mismo paso cada 0.25 s; `"todo"` los muestra juntos. Conserva `m0`…
+
+```json
+{"tipo":"chat","variante":"muro","mensajes":[{"de":"otro","texto":"Ya quedó"},{"de":"otro","texto":"Lo probé"},{"de":"otro","texto":"Entendido"},{"de":"otro","texto":"Voy a empezar"},{"de":"otro","texto":"Tengo mi tarea"},{"de":"otro","texto":"Nos vemos"}]}
+```
+
+`marco: "celular"` encierra de 1 a 3 mensajes en una pantalla con marco negro y muesca.
+`app` es el archivo del logo real o `{{LOGO_X}}` declarado; nunca un logo inventado.
+`grabando: true` añade una insignia roja. `texto` o `encabezado` quedan junto al celular.
+
+```json
+{"tipo":"chat","marco":"celular","encabezado":"Conversación:","mensajes":[{"de":"otro","texto":"¿Lo revisaste?"},{"de":"yo","texto":"Sí, falta la fecha."},{"de":"otro","texto":"Lo ajusto hoy."}]}
+```
+
+`procedencia: "real" | "ia" | "ejemplo"`, `fuente` y `fuente_paso` usan el mismo pie gris que `prueba`.
+Una conversación `real` exige fuente con fecha; `ejemplo` pone «Ejemplo ficticio» UNA vez en el pie de la lámina (un sello en cada burbuja tapaba el texto; la tarjeta `respuesta` conserva su sello EJEMPLO).
+En VSL/webinar declara la procedencia de la lámina o ejemplo/fuente de sus mensajes.
+
 ### `prueba` — capturas reales, con el dato encerrado  ·  [0:35, 15:45, 19:30]
 
 - `fuente` y `fuente_paso` en la lámina imprimen el crédito con la clase `.fuente` existente; cada captura con `src`
@@ -765,6 +835,17 @@ hasta que lo llenes; así una variable de la lección nunca se confunde con un d
   `fuente`, un `objeto` con `imagen` o una `cifra` con `fuente`; sin ninguna, QA avisa y GUION §7 da los
   sustitutos en orden.
 
+#### Burbuja sobre captura o foto  ·  [19:25]
+
+`foto` y `prueba` admiten `mensajes: [{ "de": "yo", "texto": "Revisa esta parte" }]` (máximo dos,
+`yo`/`otro`). Entran después de la imagen, una por paso, por encima del velo y con sombra suave.
+`mensajes_pos: "izq" | "centro" | "der"` mueve el bloque del tercio inferior.
+QA exige letra de 48 px en 16:9 y detecta si tapa el texto de la foto o el círculo/tachón de la captura.
+
+```json
+{"tipo":"prueba","capturas":[{"src":"assets/documento.png","circulo":[60,15,20,12]}],"mensajes":[{"de":"yo","texto":"Esa es la fecha"}],"mensajes_pos":"izq"}
+```
+
 ### `boton` — botón de interfaz y cursor que lo aprieta  ·  [23:15, 38:15]
 ```json
 { "tipo": "boton", "boton": "Generar", "emoji": "🤖", "texto": "Solo das clic en el **agente correcto**…", "llamado": false }
@@ -776,6 +857,16 @@ hasta que lo llenes; así una variable de la lección nunca se confunde con un d
 - **Pasos: 1.** El botón, su `texto` y el cursor que llega y aprieta entran en el paso 0 (`clic_paso` y `texto_paso`
   valen 0 por omisión): la `voz` lleva UN texto. `clic_paso: 1` separa el clic en un segundo paso.
 - El botón lleva el emoji de lo que da el clic: 📞 llamada, 🎟️ lugar, 🚀 arrancar, 🤖 la herramienta; 📝 solo si el clic es escribir (y es pálido: 30/28 %). Nunca una mano (👆 ✍️ 👉) en el botón: con el cursor de mano se ven dos manos [23:15, 38:15]; QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
+
+#### Invitación  ·  [43:50]
+
+`boton` con `variante: "invitacion"` muestra una tarjeta azul: `texto` como título, `hora` a la derecha,
+`sub` debajo y un botón blanco (`boton: "Unirme"` por omisión). No tiene cursor por omisión y
+`llamado` vale `false`; `clic: "boton"` añade cursor si se necesita.
+
+```json
+{"tipo":"boton","variante":"invitacion","texto":"Revisión de proyecto","hora":"14:30","sub":"Videollamada","boton":"Unirme"}
+```
 
 ### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:50]
 En 16:9 va **a sangre**: el bento llena la lámina de borde a borde (18 px de margen), las casillas vacías
@@ -994,6 +1085,8 @@ confunden (una prueba construye cada uno y compara con esta tabla):
 | `tabla` con 3 columnas (`revelar: "columnas"`) | 4 | paso 1: el marco y los rótulos de fila; luego una columna por paso (N + 1) |
 | `lista` de 3 ítems con `tachar_despues` | 6 | los 3 ítems, uno por paso, y después los 3 tachones, uno por paso (2 × N) |
 | `idea` con `sello` | 2 | el texto (aunque sean 2 renglones) en el paso 1; el sello, un paso extra |
+| `linea-tiempo` con N tramos | N+1 | marcas neutras, después un tramo por paso; N+1 voces |
+| `agenda` con N series | N+1 | rejilla neutra; cada serie completa en su paso |
 | `flujo` de 3 nodos con `texto` | 3 | un nodo por paso; el `texto` entra con el ÚLTIMO (`texto_paso: 0` lo sube) |
 | `lista` de 3 ítems | 3 | el encabezado con el primer ítem; un ítem por paso |
 | `foto` | 1 por omisión | imagen, velo y frase juntos; `texto_paso` separa la frase y `fuente_paso` el crédito |
@@ -1013,6 +1106,15 @@ confunden (una prueba construye cada uno y compara con esta tabla):
 `l0`… (cifra), `icono` y `cita` (cita), `objeto`, `medidor`, `op0`… (opciones), `rejilla`, `anot` y
 `d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`, `cap0`… (la captura) y `cap0-circulo`…
 (la elipse de su `circulo`) (prueba), `f0`… (la etiqueta de la fila) y `c0-1`… (la celda fila-columna, desde 0) (tabla).
+
+Todas las marcas de palabra (`data-sub`, `data-tachar`, `((…))`) reciben `w0`, `w1`… en orden de lectura
+desde 0 en toda la lámina. El óvalo conserva además `ovalo`. `sello_sobre`, `clic`, `anotaciones`
+y flechas aceptan ambos. Fuera de flujo, `flechas: [{"de":"w0","a":"w1","estilo":"recta","paso":1}]`
+conecta las palabras; las conexiones del flujo siguen su contrato por nodo.
+
+Corrección: `"texto": "~~Antes~~"` y `"anotaciones": [{"a":"w0","texto":"Ahora","tono":"v","lado":"abajo"}]`.
+Llave de anotación: `"anotaciones": [{"llave":["i0","i1"],"texto":"El mismo bloque"}]`.
+Acepta i*, m*, l* y w*: deben estar en columna. La nota va a la derecha; QA rechaza nota fuera del lienzo.
 
 ## Datos que se llenan una vez
 
@@ -1056,6 +1158,7 @@ texto y se llena UNA vez en `datos`, arriba del deck:
 
 | Marca | Resultado |
 |---|---|
+| `((cifra))` | óvalo a mano, un único énfasis por lámina; admite `{v:((5))}` y `^^((2032))^^`; máximo unas 3 palabras, sin salto. `circulo_paso` lo separa del paso de la frase; en oscura va blanco |
 | `**frase**` | negrita: la frase clave |
 | `__frase__` | negrita + subrayado rojo a mano |
 | `==frase==` | negrita + resaltador amarillo |
@@ -1159,7 +1262,7 @@ normalizados duplicados y añade información sobre emojis usados sin declarar. 
 
 En vivo, cada módulo debe medir al menos 10 px en un lienzo de 1920 px; el motor propone 12 px. QA mide el tamaño pintado, rechaza dominios de relleno y avisa si la URL supera unos 30 caracteres. Usa una URL corta, estable y real; nunca proyectes un QR que no lleve a nada. En video, QA recuerda mostrar la URL corta porque el espectador suele usar el mismo teléfono.
 
-Receta de cierre en vivo: `lista` con el resumen a la izquierda, `qr` a la derecha y rótulo «escanéalo». La voz del último paso da tiempo para entrar. Si no usas QR, muestra una URL de al menos 64 px o una palabra clave. Pedir «escanea», «QR» o «tómenle foto» sin código es error.
+Receta de cierre en vivo: `lista` con el resumen a la izquierda, `qr` a la derecha y rótulo «escanéalo». La voz del último paso da tiempo para entrar. Si no usas QR, muestra una URL de al menos 64 px o una palabra clave. Pedir «escanea», «QR» o «tómenle foto al QR» sin código es error; tomar foto de una fórmula no pide QR.
 
 ### `foto` — fotografía a sangre con velo blanco
 
@@ -1187,3 +1290,11 @@ nunca una persona generada ni gris. `lado: "izq" | "der"` lo pega al borde later
 por omisión); no añade emoji. En 9:16 la foto queda abajo y el texto arriba. QA avisa si las cuatro esquinas
 son opacas: recorta el fondo. El demo no los incluye: una foto o un retrato de relleno sería un placeholder. Las pruebas usan una silueta propia, rotulada
 con `procedencia: "ejemplo"`; esa excepción didáctica no representa a una persona real.
+
+### Cierre de QA
+
+`garantia: false` declara que no hay garantía comercial, pero con precio visible exige una lámina
+que explique qué pasa si no funciona. `avisos_aceptados` es una lista de `{ "texto": "subcadena del aviso",
+"laminas": [2], "motivo": "justificación concreta" }`; también acepta `regla` en lugar de `texto`.
+El motivo es obligatorio; `laminas` es opcional. Cada aviso restante se corrige o se acepta con motivo.
+Un aviso sin resolver impide `estado: listo`, aunque la nota sea mayor de 90.

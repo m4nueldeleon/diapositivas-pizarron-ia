@@ -33,11 +33,10 @@ test('mapa r5: los regresos con el titular del bloque (el reel) no avisan; el mi
   const reel = [idea('Gancho'), { ...MAPA, texto: '3 tareas' }, vuelve('t1', 1, { texto: 'La IA te hace **la minuta**' }), idea('Grabas'),
     vuelve('t2', 2, { texto: 'La IA ordena **tu correo**' }), idea('Separa'), idea('Enviar'), vuelve('t3', 3, { texto: 'El reporte' }), idea('Chat')];
   const r = reglasRetornoMapa({ laminas: reel }, unos(reel));
-  assert.equal(r.avisos.length, 1, r.avisos.join('\n'));
-  assert.match(r.avisos[0], /mapa repetido seguido \(lámina 2 → 3\).*activo: 1/);
+  assert.deepEqual(r.avisos, []);
   // sin `como`: las mismas teclas e íconos repetidos a mano también son el mismo mapa
   const aMano = [MAPA, { ...MAPA, id: 'otra', activo: 2 }];
-  assert.match(reglasRetornoMapa({ laminas: aMano }, unos(aMano)).avisos[0], /repetido seguido/);
+  assert.match(reglasRetornoMapa({ laminas: aMano }, unos(aMano)).avisos[0], /paso 2 no tiene contenido/);
 });
 
 test('mapa r5: bloques largos (3+ láminas y 20+ s, o un tramo en vivo de minutos) no avisan', () => {

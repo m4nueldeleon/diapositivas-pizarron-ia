@@ -31,7 +31,8 @@ deducir.
    **[references/VOZ-HUMANA.md](references/VOZ-HUMANA.md)** (las fórmulas de IA que no van).
 3. Lee **[LECCIONES.md](LECCIONES.md)**: las correcciones que ya hizo el usuario, que mandan
    sobre todo lo demás.
-4. Busca `MI-MARCA.md`, con la firma, el formato, el idioma y las palabras vetadas. La cadena es la misma que usan
+4. Nunca copies credenciales, cifras, casos, anécdotas con fecha ni frases de otro deck, de un modelo o de un evento: son de otra persona. De un modelo se copia el mecanismo, no el dato. Sin ficha, {{ANOS}}/{{CLIENTES}} pendientes.
+   Busca `MI-MARCA.md`, con la firma, el formato, el idioma y las palabras vetadas. La cadena es la misma que usan
    render y QA (`scripts/lib/marca.mjs`), y gana la primera que exista: la carpeta del deck → la de arriba →
    `$PIZARRON_MARCA` → la ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`. Si ninguna existe, usa los
    valores por omisión: sin firma, 16:9, español. **Si no hay ficha, la única pregunta al creador incluye su @ o su
@@ -45,7 +46,7 @@ deducir.
    Si el deck no trae `marca`, render toma la firma de esa ficha y lo dice («Firma tomada de …»); cópiala a
    `marca` en deck.json para que salga igual en otra máquina. `"marca": false` la apaga (una propuesta con la
    marca del cliente). **Si no hay ficha, o su firma está vacía, OMITE la clave `marca`.** Nunca copies
-   un valor de ejemplo («tumarca.com» es error de QA). Al entregar, avisa en una línea: «Va sin firma:
+   un valor de ejemplo («tumarca.com» se omite y deja FIRMA por confirmar). Al entregar, avisa en una línea: «Va sin firma:
    dame tu @, tu dominio o tu logo (PNG sin fondo) y la agrego», o que llene la ficha global.
    **Lo que diseñas tú y lo que confirma el cliente**: el contenido (el programa, los módulos, las sesiones, el
    orden) lo escribes normal; los datos de la oferta (precio, fechas, cupos, garantía, bonos, cifras del cliente)
@@ -85,7 +86,7 @@ deducir.
    cambias la pieza en silencio. No fuerces
    `duracion_objetivo` sobre una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas
    cosas; más de 60% en tramos es error aunque sea en vivo).
-6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 31 diseños y sus campos) y
+6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 32 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
@@ -102,7 +103,7 @@ Antes de escribir, congela el trato y las reglas del cliente; declara `persona` 
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
 | **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
-| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>` (o `render.mjs --qa`). **La primera corrida nunca es la entrega**: corrige cada error y aviso que QA ya conoce (el mapa que vuelve vacío tras un bloque corto, una objeción que solo se responde con una frase, «sin prueba real», una tasa sin origen, un `no:` que niega un paso del mapa), vuelve a renderizar y a correr QA, y entrega con la salida de la ÚLTIMA corrida. El deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
+| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>` (o `render.mjs --qa`). **La primera corrida nunca es la entrega**: corrige cada error y aviso que QA ya conoce (el mapa que vuelve vacío tras un bloque corto, una objeción que solo se responde con una frase, «sin prueba real», una tasa sin origen, un `no:` que niega un paso del mapa), vuelve a renderizar y a correr QA, y entrega con la salida de la ÚLTIMA corrida. El deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `avisos-pendientes` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
 
@@ -177,7 +178,7 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
     **Omítela si no hay marca real.** Va abajo a la derecha; en 9:16 va arriba (abajo la tapan el
     caption y los botones de Reels). `"posicion": "arriba"` o `"abajo"` lo fuerza. Un valor de relleno
-    («tumarca.com», «@tuusuario») es error de QA;
+    («tumarca.com», «@tuusuario») no se pinta: el render avisa y deja FIRMA por confirmar (borrador);
   - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md); pregunta también por `sala` (proyector).
     Zoom lleva `sala: false`; el perfil de sala es opt-in y no se aplica en 9:16;
   - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
@@ -247,3 +248,5 @@ Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`
 con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.
 Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes renderizar, entrega
 `deck.json` + `qa-texto.json` + **«SIN RENDER, revisión visual pendiente»**.
+
+El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha`; cada aviso restante se corrige o entra en `avisos_aceptados` con su motivo. `garantia: false` requiere una lámina de condición de salida si hay precio público.

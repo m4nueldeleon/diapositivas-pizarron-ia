@@ -287,3 +287,5 @@ concreto: hora, cifra, chat, cita o captura. La lista de quiénes cuentan para c
 Las herramientas de una escena usan sus logos reales; si falta uno, declara `imagen: "{{LOGO_X}}"` (regla 10).
 
 En vivo, el **cómo se entra** es un `qr`, una URL corta grande (≥ 64 px) o una palabra clave. Un botón por sí solo sirve en video o PDF; en una sala o por Zoom necesita una forma de acceso que el público pueda usar. La receta del QR está en LAYOUTS.md.
+
+En las plantillas de mapa, activo y texto iguales en dos láminas seguidas repiten la misma lámina. Si activo avanza, falta contenido entre bloques: añade al menos una lámina o une los mapas.

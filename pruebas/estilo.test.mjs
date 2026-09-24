@@ -9,6 +9,7 @@ import { prepararSalida, abrir } from '../scripts/lib/pipeline.mjs';
 import { marcar, plano, tamTexto } from '../scripts/lib/markup.mjs';
 import { Emojis, bajoContraste } from '../scripts/lib/emoji.mjs';
 import { validarDeck, sanearDeck } from '../scripts/lib/contrato.mjs';
+import { reglasEstilo } from '../scripts/lib/reglas-estilo.mjs';
 import { LAYOUTS } from '../scripts/lib/construir.mjs';
 
 async function conDeck(deck, fn) {
@@ -142,4 +143,12 @@ test('render: cita con gancho corto al primer renglón, rango sin partir; oscura
     assert.equal(r.av, 1);
     assert.ok(r.onda >= r.emo.x + r.emo.w, 'el dedo cae sobre el emoji del botón');
   });
+});
+
+test('D: eyebrow avisa, encabezados narrativos y numerados no', () => {
+  const idea = (texto, extra) => ({tipo:'idea',texto,...extra});
+  for (const encabezado of ['Módulo 2 · semana 3 · delegación','Ejemplo · clínica dental, 11:40 pm','Semana 1 | Tema'])
+    assert.ok(reglasEstilo({laminas:[idea('Una frase',{encabezado})]}).avisos.some(x => /eyebrow/.test(x)));
+  for (const encabezado of ['Sin:','Objeción #2','100 personas pagaron un curso en línea','Para ganar **$10k al mes** tendrías que vender…'])
+    assert.ok(!reglasEstilo({laminas:[idea('Una frase',{encabezado})]}).avisos.some(x => /eyebrow/.test(x)));
 });

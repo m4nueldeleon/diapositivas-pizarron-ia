@@ -87,7 +87,9 @@ Para requisitos, comisiones o políticas de plataforma, `fuente` lleva origen y 
 | componente numerado «#N» de la oferta [41:10, 41:40] | «#4» + el componente, en blanco | `idea` |
 | pregunta de sí después de un componente [41:00, 41:35] | 🤔 + «¿Ves cómo…?» | `idea` |
 | lo que incluye la oferta, el stack que crece [42:30] | bento que se llena pieza por pieza | `stack`, `tarjetas` o `rejilla` |
-| qué pasa después del clic [43:35-43:50] | flecha roja al link, «2 minutos», la invitación del calendario | `boton` o `calendario` |
+| credibilidad con año o cifra | cifra encerrada y nota manuscrita colgada | `idea` con ((cifra)), mejor en ^^remate^^, + anotación con `a: "ovalo"` |
+| la cifra que hay que recordar | óvalo sobre la cifra | ((…)) |
+| qué pasa después del clic [43:35-43:50] | flecha roja al link, «2 minutos», la invitación del calendario | `boton` con variante `invitacion` |
 | el precio | ancla real chica y gris → precio grande (una línea por paso) | `cifra` con líneas-objeto |
 | desglose del precio («son $100 al día», «4 quincenas de…») | «precio ÷ unidad = __monto por unidad__», sin `arriba` obligatorio: dividir un precio no es una proyección | `cifra` |
 | cupos o lista de espera (solo si son reales) [43:15-43:30] | rejilla con el color de los ocupados en un paso posterior + la fuente | `rejilla` + `destacado_paso` |
@@ -281,7 +283,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 |---|---|---|---|
 | 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2 (emoji negado si es «me falta X», 🤔 si es una pregunta: EMOJIS.md, objeción), «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita. La respuesta es un bloque de 1-3 láminas y la primera DEMUESTRA (tabla «objeción → respuesta», abajo); una `idea` de frase («Absolutamente.», «Imposible.») solo puede ir después, como remate [34:40-34:45]. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"`; la respuesta, otro diseño |
 | 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
-| 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes»). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
+| 2 | Credibilidad con cifra y años (formato de la referencia: «desde 2016, más de 23,000 clientes», no datos que copiar). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
 | 3 | Ancla con un costo real, opcional: dinero que el espectador paga o pierde, en la misma unidad y periodo que el precio (regla abajo) | 36:30-36:40 | `cifra` |
 | 4 | Revelación del producto, en 1 paso; en oscura pueden seguir sus pilares (lista blanca con emoji que vuelve con uno activo) y para quién es. Si el programa es «hecho contigo», la videollamada «TÚ + tu mentor» lo presenta [36:45] | 36:15-37:55, 43:00 | `oscura` · `lista` + `oscura` · `llamada` |
 | 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`; un componente humano —mentor, consultor, llamadas en vivo— con `llamada` antes de su `lista` [40:10, 41:15]) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` / `llamada` |
@@ -289,7 +291,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 | 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el remate es un título en su propio corte: ✓ verde sin caja + frase en 800 a ~140 px [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
 | 7b | **Bonos** (solo si la oferta los tiene): en el MISMO `stack`, después de las piezas base, cada uno con `sub: "Bono #N"` y su nombre desde `{{BONO_N}}` (LAYOUTS.md, `stack`). No hay diseño de bono aparte: la referencia no los tiene | — | `stack` |
 | 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera, o una fecha límite (`calendario` con el día marcado). Siempre desde `{{CUPOS}}` o `{{FECHA_LIMITE}}` con su dato real: «solo hoy», «Quedan solo 3 lugares» escritos a mano son error de QA | 43:00-43:30 | `rejilla` + `destacado_paso`, o `calendario` |
-| 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🧭 |
+| 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `boton` variante `invitacion` + `idea` 🧭 |
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
 
@@ -301,7 +303,7 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   2. revelación oscura (beat 4): en un `vsl-corto`, a más tardar al 60% (en un `vsl` largo va en el ~20-25% final);
   3. qué incluye: componentes y `stack` (beats 5 y 7);
   4. prueba (beat 6);
-  5. precio y garantía, solo si hay precio público;
+  5. si hay precio a la vista, la garantía va, aunque sea {{GARANTIA_DIAS}} pendiente; si de verdad no hay garantía, `garantia: false` y una lámina de qué pasa si no funciona; sin precio público, ni precio ni garantía;
   6. llamado 1 con qué pasa después del clic (beat 9);
   7. resumen del stack (beat 10);
   8. llamado 2, al final.
@@ -395,3 +397,10 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 - **Propuesta**: su arco son los 9 bloques de ARCOS.md (diagnóstico con sus números, costo, solución, quién la imparte
   y un caso, metas, alcance con «No incluye», inversión anclada, garantía o condición de salida, siguiente paso con
   fecha y vigencia). Sin prueba real, los sustitutos de arriba; nunca inventada.
+
+#### Credibilidad y agenda
+
+Nunca copies credenciales, cifras, casos, anécdotas con fecha ni frases de otro deck, de un modelo o de un evento:
+son de otra persona. De un modelo se copia el mecanismo, no el dato. Sin ficha, {{ANOS}}/{{CLIENTES}} pendientes.
+El resultado del mecanismo cae en la agenda: `agenda` con series por paso [41:25–41:30].
+La invitación de [43:50] usa `boton` variante `invitacion`.

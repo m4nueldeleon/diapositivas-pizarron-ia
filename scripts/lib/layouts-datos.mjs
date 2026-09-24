@@ -1,3 +1,6 @@
+import { invitacion } from './layouts-interfaces.mjs';
+import { burbuja, mensajesSobre } from './burbujas.mjs';
+import { posicionesTiempo } from './reglas-marcas.mjs';
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
 import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas, rotuloProcedencia, imagenConHueco } from './comun.mjs';
@@ -294,7 +297,8 @@ export function lineaTiempo(l, ctx) {
   // En 9:16 el ancho es el mismo (900 útiles) pero sobra alto: letra y alturas ×1.35 para que no quede una franja chica
   const f = ctx.vertical ? 1.35 : 1;
   const W = ctx.vertical ? 900 : 1720, y = Math.round(330 * f), m0 = 90, m1 = W - 90;
-  const xs = marcas.map((m, i) => m.pos != null ? m0 + m.pos * (m1 - m0) : m0 + (i / Math.max(1, marcas.length - 1)) * (m1 - m0));
+  const proporciones = l.escala === 'proporcional' ? posicionesTiempo(marcas) : null;
+  const xs = marcas.map((m, i) => m.pos != null ? m0 + m.pos * (m1 - m0) : m0 + (proporciones?.[i] ?? i / Math.max(1, marcas.length - 1)) * (m1 - m0));
   const tM = Math.round(56 * f);
   const filaAbajo = filasEtiquetas(xs, marcas.map(m => m.texto), tM);
   const tamTramo = ctx.vertical ? 72 : 84;
@@ -508,7 +512,7 @@ export function prueba(l, ctx) {
     return `<div class="captura"${k}${aCap} style="${giro}">${l.variante === 'pantallas' ? '<div class="barra-ventana" aria-hidden="true"><i></i><i></i><i></i></div>' : ''}${dentro}${aCirc}${fuente}${rotuloProcedencia(c.procedencia)}</div>`;
   }).join('');
   return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="pruebas${l.variante === 'pantallas' ? ' pantallas' : ''}">${html}</div>
-    ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, caps.length - 1)))}${rotuloProcedencia(l.procedencia)}</div>`;
+    ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, caps.length - 1)))}${rotuloProcedencia(l.procedencia)}${mensajesSobre(l,ctx)}</div>`;
 }
 
 // CHAT — burbujas estilo mensaje: tú en azul a la derecha, los demás en gris medio a la izquierda.
@@ -520,36 +524,22 @@ export function chat(l, ctx) {
   const maxPalabras = Math.max(0, ...ms.map(m => palabras(m.texto)));
   const tbVertical = ms.length <= 3 && maxPalabras <= 12 ? 76 : maxPalabras <= 12 ? 68 : maxPalabras <= 24 ? 64 : 58;
   const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbVertical;
-  const avatar = (m, yo) => {
-    const spec = m.avatar ?? (yo ? l.avatar_yo : l.avatar_otro);
-    if (spec === false) return '';
-    const cls = yo ? 'yo-av' : 'otro-av';
-    // El emoji llena ~85% del círculo, como la silueta del original [17:45, 19:00]: a 70/92 px quedaba en ~62% y el 🤖 de
-    // «Te escribe tu IA» pesaba menos que el avatar del video. `avatar_tam` agranda los DOS avatares a la vez.
-    const tamEmo = Number.isFinite(l.avatar_tam) ? Math.round(l.avatar_tam * 0.85) : (ctx.vertical ? Math.round(tbAvatar * 1.3 * .85) : 108);
-    return typeof spec === 'string' && spec ? `<div class="${cls} av-emo">${ctx.emoji(spec, tamEmo)}</div>` : `<div class="${cls}">${PERSONA}</div>`;
-  };
-  const html = ms.map((m, i) => {
-    const yo = (m.de || 'yo') === 'yo';
-    // [x] en minúsculas = la VARIABLE DE PLANTILLA que el espectador personaliza: letra amarilla sin caja en la burbuja
-    // azul, como «[Name]» y «[topic]» en [21:55, c_1315]. Los [MAYÚSCULAS] (dato pendiente) ya los marcó marcar() como
-    // `.hueco.pendiente`: son otra cosa y se ven distinto. Una variable corta no se parte; una de más de 3 palabras sí.
-    const cuerpo = marcar(m.texto).replace(/(?<!class="hueco[^"]*">)\[([^\[\]<>]+)\]/g, (_, t) => `<span class="var-plantilla${t.trim().split(/\s+/).length > 3 ? ' largo' : ''}">[${t}]</span>`);
-    if (m.de === 'prompt' || m.de === 'respuesta') {
-      const k = l.revelar === 'todo' ? 0 : i, respuesta = m.de === 'respuesta';
-      const remitente = respuesta ? `<div class="nota chat-remitente">${marcar(m.remitente || 'Respuesta')}</div>` : '';
-      const pie = respuesta && m.ejemplo === true ? '<div class="chat-ejemplo">EJEMPLO</div>' : respuesta && m.fuente ? `<div class="fuente">${escapar(m.fuente)}</div>` : '';
-      return `<div class="chat-tarjeta ${respuesta ? 'respuesta' : 'prompt'}"${ctx.P(k)}${ctx.A('m' + i)}>${remitente}<div class="burbuja">${cuerpo}</div>${pie}</div>`;
-    }
-    const av = avatar(m, yo), k = l.revelar === 'todo' ? 0 : i;
-    // `hora`: el separador gris centrado de un chat real, en el mismo paso que su mensaje. Así el gancho se entiende
-    // sin audio (11:40 pm … 9:05 am). Cada burbuja es un ancla m0…mN (sello_sobre: "m2", flechas).
-    const hora = typeof m.hora === 'string' && m.hora.trim() ? `<div class="chat-hora"${ctx.P(k)}>${escapar(m.hora)}</div>` : '';
-    return `${hora}<div class="msj ${yo ? 'yo' : 'otro'}"${ctx.P(k)}>${yo ? '' : av}<div class="burbuja"${ctx.A('m' + i)}>${cuerpo}</div>${yo ? av : ''}</div>`;
-  }).join('');
+  const muro = l.variante === 'muro', celular = l.marco === 'celular';
+  const html = ms.map((m,i) => burbuja(m,ctx,{
+    indice:i, paso:l.revelar === 'todo' || l.revelar === 'rafaga' ? 0 : muro ? Math.floor(i/(ctx.vertical ? 1 : 2)) : i,
+    avatar:(m.de || 'yo') === 'yo' ? l.avatar_yo : l.avatar_otro,
+    avatarTam: muro ? 76 : celular ? 42 : Number.isFinite(l.avatar_tam) ? Math.round(l.avatar_tam*.85) : ctx.vertical ? Math.round(tbAvatar*1.3*.85) : 108,
+    celda:muro, ejemplo:l.procedencia === 'ejemplo', rafaga:l.revelar === 'rafaga',
+  })).join('');
+  const pie = fuente(ctx,l.fuente,pasoDe(l,'fuente_paso',ctx.max)) + rotuloProcedencia(l.procedencia);
+  if (celular) {
+    const app = l.app ? imagenConHueco(ctx,l.app,46) : '';
+    return `<div class="pila"><div class="chat-celular"><div class="celular-leyenda">${rotulo(ctx,l)}${texto(ctx,l.texto,'medio',0)}</div><div class="celular"><svg class="celular-marco" viewBox="0 0 520 1040" aria-hidden="true"><rect x="3" y="3" width="514" height="1034" rx="64" fill="#151515"/><rect x="19" y="19" width="482" height="1002" rx="48" fill="#fff"/><rect x="180" y="18" width="160" height="28" rx="14" fill="#151515"/></svg><div class="celular-pantalla"><div class="celular-app">${app}${l.grabando ? '<span class="grabando">Grabando</span>' : ''}</div><div class="chat">${html}</div></div></div></div>${pie}</div>`;
+  }
+  if (muro) return `<div class="pila">${rotulo(ctx,l)}<div class="chat chat-muro">${html}</div>${pie}</div>`;
   const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : ctx.vertical && !l.tam_texto ? `--tb:${tbVertical}px` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ctx.vertical ? `--av:${Math.round(tbAvatar * 1.3)}px` : ''].filter(Boolean);
   const tb = vars.length ? ` style="${vars.join(';')}"` : '';
-  return `<div class="pila">${rotulo(ctx, ctx.vertical && !l.encabezado_estilo ? { ...l, encabezado_estilo: 'frase' } : l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div></div>`;
+  return `<div class="pila">${rotulo(ctx, ctx.vertical && !l.encabezado_estilo ? { ...l, encabezado_estilo: 'frase' } : l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div>${pie}</div>`;
 }
 
 // REPARTO — pastilla verde (audiencia · ingresos) que se parte en «su parte» y «tu parte».
@@ -687,6 +677,7 @@ export function calificacion(l, ctx) {
 // En [23:15, 38:15] el botón dice «Generate 🤖»: la única mano es el cursor. Una mano DENTRO del botón junto al cursor
 // de mano son dos manos: contrato.mjs (sugerenciasDiseno) lo avisa, no se quita en silencio.
 export function boton(l, ctx) {
+  if (l.variante === 'invitacion') return invitacion(l,ctx);
   ctx.clic = { a: 'boton', p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor === 'flecha' ? 'flecha' : 'mano' };
   const kt = pasoDe(l, 'texto_paso', 0);
   // en 9:16 el botón crece ×1.6 (con su emoji) y la frase va grande: a 68 px quedaba chico en el alto de sobra

@@ -11,9 +11,10 @@ import { duracionTotal, minutosObjetivo, mmss } from '../scripts/lib/tiempos.mjs
 const idea = (texto, extra = {}) => ({ tipo: 'idea', emoji: '💡', texto, ...extra });
 const unos = n => Array.from({ length: n }, () => 1);
 
-test('firma de relleno: tumarca.com, @tuusuario y <tu @> son error; una firma real no', () => {
+test('firma de relleno: tumarca.com, @tuusuario y <tu @> son borrador; una firma real no', () => {
   for (const marca of [{ texto: 'tumarca', sufijo: '.com' }, { texto: '@tuusuario' }, { texto: '<tu @ o dominio>' }, { texto: 'Tu Marca' }]) {
-    assert.equal(reglasFirma({ marca }).errores.length, 1, JSON.stringify(marca));
+    assert.deepEqual(reglasFirma({ marca }).errores, []);
+    assert.ok(reglasFirma({ marca }).porConfirmar.FIRMA, JSON.stringify(marca));
   }
   assert.deepEqual(reglasFirma({ marca: { texto: 'manueldeleon', sufijo: '.com' } }).errores, []);
   assert.deepEqual(reglasFirma({ marca: false }).errores, []);
@@ -181,11 +182,11 @@ test('credibilidad: una captura con src o fuente, o un objeto con imagen, cuenta
 });
 
 test('credibilidad: «desde 2016, más de 300 eventos» en la voz de una cámara antes de la oscura no avisa; sin cifra, sí', () => {
-  const con = reglasCredibilidad({ pieza: 'vsl', laminas: [idea('Uno'), camaraQuien('Desde 2016 hemos hecho más de 300 eventos'), { tipo: 'objeto', procedencia: 'real', imagen: 'a.png' }, oscura, boton] });
+  const con = reglasCredibilidad({ pieza: 'vsl', laminas: [idea('Uno'), { ...camaraQuien('Desde 2016 hemos hecho más de 300 eventos'), fuente: 'Registro de trayectoria confirmado' }, { tipo: 'objeto', procedencia: 'real', imagen: 'a.png' }, oscura, boton] });
   assert.deepEqual(con.avisos, []);
   const tarde = reglasCredibilidad({ pieza: 'vsl', laminas: [idea('Uno'), { tipo: 'objeto', procedencia: 'real', imagen: 'a.png' }, oscura, camaraQuien('Más de 300 eventos'), boton] });
   assert.ok(tarde.avisos.some(a => /credibilidad sin cifra/.test(a)), 'la cifra después de la revelación no cuenta');
-  assert.deepEqual(reglasCredibilidad({ pieza: 'vsl', laminas: [idea('**12 años** y 4,000 alumnos'), { tipo: 'objeto', procedencia: 'real', imagen: 'a.png' }] }).avisos, []);
+  assert.deepEqual(reglasCredibilidad({ pieza: 'vsl', laminas: [idea('**12 años** y 4,000 alumnos', {fuente:'Registro confirmado'}), { tipo: 'objeto', procedencia: 'real', imagen: 'a.png' }] }).avisos, []);
 });
 
 test('credibilidad: una clase o un reel con una maqueta no dan avisos', () => {
@@ -220,7 +221,7 @@ test('iconos: 🏦 y 🏛️ en fluent avisan (en apple no); 🧑‍💼 y 👨�
   assert.ok(reglasIconos({ emoji: 'fluent', laminas: banco }).avisos.some(a => /🏦 y 🏛 se ven casi iguales en fluent/.test(a)));
   assert.deepEqual(reglasIconos({ emoji: 'apple', laminas: banco }).avisos, []);
   assert.equal(reglasIconos({ laminas: banco }).avisos.length, 1, 'con auto revisa los dos sets');
-  assert.equal(reglasIconos({ emoji: 'apple', laminas: [idea('Cliente', { emoji: '🧑‍💼' }), { tipo: 'flujo', nodos: [{ emoji: '👨‍💼', etiqueta: 'Experto' }] }] }).avisos.length, 1);
+  assert.equal(reglasIconos({ emoji: 'apple', laminas: [idea('Cliente', { emoji: '🧑‍💼' }), { tipo: 'flujo', nodos: [{ emoji: '👨‍💼', etiqueta: 'Acompañamiento del equipo' }] }] }).avisos.length, 1);
 });
 
 // La clave del inventario es «emoji (concepto)»: se busca por el emoji

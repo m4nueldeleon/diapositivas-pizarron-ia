@@ -12,7 +12,7 @@ export function reglasQr(deck) {
   const errores = [], avisos = [];
   deck.laminas.forEach((l, i) => {
     const n = `lámina ${i + 1} (${l.id || l.tipo})`, t = normal(textos(l).join(' '));
-    const escanea = /\b(?:escanea(?:lo|la)?|escaneen(?:lo|la)?|qr|tomenle foto)\b/.test(t);
+    const escanea = /\btomen(?:le|lo) foto (?:al|a este|del) (?:qr|codigo)\b/.test(t) || /\b(?:escanea(?:lo|la)?|escaneen(?:lo|la)?|qr)\b/.test(t);
     if (escanea && !l.qr) errores.push(`${n}: pides escanear o tomar foto del QR pero no hay qr; agrega qr: { url: "https://…" } en idea, lista o boton`);
     if (l.qr) {
       const error = validarQr(l.qr);
@@ -25,7 +25,7 @@ export function reglasQr(deck) {
     if (!deck.en_vivo) return;
     const visible = normal(textos({ ...l, voz: undefined }).join(' '));
     // «Próxima clase: {{FECHA}}» es una fecha, no un destino: no pide QR. Solo el llamado que lleva a un sitio.
-    const puente = (l.llamado && ['idea', 'lista', 'boton'].includes(l.tipo)) || /\b(?:comunidad|registrate|inscribete|unete)\b/.test(visible);
+    const puente = l.tipo === 'boton' || /\b(?:comunidad|registrate|inscribete|unete|entra a|link|liga)\b/.test(visible);
     const botonConLink = l.tipo === 'boton' && /https?:|\blink\b|\bliga\b|\.com|\.org|\.mx/.test(visible);
     const palabra = /\b(?:palabra|escribe|manda|envia|comenta|di)\s+(?:la\s+)?["«']?[a-z]{2,}/.test(visible);
     const urlGrande = /(?:https:\/\/|\b[\w-]+\.(?:com|org|mx|io|app)\b)/.test(visible) && (l.tam_texto == null || ['compacto', 'chico', 'medio', 'grande', 'enorme'].includes(l.tam_texto) || parseFloat(l.tam_texto) >= 64);

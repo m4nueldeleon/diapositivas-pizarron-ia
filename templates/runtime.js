@@ -166,13 +166,13 @@
   // El «fantasma» (.pz-oculto) del mapa que vuelve reserva el alto del texto más largo del grupo: su subrayado o su
   // círculo NO se dibuja (salía un trazo rojo suelto bajo la frase real [r5, ejemplos/reel])
   function dentro(esc, sel) { return [...esc.querySelectorAll(sel)].filter(e => e.closest('.escena') === esc && !e.closest('.pz-oculto')); }
-  function ancla(esc, id) { return dentro(esc, `[data-a="${CSS.escape(id)}"]`)[0]; }
+  function ancla(esc, id) { return dentro(esc, `[data-a="${CSS.escape(id)}"], [data-w="${CSS.escape(id)}"]`)[0]; }
 
   const TONO = { r: C.rojo, v: '#22a812', n: C.negro };
   function conexion(c, esc, lam, svg, r) {
     const ea = c.de ? ancla(esc, c.de) : null, eb = ancla(esc, c.a);
     if ((!ea && c.estilo !== 'entrada') || !eb) {
-      const hay = [...new Set(dentro(esc, '[data-a]').map(e => e.dataset.a))].slice(0, 14).join(', ');
+      const hay = [...new Set(dentro(esc, '[data-a]').flatMap(e => [e.dataset.a, e.dataset.w].filter(Boolean))) ].join(', ');
       avisos.push(`lámina ${+lam.dataset.i + 1}: falta el ancla «${!eb ? c.a : c.de}» (anclas de esta lámina: ${hay})`); return;
     }
     const A = ea ? caja(ea, lam) : null, B = caja(eb, lam), p = c.p || 0;
@@ -327,6 +327,14 @@
         return;
       }
       case 'llave': {
+        if (c.vertical) {
+          const ev = ancla(esc, c.via); if (!ev) return;
+          const x = Math.max(A.x + A.w, B.x + B.w) + 28, y0 = Math.min(A.y, B.y), y1 = Math.max(A.y + A.h, B.y + B.h), ym = (y0 + y1) / 2;
+          const d = `M${x} ${y0} Q${x+22} ${y0} ${x+22} ${y0+24} L${x+22} ${ym-24} Q${x+22} ${ym} ${x+48} ${ym} Q${x+22} ${ym} ${x+22} ${ym+24} L${x+22} ${y1-24} Q${x+22} ${y1} ${x} ${y1}`;
+          const tr = trazo(svg, d, { color: TONO[c.tono] || C.rojo, ancho: 5, p, clase: 'llave' });
+          Object.assign(tr.dataset, { de: c.de, a: c.a, via: c.via });
+          return;
+        }
         const eV = c.via && ancla(esc, c.via); if (!eV) return;
         const V = caja(eV, lam);
         // Llave alta [c_0635]: las puntas ~24 px bajo el centro de cada rama, los brazos bajan en curva amplia ~9% del alto
@@ -368,16 +376,33 @@
 
   // ---------- marcas sobre texto e imágenes ----------
   const pasoDe = e => +((e.closest('[data-p]') || {}).dataset || {}).p || 0;
+  function abrirEspacioSubrayados(esc, lam) {
+    // Un hueco [DATO] subrayado: su borde punteado deja el trazo más abajo que la línea base, y sin aire el trazo caía
+    // pegado al borde o dentro del renglón siguiente (del mismo bloque o de otro: la nota, el sub de la frase). Se abre
+    // el espacio en el layout ANTES de dibujar: margen inferior del hueco = lo que falta para tinta + cola + aire.
+    dentro(esc, '[data-sub]').forEach(el => {
+      const huecos = [...el.querySelectorAll('.hueco.pendiente'), ...(el.matches('.hueco.pendiente') ? [el] : [])];
+      huecos.forEach(h => {
+        if (h.dataset.aireSub) return;
+        h.style.display = 'inline-block';
+        const b = caja(h, lam), em = parseFloat(getComputedStyle(h).fontSize) || 60;
+        const ancho = clamp(.055 * em, 4, 6), fondo = b.y + b.h + ancho / 2 + 6 + ancho + 4 + 8;
+        const zona = h.closest('.lienzo') || esc;
+        const abajo = rectsTexto(zona, lam).filter(q => q.y >= b.y + b.h - 2 && q.x < b.x + b.w && q.x + q.w > b.x);
+        if (!abajo.length) return;
+        const diferencia = fondo - Math.min(...abajo.map(q => q.y));
+        if (diferencia > 0) { h.style.marginBottom = Math.ceil(diferencia) + 'px'; h.dataset.aireSub = '1'; }
+      });
+    });
+  }
   function subrayados(esc, lam, svg, r) {
-    // Bajo los descendentes [ref_10, m_1060], con arco hacia arriba y flecha limitada también por el tamaño de letra.
-    // La línea base se mide en el texto real, incluso dentro de un hueco con borde o padding.
     dentro(esc, '[data-sub]').forEach(el => rectsTexto(el, lam).forEach(b => {
       const w = b.w, ancho = clamp(0.055 * b.em, 4, 6);
       const x0 = b.x + w * (0.01 + r() * 0.01), x1 = b.x + w * (1 - 0.03 - r() * 0.02);
       const cola = 2 + r() * 2;
       const huecos = [...el.querySelectorAll('.hueco'), ...(el.closest('.hueco') ? [el.closest('.hueco')] : [])]
         .map(h => caja(h, lam)).filter(h => h.x < x1 && h.x + h.w > x0 && h.y < b.y + b.h && h.y + h.h > b.y);
-      const suelo = Math.max(b.base + b.em * 0.12 + ancho / 2, ...huecos.map(h => h.y + h.h + ancho / 2 + 2));
+      const suelo = Math.max(b.base + b.em * 0.12 + ancho / 2, ...huecos.map(h => h.y + h.h + ancho / 2 + 6));
       const siguiente = rectsTexto(el.parentElement, lam).find(q => q.base > b.base + b.em * 0.5 && q.x < x1 && q.x + q.w > x0);
       const techo = siguiente ? siguiente.base - siguiente.asc - ancho / 2 - 2 : Infinity;
       const sag = Math.min(w * 0.005, b.em * 0.06, Math.max(0.1, techo - suelo - cola));
@@ -386,6 +411,7 @@
       const y0 = yBase + sag, y1 = y0 + cola;
       const d = `M${x0} ${y0} Q${(x0 + x1) / 2} ${(y0 + y1) / 2 - 2 * sag} ${x1} ${y1}`;
       const p = trazo(svg, d, { color: C.rojo, ancho, p: pasoDe(el), dur: 280, clase: 'subrayado' });
+      if (tope < suelo) p.dataset.sinEspacio = '1';
       Object.assign(p.dataset, { base: b.base, em: b.em, texto: el.textContent.trim(), x0: b.x, x1: b.x + b.w });
     }));
     dentro(esc, '[data-tachar]').forEach(el => {
@@ -406,11 +432,16 @@
       });
     });
   }
-  function elipse(svg, b, r, p, ancho = 4.8) {
-    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + Math.max(18, b.w * 0.07), ry = b.h / 2 + Math.max(14, b.h * 0.3);
+  function elipse(svg, b, r, p, ancho = 4.8, enLinea = false) {
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + (enLinea ? 14 : Math.max(18, b.w * 0.07)), ry = b.h / 2 + (enLinea ? 10 : Math.max(14, b.h * 0.3));
     const a0 = -2.4 + r() * 0.4, pts = [];
-    for (let i = 0; i <= 44; i++) { const a = a0 + (i / 44) * Math.PI * 2.12, k = 1 + (r() - 0.5) * 0.035 + (i / 44) * 0.05; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
-    trazo(svg, suave(pts), { color: C.rojo, ancho, p, dur: 520 });
+    for (let i = 0; i <= 44; i++) {
+      const a = a0 + (i / 44) * Math.PI * 2.12;
+      const k = enLinea ? 1 : 1 + (r() - 0.5) * 0.035 + (i / 44) * 0.05;
+      const aireX = enLinea ? (r() - .5) * 2 : 0, aireY = enLinea ? (r() - .5) * 2 : 0;
+      pts.push([cx + Math.cos(a) * (rx*k+aireX), cy + Math.sin(a) * (ry*k+aireY)]);
+    }
+    return trazo(svg, suave(pts), { color: C.rojo, ancho, p, dur: 520, clase: enLinea ? 'ovalo' : 'circulo' });
   }
   function cajaRoja(svg, b, p) {
     const x = b.x - 8, y = b.y - 5, w = b.w + 16, h = b.h + 10, k = 14;
@@ -419,7 +450,10 @@
   function circulos(esc, lam, svg, r) {
     dentro(esc, '[data-circulo]').forEach(el => {
       const b = caja(el, lam), p = pasoDe(el);
-      if (el.dataset.circulo === 'caja') cajaRoja(svg, b, p); else elipse(svg, b, r, p);
+      if (el.dataset.circulo === 'caja') cajaRoja(svg, b, p); else {
+        const tr = elipse(svg, b, r, el.dataset.circuloP != null ? +el.dataset.circuloP : p, 4.8, el.dataset.circulo === 'linea');
+        if (el.dataset.circulo === 'linea') tr.dataset.a = el.dataset.w || 'ovalo';
+      }
     });
     dentro(esc, '[data-circulo-img]').forEach(el => {
       const B = caja(el, lam), [x, y, w, h] = el.dataset.circuloImg.split(',').map(Number);
@@ -488,6 +522,21 @@
   function igualarFilas(lam) {
     lam.querySelectorAll('.fila-igual').forEach(fila => {
       const nodos = [...fila.children].filter(c => c.classList.contains('nodo') && !c.classList.contains('nodo-aparte')), n = nodos.length; if (n < 2) return;
+      if (fila.classList.contains('flujo-con-texto')) {
+        const visuales = nodos.map(nd => nd.querySelector(':scope > [data-a]'));
+        const altoVisual = Math.max(0,...visuales.filter(Boolean).map(e => e.offsetHeight));
+        nodos.forEach((nd,i) => {
+          if (visuales[i]) {
+            visuales[i].style.height = altoVisual + 'px';
+            if (!nd.querySelector(':scope > .etiqueta')) {
+              const altoEtiqueta = Math.max(0,...nodos.map(n => n.querySelector(':scope > .etiqueta')?.offsetHeight || 0));
+              nd.style.paddingTop = (altoVisual/2 + 34 + altoEtiqueta/2) + 'px';
+            }
+          }
+          else nd.style.paddingTop = (altoVisual ? altoVisual + (parseFloat(getComputedStyle(nd).rowGap) || 34) : 0) + 'px';
+          nd.style.alignSelf = 'start';
+        });
+      }
       const etqs = nodos.map(nd => nd.querySelector(':scope > .etiqueta')).filter(Boolean); if (!etqs.length) return;
       const lz = fila.closest('.lienzo'); if (!lz) return;
       const cs = getComputedStyle(lz), util = lz.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
@@ -497,7 +546,19 @@
       etqs.forEach(e => e.classList.add('corta'));
       const ancho = () => Math.max(...nodos.map(nd => Math.max(...[...nd.children].map(c => c.scrollWidth || c.offsetWidth))));
       const cabe = () => n * ancho() + (n - 1) * gap <= util;
-      if (!cabe() && !fijo) { gap = Math.max(90, Math.min(gap, (util - n * ancho()) / (n - 1))); fila.style.gap = gap + 'px'; }
+      if (!cabe() && !fijo) { gap = Math.max(Number(fila.dataset.gapMin) || 90, Math.min(gap, (util - n * ancho()) / (n - 1))); fila.style.gap = gap + 'px'; }
+      // Antes de reducir la letra se prueba el ancho propio de cada nodo.
+      if (!cabe()) {
+        fila.style.gridAutoColumns = 'max-content';
+        const anchoReal = nodos.reduce((s,nd) => s + nd.getBoundingClientRect().width,0) + (n-1)*gap;
+        if (anchoReal <= util + .5) {
+          fila.dataset.columnas = 'propias';
+          fila.dataset.igualada = String(base);
+          return;
+        }
+      }
+      delete fila.dataset.columnas;
+      fila.style.gridAutoColumns = '1fr';
       let te = base;
       while (!cabe() && te - 4 >= piso) { te -= 4; nodos.forEach(nd => nd.style.setProperty('--te', te + 'px')); }
       if (!cabe()) etqs.forEach(e => e.classList.remove('corta'));
@@ -535,7 +596,14 @@
     const puestas = [];
     lam.querySelectorAll(':scope > .anotacion[data-sobre]').forEach(n => {
       if (n.dataset.fija) { puestas.push(caja(n, lam)); return; }
-      const el = ancla(lam, n.dataset.sobre); if (!el) return;   // la conexión avisa que falta el ancla
+      const el = ancla(lam, n.dataset.sobre); if (!el) return;
+      if (n.dataset.llaveHasta) {
+        const fin = ancla(lam, n.dataset.llaveHasta); if (!fin) return;
+        const a = caja(el, lam), b = caja(fin, lam);
+        n.style.left = (Math.max(a.x+a.w, b.x+b.w)+100) + 'px';
+        n.style.top = ((Math.min(a.y,b.y)+Math.max(a.y+a.h,b.y+b.h))/2-n.offsetHeight/2) + 'px';
+        puestas.push(caja(n,lam)); return;
+      }   // la conexión avisa que falta el ancla
       // sobre una captura, la nota va FUERA de ella (al lado del ancla, a la altura de lo que señala) [28:35]
       const A0 = caja(el, lam), cap = el.closest('.captura'), R = cap && cap !== el ? caja(cap, lam) : A0;
       const cont = el.closest('.captura, .tarjeta, .burbuja, .rejilla, .post, .bento, .cuadro') || el, C = caja(cont, lam);
@@ -652,6 +720,8 @@
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       [h, ...h.querySelectorAll('*')].forEach(e => {
         if (e.closest('svg') && e.tagName !== 'svg') return;
+        // el rótulo de procedencia va pegado a la esquina del lienzo (absoluto): no es contenido que haya que encajar
+        if (e.classList.contains('procedencia') && getComputedStyle(e).position === 'absolute') return;
         const r = e.getBoundingClientRect(); if (!r.width && !r.height) return;
         x0 = Math.min(x0, r.left); x1 = Math.max(x1, r.right); y0 = Math.min(y0, r.top); y1 = Math.max(y1, r.bottom);
       });
@@ -744,6 +814,7 @@
     lam.querySelectorAll('[data-hasta]').forEach(e => e.classList.toggle('pasado', paso > +e.dataset.hasta));
     lam.querySelectorAll('[data-atenuar]').forEach(e => e.classList.toggle('atenuado-paso', paso >= +e.dataset.atenuar));
     // opciones: las no elegidas se apagan en el paso del clic (antes, la encuesta ya mostraba la respuesta)
+    lam.querySelectorAll('[data-rafaga]').forEach(e => { const p = +e.dataset.p; e.classList.toggle('oculto', p > paso || (p === paso && !fin && t < (+e.dataset.retraso || 0))); });
     lam.querySelectorAll('[data-apagar-p]').forEach(e => e.classList.toggle('apagada', paso >= +e.dataset.apagarP));
     lam.querySelectorAll('[data-oscuro-p]').forEach(e => e.classList.toggle('encendido', paso >= +e.dataset.oscuroP));
     // En modo seco (el del video) la tinta a mano ENTRA COMPLETA con su elemento, en el mismo cuadro del corte
@@ -758,8 +829,7 @@
     lam.querySelectorAll('[data-cabeza]').forEach(e => {
       const p = pasoTrazo(e); e.style.opacity = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : !suave || t >= 280 ? 1 : 0;
     });
-    const s = lam.querySelector('.sello[data-p]');
-    if (s) {
+    lam.querySelectorAll('.sello[data-p]').forEach(s => {
       const p = +s.dataset.p; let sc = 1, o = 1, ox = 0;
       if (!fin && p === paso) {
         const k = clamp(t / 150);
@@ -767,7 +837,7 @@
         else { const d = t - 150; ox = d < 180 ? Math.sin(d / 14) * (1 - d / 180) * 7 : 0; }
       }
       s.style.opacity = o; s.style.transform = `translate(-50%,-50%) translate(${ox}px,0) rotate(-5deg) scale(${sc * (+s.dataset.k || 1)})`;
-    }
+    });
     lam.querySelectorAll('.cursor[data-p]').forEach(cur => {
       const p = +cur.dataset.p, onda = cur.parentElement.querySelector(':scope > .onda');
       const arrastra = cur.dataset.fx != null;
@@ -833,7 +903,7 @@
       return fin;
     }
     if (lam.querySelector(`.sello[data-p="${paso}"]`)) return 400;
-    let m = 0;
+    let m = Math.max(0,...[...lam.querySelectorAll('[data-rafaga]')].filter(e => +e.dataset.p === paso).map(e => (+e.dataset.retraso || 0)+250));
     // en seco solo cuenta lo que crece (la máscara de la ruta punteada); la tinta a mano entra completa y no suma
     const suave = document.body.dataset.anim === 'suave';
     lam.querySelectorAll('[data-trazo]').forEach(e => {
@@ -856,7 +926,7 @@
     const lams = [...document.querySelectorAll('.lamina')];
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     // Una lámina con un error no tumba al resto: se avisa y se sigue
-    lams.forEach(l => { try { igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
+    lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });

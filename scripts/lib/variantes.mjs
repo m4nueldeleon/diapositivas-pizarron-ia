@@ -37,9 +37,9 @@ function reglasLetras(l, donde) {
 function reglasRespuestas(l, donde) {
   if (l.tipo !== 'chat') return [];
   return (l.mensajes || []).flatMap((m, i) => {
-    if (m.de !== 'respuesta' || m.ejemplo === true) return [];
-    if (!fuente(m.fuente)) return [`${donde}: respuesta ${i + 1} sin fuente; añade fuente con fecha o ejemplo: true para mostrar el sello EJEMPLO`];
-    return fecha(m.fuente) ? [] : [`${donde}: la fuente de respuesta ${i + 1} necesita fecha para documentar el resultado real`];
+    if (m.de !== 'respuesta' || m.ejemplo === true || l.procedencia === 'ejemplo') return [];
+    if (!fuente(m.fuente || l.fuente)) return [`${donde}: respuesta ${i + 1} sin fuente; añade fuente con fecha o ejemplo: true para mostrar el sello EJEMPLO`];
+    return fecha(m.fuente || l.fuente) ? [] : [`${donde}: la fuente de respuesta ${i + 1} necesita fecha para documentar el resultado real`];
   });
 }
 export function reglasVariantes(deck, { crudo } = {}) {

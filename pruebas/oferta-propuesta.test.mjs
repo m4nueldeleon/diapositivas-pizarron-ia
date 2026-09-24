@@ -18,7 +18,7 @@ const completa = () => ({ pieza: 'propuesta', laminas: [
   cifra(['{{VENDEDORES}} vendedores × {{HORAS}} h', '= __{{HORAS_MES}} horas al mes__'], { fuente: 'llamada de diagnóstico', voz: ['En la llamada me diste tus números.', 'Son {{HORAS_MES}} horas al mes.'] }),
   idea('Hoy eso te cuesta **{{COSTO_MES}} al mes**'),
   { tipo: 'flujo', nodos: [{ emoji: '📲', etiqueta: 'Aprende' }, { emoji: '🤖', etiqueta: 'Aplica' }] },
-  idea('Desde 2016, **más de 300 empresas** capacitadas'),
+  idea('Desde 2016, **más de 300 empresas** capacitadas', {fuente:'Registro confirmado'}),
   cifra(['{{CASO_ANTES}} → __{{CASO_DESPUES}}__'], { fuente: 'Cliente X, 2025' }),
   idea('De {{HOY}} a la meta, **medido en la semana 8**'),
   { tipo: 'lista', encabezado: 'No incluye:', vineta: 'x', items: ['Licencias', 'Integraciones'] },
@@ -45,7 +45,7 @@ test('propuesta sin cierre (termina en el precio): avisa llamado, «No incluye»
   const todos = [...reglasPropuesta(p).avisos, ...reglasArco(p).avisos, ...reglasCredibilidad(p).avisos].join('\n');
   for (const re of [/termina sin llamado/, /NO incluye/, /fecha ni vigencia/, /si no funciona/, /sin ancla/, /quién la imparte/, /caso ni una prueba/, /Pongamos que/]) assert.match(todos, re);
   // «40 personas» del cliente no es credibilidad del proveedor; «40 personas ya capacitadas» sí
-  assert.ok(!reglasCredibilidad({ ...p, laminas: [idea('Más de **400 personas ya capacitadas**'), ...p.laminas] }).avisos.some(a => /quién la imparte/.test(a)));
+  assert.ok(!reglasCredibilidad({ ...p, laminas: [idea('Más de **400 personas ya capacitadas**', {fuente:'Registro confirmado'}), ...p.laminas] }).avisos.some(a => /quién la imparte/.test(a)));
   // con el marcador en el deck crudo no se avisa el «Pongamos que…»
   const crudo = { laminas: [cifra(['{{VENDEDORES}} × {{HORAS}}', '= __{{HORAS_MES}}__']), ...p.laminas.slice(1)] };
   assert.ok(!reglasPropuesta(p, { crudo }).avisos.some(a => /Pongamos/.test(a)));
@@ -132,14 +132,14 @@ test('ficha de marca: cadena deck → arriba → $PIZARRON_MARCA → ~/.config; 
   assert.equal(f.marca, undefined);
   assert.match(f.aviso, /no se copia/);
   // la plantilla vacía no da firma ni vetadas
-  assert.deepEqual(leerFicha(fs.readFileSync(new URL('../templates/MI-MARCA.md', import.meta.url), 'utf8')), { firma: null, vetadas: [], datos: {} });
+  assert.deepEqual(leerFicha(fs.readFileSync(new URL('../templates/MI-MARCA.md', import.meta.url), 'utf8')), { firma: null, vetadas: [], datos: {}, credenciales: [] });
   assert.deepEqual(leerVetadas('- Palabras que nunca usas: hack, gurú\n'), ['hack', 'gurú']);
 });
 
 test('ficha de carruseles: se CONVIERTE (la cuenta y las vetadas), sin reglas de carrusel', () => {
   const carrusel = '## 1\n- **Cuenta de Instagram:** @manueldeleonmjr · ~509,000 seguidores\n## 3\n- **Palabras que NUNCA usas:** gurú/experto (de ti mismo) · secreto (como anzuelo vacío) · anglicismos con palabra en español (embudo, no funnel).\n- **Emojis:** 1-2 en el caption como máximo; nunca en las láminas.\n';
   const nueva = convertirFichaCarrusel(carrusel);
-  assert.deepEqual(leerFicha(nueva), { firma: { texto: '@manueldeleonmjr' }, vetadas: ['gurú', 'experto', 'secreto'], datos: {} });
+  assert.deepEqual(leerFicha(nueva), { firma: { texto: '@manueldeleonmjr' }, vetadas: ['gurú', 'experto', 'secreto'], datos: {}, credenciales: [] });
   assert.ok(!/nunca en las láminas/.test(nueva));
 });
 

@@ -1,3 +1,4 @@
+import { reglasMarcasYSuperficies, reglasEscalaTiempo, reglasIconosInversa } from './reglas-marcas.mjs';
 import { avisosProcedencia } from './imagenes.mjs';
 import { reglasVariantes } from './variantes.mjs';
 import { reglasQr } from './reglas-qr.mjs';
@@ -14,11 +15,11 @@ export { reglasSincronia, reglasPersona, infoPersona } from './sincronia.mjs';
 // son funciones puras para probarlas rápido (pruebas/reglas-deck.test.mjs).
 //
 // Todas devuelven { errores: [], avisos: [] } con mensajes accionables que citan la referencia o el archivo.
-import { plano, palabras } from './markup.mjs';
+import { plano, palabras, sinCitas } from './markup.mjs';
 import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
 import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedido, esGlifoDibujado } from './emoji.mjs';
-import { RELLENO, buscarMarca } from './marca.mjs';
+import { RELLENO, esFirmaRelleno, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
 import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 import { reglasRetornoMapa, reglasRespuestaObjecion, reglasReel, reelSinComo, reglasContrato, reglasPagoGancho, arcoDeck } from './reglas-arco.mjs';
@@ -98,11 +99,8 @@ export function reglasAnclaPrecio(deck, { crudo } = {}) {
 
 // ---------- firma ----------
 export function reglasFirma(deck) {
-  const m = deck.marca && typeof deck.marca === 'object' ? deck.marca : null;
-  if (!m || !m.texto) return { errores: [], avisos: [] };
-  const t = String(m.texto).trim(), junto = `${t}${m.sufijo || ''}`.replace(/\s+/g, '');
-  if (RELLENO.test(t) || RELLENO.test(junto)) return { errores: [`la firma «${junto}» es un valor de ejemplo: omite "marca" (las láminas salen sin firma) o pon la real`], avisos: [] };
-  return { errores: [], avisos: [] };
+  const porConfirmar = esFirmaRelleno(deck.marca) ? { FIRMA: { motivo: 'el encargo trae una firma de ejemplo: dame tu @, tu dominio o tu logo', laminas: (deck.laminas || []).map((_,i) => i+1) } } : {};
+  return { errores: [], avisos: [], porConfirmar };
 }
 
 // ---------- duración de la pieza (ARCOS.md) ----------
@@ -166,8 +164,8 @@ export function reglasApertura(deck, pasos) {
   const cam = t.find(s => s.camara && s.inicio < 10);
   if (cam) avisos.push(`${nombre(deck, cam.lamina)}: va a cámara en el segundo ${Math.round(cam.inicio)}; antes del segundo 10 va el resultado o el conflicto concreto, y el saludo después de la primera prueba (GUION §6.1; el nombre llega en 1:26)`);
   for (let i = 0; i < Math.min(2, L.length); i++) {
-    const txt = sinAcentos([...textosVisibles(L[i]), vozDe(L[i]), L[i].nota || ''].join(' '));
-    const cruda = [...textosVisibles(L[i]), vozDe(L[i])].join(' ');
+    const txt = sinAcentos(sinCitas([...textosVisibles(L[i]), vozDe(L[i]), L[i].nota || ''].join(' ')));
+    const cruda = sinCitas([...textosVisibles(L[i]), vozDe(L[i])].join(' '));
     if (SALUDO.test(txt) || /\bsoy [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/.test(cruda)) { avisos.push(`${nombre(deck, i)}: abre con saludo o presentación; el gancho (resultado, conflicto o escena) va primero (GUION §6.1)`); break; }
   }
   const primera = L.findIndex(l => l.tipo !== 'camara');
@@ -507,9 +505,11 @@ export function reglasDemostracion(deck) {
 // como dato pendiente aparte (borrador hasta llenarlo), no como «sin credibilidad».
 const NUM_O_HUECO = '(\\d[\\d,.]*|\\[[a-z0-9_]+\\]|\\{\\{\\s*[a-z0-9_]+\\s*\\}\\})';
 export const QUIENES_CREDIBILIDAD = ['anos', 'clientes', 'alumnos', 'estudiantes', 'eventos', 'empresas', 'negocios', 'personas', 'asistentes', 'casos', 'proyectos', 'consultores', 'coaches', 'profesionales', 'emprendedores', 'duenos', 'miembros', 'egresados', 'graduados', 'generaciones', 'pacientes', 'vendedores', 'agencias', 'marcas', 'seguidores', 'suscriptores', 'familias', 'comunidades', 'paises', 'ciudades', 'usuarios'];
-const CIFRA_CREDIBILIDAD = new RegExp(`${NUM_O_HUECO}\\s*\\+?\\s*(${QUIENES_CREDIBILIDAD.join('|')})\\b|\\bdesde (19|20)\\d\\d\\b`);
+// «desde 2020» o «desde {{ANO}}»: un año o un marcador, no cualquier número («desde 999 pesos» es un precio)
+const DESDE = '\\bdesde ((19|20)\\d\\d\\b|\\[[a-z0-9_]+\\]|\\{\\{\\s*[a-z0-9_]+\\s*\\}\\})';
+const CIFRA_CREDIBILIDAD = new RegExp(`${NUM_O_HUECO}\\s*\\+?\\s*(${QUIENES_CREDIBILIDAD.join('|')})\\b|${DESDE}`);
 // En propuestas, personas sin verbo de formación son el equipo del cliente, no credibilidad del proveedor.
-const CIFRA_PROVEEDOR = new RegExp(`\\bdesde (19|20)\\d\\d\\b|${NUM_O_HUECO}\\s*\\+?\\s*(${QUIENES_CREDIBILIDAD.filter(x => !['personas', 'asistentes', 'vendedores'].includes(x)).join('|')})\\b|${NUM_O_HUECO}\\s*\\+?\\s*(personas|vendedores|equipos|lideres)\\s+(ya\\s+)?(capacitad|formad|entrenad|atendid)`);
+const CIFRA_PROVEEDOR = new RegExp(`${DESDE}|${NUM_O_HUECO}\\s*\\+?\\s*(${QUIENES_CREDIBILIDAD.filter(x => !['personas', 'asistentes', 'vendedores'].includes(x)).join('|')})\\b|${NUM_O_HUECO}\\s*\\+?\\s*(personas|vendedores|equipos|lideres)\\s+(ya\\s+)?(capacitad|formad|entrenad|atendid)`);
 // Predicados que usan los avisos y faltaParaFinal (la misma condición, sin comparar textos de mensajes)
 export const hayPruebaReal = deck => deck.laminas.some(esPruebaReal);
 // Sustitutos de GUION §7 que QA cuenta como prueba para final (una captura real sigue siendo mejor):
@@ -547,23 +547,72 @@ export function pruebaDelDeck(deck) {
   return j >= 0 ? { tipo: sustitutoPrueba(deck.laminas[j]), lamina: j + 1 } : null;
 }
 const soloMaqueta = l => { const cs = capturasDe(l); return l.tipo === 'prueba' && cs.some(c => c.ejemplo === true) && cs.every(c => c.ejemplo === true || c.hueco); };
-export function hayCifraCredibilidad(deck) {
-  const L = deck.laminas, osc = L.findIndex(l => l.tipo === 'oscura' || l.oscura === true);
-  const fin = osc >= 0 ? osc : Math.ceil(L.length * 0.6);
-  return L.slice(0, fin).some(l => l.credibilidad === true || CIFRA_CREDIBILIDAD.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
+// Cada cifra se respalda por su propio marcador, fuente o credencial de la ficha.
+function frasesCredibilidad(l, proveedor = false) {
+  if (l.tipo === 'cifra' && /^\s*(si|cuando|con|pongamos|supongamos)\b/.test(sinAcentos(plano(l.arriba || ''))) && l.credibilidad !== true) return [];
+  const texto = sinAcentos([...textosVisibles(l), vozDe(l)].join(' '));
+  const patron = proveedor ? CIFRA_PROVEEDOR : CIFRA_CREDIBILIDAD;
+  const coincidencias = [...texto.matchAll(new RegExp(patron.source, 'g'))].map(m => m[0]);
+  return coincidencias.length ? coincidencias : l.credibilidad === true ? [texto] : [];
 }
-// Propuesta, bloque 4 (ARCOS.md): quién la imparte con una cifra suya, antes de la inversión, y un caso o una prueba
-export function hayCredencialProveedor(deck) {
-  const L = deck.laminas, inv = L.findIndex(esInversion);
-  return L.slice(0, inv >= 0 ? inv : L.length).some(l => l.credibilidad === true || CIFRA_PROVEEDOR.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
+function textoCredibilidadConOrigen(deck, l) {
+  // Se conserva la frase del dato, pero sus números quedan identificados por su origen.
+  const sustituir = texto => String(texto).replace(/\{\{\s*([A-Z0-9_]+)\s*\}\}/gi, (marca, clave) => {
+    const dato = deck.datos?.[clave.toUpperCase()];
+    if (!confirmado(dato)) return marca;
+    const valor = typeof dato === 'object' ? dato.valor : dato;
+    return String(valor).replace(/\d[\d,.]*/g, '{{CONFIRMADO}}');
+  });
+  return { ...l, texto: [...textosVisibles(l), vozDe(l)].map(sustituir).join(' '), voz: undefined };
+}
+function evaluarCredibilidad(deck, l, credenciales, proveedor = false, permitirHuecos = false) {
+  const normalizada = textoCredibilidadConOrigen(deck,l);
+  // No volver a recorrer otros campos: conservaríamos también sus números sin transformar.
+  const frases = frasesCredibilidad({ tipo:l.tipo, arriba:l.arriba, texto:normalizada.texto, credibilidad:l.credibilidad },proveedor);
+  if (!frases.length) return false;
+  if (conTexto(l.fuente)) return true;
+  return frases.every(frase => {
+    const marcadores = [...frase.matchAll(/\{\{\s*([a-z0-9_]+)\s*\}\}|\[([a-z0-9_]+)\]/g)].map(m => m[1] || m[2]);
+    const numeros = (frase.replace(/\{\{[^}]+\}\}|\[[^\]]+\]/g,'').match(/\d[\d,.]*/g) || []).map(n => n.replace(/[,.]/g,''));
+    return Boolean(marcadores.length || numeros.length)
+      && marcadores.every(k => k === 'confirmado' || permitirHuecos)
+      && numeros.every(n => credenciales.map(String).includes(n));
+  });
+}
+export function credibilidadConfirmada(deck, l, credenciales = []) {
+  return evaluarCredibilidad(deck,l,credenciales);
+}
+function candidataCredibilidad(deck, i, { crudo = deck, credenciales = [] } = {}, proveedor = false) {
+  const l = crudo.laminas?.[i] || deck.laminas[i];
+  return evaluarCredibilidad(crudo,l,credenciales,proveedor,true);
+}
+export function hayCifraCredibilidad(deck, opciones = {}) {
+  const L = deck.laminas, osc = L.findIndex(l => l.tipo === 'oscura' || l.oscura === true);
+  const fin = osc >= 0 ? osc : Math.ceil(L.length * .6);
+  return L.slice(0,fin).some((_,i) => candidataCredibilidad(deck,i,opciones));
+}
+export function hayCredencialProveedor(deck, opciones = {}) {
+  const inv = deck.laminas.findIndex(esInversion);
+  return deck.laminas.slice(0,inv >= 0 ? inv : deck.laminas.length).some((_,i) => candidataCredibilidad(deck,i,opciones,true));
+}
+export function reglasOrigenCredibilidad(deck, { crudo = deck, credenciales = [] } = {}) {
+  const avisos = [], laminas = [];
+  if (![...PIEZAS_VENTA,'propuesta'].includes(deck.pieza)) return { errores: [], avisos, porConfirmar: {} };
+  deck.laminas.forEach((l,i) => {
+    const original = crudo.laminas?.[i] || l, frases = frasesCredibilidad({ tipo:original.tipo, arriba:original.arriba, texto:textoCredibilidadConOrigen(crudo,original).texto, credibilidad:original.credibilidad }, deck.pieza === 'propuesta');
+    if (!frases.length || candidataCredibilidad(deck,i,{crudo,credenciales},deck.pieza === 'propuesta')) return;
+    laminas.push(i+1);
+    avisos.push(`${nombre(deck,i)}: “${[...new Set(frases)].join(' / ')}” no está en datos, en MI-MARCA ni tiene fuente: escríbela como {{ANOS}}/{{CLIENTES}} o confírmala en MI-MARCA (SKILL §0.4)`);
+  });
+  return { errores: [], avisos, porConfirmar: laminas.length ? { CREDIBILIDAD: { laminas, motivo: 'cifra de credibilidad sin origen confirmado' } } : {} };
 }
 // Un caso: una prueba real, cualquier lámina con `fuente` o el hueco declarado de un caso ([CASO…])
 export const hayCaso = deck => hayPruebaReal(deck) || deck.laminas.some(l => conTexto(l.fuente) || /\[CASO[A-Z0-9_]*\]/.test(textosVisibles(l).join(' ')));
-export function reglasCredibilidad(deck) {
+export function reglasCredibilidad(deck, opciones = {}) {
   const avisos = [], p = deck.pieza, L = deck.laminas;
   // la propuesta no lleva muro de capturas: bloque 4 de ARCOS (quién la imparte y un caso). Avisos orientativos.
   if (p === 'propuesta') {
-    if (!hayCredencialProveedor(deck)) avisos.push('la propuesta no dice quién la imparte con una cifra suya (años, clientes, empresas, «desde 20XX»): va antes de la inversión (ARCOS.md, propuesta, bloque 4). «40 personas» del cliente no cuenta. Si no hay cifra real, un sustituto de GUION §7; nunca inventada');
+    if (!hayCredencialProveedor(deck, opciones)) avisos.push('la propuesta no dice quién la imparte con una cifra suya (años, clientes, empresas, «desde 20XX»): va antes de la inversión (ARCOS.md, propuesta, bloque 4). «40 personas» del cliente no cuenta. Si no hay cifra real, un sustituto de GUION §7; nunca inventada');
     if (!hayCaso(deck)) avisos.push('la propuesta no trae un caso ni una prueba: un caso parecido al suyo con números y «fuente», o `{{CASO}}` declarado como pendiente; sin caso real, un sustituto de GUION §7 (ARCOS.md, propuesta, bloque 4)');
     return { errores: [], avisos };
   }
@@ -576,7 +625,10 @@ export function reglasCredibilidad(deck) {
     avisos.push(`sin prueba real en el ${p}: pide 1-3 capturas con permiso o usa un sustituto de GUION §7 (demostración con material real, caso con números y «fuente», dato de mercado publicado con «fuente» (búscalo, no de memoria), prueba lógica con la tasa en la condición o con «fuente», primeros casos con garantía medible)`);
     L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; cámbiala por una captura real o por un sustituto (GUION §7)`); });
   }
-  if (!hayCifraCredibilidad(deck)) avisos.push(`credibilidad sin cifra: di una cifra real de ${QUIENES_CREDIBILIDAD.join(', ')} antes de la revelación (GUION §7, beat 2: «desde 2016, más de 23,000 clientes»); si no los hay, omítelo, no lo inventes`);
+  // una cifra escrita SIN origen ya tiene su propio aviso (reglasOrigenCredibilidad): «sin cifra» sería falso
+  const osc = L.findIndex(l => l.tipo === 'oscura' || l.oscura === true), finCred = osc >= 0 ? osc : Math.ceil(L.length * .6);
+  const sinOrigenAntes = (reglasOrigenCredibilidad(deck, opciones).porConfirmar.CREDIBILIDAD?.laminas || []).some(n => n <= finCred);
+  if (!hayCifraCredibilidad(deck, opciones) && !sinOrigenAntes) avisos.push(`credibilidad sin cifra: di una cifra real de ${QUIENES_CREDIBILIDAD.join(', ')} antes de la revelación (GUION §7, beat 2: «desde 2016, más de 23,000 clientes»); si no los hay, omítelo, no lo inventes`);
   return { errores: [], avisos };
 }
 
@@ -674,17 +726,19 @@ export function reglasOferta(deck, { crudo } = {}) {
 
 // ---------- ¿qué le falta a una pieza de venta para llamarse final? (SKILL §6) ----------
 // Claves cortas, con los mismos predicados que los avisos. Solo en piezas que venden; una clase con nota ≥ 90 es final.
-export function faltaParaFinal(deck) {
+export function faltaParaFinal(deck, opciones = {}) {
   const p = deck.pieza, falta = [];
   if (PIEZAS_VENTA.includes(p)) {
     if (!pruebaDelDeck(deck)) falta.push('prueba real');
-    if (!hayCifraCredibilidad(deck)) falta.push('cifra de credibilidad');
+    if (!hayCifraCredibilidad(deck, opciones)) falta.push(reglasOrigenCredibilidad(deck, opciones).avisos.length ? 'cifra de credibilidad confirmada' : 'cifra de credibilidad');
+    if (tienePrecio(deck, opciones) && !hayGarantiaOSalida(deck, opciones)) falta.push('garantía o condición de salida');
     if (!hayObjecionAntes(deck)) falta.push('objeción antes del llamado');
     if (llamadosVisibles(deck) < 2) falta.push('2º llamado visible');
   }
   // un reel que promete un «cómo» y no lo enseña a la vista no es final (ARCOS §Reel)
   if (reelSinComo(deck)) falta.push('el cómo a la vista');
   if ([...PIEZAS_VENTA, 'propuesta'].includes(p) && !cierraConLlamado(deck)) falta.push('llamado final');
+  if (p === 'propuesta' && reglasOrigenCredibilidad(deck, opciones).avisos.length) falta.push('cifra de credibilidad confirmada');
   if (p === 'propuesta' && !hayInversion(deck)) falta.push('inversión');
   return falta;
 }
@@ -802,7 +856,7 @@ function conceptoRotulo(texto) {
 // Dos rótulos de una palabra con la misma raíz («venta»/«ventas», «cliente»/«clientes») son el mismo concepto.
 const mismoConcepto = (a, b) => a === b || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5));
 export function reglasConceptosIconos(deck) {
-  const avisos = [], anteriores = new Map(), reportados = new Set();
+  const avisos = [...reglasIconosInversa(deck).avisos], anteriores = new Map(), reportados = new Set();
   deck.laminas.forEach((l, i) => {
     if (['mapa', 'pasos', 'grafica'].includes(l.tipo) || l.como || l.paga) return;
     for (const e of emojisDeLamina(l)) {
@@ -1028,7 +1082,7 @@ export function reglasFuente(deck, { crudo } = {}) {
 // ---------- claves del deck que nadie lee ----------
 // `_datos`, `_marca`, `_duracion`: un aviso de entrega escondido en el deck no llega al usuario. Lo que el
 // usuario debe saber va en qa.json (datos propuestos, firma, duración) o en el mensaje de entrega.
-const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'datos', 'laminas', 'piel', '_comentario']);
+const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'garantia', 'avisos_aceptados', 'datos', 'laminas', 'piel', '_comentario']);
 export function reglasClaves(deck) {
   const avisos = [];
   Object.keys(deck).filter(k => !CLAVES_DECK.has(k)).forEach(k => avisos.push(k.startsWith('_')
@@ -1071,10 +1125,10 @@ export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
   const n = notaSinTope({ errores, avisos });
   return Object.keys(porConfirmar).length ? Math.min(n, TOPE_BORRADOR) : n;
 }
-// Estado, en orden: con errores → borrador → bajo-90 → falta-venta → listo. Los errores mandan aunque haya datos por
-// confirmar: un hueco declarado no puede esconder una marca rota o una firma de relleno a quien lee solo `estado`.
-export function estadoQA({ errores = [], borrador = false, nota = 100, falta = [], notaFinal = 90 } = {}) {
-  return errores.length ? 'con errores' : borrador ? 'borrador' : nota < notaFinal ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
+// Estado, en orden: con errores → borrador → bajo-90 → avisos-pendientes → falta-venta → listo. Los errores mandan aunque haya datos por
+// confirmar: un hueco declarado no puede esconder una marca rota a quien lee solo `estado`.
+export function estadoQA({ errores = [], borrador = false, nota = 100, falta = [], avisos = [], aceptados = [], notaFinal = 90 } = {}) {
+  return errores.length ? 'con errores' : borrador ? 'borrador' : nota < notaFinal ? 'bajo-90' : clasificarAvisos(avisos, aceptados).pendientes.length ? 'avisos-pendientes' : falta.length ? 'falta-venta' : 'listo';
 }
 
 // Contrato de presentación: la sala se declara aparte; Zoom también puede ser en vivo.
@@ -1102,24 +1156,105 @@ export function reglasPresentacion(deck, pasos = []) {
 
 // Todas juntas
 // `crudo`: el deck antes de sustituir `datos` (qa.mjs lo pasa); dice si un número vino de un {{MARCADOR}}
-export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [] } = {}) {
+export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], credenciales = [] } = {}) {
   const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck), tasa = reglasTasa(deck, { crudo }), promesa = reglasPromesa(deck);
   const cierre = cierreDeClase(deck, { crudo });
+  const origen = reglasOrigenCredibilidad(deck, { crudo, credenciales });
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
-    reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
+    reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck, { crudo, credenciales }), reglasDescargo(deck), reglasIconos(deck),
     reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck), reglasPagoGancho(deck), reglasNotasPonente(deck, pasos), reglasAnclaPrecio(deck, { crudo }),
-    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo })];
+    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo })];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
     duracion: partes[1].estimado,
     iconos: inventarioIconos(deck),
     ritmo: ritmo.ritmo,
-    porConfirmar: { ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
+    porConfirmar: { ...partes[0].porConfirmar, ...origen.porConfirmar, ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
       motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
-    faltaParaFinal: faltaParaFinal(deck),
+    faltaParaFinal: faltaParaFinal(deck, { crudo, credenciales }),
     prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,
     arco: arcoDeck(deck, pasos),
   };
+}
+
+// Reglas del deck completo (qa.mjs con la capa a mano medida en el DOM; qa-texto con la estimada del HTML)
+export function reglasDeckCompleto(deck, { manoPorLamina = [] } = {}) {
+  const avis = [];
+  const nombre = i => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
+  const porLamina = deck.laminas.map((l,i) => ({tipo:l.tipo, i, mano:manoPorLamina[i]}));
+  const sinCamara = porLamina.filter(l => l.tipo !== 'camara');
+  const tipos = sinCamara.map(l => l.tipo);
+  let racha = 1;
+  for (let i = 1; i < tipos.length; i++) { racha = tipos[i] === tipos[i - 1] ? racha + 1 : 1; if (racha === 4) avis.push(`«${tipos[i]}» se usa 4 veces seguidas (desde la lámina ${sinCamara[i - 3].i + 1}): alterna diseños`); }
+  const conteo = tipos.reduce((m, t) => ((m[t] = (m[t] || 0) + 1), m), {});
+  Object.entries(conteo).forEach(([t, c]) => { if (tipos.length >= 8 && c / tipos.length > 0.45) avis.push(`«${t}» es el ${Math.round((c / tipos.length) * 100)}% del deck (máximo 45%)`); });
+  let sinMano = 0;
+  porLamina.forEach(r => { if (r.tipo === 'camara') return; sinMano = r.mano ? 0 : sinMano + 1; if (sinMano === 4) avis.push(`4 láminas seguidas sin capa a mano (hasta la ${r.i + 1}): suma una nota, un subrayado o una flecha`); });
+  const oscuras = deck.laminas.filter(l => l.tipo === 'oscura' || l.oscura).length;
+  // La referencia solo oscurece REVELACIONES de marca o producto [36:15, 37:40, 43:00]; precio, qué incluye,
+  // garantía y llamado van en blanco [38:10-42:25]
+  // Sí van en oscura [37:40, 39:45, 36:30-36:40]: los PILARES (una lista de 2-5 ítems con emoji, sin ✅: no es «lo que
+  // incluye») y la cifra de para quién es o el ancla, justo después de otra oscura.
+  const pilares = l => l.tipo === 'lista' && Array.isArray(l.items) && l.items.length >= 2 && l.items.length <= 5
+    && l.items.every(it => it && typeof it === 'object' && typeof it.emoji === 'string' && it.emoji.trim()) && !['check', 'si', '✅'].includes(l.vineta)
+    && !l.items.some(it => /✅/.test(it.emoji));
+  deck.laminas.forEach((l, i) => {
+    if (!l.oscura || l.tipo === 'oscura') return;
+    if (pilares(l)) return;
+    if (l.tipo === 'cifra' && i > 0 && deck.laminas[i - 1] && (deck.laminas[i - 1].tipo === 'oscura' || deck.laminas[i - 1].oscura)) return;
+    if (['lista', 'cifra', 'tabla', 'tarjetas', 'stack'].includes(l.tipo) || (l.tipo === 'idea' && palabras(l.texto) > 12)) {
+      avis.push(`${nombre(i)}: «oscura» en un(a) ${l.tipo}; la referencia solo oscurece la revelación de la marca o el producto (el precio y lo que incluye van en blanco)`);
+    }
+  });
+  // Objeciones: una forma para todas (idea con «Objeción #N» y la respuesta en la lámina siguiente)
+  deck.laminas.forEach((l, i) => {
+    const cab = String((['lista', 'boton', 'tarjetas'].includes(l.tipo) && (l.encabezado || l.texto)) || '');
+    if (/^\s*(objeci[oó]n|raz[oó]n\s*#)/i.test(cab)) avis.push(`${nombre(i)}: la objeción va dentro de un(a) ${l.tipo}; dale su propia lámina \`idea\` con encabezado «Objeción #N» y la respuesta en la siguiente (GUION §2)`);
+  });
+  if (tipos.length >= 8 && oscuras / tipos.length > 0.15) avis.push(`${oscuras} láminas oscuras: resérvalas para revelar el producto o la oferta (≤ 15%)`);
+
+  return { errores: [], avisos: avis };
+}
+
+function laminasDelAviso(aviso) {
+  const numeros = [];
+  for (const m of aviso.matchAll(/láminas?\s+(\d+(?:(?:\s*[,y]\s*|\s*(?:[-–—]|a)\s*)\d+)*)/g)) {
+    const grupo = m[1];
+    for (const r of grupo.matchAll(/(\d+)(?:\s*(?:[-–—]|a)\s*(\d+))?/g)) {
+      const inicio = Number(r[1]), fin = Number(r[2] || r[1]);
+      for (let n=inicio; n<=Math.min(fin,inicio+10000); n++) numeros.push(n);
+    }
+  }
+  return [...new Set(numeros)];
+}
+export function clasificarAvisos(avisos = [], aceptaciones = []) {
+  const aceptados = [], pendientes = [];
+  for (const aviso of avisos) {
+    const laminas = laminasDelAviso(String(aviso));
+    const aceptacion = (Array.isArray(aceptaciones) ? aceptaciones : []).find(a => a && typeof a.motivo === 'string' && a.motivo.trim()
+      && typeof (a.texto || a.regla) === 'string' && (a.texto || a.regla).trim() && String(aviso).includes(a.texto || a.regla)
+      && (!a.laminas || (laminas.length && laminas.every(n => a.laminas.includes(n)))));
+    if (aceptacion) aceptados.push({ aviso, ...aceptacion }); else pendientes.push(aviso);
+  }
+  return { aceptados, pendientes };
+}
+
+export function hayGarantiaOSalida(deck, { crudo = deck } = {}) {
+  return deck.laminas.some((l,i) => SALIDA.test(sinAcentos(textosVisibles(l).join(' ')))
+    || (['idea','cifra'].includes(l.tipo) && [].concat(l.emoji || []).some(e => String(e).includes('🛡')))
+    || /\{\{GARANTIA(?:_[A-Z0-9]+)*\}\}|\[GARANTIA(?:_[A-Z0-9]+)*\]/.test(textosVisibles(crudo.laminas?.[i] || l).join(' ')));
+}
+function indicePrecio(deck, { crudo = deck } = {}) {
+  const osc = deck.laminas.findIndex(l => l.tipo === 'oscura' || l.oscura);
+  return deck.laminas.findIndex((l,i) => i > osc && (esInversion(l) || MONTO.test(sinAcentos(textosVisibles(l).join(' ')))
+    || /\{\{PRECIO(?:_[A-Z0-9]+)*\}\}|\[PRECIO(?:_[A-Z0-9]+)*\]/.test(textosVisibles(crudo.laminas?.[i] || l).join(' '))));
+}
+export const tienePrecio = (deck, opciones = {}) => indicePrecio(deck,opciones) >= 0;
+export function reglasGarantia(deck, opciones = {}) {
+  const i = indicePrecio(deck,opciones);
+  const avisos = PIEZAS_VENTA.includes(deck.pieza) && i>=0 && !hayGarantiaOSalida(deck,opciones)
+    ? [`${nombre(deck,i)}: hay precio a la vista y ninguna garantía ni condición de salida: agrega la idea 🛡️ con {{GARANTIA_DIAS}} y {{GARANTIA_CONDICION}} (pendientes si no están confirmadas), o declara garantia: false con una lámina de qué pasa si no funciona (GUION §7)`] : [];
+  return { errores: [], avisos };
 }

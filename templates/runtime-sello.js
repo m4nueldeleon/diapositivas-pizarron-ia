@@ -40,7 +40,9 @@
     return t;
   }
   function colocarSello(lam) {
-    const s = lam.querySelector(':scope > .sello'); if (!s) return;
+    lam.querySelectorAll(':scope > .sello').forEach(s => colocarUnSello(lam,s));
+  }
+  function colocarUnSello(lam, s) {
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
     let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
     let rejilla = null, burbuja = null, sobre = null;

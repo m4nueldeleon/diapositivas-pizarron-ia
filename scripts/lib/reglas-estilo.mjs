@@ -12,6 +12,9 @@ function textos(l) {
 export function reglasEstilo(deck) {
   const avisos = [];
   deck.laminas.forEach((l, i) => {
+    const cab = plano(l.encabezado || '');
+    if (/\s[·|]\s/.test(cab)) avisos.push(`lámina ${i+1}: el encabezado «${cab}» lleva metadatos separados por “·” (eyebrow); preséntalo con “:” o numéralo, y pasa la semana o el “ejemplo” al texto, a la línea de tiempo o a la voz (ESTILO §2)`);
+
     const nombre = `lámina ${i + 1} (${l.id || l.tipo})`;
     for (const t of textos(l)) {
       for (const m of t.matchAll(/\{([vr]):([^{}]+)\}/g)) {

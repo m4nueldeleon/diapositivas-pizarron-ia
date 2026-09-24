@@ -17,6 +17,12 @@ import path from 'node:path';
 // Valores de ejemplo que nunca son una firma real
 export const RELLENO = /^(tu ?marca(\.com)?|@?tu_?usuario|@?tu ?arroba|tu ?dominio(\.com)?|<.*>|ejemplo|marca|nombre)$/i;
 
+export function esFirmaRelleno(m) {
+  if (!m || typeof m !== 'object' || Array.isArray(m) || m.logo) return false;
+  const texto = String(m.texto || '').trim();
+  return Boolean(texto && (RELLENO.test(texto) || RELLENO.test(`${texto}${m.sufijo || ''}`.replace(/\s+/g, ''))));
+}
+
 export const rutaGlobal = (env = process.env) => path.join(env.HOME || os.homedir(), '.config', 'diapositivas-pizarron-ia', 'MI-MARCA.md');
 
 // Rutas candidatas, en orden
@@ -55,7 +61,7 @@ export function leerFirma(texto) {
   const t = String(texto || '');
   const firma = { texto: campo(t, 'Texto'), sufijo: campo(t, 'Sufijo'), logo: campo(t, 'Logo') };
   if (firma.logo && !/\.(png|jpe?g|webp|svg)$/i.test(firma.logo)) firma.logo = '';
-  if (firma.texto && (RELLENO.test(firma.texto) || RELLENO.test(`${firma.texto}${firma.sufijo}`.replace(/\s+/g, '')))) firma.texto = '';
+  if (esFirmaRelleno(firma)) firma.texto = '';
   if (!firma.texto && !firma.logo) return null;
   return Object.fromEntries(Object.entries(firma).filter(([, v]) => v));
 }
@@ -72,8 +78,14 @@ export function leerPuente(texto) {
   return out;
 }
 
+export function leerCredenciales(texto) {
+  const valor = campo(String(texto || ''), 'Credenciales o pruebas con permiso');
+  if (!valor || RELLENO_DATO.test(valor) || /ejemplo|<[^>]*>|\{\{|pendiente|por confirmar/i.test(valor)) return [];
+  return [...new Set((valor.match(/\d[\d,.]*/g) || []).map(n => n.replace(/[,.]/g, '')))];
+}
+
 export function leerFicha(texto) {
-  return { firma: leerFirma(texto), vetadas: leerVetadas(texto), datos: leerPuente(texto) };
+  return { firma: leerFirma(texto), vetadas: leerVetadas(texto), datos: leerPuente(texto), credenciales: leerCredenciales(texto) };
 }
 
 // La primera ficha que exista: { ruta, local (está en la carpeta del deck), firma, vetadas } o null
@@ -93,7 +105,7 @@ export function buscarMarca(dirDeck, { env = process.env } = {}) {
 export function firmaParaDeck(deck, dirDeck, opciones = {}) {
   const f = buscarMarca(dirDeck, opciones);
   const ficha = f ? f.ruta : null;
-  if (!deck || deck.marca !== undefined) return { marca: undefined, ruta: null, ficha, aviso: null };
+  if (!deck || (deck.marca !== undefined && !esFirmaRelleno(deck.marca))) return { marca: undefined, ruta: null, ficha, aviso: null };
   if (!f || !f.firma) return { marca: undefined, ruta: null, ficha, aviso: null };
   const { texto, sufijo, logo } = f.firma;
   const conLogo = logo && f.local;

@@ -107,7 +107,7 @@ test('iconos: ignora mapa, retornos como/paga y el mismo concepto resuelto', () 
     idea('Dinero', { emoji: '💰' }),
     idea('Tiempo', { emoji: '💰', como: 'idea' }),
     idea('Tiempo', { emoji: '💰', paga: 'idea' }),
-    { tipo: 'pasos', etiquetas: ['Tiempo'], iconos: ['💰'] },
+    { tipo: 'pasos', etiquetas: ['Tiempo'], iconos: ['⏳'] },
     { tipo: 'mapa', texto: 'Tiempo', emoji: '💰' },
   ]) assert.deepEqual(reglasConceptosIconos({ laminas: [primero, segundo] }).avisos, []);
 });

@@ -57,9 +57,9 @@ test('A5: procedencia decide la prueba; ejemplo tiene descargo opt-in', () => {
   assert.equal(sanearDeck({ laminas: [{ ...objeto, procedencia: 'inventada' }] }).deck.laminas[0].procedencia, undefined);
 });
 test('B2: lista cerrada de credibilidad y huecos', () => {
-  for (const texto of ['Más de 300 consultores', '+5,000 emprendedores', '2,000 miembros', '1,200 dueños de negocio', 'Trabajé con 40 marcas', 'Más de {{CLIENTES}} clientes']) assert.ok(hayCifraCredibilidad({ laminas: [idea(texto)] }), texto);
+  for (const texto of ['Más de 300 consultores', '+5,000 emprendedores', '2,000 miembros', '1,200 dueños de negocio', 'Trabajé con 40 marcas', 'Más de {{CLIENTES}} clientes']) assert.ok(hayCifraCredibilidad({ laminas: [idea(texto,{fuente:'Registro confirmado'})] }), texto);
   for (const texto of ['Más de 5 minutos', 'con 3 pasos', '10 horas', '45 días']) assert.equal(hayCifraCredibilidad({ laminas: [idea(texto)] }), false, texto);
-  assert.ok(hayCifraCredibilidad({ laminas: [idea('Trayectoria', { credibilidad: true })] }));
+  assert.equal(hayCifraCredibilidad({ laminas: [idea('Trayectoria', { credibilidad: true })] }),false);
 });
 test('B3: cómo acentuado, guion literal y gancho concreto', () => {
   assert.equal(prometeComo({ laminas: [idea('Cobra como experto')] }), false);

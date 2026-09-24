@@ -30,7 +30,7 @@ ficha global `~/.config/diapositivas-pizarron-ia/MI-MARCA.md` (`bash scripts/set
 misma cadena, `scripts/lib/marca.mjs`, y un deck sin `marca` toma la firma de ahí). De
 ahí salen la firma o logo, el formato por omisión, la paleta de emojis, el idioma y las «Palabras que
 nunca usas» (QA las lee). **Sin ficha, o con la firma vacía, omite `marca` en el deck**: las láminas
-salen sin firma. Nunca copies un valor de ejemplo («tumarca.com»): QA lo marca como error. Al entregar,
+salen sin firma. Nunca copies un valor de ejemplo («tumarca.com»): el render lo omite, avisa y deja FIRMA por confirmar (borrador). Al entregar,
 avisa en una línea: «Va sin firma: dame tu @, tu dominio o tu logo (PNG sin fondo) y la agrego».
 
 **Si no puedes preguntar** (agente de fondo, el mini, un loop, «hazlo»): los nombres y los tiempos del proceso
@@ -118,7 +118,7 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
   elementos vacíos, `voz` que no cuadra con los pasos y **datos pendientes** en MAYÚSCULAS entre
   corchetes (`[PRECIO]`, `[WHATSAPP]`), que salen como hueco amarillo. Estos últimos son un error por
   dato, con sus láminas, y quedan en `qa.json` → `pendientes`: se llenan en `"datos"` antes de entregar.
-- QA también lee el deck.json: firma de relleno (error), duración contra la pieza y peso de los tramos en
+- QA también lee el deck.json: firma de relleno (se omite y deja borrador), duración contra la pieza y peso de los tramos en
   vivo, apertura, fórmulas de IA, proyecciones sin condición, posts de maqueta con cifras, el llamado final,
   prueba real y credibilidad en piezas de venta, objeciones antes del llamado, descargos «de ejemplo» en
   pantalla, emojis parecidos o con rol contrario (`qa.json → iconos`) y claves `_…` que nadie lee
@@ -266,3 +266,7 @@ ejemplo. La siguiente vez se aplica sin que lo pida.
 #### Acceso en vivo
 
 Antes de presentar, abre la URL corta y estable del `qr` y prueba el código proyectado con iPhone y Android desde unos 15 m. Conserva cuatro módulos blancos alrededor y al menos 10 px por módulo a 1920. El cierre lleva QR, URL corta grande o palabra clave; un dominio de relleno impide la entrega. Usa `accion` para dar tiempo de escanear y `si_falla` para dictar la URL o la palabra clave.
+
+El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha`; cada aviso restante se corrige o entra en `avisos_aceptados` con su motivo. `garantia: false` requiere una lámina de condición de salida si hay precio público.
+
+Las láminas marcadas NO-VALE nunca son evidencia.

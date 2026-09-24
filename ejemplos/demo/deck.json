@@ -1051,6 +1051,250 @@
     "Pide un resumen con tres tareas concretas.",
     "Revisa las tareas antes de usarlas."
    ]
+  },
+  {
+   "id": "flujo-texto-r7",
+   "tipo": "flujo",
+   "encabezado": "Define:",
+   "nodos": [
+    {
+     "etiqueta": "Resultado"
+    },
+    {
+     "etiqueta": "Responsable"
+    },
+    {
+     "etiqueta": "Revisión"
+    }
+   ],
+   "voz": [
+    "Define el resultado.",
+    "Asigna una persona responsable.",
+    "Acuerda cuándo revisarlo."
+   ]
+  },
+  {
+   "id": "ovalo-r7",
+   "tipo": "idea",
+   "texto": "Recuerda ^^((2032))^^",
+   "anotaciones": [
+    {
+     "a": "ovalo",
+     "texto": "El año del plan",
+     "lado": "derecha"
+    }
+   ],
+   "voz": [
+    "Recuerda el año del plan.",
+    "Esta nota señala el año."
+   ]
+  },
+  {
+   "id": "correccion-r7",
+   "tipo": "idea",
+   "texto": "~~Todo al mismo tiempo~~",
+   "tachar_paso": 1,
+   "anotaciones": [
+    {
+     "a": "w0",
+     "texto": "Una tarea primero",
+     "tono": "v",
+     "lado": "abajo"
+    }
+   ],
+   "voz": [
+    "Todo al mismo tiempo.",
+    "Esa petición necesita un ajuste.",
+    "Pide una tarea primero."
+   ]
+  },
+  {
+   "id": "llave-r7",
+   "tipo": "lista",
+   "items": [
+    "Responsable",
+    "Fecha"
+   ],
+   "anotaciones": [
+    {
+     "llave": [
+      "i0",
+      "i1"
+     ],
+     "texto": "Acuerda ambos"
+    }
+   ],
+   "voz": [
+    "Elige al responsable.",
+    "Define la fecha.",
+    "Acuerda ambas cosas."
+   ]
+  },
+  {
+   "id": "contraste-r7",
+   "tipo": "lista",
+   "columnas": [
+    {
+     "titulo": "SÍ",
+     "tono": "v",
+     "vineta": "check",
+     "items": [
+      "Una tarea",
+      "Una fecha"
+     ]
+    },
+    {
+     "titulo": "NO",
+     "tono": "r",
+     "vineta": "cruz",
+     "items": [
+      "Todo junto",
+      "Sin revisar"
+     ]
+    }
+   ],
+   "nota": "Empieza pequeño",
+   "voz": [
+    "Pide una tarea.",
+    "Acuerda una fecha.",
+    "Evita pedir todo junto.",
+    "Revisa antes de continuar.",
+    "Empieza pequeño."
+   ]
+  },
+  {
+   "id": "agenda-r7",
+   "tipo": "agenda",
+   "dias": [
+    "Mar",
+    "Mié",
+    "Jue",
+    "Vie"
+   ],
+   "semanas": 4,
+   "inicio": 24,
+   "hoy": {
+    "semana": 2,
+    "dia": 2
+   },
+   "series": [
+    {
+     "dia": 1,
+     "texto": "Revisión",
+     "sub": "10:00",
+     "tono": "azul",
+     "paso": 1
+    },
+    {
+     "dia": 2,
+     "texto": "Sesión",
+     "sub": "Mentoría",
+     "tono": "verde",
+     "paso": 2
+    }
+   ],
+   "voz": [
+    "Mira las próximas cuatro semanas.",
+    "Reserva la revisión del martes.",
+    "Agrega la sesión del miércoles."
+   ]
+  },
+  {
+   "id": "invitacion-r7",
+   "tipo": "boton",
+   "variante": "invitacion",
+   "texto": "Revisión del plan",
+   "hora": "14:30",
+   "sub": "Videollamada",
+   "boton": "Unirme",
+   "voz": [
+    "La invitación incluye la hora y el botón para entrar."
+   ]
+  },
+  {
+   "id": "muro-r7",
+   "tipo": "chat",
+   "variante": "muro",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "Ya quedó"
+    },
+    {
+     "de": "otro",
+     "texto": "Lo probé"
+    },
+    {
+     "de": "otro",
+     "texto": "Entendido"
+    },
+    {
+     "de": "otro",
+     "texto": "Voy a empezar"
+    },
+    {
+     "de": "otro",
+     "texto": "Tengo la tarea"
+    },
+    {
+     "de": "otro",
+     "texto": "Nos vemos"
+    }
+   ],
+   "voz": [
+    "Estas son respuestas inventadas para mostrar el diseño.",
+    "Entra una fila por paso.",
+    "Aquí termina el muro."
+   ]
+  },
+  {
+   "id": "celular-r7",
+   "tipo": "chat",
+   "marco": "celular",
+   "encabezado": "__La conversación:__",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "¿Lo revisaste?"
+    },
+    {
+     "de": "yo",
+     "texto": "Falta la fecha."
+    },
+    {
+     "de": "otro",
+     "texto": "La ajusto hoy."
+    }
+   ],
+   "voz": [
+    "Alguien pregunta si lo revisaste.",
+    "Indicas qué falta.",
+    "Acuerdan corregirlo hoy."
+   ]
+  },
+  {
+   "id": "burbuja-r7",
+   "tipo": "prueba",
+   "capturas": [
+    {
+     "post": {
+      "texto": ["Documento de trabajo"],
+      "nombre": "Equipo"
+     },
+     "ejemplo": true
+    }
+   ],
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Revisa esta parte."
+    }
+   ],
+   "mensajes_pos": "izq",
+   "voz": [
+    "Este documento inventado muestra la superficie de prueba.",
+    "La burbuja aparece después."
+   ]
   }
  ]
 }

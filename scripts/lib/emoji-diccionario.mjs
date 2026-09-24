@@ -87,3 +87,5 @@ export function conceptoDe(spec, exacto = false) {
   const sinTono = s.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
   return sinTono !== s ? conceptoDe(sinTono) : null;
 }
+
+export const filasDelDiccionario = () => filasConcepto(fs.readFileSync(RUTA, 'utf8'));

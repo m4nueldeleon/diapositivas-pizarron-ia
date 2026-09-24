@@ -26,6 +26,12 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
 
 ## 2. Tipografía: dos voces
 
+El encabezado presenta lo que sigue (termina en “:” o “…”, como «Sin:») o numera («Objeción #2», «Paso 1»).
+Nunca lleva metadatos separados por “·”: módulo, semana, tema, «ficticio», «ejemplo» o «por confirmar» son un eyebrow.
+Contraejemplo: «Módulo 2 · semana 3 · delegación». Semana y módulo van en el texto o una `linea-tiempo`;
+que es ejemplo se dice una vez en la voz. Si no hay dato, {{MARCADOR}}.
+
+
 | Voz | Letra | Uso |
 |---|---|---|
 | **La voz del profesor** (sans) | Geométrica humanista: Figtree, la alternativa libre más cercana | La frase de la lámina, en regular, con la frase clave en **negrita**. |
@@ -130,6 +136,12 @@ todos lo leen igual en cualquier idioma. Es codificación dual (Paivio): la idea
 imagen y por la palabra al mismo tiempo.
 
 ## 5. La capa a mano: el profesor en el pizarrón
+
+El óvalo `((…))` cuenta como el único énfasis: no se combina con subrayado ni resaltador.
+Receta de credibilidad: cifra encerrada + nota colgada del óvalo.
+`idea` con `"texto": "Desde ^^(({{ANOS}}))^^"` y `"anotaciones": [{"a":"ovalo","texto":"Trayectoria confirmada","lado":"derecha"}]`.
+El dato lo aporta la ficha o queda pendiente; se copia el mecanismo de [una conferencia en vivo], nunca su cifra.
+
 
 Es lo que hace que se vea «hecho a mano pero pulido». Son trazos de marcador sobre un diseño
 limpio:

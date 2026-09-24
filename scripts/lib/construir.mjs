@@ -1,3 +1,5 @@
+import { agenda } from './layouts-interfaces.mjs';
+import { esFirmaRelleno } from './marca.mjs';
 // construir.mjs — deck.json → index.html autocontenido (fuentes, emojis e imágenes copiados a la salida).
 import fs from 'node:fs';
 import { revisarRecortes } from './imagenes.mjs';
@@ -14,6 +16,7 @@ import { duracionPaso } from './tiempos.mjs';
 import { describirPasos } from './pasos-mapa.mjs';
 
 export const LAYOUTS = {
+  agenda,
   idea: T.idea, lista: T.lista, flujo: T.flujo, pasos: T.pasos, bifurcacion: T.bifurcacion, cifra: T.cifra,
   foto: T.foto, anfitrion: T.anfitrion, cita: T.cita, objeto: T.objeto, tarjetas: T.tarjetas, oscura: T.oscura, cuadrantes: T.cuadrantes,
   tabla: D.tabla, grafica: D.grafica, 'linea-tiempo': D.lineaTiempo, medidor: D.medidor, opciones: D.opciones,
@@ -79,18 +82,24 @@ function armarLamina(l, i, deck, comun) {
   const ctx = crearCtx({ ...comun, uid: i, revelarTodo: l.revelar === 'todo' });
   const fn = LAYOUTS[l.tipo];
   let interior = fn(l, ctx);
+  if (l.tipo !== 'flujo' && Array.isArray(l.flechas)) l.flechas.forEach(f => ctx.con({de:f.de,a:f.a,estilo:f.estilo || 'recta',p:ctx.paso(f.paso ?? 0)}));
   let pasos = ctx.max + 1;
   let extras = '';
   // Anotaciones a mano con flecha sobre CUALQUIER diseño [15:00, 28:35, 2:40, 11:20, 36:45]: una nota en Caveat junto al
   // ancla `a` (del lado `lado`) con su gancho rojo, o, sin texto, con `entra`, una flecha larga que entra desde el borde
   // del lienzo hasta el ancla [15:00]. runtime.js la coloca (colocarAnotaciones) antes de dibujar la capa a mano. Las del
   // calendario con `dia` siguen siendo del calendario.
-  const anots = (Array.isArray(l.anotaciones) ? l.anotaciones : []).filter(a => a && typeof a === 'object' && typeof a.a === 'string' && a.a && !(l.tipo === 'calendario' && a.dia != null));
+  const anots = (Array.isArray(l.anotaciones) ? l.anotaciones : []).filter(a => a && typeof a === 'object' && ((typeof a.a === 'string' && a.a) || (Array.isArray(a.llave) && a.llave.length === 2)) && !(l.tipo === 'calendario' && a.dia != null));
   if (anots.length) {
     const k0 = ctx.paso(pasos);
     anots.forEach((a, i) => {
       const k = Number.isInteger(a.paso) ? ctx.paso(a.paso) : k0;
       const tono = ['r', 'v', 'n'].includes(a.tono) ? a.tono : 'r';
+      if (Array.isArray(a.llave)) {
+        extras += `<div class="nota anotacion tono-${tono}"${ctx.P(k)}${ctx.A('anota'+i)} data-sobre="${escapar(a.llave[0])}" data-llave-hasta="${escapar(a.llave[1])}">${marcar(a.texto)}</div>`;
+        ctx.con({ de: a.llave[0], a: a.llave[1], via: 'anota'+i, estilo: 'llave', vertical: true, tono, p: k });
+        pasos = Math.max(pasos,k+1); return;
+      }
       if (typeof a.texto === 'string' && a.texto.trim()) {
         const pos = [a.x != null ? `left:${typeof a.x === 'number' ? a.x + 'px' : a.x}` : '', a.y != null ? `top:${typeof a.y === 'number' ? a.y + 'px' : a.y}` : ''].filter(Boolean).join(';');
         extras += `<div class="nota anotacion tono-${tono}" data-p="${k}" data-a="anota${i}" data-sobre="${escapar(a.a)}" data-lado="${['izquierda', 'derecha', 'arriba', 'abajo'].includes(a.lado) ? a.lado : ''}"${pos ? ` data-fija="1" style="${pos}${a.tam ? `;--tn:${a.tam}` : ''}"` : a.tam ? ` style="--tn:${a.tam}"` : ''}>${marcar(a.texto)}</div>`;
@@ -99,6 +108,12 @@ function armarLamina(l, i, deck, comun) {
       pasos = Math.max(pasos, k + 1);
     });
   }
+  if (l.tipo === 'lista' && Array.isArray(l.columnas)) l.columnas.forEach((c,j) => {
+    if (!c.sello) return;
+    const k = ctx.paso(c.sello_paso ?? pasos);
+    extras += `<div class="sello" data-p="${k}" data-sobre="c${j}"><div class="sello-tinta">${escapar(c.sello)}</div></div>`;
+    pasos = Math.max(pasos,k+1);
+  });
   if (l.sello) {
     const k = ctx.paso(l.sello_paso ?? pasos);
     // posición: centrado en un ancla (sello_sobre), en una zona del lienzo (sello_pos) o al centro; el
@@ -128,6 +143,19 @@ function armarLamina(l, i, deck, comun) {
     interior = `<div class="con-qr"><div class="qr-contenido">${interior}</div>${bloqueQr(l.qr, ctx, pasos)}</div>`;
     pasos = ctx.max + 1;
   }
+  let palabra = 0;
+  // Todas las marcas reciben un alias estable en orden de lectura; el óvalo conserva su ancla fija.
+  const indexar = html => html.replace(/<[^>]+(?:data-sub|data-tachar(?:[ =>])|data-circulo="linea")[^>]*>/g, etiqueta => {
+    const ancla = ctx.A('w' + palabra++);
+    return etiqueta.replace(/>$/, (etiqueta.includes('data-a=') ? ancla.replace('data-a=', 'data-w=') : ancla) + '>');
+  });
+  interior = indexar(interior);
+  extras = indexar(extras);
+  if (l.circulo_paso != null) {
+    const marcarPaso = html => html.replace(/data-circulo="linea"/g, `data-circulo="linea" data-circulo-p="${ctx.paso(l.circulo_paso)}"`);
+    interior = marcarPaso(interior); extras = marcarPaso(extras);
+    pasos = Math.max(pasos,ctx.max+1);
+  }
   const revela = l.tipo === 'camara' ? [['a cámara']] : describirPasos(interior + extras, pasos, ctx.conexiones);
   return {
     interior, pasos, extras, oscura, revela, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
@@ -139,6 +167,7 @@ function armarLamina(l, i, deck, comun) {
 // anuncia al ojo que viene más [ref_95 «Without:», 3:25, 9:25]. Una lista que entra entera se queda
 // centrada [15:35]. `anclar: "arriba" | "centro"` lo fuerza en cualquier diseño.
 function anclaArriba(l) {
+  if (l.tipo === 'lista' && Array.isArray(l.columnas)) return false;
   if (l.anclar === 'centro') return false;
   if (l.anclar === 'arriba') return true;
   if (!['lista', 'tarjetas'].includes(l.tipo) || l.revelar === 'todo') return false;
@@ -208,10 +237,12 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
   const em = new Emojis({ modo: deck.emoji || 'auto', dirSalida, piel: deck.piel });
   const faltanFuentes = copiarFuentes(dirSkill, dirSalida);
   const ctxMarca = crearCtx({ em, dirDeck, dirSalida, formato, F });
-  const marca = em.enTexto(deck.marca === false ? '' : firma(deck.marca || {}, ctxMarca, F.W < F.H));
+  const marcaDeck = esFirmaRelleno(deck.marca) ? null : deck.marca;
+  if (esFirmaRelleno(deck.marca)) sugerencias.push(`firma de ejemplo «${deck.marca.texto}${deck.marca.sufijo || ''}» omitida: pon tu @, tu dominio o tu logo en "marca"`);
+  const marca = em.enTexto(marcaDeck === false ? '' : firma(marcaDeck || {}, ctxMarca, F.W < F.H));
   // ancho estimado de la firma cuando va ABAJO (la tabla-marcador le deja sitio en su última columna vacía)
-  const mf = deck.marca && deck.marca !== false && marca ? medidaFirma(deck.marca) : null;
-  const comun = { em, dirDeck, dirSalida, formato, F, firmaAncho: mf && posFirma(deck.marca, F.W < F.H) === 'abajo' ? mf.ancho : 0 };
+  const mf = deck.marca && deck.marca !== false && marca ? medidaFirma(marcaDeck) : null;
+  const comun = { em, dirDeck, dirSalida, formato, F, firmaAncho: mf && posFirma(marcaDeck, F.W < F.H) === 'abajo' ? mf.ancho : 0 };
   const avisos = [...avisosSaneo, ...ctxMarca.avisos];
   if (faltanFuentes.length) avisos.push(`Faltan tipografías (${faltanFuentes.join(', ')}): corre scripts/setup.sh`);
 
