@@ -298,7 +298,9 @@ export function reglasArco(deck) {
   const L = deck.laminas;
   if (CIERRE_POR_PIEZA[p] && !cierraConLlamado(deck)) {
     const que = p === 'propuesta' ? 'la inversión y el siguiente paso (firmar, agendar el arranque)' : p === 'reel' ? 'guardar o comentar la palabra clave' : 'qué hacer ahora (botón, palabra clave, link o próxima clase)';
-    avisos.push(`el deck (${p}) termina sin llamado visible ni siguiente paso: cierra con ${que} a la vista, no solo en la voz (ARCOS.md)`);
+    // Un tutorial que cierra con una tarea suele ser un taller: la tarea cuenta como cierre con "clase": true y su puente
+    const taller = p === 'tutorial' && !esClase(deck) ? '; si es un taller o clase express que cierra con una tarea, marca "clase": true y pon el puente (próxima clase o comunidad)' : '';
+    avisos.push(`el deck (${p}) termina sin llamado visible ni siguiente paso: cierra con ${que} a la vista, no solo en la voz${taller} (ARCOS.md)`);
   }
   if (p === 'reel' && llamadosVisibles(deck) > 1) avisos.push(`el reel lleva ${llamadosVisibles(deck)} llamados visibles separados: un reel lleva 1 (guardar o comentar), al final (ARCOS.md)`);
   if (p === 'propuesta' && !hayInversion(deck)) avisos.push('la propuesta no tiene lámina de inversión: pon el monto (o {{PRECIO}} si aún no está) en una `cifra` o `idea` antes del siguiente paso (ARCOS.md, propuesta)');

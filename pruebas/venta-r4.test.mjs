@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { reglasArco, reglasDuracion, reglasApertura, reglasObjecion, inicioOferta, llamadoAntesDeRevelar, canalesDeLlamado,
-  cierraConLlamado, revisarDeck } from '../scripts/lib/reglas-deck.mjs';
+  cierraConLlamado, cierreDeClase, revisarDeck } from '../scripts/lib/reglas-deck.mjs';
 import { PIEZAS } from '../scripts/lib/tiempos.mjs';
 
 const idea = (texto, extra = {}) => ({ tipo: 'idea', emoji: '💡', texto, ...extra });
@@ -84,4 +84,16 @@ test('clase express: tutorial con "clase": true cierra con la próxima clase; un
 test('revisarDeck suma la regla de objeciones', () => {
   const d = { pieza: 'vsl-corto', laminas: [idea('x'), { ...obj, voz: 'La de siempre: no tengo tiempo.' }, idea('R')] };
   assert.ok(revisarDeck(d, unos(3)).avisos.some(a => /frecuente sin dato/.test(a)));
+});
+
+test('tutorial que cierra con una tarea: los dos avisos dicen la misma salida (clase express o llamado real), sin callejón', () => {
+  const tarea = { ...idea('Tu tarea: **sube tu encuesta**'), llamado: true };
+  const conLlamado = cierreDeClase({ pieza: 'tutorial', en_vivo: true, laminas: [idea('Paso'), tarea] }).avisos.join('\n');
+  assert.match(conLlamado, /en una tarea/);
+  assert.match(conLlamado, /"clase": true/);
+  const sinLlamado = reglasArco({ pieza: 'tutorial', en_vivo: true, laminas: [idea('Paso'), idea('Tu tarea: **sube tu encuesta**')] }).avisos.join('\n');
+  assert.match(sinLlamado, /termina sin llamado/);
+  assert.match(sinLlamado, /"clase": true/);
+  // en una clase express la tarea con su puente no pide nada más
+  assert.deepEqual(cierreDeClase({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), idea('Tu tarea: **sube tu encuesta**'), idea('Te espero en la próxima clase')] }).avisos, []);
 });

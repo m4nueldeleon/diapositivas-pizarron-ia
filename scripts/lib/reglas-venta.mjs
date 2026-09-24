@@ -79,7 +79,11 @@ export function cierreDeClase(deck, { crudo } = {}) {
     const crudos = textosCrudos(C[i] || l), junto = crudos.join(' / ');
     if (!crudos.length || !esTareaTexto(crudos[0])) return;
     if (/whatsapp|\bdm\b|link|liga|correo|https?:|\.com|\{\{/i.test(junto) || /\b[A-ZÁÉÍÓÚÑ]{2,}\b/.test(plano(junto))) return;
-    avisos.push(`${nombre(deck, i)}: \`llamado: true\` en una tarea («${plano(crudos[0]).slice(0, 40)}»): es para la flecha al link o la palabra clave, no para una tarea (ARCOS.md)`);
+    // En un tutorial que no es clase express, quitar el `llamado` deja el deck sin cierre: el aviso da la salida entera
+    const salida = deck.pieza === 'tutorial' && !esClase(deck)
+      ? '; si es un taller o clase express, marca "clase": true y cierra con la tarea y el puente (próxima clase o comunidad); si no, el llamado va en una lámina con el link o la palabra clave'
+      : '';
+    avisos.push(`${nombre(deck, i)}: \`llamado: true\` en una tarea («${plano(crudos[0]).slice(0, 40)}»): es para la flecha al link o la palabra clave, no para una tarea${salida} (ARCOS.md)`);
   });
   return { errores: [], avisos };
 }
