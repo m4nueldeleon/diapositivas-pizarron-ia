@@ -15,6 +15,11 @@ SKILL.md.
   (marca `SELLO`) y usa sus utilidades.
 - `templates/base.css` guarda los tokens medidos en la referencia. Si cambias un tamaño,
   justifícalo contra ella.
+- `scripts/lib/sincronia.mjs`: persona y sincronía pantalla↔voz sobre `revela`; las heurísticas avisan, la persona declarada contradictoria es error.
+- `scripts/lib/aritmetica.mjs`: cuentas de `cifra` con intervalos, continuaciones y tolerancia; contradicciones literales y proporciones de rejilla. Lo ambiguo se omite.
+- `scripts/lib/reglas-estilo.mjs`: avisos estrechos de color, mayúsculas y logos de herramientas en etiquetas.
+- `scripts/lib/qr.mjs` encapsula `qr-vendor/` (codificador MIT de terceros, sin npm ni red; no se edita), `reglas-qr.mjs`
+  revisa el acceso en vivo y `variantes.mjs` revisa bandas, siglas y prompt/respuesta. El QR añade un paso: alinea la voz.
 - `scripts/lib/tiempos.mjs` da el ritmo y la alineación global con la transcripción.
 - `scripts/qa.mjs` tiene reglas que cuentan. Cada regla nueva lleva su mensaje accionable y una
   prueba en `pruebas/qa-visual.test.mjs` (fixtures en `pruebas/fixtures/`).
@@ -51,7 +56,8 @@ SKILL.md.
 - `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA; con más
   de 20 láminas las pagina (`hoja-01.jpg`…, `hojas.json`). `render.mjs --pdf` usa `scripts/lib/pdf.mjs`: recaptura
   cada lámina sin cursor (una página por lámina; el stack con su remate en una banda) y en propuesta o VSL arma
-  `laminas-notas.pdf` con la voz como texto (`pdf.json` lo resume).
+  `laminas-notas.pdf` con la voz como texto (`pdf.json` lo resume). `--pdf-pasos` recaptura un estado por página,
+  sin cursor, y exporta `notas-por-paso.md` con `voz`, `accion` y `si_falla`. `--pasos` sigue siendo solo el mapa previo.
 - `ejemplos/vsl-corto/` (venta), `ejemplos/propuesta/` (los 9 bloques), `ejemplos/clase-express/` (tutorial con
   `"clase": true`) y `ejemplos/reel/` (9:16, el cómo a la vista) son los modelos de guion que se copian; `pruebas/ejemplos.test.mjs` exige que no den avisos de guion,
   que la revelación del VSL caiga entre el 55 y el 60% y que ningún ejemplo use un emoji de «Evita».

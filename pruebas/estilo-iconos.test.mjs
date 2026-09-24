@@ -56,14 +56,14 @@ test('emoji: en apple 📅 📆 🗓️ son un calendario SVG sin fecha y 🎟�
     const tel = e.html('📲️');
     assert.ok(tel.includes('url(#pz-pantalla)') && !tel.includes('<img'), '📲');
   }
-  assert.ok(esGlifoDibujado('🗓️') && esGlifoDibujado('📲') && !esGlifoDibujado('🏪'));
+  assert.ok(esGlifoDibujado('🗓️') && esGlifoDibujado('📲') && esGlifoDibujado('🏪'));
   assert.ok(esGlifoDibujado('🗓️', 'apple') && !esGlifoDibujado('🗓️', 'fluent') && esGlifoDibujado('📲', 'fluent'));
   // en apple el texto conserva sus emojis, salvo los que imprimen una fecha o texto en inglés
   const ap = new Emojis({ modo: 'apple', dirSalida: tmp() });
   assert.ok(ap.enTexto('Hoy 📅').includes('<svg'));
   assert.ok(ap.enTexto('Tu lugar 🎟️').includes('url(#pz-boleto)'));
   assert.equal(ap.enTexto('Listo ✅ 💰'), 'Listo ✅ 💰');
-  assert.ok(TEXTO_IMPRESO.apple['🏪'] && TEXTO_IMPRESO.fluent['🏪']);
+  assert.ok(!TEXTO_IMPRESO.apple['🏪'] && !TEXTO_IMPRESO.fluent['🏪']);
 });
 
 test('marcar: la palabra compuesta no se corta en el guion (word joiner) y plano() sale limpio', () => {
@@ -177,7 +177,7 @@ test('QA: letra secundaria bajo 48 px avisa; emoji con texto impreso avisa; mapa
     { tipo: 'pasos', iconos: ['🎯', '🧲', '📅', '🎟️', '⏰'], etiquetas: ['Promesa', 'Registros', 'Calendario', 'Apartado', 'Recordatorios'] },
   ]));
   assert.ok(r.avisos.some(e => /lámina 1 .*texto secundario\) se ve a \d+px/.test(e)), r.avisos.join('\n'));
-  assert.ok(r.avisos.some(e => /lámina 2 .*emoji con texto impreso en apple: 🏪 dice «24»/.test(e)), r.avisos.join('\n'));
+  assert.ok(!r.avisos.some(e => /lámina 2 .*emoji con texto impreso/.test(e)), r.avisos.join('\n'));
   assert.ok(!r.errores.some(e => /lámina 3 /.test(e)), r.errores.join('\n'));
 });
 

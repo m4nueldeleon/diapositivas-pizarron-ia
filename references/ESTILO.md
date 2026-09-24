@@ -246,3 +246,29 @@ de diagrama o lista ocupa menos del 35% del alto.
 - No lleva ilustraciones «de IA», personajes 3D inventados ni íconos de línea genéricos.
 - No lleva párrafos: si una lámina necesita más de 22 palabras, son dos láminas.
 - No usa colores decorativos: si algo es rojo, significa algo.
+
+
+### Perfil de sala (complemento de §2, §4, §7 y §8b)
+
+Solo se activa con `sala: true` o `{ "distancia_m": número positivo }`. En vivo por Zoom no implica sala.
+
+| Medida | Video | Sala |
+|---|---|---|
+| Elemento apagado que debe identificarse | 20 % | 35 % (`--apagado`) |
+| Rótulo de encabezado | 56 px | 64 px |
+| Consigna: ítems | 56 px | 64 px |
+| Nota manuscrita | 64 px | 88 px (piso 72) |
+| Fuente / pie | 40 / 36 px | 44 px |
+| Subtítulo / pastilla | 42 / 50 px | 56 px |
+| Fondo del foco | 20 % | 20 % (o `opacidad` explícita) |
+
+QA usa pisos de sala en tamaño nominal a 1920, medido en el render (con el encaje): principal 72, nota a mano 72,
+secundario 56, fuente 44 y rótulo gris («Paso 1», encabezado) 34 px. Bajar del piso es error: parte la lámina o sube
+`tam_texto`. El perfil de video conserva sus umbrales. Medido con una clase real en sala: el mapa apagado al 35 %
+se identifica sin competir con el paso activo; lo que el motor no agranda solo (etiquetas de flujo, listas y cuentas
+de 60-66 px) sale como error para que se decida. En 9:16 no se aplica sala.
+
+QA avisa runs `{v:…}` sin cifra, moneda, porcentaje, sí/ok/✓ o verbo de resultado (ganar, entrar, vender, cerrar,
+lograr). `{r:…}` pide una cifra negativa, no/✕, pérdida explícita o señal conectada (flecha, llave o subrayado).
+También avisa cuatro palabras largas consecutivas en mayúsculas en idea/lista/cifra/pasos. Sellos, secciones,
+stack, calendario, huecos, siglas cortas o con dígitos quedan fuera. Son avisos de lectura, no errores.

@@ -35,6 +35,7 @@ export function validarDatos(datos) {
   for (const [k, v] of Object.entries(datos)) {
     if (!CLAVE_VALIDA.test(k)) e.push(`datos: la clave «${k}» va en MAYÚSCULAS (letras, números, _ o -), como {{PRECIO}}`);
     if (esPendiente(v)) {
+      if (v.muestra != null && !(typeof v.muestra === 'string' && v.muestra.length <= 120)) e.push(`datos.${k}: muestra debe ser texto de hasta 120 caracteres`);
       if (!(typeof v.motivo === 'string' && v.motivo.trim())) e.push(`datos.${k}: un hueco a propósito dice por qué: { "pendiente": true, "motivo": "lo define dirección" }`);
       if (v.valor != null) e.push(`datos.${k}: lleva "valor" y "pendiente" a la vez: o el dato ya está (quita "pendiente") o falta (quita "valor")`);
     } else if (v && typeof v === 'object' && !Array.isArray(v) && v.pendiente != null && v.pendiente !== true) {
@@ -63,11 +64,15 @@ export function sustituirDatos(deck) {
     const v = esPropuesta(d) ? d.valor : d;
     if (propuesto && lamina != null) (propuestos[clave] = propuestos[clave] || new Set()).add(lamina + 1);
     if (v != null && typeof v !== 'object' && String(v).trim() !== '') return String(v);
+    if (/^LOGO_/.test(clave)) {
+      if (lamina != null) (declarados[clave] = declarados[clave] || { motivo: 'falta el logo oficial de la marca', laminas: new Set() }).laminas.add(lamina + 1);
+      return `[${clave}]`;
+    }
     if (lamina != null) (faltan[clave] = faltan[clave] || new Set()).add(lamina + 1);
     return `[${clave}]`;
   };
   const recorrer = (x, lamina, clave) => {
-    if (typeof x === 'string') return INTACTOS.has(clave) ? x : x.replace(RE_CLAVE, (_, k) => valor(k, lamina));
+    if (typeof x === 'string') return INTACTOS.has(clave) && !(clave === 'imagen' && /^\{\{\s*LOGO_[A-ZÁÉÍÓÚÑÜ0-9_ -]+\s*\}\}$/.test(x)) ? x : x.replace(RE_CLAVE, (_, k) => valor(k, lamina));
     if (Array.isArray(x)) return x.map(y => recorrer(y, lamina, clave));
     if (x && typeof x === 'object') return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, recorrer(v, lamina, k)]));
     return x;

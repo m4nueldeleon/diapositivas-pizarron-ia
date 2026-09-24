@@ -84,21 +84,21 @@ export function reglasRespuestaObjecion(deck) {
 // hacer: el prompt literal en un `chat` (mensaje `de: "yo"` que arranca con un verbo), una captura real (`prueba` con
 // `src`) o una foto del paso (`objeto` con `imagen`). Un botón «Enviar» solo no enseña qué escribir. Un reel de opinión
 // o de «3 errores» no promete un cómo y no se revisa.
-const PROMETE_COMO = /\b(puedes|como|pasos?|tareas?|delega\w*|prompts?|trucos?|haz esto)\b/;
+const PROMETE_COMO = /\b(pasos?|tareas?|delega\w*|prompts?|trucos?|haz esto|puedes (delegar|hacer|usar|pedir|copiar)|como (hacer|delegar|responder|cobrar|vender|lograr|usar|pedir|conseguir|evitar))\b/;
 const PROMPT = /^(haz(me)?|dame|escribe(me)?|redacta|resume(me)?|ordena|separa|genera|crea|lee|busca|pon|arma|dime|revisa|clasifica|saca|convierte|traduce|analiza|prepara|responde|contesta|lista|agrupa|ayudame|sugiere|compara|calcula|extrae|marca|archiva|manda|programa|agenda|toma|anota|transcribe)\b/;
 export const esPrompt = m => m && typeof m === 'object' && m.de === 'yo' && PROMPT.test(sinAcentos(plano(String(m.texto || ''))).replace(/^[^a-z]+/, ''));
-export const ensenaComo = l => l && ((l.tipo === 'chat' && Array.isArray(l.mensajes) && l.mensajes.some(esPrompt))
+export const ensenaComo = l => l && ((l.tipo === 'chat' && Array.isArray(l.mensajes) && (l.mensajes.some(esPrompt) || (l.mensajes.some(m => m && m.de === 'yo' && conTexto(m.texto)) && (l.guion === true || /\b(responde(le)?|contesta(le)?|dile|escribele|mandale|copia|pega|pregunta(le)?)\b|\basi\s*:?\s*$|:\s*$/.test(sinAcentos(l.encabezado || ''))))))
   || (l.tipo === 'prueba' && Array.isArray(l.capturas) && l.capturas.some(c => c && conTexto(c.src) && c.ejemplo !== true))
   || (l.tipo === 'objeto' && conTexto(l.imagen)));
 export function prometeComo(deck) {
   const L = deck.laminas, mapa = L.findIndex(l => l && l.tipo === 'pasos');
   const donde = [0, 1, mapa].filter((i, k, a) => i >= 0 && i < L.length && a.indexOf(i) === k);
-  return donde.some(i => PROMETE_COMO.test(sinAcentos(textosVisibles(L[i]).join(' / '))));
+  return donde.some(i => { const t = textosVisibles(L[i]).join(' / '); return /(^|[^\p{L}])c[óÓ]mo(?!\p{L})/u.test(t) || PROMETE_COMO.test(sinAcentos(t)); });
 }
 export const reelSinComo = deck => deck.pieza === 'reel' && prometeComo(deck) && !deck.laminas.some(ensenaComo);
 export function reglasReel(deck) {
   if (!reelSinComo(deck)) return { errores: [], avisos: [] };
-  return { errores: [], avisos: ['el reel promete un «cómo» (tareas, pasos, «puedes…») y ninguna lámina lo enseña: pon el prompt literal en un `chat` (mensaje `de: "yo"`), una captura real o la foto del paso; «Guarda este reel» solo sirve si hay algo que guardar a la vista (ARCOS §Reel, ejemplos/reel)'] };
+  return { errores: [], avisos: ['el reel promete un «cómo» (tareas, pasos, «puedes…») y ninguna lámina lo enseña: pon el texto literal (el prompt para la IA o el guion de respuesta para el cliente) en un `chat` (mensaje `de: "yo"`, `guion: true` o encabezado «Puedes responder así:»), una captura real o la foto del paso; «Guarda este reel» solo sirve si hay algo que guardar a la vista (ARCOS §Reel, ejemplos/reel)'] };
 }
 
 // ---------- métricas del arco (qa.json → arco) y el contrato de tiempo (ARCOS, GUION §6.1 [2:03]) ----------

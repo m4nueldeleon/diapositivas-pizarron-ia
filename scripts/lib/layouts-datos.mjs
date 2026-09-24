@@ -1,7 +1,7 @@
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
-import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas } from './comun.mjs';
-import { unirGuiones, plano } from './markup.mjs';
+import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas, rotuloProcedencia, imagenConHueco } from './comun.mjs';
+import { unirGuiones, plano, palabras } from './markup.mjs';
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
 const HEX = { v: '#22a812', r: '#c8101e', n: '#d0661a', g: '#9a9a9a', a: '#3ea6f2', k: '#111111' };
@@ -302,6 +302,13 @@ export function lineaTiempo(l, ctx) {
     return { t, a, b, mid: (a + b) / 2 };
   });
   const filaTramo = filasEtiquetas(tramos.map(q => q.mid), tramos.map(q => q.t.etiqueta || ''), tamTramo);
+  const ultimoTramo = Math.max(0, ...tramos.map(({ t }, i) => t.paso ?? i + 1));
+  const pasoMarca = (m, i) => {
+    if (m.paso != null) return m.paso;
+    if (!['r', 'v'].includes(m.tono)) return 0;
+    const j = tramos.findIndex(({ t }) => t.hasta === i);
+    return j >= 0 ? tramos[j].t.paso ?? j + 1 : ultimoTramo;
+  };
   let svg = `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#9a9a9a" stroke-width="4"/>`;
   tramos.forEach(({ t, a, b, mid }, i) => {
     const c = HEX[t.tono] || HEX.v;
@@ -312,7 +319,7 @@ export function lineaTiempo(l, ctx) {
       <text x="${mid}" y="${y - 122 * f - sube}" text-anchor="middle" class="t-mano" font-size="${tamTramo}" fill="${c}" font-family="Caveat" font-weight="600">${lab}</text>` : ''}</g>`;
   });
   marcas.forEach((m, i) => {
-    const c = HEX[m.tono] || '#9a9a9a', x = xs[i], k = m.paso ?? 0;
+    const c = HEX[m.tono] || '#9a9a9a', x = xs[i], k = pasoMarca(m, i);
     const col = m.tono ? c : '#8a8a8a', yT = y + 100 * f + filaAbajo[i] * 64 * f, yA = y - 56 * f;
     const guia = filaAbajo[i] ? `<line x1="${x}" y1="${y + 40 * f}" x2="${x}" y2="${yT - 50 * f}" stroke="${col}" stroke-width="3" stroke-dasharray="4 7" stroke-linecap="round"/>` : '';
     svg += `<g${ctx.P(k)}><line x1="${x}" y1="${y - 30 * f}" x2="${x}" y2="${y + 30 * f}" stroke="${col}" stroke-width="6" stroke-linecap="round"/>
@@ -320,7 +327,7 @@ export function lineaTiempo(l, ctx) {
       ${m.arriba ? `<text x="${x}" y="${yA}" text-anchor="middle" font-size="${Math.round(50 * f)}" font-weight="700" fill="${col}">${escapar(m.arriba)}</text>` : ''}</g>`;
   });
   const alto = Math.round(460 * f) + (filaAbajo.some(Boolean) ? Math.round(64 * f) : 0);
-  const ultimoLT = Math.max(0, ...tramos.map(({ t }, i) => t.paso ?? i + 1), ...marcas.map(m => m.paso ?? 0));
+  const ultimoLT = Math.max(ultimoTramo, ...marcas.map(pasoMarca));
   return `<div class="pila grafica">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0), ' style="margin-bottom:10px"')}
     <div${ctx.P(0)}><svg viewBox="0 0 ${W} ${alto}" width="${W}" height="${alto}" overflow="visible">${svg}</svg></div>
     ${nota(ctx, l.nota, l.nota_paso ?? (l.tramos || []).length + 1, 'mt-s')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', ultimoLT))}</div>`;
@@ -385,6 +392,26 @@ export function multitud(l, ctx) {
 export function rejilla(l, ctx) {
   if (l.multitud === true) return multitud(l, ctx);
   const total = Math.min(l.total || 100, 1200);
+  if (Array.isArray(l.bandas) && l.bandas.length) {
+    const cols = l.columnas || 10, rows = Math.ceil(total / cols), k0 = pasoDe(l, 'bandas_paso', 1);
+    // La rejilla cabe por ancho Y por alto: 10×10 a 1020 px de ancho daba 1000 px de alto y el lienzo se encogía al 74%.
+    const area = l.ancho || (ctx.vertical ? 550 : 1020), altoMax = l.alto || (ctx.vertical ? 900 : 620);
+    const c = Math.floor(Math.min(area / cols, altoMax / rows) / 1.16), g = Math.max(3, Math.floor(c * .16));
+    const celda = i => {
+      const n = total - 1 - i, banda = l.bandas.findIndex(b => n >= b.desde && n <= b.hasta);
+      return `<div class="banda-celda" style="width:${c}px;height:${c}px">${banda >= 0 ? `<div class="punto banda-color"${ctx.P(k0 + banda)} style="background:${COLOR[l.bandas[banda].tono] || COLOR.g}"></div>` : ''}</div>`;
+    };
+    const leyenda = (l.leyenda || []).map(x => {
+      const banda = Math.max(0, l.bandas.findIndex(b => b.tono === x.tono));
+      return `<div class="banda-dato"${ctx.P(k0 + banda)}><span class="banda-muestra" style="background:${COLOR[x.tono] || COLOR.g}"></span><div><b>${marcar(x.cifra || '')}</b>${x.nota ? `<div class="nota">${marcar(x.nota)}</div>` : ''}</div></div>`;
+    }).join('');
+    const b = Number.isInteger(l.encerrar) ? l.bandas[l.encerrar] : null;
+    const posiciones = b ? Array.from({ length: Math.max(0, Math.min(total - 1, b.hasta) - Math.max(0, b.desde) + 1) }, (_, j) => total - 1 - (Math.max(0, b.desde) + j)) : [];
+    const xs = posiciones.map(i => i % cols), ys = posiciones.map(i => Math.floor(i / cols));
+    const circulo = posiciones.length ? `<div class="banda-circulo" data-circulo${ctx.P(pasoDe(l, 'encerrar_paso', k0 + l.bandas.length))} style="left:${Math.min(...xs) * (c + g) - 8}px;top:${Math.min(...ys) * (c + g) - 8}px;width:${(Math.max(...xs) - Math.min(...xs) + 1) * (c + g) - g + 16}px;height:${(Math.max(...ys) - Math.min(...ys) + 1) * (c + g) - g + 16}px"></div>` : '';
+    const ultimo = b ? pasoDe(l, 'encerrar_paso', k0 + l.bandas.length) : k0 + l.bandas.length - 1;
+    return `<div class="pila">${rotulo(ctx, l)}<div class="bandas-comparacion" style="--banda-columnas:${cols};--banda-gap:${g}px;--banda-alto:${rows * (c + g) - g}px"><div class="bandas-leyenda">${leyenda}</div><div class="rejilla-bandas"${ctx.P(0)}${ctx.A('rejilla')}>${Array.from({ length: total }, (_, i) => celda(i)).join('')}${circulo}</div></div>${texto(ctx, l.texto, 'chico mt-m', pasoDe(l, 'texto_paso', 0))}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', ultimo))}</div>`;
+  }
   const aspecto = l.aspecto || 1.55;
   const cols = l.columnas || Math.max(1, Math.round(Math.sqrt(total * aspecto)));
   const rows = Math.ceil(total / cols);
@@ -476,8 +503,8 @@ export function prueba(l, ctx) {
       ].join('');
       dentro = `<img src="${ctx.img(c.src)}" alt=""${extra} style="${Number.isFinite(c.alto) ? `max-height:${c.alto}px` : ''}">`;
     }
-    const fuente = c.post && c.ejemplo !== true && typeof c.fuente === 'string' && c.fuente.trim() ? `<div class="fuente">${escapar(c.fuente)}</div>` : '';
-    return `<div class="captura"${k}${aCap} style="${giro}">${dentro}${aCirc}${fuente}</div>`;
+    const fuente = c.ejemplo !== true && typeof c.fuente === 'string' && c.fuente.trim() ? `<div class="fuente">${escapar(c.fuente)}</div>` : '';
+    return `<div class="captura"${k}${aCap} style="${giro}">${dentro}${aCirc}${fuente}${rotuloProcedencia(c.procedencia)}</div>`;
   }).join('');
   return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="pruebas">${html}</div>
     ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}</div>`;
@@ -489,13 +516,16 @@ export function prueba(l, ctx) {
 // cambian (la IA como 🤖), y `false` lo quita.
 export function chat(l, ctx) {
   const ms = l.mensajes || [];
+  const maxPalabras = Math.max(0, ...ms.map(m => palabras(m.texto)));
+  const tbVertical = ms.length <= 3 && maxPalabras <= 12 ? 76 : maxPalabras <= 12 ? 68 : maxPalabras <= 24 ? 64 : 58;
+  const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbVertical;
   const avatar = (m, yo) => {
     const spec = m.avatar ?? (yo ? l.avatar_yo : l.avatar_otro);
     if (spec === false) return '';
     const cls = yo ? 'yo-av' : 'otro-av';
     // El emoji llena ~85% del círculo, como la silueta del original [17:45, 19:00]: a 70/92 px quedaba en ~62% y el 🤖 de
     // «Te escribe tu IA» pesaba menos que el avatar del video. `avatar_tam` agranda los DOS avatares a la vez.
-    const tamEmo = Number.isFinite(l.avatar_tam) ? Math.round(l.avatar_tam * 0.85) : (ctx.vertical ? 82 : 108);
+    const tamEmo = Number.isFinite(l.avatar_tam) ? Math.round(l.avatar_tam * 0.85) : (ctx.vertical ? Math.round(tbAvatar * 1.3 * .85) : 108);
     return typeof spec === 'string' && spec ? `<div class="${cls} av-emo">${ctx.emoji(spec, tamEmo)}</div>` : `<div class="${cls}">${PERSONA}</div>`;
   };
   const html = ms.map((m, i) => {
@@ -504,15 +534,21 @@ export function chat(l, ctx) {
     // azul, como «[Name]» y «[topic]» en [21:55, c_1315]. Los [MAYÚSCULAS] (dato pendiente) ya los marcó marcar() como
     // `.hueco.pendiente`: son otra cosa y se ven distinto. Una variable corta no se parte; una de más de 3 palabras sí.
     const cuerpo = marcar(m.texto).replace(/(?<!class="hueco[^"]*">)\[([^\[\]<>]+)\]/g, (_, t) => `<span class="var-plantilla${t.trim().split(/\s+/).length > 3 ? ' largo' : ''}">[${t}]</span>`);
+    if (m.de === 'prompt' || m.de === 'respuesta') {
+      const k = l.revelar === 'todo' ? 0 : i, respuesta = m.de === 'respuesta';
+      const remitente = respuesta ? `<div class="nota chat-remitente">${marcar(m.remitente || 'Respuesta')}</div>` : '';
+      const pie = respuesta && m.ejemplo === true ? '<div class="chat-ejemplo">EJEMPLO</div>' : respuesta && m.fuente ? `<div class="fuente">${escapar(m.fuente)}</div>` : '';
+      return `<div class="chat-tarjeta ${respuesta ? 'respuesta' : 'prompt'}"${ctx.P(k)}${ctx.A('m' + i)}>${remitente}<div class="burbuja">${cuerpo}</div>${pie}</div>`;
+    }
     const av = avatar(m, yo), k = l.revelar === 'todo' ? 0 : i;
     // `hora`: el separador gris centrado de un chat real, en el mismo paso que su mensaje. Así el gancho se entiende
     // sin audio (11:40 pm … 9:05 am). Cada burbuja es un ancla m0…mN (sello_sobre: "m2", flechas).
     const hora = typeof m.hora === 'string' && m.hora.trim() ? `<div class="chat-hora"${ctx.P(k)}>${escapar(m.hora)}</div>` : '';
     return `${hora}<div class="msj ${yo ? 'yo' : 'otro'}"${ctx.P(k)}>${yo ? '' : av}<div class="burbuja"${ctx.A('m' + i)}>${cuerpo}</div>${yo ? av : ''}</div>`;
   }).join('');
-  const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ''].filter(Boolean);
+  const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : ctx.vertical && !l.tam_texto ? `--tb:${tbVertical}px` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ctx.vertical ? `--av:${Math.round(tbAvatar * 1.3)}px` : ''].filter(Boolean);
   const tb = vars.length ? ` style="${vars.join(';')}"` : '';
-  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div></div>`;
+  return `<div class="pila">${rotulo(ctx, ctx.vertical && !l.encabezado_estilo ? { ...l, encabezado_estilo: 'frase' } : l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div></div>`;
 }
 
 // REPARTO — pastilla verde (audiencia · ingresos) que se parte en «su parte» y «tu parte».
@@ -634,7 +670,7 @@ export function calificacion(l, ctx) {
     const kf = pasoFila.get(i), n = Math.min(max, f.estrellas || 0);
     // la mano y (sin acumular) las estrellas encendidas se van al paso siguiente
     const hasta = kf && kf < ultimo ? ` data-hasta="${ctx.paso(kf)}"` : '';
-    const llenas = kf ? `<div class="estrellas llenas"${ctx.P(kf)}${l.acumular ? '' : hasta}>${estrellas(n, max)}</div>` : '';
+    const llenas = kf ? `<div class="estrellas llenas" data-rotulo="${escapar(plano(f.texto || ''))}" data-cantidad="${n}"${ctx.P(kf)}${l.acumular ? '' : hasta}>${estrellas(n, max)}</div>` : '';
     const xs = (n - 1) * (tamS + gapS) + tamS / 2, ys = tamS * 0.62;   // punta del dedo sobre la última estrella encendida
     const mano = kf ? `<div class="cal-cursor"${ctx.P(kf)}${hasta} style="left:${Math.round(xs - 104 * 0.41)}px;top:${Math.round(ys - 119 * 0.03)}px">${CURSOR_MANO}</div>` : '';
     return `<div class="cal-fila">${f.emoji ? ctx.emoji(f.emoji, ctx.vertical ? 80 : 88) : ''}<span class="cal-texto">${marcar(f.texto || '')}</span>
@@ -795,7 +831,7 @@ function stackSangre(l, ctx) {
     usados.push(color);
     const clase = color ? `c-${color}` : TONO_PIEZA[it.tono];
     const span = [it.doble ? 'grid-column:span 2' : '', it.alto === 2 ? 'grid-row:span 2' : ''].filter(Boolean).join(';');
-    const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${tamE}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, tamE) : '';
+    const vis = it.imagen ? imagenConHueco(ctx, it.imagen, tamE) : it.emoji ? ctx.emoji(it.emoji, tamE) : '';
     return `<div class="bento"${span ? ` style="${span}"` : ''}${ctx.A('s' + i)}><div class="bento-lleno ${clase}"${ctx.P(i + 1)}>${vis}${it.texto ? `<span class="b-texto">${marcar(it.texto)}</span>` : ''}${it.sub ? `<span class="b-sub">${marcar(it.sub)}</span>` : ''}</div></div>`;
   }).join('');
   const kRem = pasoDe(l, 'remate_paso', items.length + 1);
@@ -822,7 +858,7 @@ function stackPila(l, ctx) {
   // que los íconos de una columna queden en la misma x (centrar el grupo ícono + texto los desalineaba)
   const ico = ctx.vertical ? 84 : 96;
   const piezas = items.map((it, i) => {
-    const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${ctx.vertical ? 80 : 96}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, ico) : '';
+    const vis = it.imagen ? imagenConHueco(ctx, it.imagen, ctx.vertical ? 80 : 96) : it.emoji ? ctx.emoji(it.emoji, ico) : '';
     const clase = COLOR_PIEZA.includes(it.color) ? `c-${it.color}` : TONO_PIEZA[it.tono] || '';
     const cuerpo = `${it.texto ? `<span class="b-texto">${marcar(it.texto)}</span>` : ''}${it.sub ? `<span class="b-sub">${marcar(it.sub)}</span>` : ''}`;
     return `<div class="bento"${it.doble ? ' style="grid-column:span 2"' : ''}${ctx.A('s' + i)}><div class="bento-lleno${vis ? ' con-ico' : ''} ${clase}"${ctx.P(i + 1)}>${vis}${cuerpo ? `<div class="b-cuerpo">${cuerpo}</div>` : ''}</div></div>`;

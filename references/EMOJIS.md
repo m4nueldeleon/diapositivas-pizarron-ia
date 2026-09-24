@@ -25,6 +25,17 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 - Lo que cambia de un set a otro está en «Ojo: se ven distinto según el modo» y en «Bajo contraste».
 
 ## Dinero y negocio
+
+**El emoji lleva el mismo signo que la frase.** «Mismo trabajo. Menos ganancia» o «Pierdes dinero
+cada mes» no llevan 💰, 📈 ni 💎 sin una negación: el ícono afirma lo contrario. QA avisa estos casos
+estrechos; «Gana más trabajando menos» y «Tus ventas no bajan más» no son frases de pérdida.
+
+Si necesitas un vocabulario propio, declara `conceptos` en el deck: por ejemplo,
+`{"💰":"ganancia","📉":"pérdida"}`. QA avisa si dos emojis declaran el mismo concepto y agrega
+una sola línea informativa cuando falta declarar alguno usado. Sin `conceptos` no exige completar
+ese mapa. El inventario puede señalar `revisar: N etiquetas` cuando un mismo emoji acompaña
+varias etiquetas cortas; es información para revisar el sentido, no una penalización.
+
 | Concepto | Emoji | Notas |
 |---|---|---|
 | dinero, ganancia | 💰 | bolsa: el más usado |
@@ -35,6 +46,7 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 | métricas, datos, reporte, informe | 📊 | |
 | banco, tu cuenta | 🏦 | |
 | precio, pago, efectivo, oferta | 💵 · 🏷️ solo en Fluent | el 🏷️ de Apple es beige pálido y se pierde |
+| comprobante, recibo | 🧾 | SVG blanco con borde dentado, renglones grises y total verde; sin texto impreso en los dos sets |
 | producto | 📦 | |
 | producto digital (ebook, plantilla) | 💻 · 📘 | el curso o programa es 🎓 |
 | alianza, trato, socio | 🤝 | como en la referencia: «1 Partnership» [10:30], «Partner» (ref_1040). La venta cerrada es `si:🤝` o 💵: 🤝 solo, sin marca, no es venta |
@@ -121,7 +133,7 @@ el rodeo de usar 🏾.
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
 | página web, en línea, en la nube | 🌐 | ☁️ es pálido en los dos sets |
 | compra en línea, carrito | 🛒 | |
-| tienda o negocio local | 🏠 o 🏬 | 🏪 trae «24» (Apple) o «24 H» (Fluent) impreso: QA lo avisa |
+| tienda o negocio local | 🏠 o 🏬 o 🏪 | 🏪 se dibuja en SVG con toldo verde y azul, ventanal y puerta; sin letrero ni tinta roja |
 | pago con tarjeta | 💳 | |
 | firmar o inscribirse: contrato, registro, inscripción | ✍️ | el registro no es 📝 («escribir, plan») ni 🧲 («atraer prospectos») |
 
@@ -155,7 +167,7 @@ Separar en cuentas: una `rejilla` de 🐷 o de 💰 con etiquetas, no 🗂️ (b
 | queja, cliente molesto | 😠 | |
 | pregunta difícil | 🌶️ | |
 | sin programar, sin código, «no sé de tecnología» | `no:⌨️` | 💻 es «producto digital» y 🧑‍💻 es «tú»; la objeción «No sé nada de tecnología» también es `no:⌨️` |
-| rol, perfil, personaje | 🎭 | 🪪 imprime «Jo Appleseed» en Apple |
+| rol, perfil, personaje | 🎭 · 🪪 | 🪪 es una credencial azul con retrato y renglones sin nombre: SVG en Apple, nativa en Fluent |
 | documento, base de conocimiento, instrucciones | 📄 | se dibuja en SVG igual en los dos sets (hoja con degradado y sombra, renglones gris pizarra, esquina azul): la hoja de los dos sets sale pálida. 📋 es «tarea» |
 
 ## Eventos
@@ -241,7 +253,9 @@ La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**.
 - En `cuadrantes` va con el tono: `si:` en verde («esto sí, esto basta») y `no:` en rojo («esto no lo necesitas»).
 - Suelto, en una `idea` con «Objeción #N», `no:X` es la objeción «me falta X» (la receta de Ventas, «objeción»). Si
   la objeción es una pregunta, va 🤔 sin prefijo; y nunca se niega un ícono del mapa de `pasos` ni un emoji que otra
-  lámina afirma con `si:` (QA lo avisa: «no:🧮 niega el paso 1»).
+  lámina anterior afirma con `si:` o en la oferta (QA lo avisa: «no:🧮 niega el paso 1»). Una
+  negación anterior al mapa o al stack puede presentar el dolor que la solución resuelve: no
+  genera ese aviso, aunque queda marcada para revisión en el inventario. En una objeción sí se revisa.
 - Un beneficio «sin X» («sin perder tiempo», «sin invertir») va con `no:X` en un cuadrante ROJO de lo que no
   necesitas, o con el emoji positivo (⚡ rápido, `si:💸` $0 de capital); nunca con `no:X` suelto, que se lee como
   la objeción.
@@ -298,7 +312,6 @@ para una secuencia usa un `flujo`.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.
 - 👥 para «conversaciones»: se lee «personas».
 - 🎫: en Apple sale igual que 🎟️ (el mismo boleto dibujado). Usa 🎟️.
-- 🪪: en Apple imprime «Jo Appleseed». Para «rol» o «perfil», 🎭; para una persona, 👤.
 - 🗂️: beige y pálido en Apple. Para «separar», una `rejilla` con etiquetas; para «archivar», 🗄️.
 - 🗑️ para «archivar»: se lee «a la basura», lo contrario (y en Fluent es gris, 22 en tarjeta). Usa 🗄️.
 - 🗓️ y 📆: en Apple salen igual que 📅 (el mismo calendario en SVG); en Fluent son 3D y distintos (argollas, espiral). Para «fecha» basta 📅.
@@ -339,9 +352,6 @@ Algunos emojis traen letras: a tamaño de ícono se leen, en inglés o con una f
 | 🗓️ | «JUL» | 3D sin fecha | en Apple se dibuja en SVG sin fecha; en Fluent, nativo |
 | 🎟️ | «ADMIT ONE» | liso, rosa | se dibuja en SVG liso y ámbar en los dos sets |
 | 🎫 | «LIVE CONCERT TICKET / ZONE A / JAN 09» | liso | en Apple se dibuja en SVG liso; en Fluent, nativo |
-| 🏪 | «24» | «24 H» | QA avisa (`TEXTO_IMPRESO`): usa 🏠 o 🏬 |
-| 🪪 | «Jo Appleseed» | tarjeta azul lisa | QA avisa en Apple: usa 👤 |
-| 🧾 | «RECEIPT» | recibo pálido | QA avisa en Apple: para «comprobante», 💵 o ✍️ |
 | 💳 | «John Appleseed» | tarjeta lisa | se tolera a tamaño de ícono; nunca en primer plano gigante |
 | 💵 | billete de EE. UU. | billete | se tolera: casi no se lee |
 
@@ -364,7 +374,7 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 | Fluent | blanco, tarjeta | ⚙️ 🔧 (lila lavado) · 🗒️ | 🛠️ · 📄 |
 | Apple | blanco, tarjeta, rosa | 🏷️ (beige pálido), ✉️, 🖱️ (mouse blanco) | precio → 💵 · correo → 📧 · clic → 👆 |
 | los dos | claro | ☁️ | «en la nube» → 🌐 |
-| los dos | claro | 🤍 🏳️ 🧾 | ❤️ · 🚩 · 💵 |
+| los dos | claro | 🤍 🏳️ | ❤️ · 🚩 |
 | Apple | oscura | 📞 💲 🎥 | ☎️ · 💵 · 📹 (el mismo «grabar video») |
 | Fluent | oscura | 🗣️ 🎥 | 🎤 · 📹 |
 | los dos | oscura | 🎓 ♟️ 🎵 ➕ (se hunden en el negro: 2-19 con 3:1) | sin sustituto con el mismo concepto: QA avisa «elige otro»; en la oscura va la revelación, no un ícono de concepto |

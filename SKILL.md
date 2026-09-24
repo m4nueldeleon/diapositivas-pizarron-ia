@@ -108,6 +108,8 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 
 ## 2. Las 10 reglas que no se rompen
 
+En la fase 2 entrega la lista de láminas + `conceptos` (emoji → concepto corto), cuando se fije un vocabulario visual.
+
 1. **Una idea por lámina**, revelada **un elemento por frase**. Nada cambia de lugar al revelar.
 2. **Lienzo blanco puro.** El color solo significa algo: rojo para énfasis o lo malo, verde para
    lo bueno, naranja para lo intermedio, amarillo como resaltador.
@@ -126,12 +128,15 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 8. **Láminas oscuras solo para REVELAR la marca o el producto** (nombre y logo, una frase). El
    precio, lo que incluye, los entregables, la garantía y el llamado van en blanco con el estilo
    normal (✅, cifras, `stack`).
-9. **Prueba real o nada.** Nunca inventes testimonios, capturas ni cifras. Si no hay prueba, la
+9. **Prueba real o nada.** Declara `procedencia: "real"`, `"ia"` o `"ejemplo"` en imágenes y capturas.
+   Una imagen de IA puede mostrar el cómo en un tutorial; no acredita resultados ni prueba propia.
+   En `cifra`, `procedencia: "ejemplo"` agrega el rótulo gris solo si lo pide el usuario. Nunca inventes testimonios, capturas ni cifras. Si no hay prueba, la
    lámina lo dice como hipótesis, usa un `hueco` o no existe. Un `hueco` sin más es una captura por conseguir y
    deja el deck en borrador; `"plantilla": true` es el lugar para la del espectador (marco a mano). Un post escrito lleva
    `fuente` (real, con permiso) o `ejemplo: true` (maqueta con sello, sin cifras). Las proyecciones al
    espectador llevan la condición con número y rangos (GUION §3.8).
-10. **Marcas con su logo real**, nunca dibujadas ni hechas con emoji.
+10. **Marcas con su logo real**, nunca dibujadas ni hechas con emoji. Si falta, usa `imagen: "{{LOGO_X}}"`: queda
+    como caja punteada y dato por confirmar hasta poner el archivo oficial en `datos`.
 
 ## 3. Comandos
 
@@ -139,7 +144,8 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 S=~/.claude/skills/diapositivas-pizarron-ia
 node $S/scripts/render.mjs mi-video             # PNG por paso + presentador + hoja
 node $S/scripts/render.mjs mi-video --finales   # solo el último paso de cada lámina (revisión rápida)
-node $S/scripts/render.mjs mi-video --finales --pdf   # + laminas.pdf (una página por lámina, para Keynote)
+node $S/scripts/render.mjs mi-video --pdf-pasos       # laminas-pasos.pdf + notas-por-paso.md, para Keynote/Slides
+node $S/scripts/render.mjs mi-video --pdf --sin-notas # laminas.pdf, para mandar como documento o imprimir
                                                      #   y en propuesta o VSL laminas-notas.pdf (lámina + su voz)
 node $S/scripts/qa.mjs mi-video                 # nota 0-100
 node $S/scripts/video.mjs mi-video              # salida/laminas.mp4 con animaciones
@@ -168,7 +174,8 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
     **Omítela si no hay marca real.** Va abajo a la derecha; en 9:16 va arriba (abajo la tapan el
     caption y los botones de Reels). `"posicion": "arriba"` o `"abajo"` lo fuerza. Un valor de relleno
     («tumarca.com», «@tuusuario») es error de QA;
-  - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md);
+  - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md); pregunta también por `sala` (proyector).
+    Zoom lleva `sala: false`; el perfil de sala es opt-in y no se aplica en 9:16;
   - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
     `{ "valor": …, "propuesto": true }` (LAYOUTS.md, «Datos que se llenan una vez»).
 - `ejemplos/demo/deck.json` es el **catálogo** de los 29 diseños, no un modelo de guion. El modelo que se copia
@@ -203,8 +210,9 @@ La entrega sale de ahí y de `qa.json`, no de cuadrar métricas a mano:
   «final» al deck. Solo `estado: "listo"` es final;
   con `bajo-90` o `falta-venta`, di qué trae `falta_para_final`.
 - Una `propuesta` o un VSL que se manda lleva **`laminas-notas.pdf`** (`--pdf`; la lámina y su voz como texto, para
-  quien no estuvo en la junta). `laminas.pdf`, sin notas, es para llevarlo a Keynote o Slides (`--pdf --sin-notas`
-  en esas piezas, `--pdf` en las demás). Si el PDF lleva un `[DATO]` pendiente, no lo llames final. Si el
+  quien no estuvo en la junta). `laminas.pdf` es para mandar como documento o imprimir, sin revelado. Para Keynote o Slides usa
+  `--pdf-pasos`: `laminas-pasos.pdf` conserva un paso por página; pega `notas-por-paso.md` en las notas.
+  Transición ninguna dentro de la lámina y disolver 0.3 s entre láminas. Si el PDF lleva un `[DATO]` pendiente, no lo llames final. Si el
   presentador se va a abrir en una PC que no es Mac, renderiza con `"emoji": "fluent"` y dilo.
 - Lo que el usuario debe saber va en tu mensaje o en `qa.json`, nunca en una clave `_marca` o `_datos` del deck
   (nadie la lee; QA la avisa).
@@ -215,8 +223,14 @@ La entrega sale de ahí y de `qa.json`, no de cuadrar métricas a mano:
 
 ## 5. Límites honestos
 
+**Frontera.** Keynote nativo con texto editable, videos incrustados, el paquete de show y la auditoría de escenario
+son de una capa de escenario aparte. Esa capa consume `deck.json` (`voz` por paso, `dur`, `accion`, `si_falla`) y `salida/pasos.json` como contrato
+estable. Esta skill entrega el lienzo, su revelado, PDF por paso y notas portables.
+
 - El estilo se reproduce con tipografías libres (Figtree y Caveat) y emojis libres (Fluent 3D).
   En Mac se usan los emojis de Apple, idénticos a la referencia.
 - Las grabaciones de pantalla con la cara en círculo, que ocupan de 20:00 a 32:00 en la
   referencia, se hacen en tu editor. Esta skill hace las láminas.
 - El montaje cubre la cámara a pantalla completa: no hace cara en círculo ni pantalla dividida.
+
+Para el cierre en vivo, `idea`, `lista` y `boton` aceptan `qr: {url, rotulo?}` (HTTPS real). Entra como un paso extra: alinea su `voz`. Prueba la proyección con dos teléfonos y conserva una URL corta como respaldo en `si_falla` (PROTOCOLO, acceso en vivo).

@@ -169,3 +169,16 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   error; la garantía y los bonos se preguntan, no se proponen.
 - **Porqué**: las propuestas de las primeras rondas copiaban el orden de un VSL, no decían qué quedaba fuera ni hasta
   cuándo valía el precio, y llegaban a la junta sin la voz para quien no estuvo.
+
+
+## 2026-09-24 · Motor, ronda 6 (lo aprendido de una conferencia real en sala)
+
+- **Regla**: presentar desde Keynote o Slides exige un paso por página (`--pdf-pasos`, recapturado sin cursor);
+  `laminas.pdf` es solo documento. En vivo no implica sala: `sala` se declara aparte (35 % de apagado y pisos de
+  letra de sala solo con ella; el video conserva su 20 %).
+- **Regla**: QA mide lo que antes dependía de la memoria del autor: cuentas de `cifra`, cifras que se contradicen,
+  pantalla que se adelanta a la voz o fuente que llega tarde, persona tú/ustedes, color decorativo, mayúsculas
+  en frase, emoji con signo contrario, logos de herramientas y el QR que se pide sin existir.
+- **Porqué**: en una conferencia real hecha con esta skill, los tamaños, la persona gramatical, la sincronía
+  pantalla-voz y los QR sumaron la mayoría de los hallazgos y fueron lo último en cerrarse. Toda heurística nueva
+  es aviso y omite lo ambiguo: un falso error enseña a ignorar el QA.

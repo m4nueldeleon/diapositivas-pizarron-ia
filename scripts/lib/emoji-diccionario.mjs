@@ -4,9 +4,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { esCampoEmoji, specsDeCampo } from './emoji.mjs';
 
 const RUTA = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'references', 'EMOJIS.md');
-const sinSel = e => String(e).replace(/️/g, '');
+const sinSel = e => String(e).trim().replace(/️/g, '');
 // Tablas de concepto: todas, salvo las de sets, contraste, texto impreso, parecidos y «Evita»
 export const NO_CONCEPTO = /^(Qué set|Emojis dentro|Evita|Ojo|Emojis con texto|Bajo contraste|Parecidos)/;
 const TOKEN = /^((?:no|si):)?(\p{RGI_Emoji})(\+(\p{RGI_Emoji}))?/v;
@@ -32,19 +33,54 @@ export function filasConcepto(md) {
 }
 
 let indice = null;
+function limpiarConcepto(texto) {
+  let s = texto.replace(/\[[^\]]*\]/g, '').replace(/\*\*|`/g, '').trim();
+  while (s.endsWith(')')) {
+    let nivel = 0, inicio = -1;
+    for (let i = s.length - 1; i >= 0; i--) {
+      if (s[i] === ')') nivel++;
+      if (s[i] === '(' && --nivel === 0) { inicio = i; break; }
+    }
+    if (inicio < 0) break;
+    s = s.slice(0, inicio).trim();
+  }
+  return s.replace(/\s+/g, ' ');
+}
 function cargar() {
   if (indice) return indice;
   indice = new Map();
   try {
-    filasConcepto(fs.readFileSync(RUTA, 'utf8')).forEach(f => f.specs.forEach(sp => { if (!indice.has(sp)) indice.set(sp, f.concepto.replace(/\*\*|`/g, '').trim()); }));
+    filasConcepto(fs.readFileSync(RUTA, 'utf8')).forEach(f => f.specs.forEach(sp => { if (!indice.has(sp)) indice.set(sp, limpiarConcepto(f.concepto)); }));
   } catch { /* sin diccionario: todo sale «fuera del diccionario» */ }
   return indice;
 }
+
+// Información optativa: solo se comprueba cobertura cuando el autor declara conceptos propios.
+export function infoConceptos(deck) {
+  if (!deck.conceptos || typeof deck.conceptos !== 'object') return null;
+  const usados = new Set();
+  const ir = o => {
+    if (Array.isArray(o)) return o.forEach(ir);
+    if (!o || typeof o !== 'object') return;
+    for (const [k, v] of Object.entries(o)) {
+      if (esCampoEmoji(k)) specsDeCampo(k, v).forEach(s => usados.add(sinSel(s)));
+      else if (v && typeof v === 'object' && !['voz', 'accion', 'si_falla', 'conceptos'].includes(k)) ir(v);
+    }
+  };
+  ir(deck.laminas);
+  const declarados = new Set(Object.keys(deck.conceptos).map(sinSel));
+  const faltan = [...usados].filter(s => !declarados.has(s));
+  return faltan.length ? `conceptos sin declarar: ${faltan.join(' ')}; completa conceptos con el significado corto de cada emoji usado` : null;
+}
 // Concepto de un emoji o compuesto: primero el spec completo («si:🤝», «📱+💬»), luego su base. null si no está.
-export function conceptoDe(spec) {
+export function conceptoDe(spec, exacto = false) {
   const m = cargar(), s = sinSel(spec || '');
   if (!s) return null;
   if (m.has(s)) return m.get(s);
+  if (exacto) {
+    const sinTono = s.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
+    return m.get(sinTono) || null;
+  }
   const base = s.replace(/^(no|si):/, '').split('+')[0];
   if (m.has(base)) return m.get(base);
   // Personas con tono de piel (🧑🏻‍💼): el diccionario las guarda sin tono

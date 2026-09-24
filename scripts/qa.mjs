@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { infoConceptos } from './lib/emoji-diccionario.mjs';
+import { RE_PALABRA } from './lib/markup.mjs';
 // qa.mjs — revisa el deck renderizado con reglas que cuentan, no que opinan. Nota 0-100.
 //
 //   node scripts/qa.mjs <carpeta|deck.json> [--salida dir] [--json] [--estricto]
@@ -55,7 +57,7 @@ import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
-import { inyectable } from './lib/medidas-dom.mjs';
+import { inyectable, PISOS } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
 import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos, lineaArco } from './lib/reglas-deck.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
@@ -74,7 +76,7 @@ const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H
 await page.addScriptTag({ content: inyectable() });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
 
-const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
+const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, datosMuestra, enVivo]) => {
   const out = [];
   const reMarca = new RegExp(MARCA);
   const rePendiente = /\[[A-ZÁÉÍÓÚÑÜ0-9][A-ZÁÉÍÓÚÑÜ0-9 _\-]{1,30}\]/g;
@@ -147,7 +149,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
 
   window.PZ.lams.forEach((lam, i) => {
     const n = window.PZ.pasos(lam), L = lam.getBoundingClientRect();
-    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [] };
+    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], info: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [] };
     // La `camara` normal se proyecta en negro: nada que revisar. El tramo en vivo (`vivo: true`) SÍ lo ve el público minutos
     // enteros: se revisa lo que se proyecta (.captura-vivo), con las mismas reglas (palabras, pendientes, desborde, letra)
     if (lam.dataset.tipo === 'camara' && !lam.dataset.vivo) { out.push(r); return; }
@@ -155,6 +157,13 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     for (let p = 0; p < n; p++) {
       window.PZ.mostrar(lam, p, Infinity);
       const E = m => r.errores.push(`paso ${p + 1}: ${m}`), A = m => r.avisos.push(`paso ${p + 1}: ${m}`);
+      if (enVivo) for (const qr of lam.querySelectorAll('.codigo-qr')) {
+        if (!visible(qr)) continue;
+        const zona = Number(qr.dataset.zonaQuieta), modulos = Number(qr.dataset.modulos);
+        const modulo = caja(qr, lam).w / (modulos + 2 * zona);
+        if (zona < 4) E('QR sin zona quieta de cuatro módulos; restaura el SVG generado');
+        if (modulo < 10 * W / 1920) E(`QR con módulo de ${modulo.toFixed(1)} px: amplía el QR hasta al menos ${(10 * W / 1920).toFixed(1)} px por módulo`);
+      }
       // la multitud «tú» va a sangre a propósito [14:55]: sus siluetas se salen del lienzo
       const cajas = [...lam.querySelectorAll(CAJAS)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && !e.closest('.cuadrantes, .rejilla-sangre'));
       for (const e of cajas) {
@@ -215,9 +224,18 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       // Marcas sin convertir
       lineas.forEach(({ n: nodo }) => { if (reMarca.test(nodo.nodeValue)) E(`marca sin cerrar o partida a la vista: «${corto(nodo.nodeValue, 40)}»`); });
       // Letra efectiva (el encaje reduce con zoom y getComputedStyle no lo descuenta)
-      const extra = [...lam.querySelectorAll(SECUNDARIO + ', ' + MINIMO + ', ' + FUENTE)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && e.textContent.trim());
+      const deSala = document.body.classList.contains('sala') ? ', svg text, .tabla th, .tabla td, .cal-texto, .rotulo-paso, .procedencia' : '';
+      const extra = [...lam.querySelectorAll(SECUNDARIO + ', ' + MINIMO + ', ' + FUENTE + deSala)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && e.textContent.trim());
       for (const t of [...textos, ...extra]) {
         const ef = parseFloat(getComputedStyle(t).fontSize) * zoom(t);
+        if (document.body.classList.contains('sala')) {
+          const rol = t.matches(FUENTE + ', .procedencia') ? 'fuente' : t.matches('.nota') ? 'nota' : t.matches('.encabezado, .rotulo-paso[style*="color:var(--gris)"]') ? 'rotulo' : t.matches(SECUNDARIO + ', ' + MINIMO + ', .vivo-items li, svg text, .tabla th, .tabla td, .cal-texto') ? 'secundario' : 'principal';
+          // Los pisos de sala son nominales, como se midieron en la conferencia real (nota a mano a 72 en Caveat);
+          // el motor pone la nota a 88 nominales en sala, holgado sobre ese piso.
+          const pintado = ef, piso = PISOS.sala[rol] * W / 1920;
+          if (pintado < piso - .5) E(`«${corto(t.innerText, 24)}» (${rol}) se ve a ${Math.round(pintado)}px en sala, mínimo ${Math.round(piso)}: parte la lámina o sube tam_texto`);
+          continue;
+        }
         if (ef < 27.5) E(`letra de ${Math.round(ef)}px reales en «${corto(t.innerText, 24)}» (mínimo 28)`);
         else if (t.matches(FUENTE) && ef < 36 * (W / 1920) - 0.5) A(`la fuente «${corto(t.innerText, 24)}» se ve a ${Math.round(ef)} px: en un celular no se lee (≥ ${Math.round(36 * W / 1920)})`);
         else if (t.matches(SECUNDARIO) && ef < 48 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» (texto secundario) se ve a ${Math.round(ef)}px reales: en un celular no se lee (ideal ≥ ${Math.round(48 * W / 1920)})`);
@@ -380,7 +398,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       const lienzo = lam.dataset.vivo ? lam.querySelector(':scope > .vivo-pres') : [...lam.querySelectorAll(':scope > .lienzo')].pop();
       if (lienzo && !['tabla', 'prueba', 'chat', 'calendario'].includes(lam.dataset.tipo)) {
         const txt = [...lienzo.querySelectorAll(TEXTO)].filter(visible).filter(e => !e.querySelector(TEXTO)).map(e => e.innerText).join(' ');
-        r.palabras = Math.max(r.palabras, (txt.match(/[\p{L}\p{N}]+/gu) || []).length);
+        r.palabras = Math.max(r.palabras, (window.textoConMuestras(txt, datosMuestra).match(new RegExp(palabraFuente, 'gu')) || []).length);
       }
     }
     // ---- estado final ----
@@ -439,7 +457,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         });
         const ocupa = (y1 - y0) / H;
         // idea, cita, cifra, objeto y botón son un solo punto focal: centrados y grandes, no llenan el alto a propósito
-        if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara', 'boton'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)`);
+        if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara', 'boton'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)${['chat', 'rejilla', 'prueba'].includes(lam.dataset.tipo) ? '; sube tam_texto y usa encabezado_estilo:"frase"' : ''}`);
         if (zona) AF(`«${zona}» entra en la zona que tapan el caption y los botones de Reels (abajo 320 px, derecha 140 px)`);
       }
     }
@@ -558,14 +576,21 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         if (w > colW + 8) EF(`la etiqueta «${corto(e.innerText, 20)}» mide ${Math.round(w)} px y su columna ${Math.round(colW)}: se encima con la de al lado; acórtala, baja tam_etiqueta o sube separacion`);
       });
     });
-    // Etiquetas cortas partidas y renglones huérfanos
+    // Etiquetas cortas partidas y renglones huérfanos: el nombre del hueco no es el dato final.
+    const lineasTipograficas = e => {
+      const originales = window.lineasPalabras(e);
+      if (!e.matches('.hueco.pendiente') && !e.querySelector('.hueco.pendiente')) return originales;
+      const m = window.lineasConMuestra(e, datosMuestra);
+      if (m.lineas.length < originales.length) r.info.push(`revísalo al llenar ${m.claves.join(', ')}`);
+      return m.lineas;
+    };
     const cortas = new Set(), huerfanos = new Set();
     visibles('.nodo .etiqueta, .calendario .dia span, .sub-etiqueta').forEach(e => {
-      const ls = window.lineasPalabras(e), pal = ls.flat();
+      const ls = lineasTipograficas(e), pal = ls.flat();
       if (pal.length && pal.length <= 3 && ls.length > 1) cortas.add(ls.map(l => l.join(' ')).join(' / '));
     });
     visibles(TEXTO).filter(e => !e.querySelector(TEXTO) && !e.closest('.post, .calendario, .tabla')).forEach(e => {
-      const ls = window.lineasPalabras(e);
+      const ls = lineasTipograficas(e);
       if (ls.length < 2 || (ls.flat().length <= 3 && e.matches('.etiqueta'))) return;
       const h = ls.find(l => l.join('').replace(/[^\p{L}\p{N}]/gu, '').length <= 2);
       if (h) huerfanos.add(`${h.join(' ')}» en «${corto(e.innerText, 28)}`);
@@ -582,12 +607,12 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     // El nombre del producto en la revelación: un último renglón de 1-2 palabras bajo uno de 3 o más («Diplomado en
     // Comunidades / de Pago») es una huérfana en el momento más importante de la venta [r5]
     visibles('.titulo-marca').forEach(e => {
-      const ls = window.lineasPalabras(e);
+      const ls = lineasTipograficas(e);
       if (ls.length >= 2 && ls.at(-1).length <= 2 && ls.at(-2).length >= 3) AF(`el nombre del producto deja «${ls.at(-1).join(' ')}» solo en el último renglón: acórtalo o repártelo`);
     });
     // Rótulo de tarjeta o de pieza del stack: dos renglones como máximo y con aire abajo (≥ 24 px del borde)
     visibles('.tarjeta .rotulo, .bento-lleno .b-texto').forEach(e => {
-      const ls = window.lineasPalabras(e), caj = e.closest('.tarjeta, .bento-lleno');
+      const ls = lineasTipograficas(e), caj = e.closest('.tarjeta, .bento-lleno');
       if (ls.length > 2) AF(`«${corto(e.innerText, 28)}» ocupa ${ls.length} renglones en su tarjeta: acórtalo a 2 (es un rótulo, no una frase)`);
       const rg = document.createRange(); rg.selectNodeContents(e);
       const rs = [...rg.getClientRects()].filter(q => q.width > 3 && q.height > 3);
@@ -598,12 +623,21 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     if (cortas.size) AF(`etiqueta corta partida en dos renglones: «${[...cortas].join('», «')}»; acórtala o dale más espacio (separacion)`);
     // Ecuación partida (la cifra ya se encogió hasta su piso) y resaltado corto partido en dos pastillas o dos trozos
     visibles('.cifra').forEach(e => {
-      const ls = window.lineasPalabras(e);
+      let ls = window.lineasPalabras(e);
+      if (ls.length > 1 && e.querySelector('.hueco.pendiente')) {
+        const m = window.lineasConMuestra(e, datosMuestra);
+        if (m.lineas.length <= 1) { r.info.push(`revísalo al llenar ${m.claves.join(', ')}`); return; }
+        ls = m.lineas;
+      }
       if (ls.length > 1) AF(`la ecuación «${corto(e.innerText, 36)}» se parte en ${ls.length} renglones: acórtala o ponla en dos líneas del deck (lineas: […]), cada una una cuenta completa [3:15]`);
     });
     const partidos = new Set();
     visibles('.hueco, .var-plantilla, mark, [data-sub]').filter(e => !e.closest('.cifra')).forEach(e => {
       const ls = window.lineasPalabras(e);
+      if (ls.length > 1 && (e.matches('.hueco.pendiente') || e.querySelector('.hueco.pendiente'))) {
+        const m = window.lineasConMuestra(e, datosMuestra);
+        if (m.lineas.length <= 1) { r.info.push(`revísalo al llenar ${m.claves.join(', ')}`); return; }
+      }
       if (ls.length > 1 && ls.flat().length <= 3) partidos.add(ls.map(l => l.join(' ')).join(' / '));
     });
     if (partidos.size) AF(`resaltado corto partido en dos renglones: «${[...partidos].join('», «')}»; acorta la frase para que el resaltado quede entero`);
@@ -721,7 +755,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     out.push(r);
   });
   return out;
-}, [W, H, MARCA_LITERAL, CONTRASTE]);
+}, [W, H, MARCA_LITERAL, CONTRASTE, PISOS, RE_PALABRA.source, crudo.datos || {}, deck.en_vivo === true]);
 // Emojis sobre un fondo de color: se rasterizan en una página aparte (data URL: sin el bloqueo de file://)
 const contrasteColor = await medirSobreColor(browser, porLamina, dirSalida);
 const modoRender = await page.evaluate(() => document.body.dataset.emoji || 'apple');
@@ -795,7 +829,7 @@ deck.laminas.forEach((l, i) => {
 // Reglas del deck.json (sin navegador): firma de relleno, duración de la pieza, apertura, voz, proyecciones,
 // posts de maqueta y llamado (scripts/lib/reglas-deck.mjs)
 // El deck crudo trae «datos» (CASO_PROPIO, ENTREGABLE confirmados); las láminas son las ya sustituidas
-const delDeck = revisarDeck({ ...deck, datos: crudo.datos }, pasos, { dirDeck, crudo });
+const delDeck = revisarDeck({ ...deck, datos: crudo.datos }, pasos, { dirDeck, crudo, revela });
 errores.push(...delDeck.errores);
 avis.push(...delDeck.avisos);
 // Resultado propio o entregable prometido sin confirmar: BORRADOR, igual que un dato propuesto
@@ -856,7 +890,7 @@ const infoContraste = [
   enVivoInfo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivoInfo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
-const info = [...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck)].filter(Boolean);
+const info = [...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
 const informe = { nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };

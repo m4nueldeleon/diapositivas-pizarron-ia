@@ -126,6 +126,13 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   frase, sin tarjeta [4:10]. Para calificar varias opciones usa [`calificacion`](#calificacion).
 
 ### `lista` — encabezado gris + viñetas, una por paso  ·  [1:35, 13:35, 40:15]
+
+Para cerrar un mapa de letras, usa `vineta: "letras"` y una letra por ítem. Las letras se dibujan
+en negrita, sin convertirlas en emojis; `como` conserva el mapa y sus letras.
+
+```json
+{"tipo":"lista","vineta":"letras","letras":["R","E","C"],"items":["Rol","Encargo","Contexto"]}
+```
 ```json
 { "tipo": "lista", "encabezado": "Sin:", "vineta": "x",
   "items": ["Pasar años trabajando **12 horas al día**", "**Construir** una audiencia"] }
@@ -320,6 +327,15 @@ de la revelación [36:30-36:40]. El precio final, lo que incluye en detalle, la 
   ```
 
 ### `pasos` — el sistema de N pasos (teclas 1 2 3 + ruta punteada)  ·  [1:55, 11:00, 16:35, 28:00]
+
+La variante `letras` dibuja un riel ancho arriba. `activo` cuenta desde 1: la letra actual lleva
+círculo rojo; las anteriores quedan negras y las pendientes se apagan. Debe haber el mismo número
+de `letras`, `iconos` y `etiquetas`, sin repetir emojis. En 9:16 las columnas, los iconos y sus
+etiquetas reducen su tamaño para caber. Un regreso con `como` conserva las tres listas.
+
+```json
+{"tipo":"pasos","id":"rec","letras":["R","E","C"],"iconos":["🎭","📋","🧭"],"etiquetas":["R · Rol","E · Encargo","C · Contexto"],"activo":2}
+```
 ```json
 { "tipo": "pasos", "n": 3, "clic": 1, "texto": "El sistema de 3 pasos **«solo dar clic»**",
   "nota": "Lo usan principiantes para cobrar como profesionistas" }
@@ -540,6 +556,20 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   ```
 
 ### `rejilla` — cantidad hecha visible  ·  [6:35, 14:45, 14:55]
+
+La variante `bandas` agrupa puntos contiguos desde abajo a la derecha. `desde` y `hasta` son
+índices inclusivos desde 0; la primera banda empieza en 0 y cada siguiente continúa a la anterior.
+`bandas_paso` es el primer paso de color, desde 0; después entra una banda por paso. La leyenda
+va a la izquierda con punto de color, cifra en negrita y nota manuscrita gris. La rejilla cabe por ancho y por alto (620 px en 16:9, 900 en 9:16; `alto` lo cambia). Encierra la banda chica, no la grande, y deja la conclusión (`texto_paso`) para el paso del círculo. Cada tono de leyenda
+debe existir en una banda; toda cifra necesita `fuente` o un `{{DATO}}` declarado. El porcentaje
+puede diferir como máximo en una celda respecto de la banda.
+
+`encerrar` señala el índice de la banda que se encierra en rojo. `encerrar_paso` es su paso propio;
+por omisión va después de la última banda. La suma de bandas no puede superar `total`.
+
+```json
+{"tipo":"rejilla","total":100,"columnas":10,"bandas":[{"desde":0,"hasta":59,"tono":"g"},{"desde":60,"hasta":89,"tono":"v"},{"desde":90,"hasta":99,"tono":"n"}],"leyenda":[{"tono":"g","cifra":"60%","nota":"no lo intenta"},{"tono":"v","cifra":"30%","nota":"lo intenta"},{"tono":"n","cifra":"10%","nota":"lo termina"}],"bandas_paso":1,"encerrar":2,"encerrar_paso":4,"texto":"De cada 100, **10** lo terminan","texto_paso":4,"fuente":"Ejemplo ilustrativo"}
+```
 - **Muchas cajas**:
   ```json
   { "tipo": "rejilla", "encabezado": "Tendrías que vender…", "emoji": "📦", "total": 300, "anotacion": "Son 300", "sello": "Mucha habilidad" }
@@ -647,6 +677,16 @@ fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las es
 ## Interfaz y prueba
 
 ### `chat` — burbujas, un mensaje por paso  ·  [17:45, 19:00, 21:50]
+
+`de: "prompt"` dibuja una tarjeta blanca con borde y sin avatar. `de: "respuesta"` dibuja la
+respuesta en verde claro, con `remitente` manuscrito. Cada mensaje conserva su propio paso.
+Una respuesta real exige `fuente` con fecha, por ejemplo «Registro autorizado, 2026-09-24».
+Si el contenido es ilustrativo, usa `ejemplo: true`: lleva el sello visible EJEMPLO. Una respuesta
+sin esa marca y sin fuente fechada es error de QA.
+
+```json
+{"tipo":"chat","mensajes":[{"de":"prompt","texto":"Resume este texto en tres tareas."},{"de":"respuesta","remitente":"IA","texto":"Revisar, confirmar y enviar.","ejemplo":true}]}
+```
 ```json
 { "tipo": "chat", "mensajes": [{ "de": "yo", "texto": "¿Quieres trabajar conmigo?" }, { "de": "otro", "texto": "¡Sí, me interesa!" }] }
 ```
@@ -1016,3 +1056,81 @@ La ✕ de `no:` mide ~62% del emoji y le cruza la esquina inferior izquierda [re
 saturado y se dibuja igual en Apple y en Fluent.
 
 Un solo «+». Tres partes o un prefijo que no sea `no:`/`si:` es error de contrato (ver EMOJIS.md).
+
+
+## Presentación, procedencia y QA de voz
+
+Campos del deck: `sala` es `true`, `false` o `{ "distancia_m": 15 }`; nunca se deduce de `en_vivo`.
+En 9:16 se ignora con aviso. `persona` acepta `"tu"` o `"ustedes"`; sin ella QA solo avisa una contradicción
+entre pantalla y voz en el mismo paso. Por lámina, `excepcion_persona`: `"titulo-formula"`, `"cita"`,
+`"a-si-mismo"` o `"a-la-ia"` documenta el cambio intencional.
+
+Campos comunes `accion` y `si_falla`: texto común o arreglo con una entrada por paso. Se muestran solamente en
+`notas-por-paso.md`, banda N y vista O del presentador, nunca sobre la lámina. `credibilidad: true` declara una
+lámina de credibilidad explícita. `--pdf-pasos` recaptura todos los pasos sin cursor ni onda; cámaras sin `vivo`
+no generan página, cámaras con `vivo: true` generan su consigna. El stack conserva sus pasos a sangre.
+
+`objeto` admite `procedencia` (`"real"`, `"ia"`, `"ejemplo"`), `fuente` y `fuente_paso` (0 por omisión).
+Una imagen solo cuenta como prueba propia con `procedencia: "real"` o `fuente`. IA y ejemplos nunca cuentan.
+En `prueba`, cada captura admite la misma `procedencia`. Una captura de respuesta de IA real lleva
+`fuente: "Respuesta real de <IA> · <fecha>"`. IA muestra «Imagen creada con IA»; ejemplo, «Ejemplo ficticio»:
+rótulo gris inferior derecho, 34 px en video y 44 px en sala, sin capa roja.
+En `cifra`, solo `procedencia: "ejemplo"` activa ese descargo visible cuando el usuario lo pide.
+
+`linea-tiempo.marcas[].paso` fija el paso desde 0. Sin ese campo, una marca `tono: "r"` o `"v"` entra con el
+primer tramo cuyo `hasta` apunta a ella; sin coincidencia, con el último tramo. Las marcas neutras son la escala
+y permanecen en el paso 0. `fuente_paso` permite mostrar la referencia justo cuando se cita en la voz.
+
+`--apagado` vale 0.2 en video y 0.35 en sala para mapas con `activo` y pasos atenuados. Listas, opciones y calendario
+conservan sus pisos previos de video (0.25, 0.28 y 0.3) y suben a 0.35 en sala; así el demo sin sala no cambia.
+El fondo clonado del `foco` conserva 0.2 como escenografía; `opacidad` explícita del autor manda y su frase no cambia.
+
+`guion`: `true` en chat declara un guion literal para responder a un cliente. También cuenta si el encabezado
+dice «Puedes responder así:», un imperativo de respuesta o termina en dos puntos, y hay al menos un mensaje
+`de: "yo"` con texto. Un encabezado neutro no convierte una conversación en demostración del cómo.
+
+Los huecos de `datos` declarados pendientes admiten `muestra` (texto, hasta 120 caracteres), por ejemplo
+`{ "pendiente": true, "motivo": "por confirmar", "muestra": "$299" }`. QA remide una ecuación o resaltado
+partido con esa muestra (o «0000») y restaura el DOM: si el problema desaparece informa «revísalo al llenar CLAVE»
+sin restar nota. La muestra nunca sustituye el dato en la entrega. `fuente` también dibuja los huecos pendientes.
+
+QA usa un solo contador de palabras: una cifra con comas, decimales o rango unido cuenta una; «10 - 15%», dos.
+El ritmo incluye `dur`; sin voz ni duración medibles la mediana y p90 son null. Una duración explícita mayor de
+8 s avisa y el exceso de voz sobre `dur` se agrupa en un aviso, con los ocho déficits mayores.
+
+### Aritmética de `cifra`
+
+QA revisa las líneas con `=` y una operación entre dos números del lado izquierdo: ×, x, *, ÷, /, +, −, -.
+Lee dinero, miles, decimales, porcentajes, k/M y mil/millones, rangos e intervalos, continuaciones y cadenas.
+Tolera como máximo una unidad o 5 %; con `~` también admite redondeo a una cifra significativa.
+Salta tachados, huecos pendientes y cuentas ambiguas. «45 días = 1.5 meses» no se revisa, pues no tiene operador.
+La voz no se revisa aritméticamente. Pon los números de una escena en `datos` y reutiliza `{{DATO}}`.
+Si una escena vuelve con un costo nuevo, recalcula el total: la última cuenta es la que recuerda el espectador.
+
+### Chat en 9:16
+
+Sin `tam_texto`, 2-3 mensajes cortos (hasta 12 palabras cada uno) usan 76 px; con más mensajes cortos, 68 px;
+con mensajes de hasta 24 palabras, 64 px; solo los densos usan 58 px. El avatar mide aproximadamente 1.3 veces
+el texto. El encabezado usa `encabezado_estilo: "frase"` salvo elección explícita. Las frases y notas verticales
+se centran en un ancho máximo de 800 px para dejar libre la franja de botones. Comprueba ocupación ≥35 % en QA.
+
+### Logos por confirmar
+
+`imagen: "{{LOGO_X}}"` admite sustitución desde `datos` en nodos de flujo, objeto, stack y oscura.
+En pasos, `iconos` admite `{ "imagen": "{{LOGO_X}}" }` junto a emojis de texto. Sin valor se dibuja una caja
+punteada del tamaño del ícono con el marcador resaltado, y entra en `por_confirmar`. Con valor `assets/x.png`
+se copia y pinta el archivo mediante las mismas reglas de imágenes locales. Otros huecos en `imagen` no se sustituyen.
+`lista` admite `fuente` y `fuente_paso`; por omisión la referencia gris entra con el último ítem (0 en un mapa activo).
+Regla 10: una etiqueta de herramienta (TikTok, Seller Center, Instagram, WhatsApp, YouTube, Shopify, Mercado Libre,
+ChatGPT, Canva o Stripe) debe usar su logo real o `{{LOGO_X}}`, no un emoji genérico.
+
+Campo del deck `conceptos`: objeto de emoji → concepto corto (1-80 caracteres). Si se declara, QA avisa conceptos
+normalizados duplicados y añade información sobre emojis usados sin declarar. Sin el campo no cambia el QA.
+
+### QR en `idea`, `lista` y `boton`
+
+`qr: { "url": "https://<tu-url-corta>", "rotulo": "escanéalo" }` añade un paso final a la derecha (debajo en 9:16). `url` empieza con HTTPS y no lleva credenciales; `rotulo` es texto corto opcional en Caveat rojo. La lámina reserva la zona del código: ninguna flecha ni sello debe cruzarla. El QR usa ECC M, la versión mínima que cabe y cuatro módulos blancos de zona quieta. El SVG es negro/blanco, sin sombra ni filtro y funciona sin red.
+
+En vivo, cada módulo debe medir al menos 10 px en un lienzo de 1920 px; el motor propone 12 px. QA mide el tamaño pintado, rechaza dominios de relleno y avisa si la URL supera unos 30 caracteres. Usa una URL corta, estable y real; nunca proyectes un QR que no lleve a nada. En video, QA recuerda mostrar la URL corta porque el espectador suele usar el mismo teléfono.
+
+Receta de cierre en vivo: `lista` con el resumen a la izquierda, `qr` a la derecha y rótulo «escanéalo». La voz del último paso da tiempo para entrar. Si no usas QR, muestra una URL de al menos 64 px o una palabra clave. Pedir «escanea», «QR» o «tómenle foto» sin código es error.

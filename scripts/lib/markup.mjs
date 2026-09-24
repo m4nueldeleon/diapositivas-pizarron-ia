@@ -73,10 +73,9 @@ export function plano(texto) {
     .trim();
 }
 
-export function palabras(texto) {
-  const p = plano(texto);
-  return p ? p.split(' ').filter(w => /[\p{L}\p{N}]/u.test(w)).length : 0;
-}
+export const RE_PALABRA = /[\p{L}\p{N}]+(?:[.,:⁠\-–—\/×%]+[\p{L}\p{N}]+)*/gu;
+export const contarPalabras = s => (String(s ?? '').match(RE_PALABRA) || []).length;
+export const palabras = texto => contarPalabras(plano(texto));
 
 // Tamaño automático del texto principal según su largo, medido contra la referencia a 1920:
 // hasta 7 palabras 90 px, de 8 a 15 → 84 (c_0250), de 16 a 25 → 76 (c_0115, c_0205) y solo por encima

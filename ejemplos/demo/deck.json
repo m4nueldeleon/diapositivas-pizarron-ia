@@ -949,6 +949,103 @@
    "texto": "**2 minutos** de preguntas y te llega la invitación a la llamada",
    "llamado": true,
    "voz": "Clic en aplica aquí: dos minutos y te llega la invitación."
+  },
+  {
+   "id": "bandas-r6",
+   "tipo": "rejilla",
+   "total": 100,
+   "columnas": 10,
+   "bandas": [
+    {
+     "desde": 0,
+     "hasta": 59,
+     "tono": "g"
+    },
+    {
+     "desde": 60,
+     "hasta": 89,
+     "tono": "v"
+    },
+    {
+     "desde": 90,
+     "hasta": 99,
+     "tono": "n"
+    }
+   ],
+   "leyenda": [
+    {
+     "tono": "g",
+     "cifra": "60%",
+     "nota": "no lo intenta"
+    },
+    {
+     "tono": "v",
+     "cifra": "30%",
+     "nota": "lo intenta"
+    },
+    {
+     "tono": "n",
+     "cifra": "10%",
+     "nota": "lo termina"
+    }
+   ],
+   "bandas_paso": 1,
+   "encerrar": 2,
+   "encerrar_paso": 4,
+   "fuente": "Ejemplo ilustrativo",
+   "texto": "De cada 100, **10** lo terminan",
+   "voz": [
+    "De cada cien personas que ven esto…",
+    "sesenta ni lo intentan,",
+    "treinta lo intentan,",
+    "y solo diez lo terminan.",
+    "Esas diez son las que cobran."
+   ],
+   "texto_paso": 4
+  },
+  {
+   "id": "letras-r6",
+   "tipo": "pasos",
+   "letras": [
+    "R",
+    "E",
+    "C"
+   ],
+   "iconos": [
+    "🎭",
+    "📋",
+    "🧭"
+   ],
+   "etiquetas": [
+    "R · Rol",
+    "E · Encargo",
+    "C · Contexto"
+   ],
+   "activo": 2,
+   "voz": [
+    "Rol, encargo, contexto: hoy toca la E, el encargo."
+   ]
+  },
+  {
+   "id": "prompt-r6",
+   "tipo": "chat",
+   "encabezado": "Copia este prompt:",
+   "mensajes": [
+    {
+     "de": "prompt",
+     "texto": "Resume este texto en tres tareas."
+    },
+    {
+     "de": "respuesta",
+     "remitente": "IA",
+     "texto": "Revisar, confirmar y enviar.",
+     "ejemplo": true
+    }
+   ],
+   "voz": [
+    "Pide un resumen con tres tareas concretas.",
+    "Revisa las tareas antes de usarlas."
+   ]
   }
  ]
 }

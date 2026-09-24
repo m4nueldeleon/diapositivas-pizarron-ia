@@ -39,7 +39,7 @@ también en vivo.
 | `webinar` | 60-90 min | el arco completo de la referencia, estirado | 1,000-1,600 + tramos | 450-700 | ~20% final, oscura solo la revelación | 3 o más |
 | `propuesta` | 3-20 min (corta: 3-8 min, 20-60 láminas); normalmente `en_vivo` | 480-3,200 | 60-400 | 20-180 | inversión anclada + garantía o condición de salida + siguiente paso con vigencia | 1 |
 | `tutorial` | 2-8 min | 330-1,300 | 40-160 | 16-60 | ninguna | 1 (con `"clase": true`, tarea + puente) |
-| `vsl-corto` | 3-6 min | 480-970 | 60-125 | 25-55 | desde el 55-60%, 1 objeción antes | 2 |
+| `vsl-corto` | 3-6 min | 480-970 | 60-125 | 25-50 | desde el 55-60%, 1 objeción antes | 2 |
 | `clase-corta` (taller) | 15-30 min | el guion en beats, más tramos en vivo con `dur` | 200-450 + tramos | 90-200 | sin oscuras; puente al siguiente paso | al final |
 
 La cuenta que usa QA: **duración ≈ palabras ÷ 2.7 + 0.35 × pasos**. 140 palabras en 20 pasos dan ≈ 59 s: por eso
@@ -61,7 +61,8 @@ escribir con **~6.5-9.5 s por lámina; planea con 7.5 s** (2.2 pasos × 2.9 s po
 |---|---|
 | 6-12 | `reel` (la misma cifra que la tabla de arriba: 11 láminas miden ~55 s) |
 | 13-15 | `tutorial` o `libre` |
-| 16-60 | `tutorial` (o `vsl-corto` si vende: 25-50) |
+| 16-24 y vende | `vsl-corto` compacto: revelación al 55-60 %, una objeción antes |
+| 16-60 que no vende | `tutorial` (si vende con 25-50 láminas: `vsl-corto`) |
 | 60-150 | `video` o `vsl` |
 | 90-200 más tramos en vivo | `clase-corta` |
 | una pieza larga pedida (webinar, clase, VSL) con MENOS láminas que su mínimo | su versión corta: webinar o VSL → `vsl-corto`; clase → `clase-corta`, o `tutorial` con `"clase": true` |
@@ -269,3 +270,16 @@ Nueve bloques. Se reenvía a directores que no estuvieron en la junta: el porqu�
    «riesgos y cómo se cuidan».
 9. **Siguiente paso con {{FECHA}} y vigencia {{VIGENCIA}}**: `flujo` «Firmas → Agendamos → Arrancamos» y la lámina
    del llamado con `"llamado": true`. Sin la regla de 2 llamados ni la de objeciones (se conversan en vivo).
+
+
+Tutorial, paso 3: una imagen con `procedencia: "ia"` puede ser la escena del cómo; jamás prueba propia ni resultado.
+Las capturas de respuestas reales de IA llevan `fuente` con nombre de la IA y fecha; los ejemplos se declaran.
+
+Reel: el cómo es el texto literal (el prompt para la IA o el guion de respuesta para el cliente) en un `chat`.
+Usa `guion: true` o un encabezado de respuesta («Puedes responder así:», «Dile», «Copia») o terminado en dos puntos.
+Debe haber un mensaje `de: "yo"` con texto. Una lista de imperativos no lo sustituye. El gancho abre con conflicto
+concreto: hora, cifra, chat, cita o captura. La lista de quiénes cuentan para credibilidad vive en GUION §7.
+
+Las herramientas de una escena usan sus logos reales; si falta uno, declara `imagen: "{{LOGO_X}}"` (regla 10).
+
+En vivo, el **cómo se entra** es un `qr`, una URL corta grande (≥ 64 px) o una palabra clave. Un botón por sí solo sirve en video o PDF; en una sala o por Zoom necesita una forma de acceso que el público pueda usar. La receta del QR está en LAYOUTS.md.

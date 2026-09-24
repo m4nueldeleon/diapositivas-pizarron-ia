@@ -1,6 +1,6 @@
 // pdf.mjs — `render.mjs --pdf`: el deck como documento para MANDAR (propuesta, VSL), no el volcado de la hoja.
 //
-//   laminas.pdf        una página por lámina, del tamaño del formato (para Keynote o Google Slides): el último paso,
+//   laminas.pdf        una página por lámina, del tamaño del formato (documento o impresión): el último paso,
 //                      sin la mano del cursor ni la onda del clic. Un `stack` a sangre (data-clave-paso) da UNA
 //                      página: el stack lleno y, debajo, su remate en una banda (en pantalla el remate tapa el stack).
 //   laminas-notas.pdf  con --notas, o por omisión en `propuesta`, `vsl` y `vsl-corto` (--sin-notas lo apaga): una hoja
@@ -64,7 +64,7 @@ export function htmlNotas(paginas, { W, H, titulo = '' }) {
 export async function capturarPaginas(page, deck, dir) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
-  await page.addStyleTag({ content: '.pdf-captura .cursor,.pdf-captura .onda{display:none!important}' });
+  await page.addStyleTag({ content: '.pdf-captura .cursor,.pdf-captura .onda,.pdf-captura .cal-cursor{display:none!important}' });
   await page.evaluate(() => document.body.classList.add('pdf-captura'));
   const lams = await page.$$('section.lamina');
   const paginas = [];
@@ -91,7 +91,7 @@ export async function capturarPaginas(page, deck, dir) {
     const p = { n: i + 1, id: l.id || l.tipo, voz: vozPlana(l), img: `${base}.png` };
     const conBanda = clave != null && clave >= 0 && clave < n - 1;
     await page.evaluate(([k, q]) => window.PZ.mostrar(window.PZ.lams[k], q, Infinity), [i, conBanda ? clave : n - 1]);
-    cursores += await page.evaluate(k => [...window.PZ.lams[k].querySelectorAll('.cursor,.onda')].filter(c => getComputedStyle(c).display !== 'none').length, i);
+    cursores += await page.evaluate(k => [...window.PZ.lams[k].querySelectorAll('.cursor,.onda,.cal-cursor')].filter(c => getComputedStyle(c).display !== 'none').length, i);
     await lams[i].screenshot({ path: p.img, type: 'png' });
     if (conBanda) {
       await page.evaluate(([k, q]) => window.PZ.mostrar(window.PZ.lams[k], q, Infinity), [i, n - 1]);
@@ -143,4 +143,66 @@ export async function exportarPdf({ browser, page, deck, dirSalida, W, H, notas 
   fs.writeFileSync(path.join(dirSalida, 'pdf.json'), JSON.stringify({ paginas: rel.length, laminas: rel.map(p => p.n), notas: !!notas, cursores_visibles: cursores, pendientes }, null, 2));
   fs.rmSync(dir, { recursive: true, force: true });
   return { paginas: rel.length, notas: !!notas, avisos };
+}
+
+// Texto por paso: una acción común se conserva en todos sus pasos; la voz suelta pertenece al primero.
+const notaPaso = (valor, k, repetir = false) => Array.isArray(valor) ? valor[k] || '' : (repetir || k === 0) ? valor || '' : '';
+const celdaMd = valor => escapar(String(valor ?? '')).replace(/\|/g, '&#124;').replace(/\r?\n/g, '<br>');
+export function notasPorPaso(paginas) {
+  const encabezado = '| n | id | paso k/N | voz | acción | si falla |\n| --- | --- | --- | --- | --- | --- |';
+  return `${encabezado}\n${paginas.map((p, i) => `| ${[i + 1, p.id, `${p.paso + 1}/${p.pasos}`, p.voz, p.accion, p.si_falla].map(celdaMd).join(' | ')} |`).join('\n')}\n`;
+}
+
+// Recaptura cada estado a sangre: los PNG del render conservan el cursor y no sirven para este PDF.
+export async function capturarPasos(page, deck, dir) {
+  fs.mkdirSync(dir, { recursive: true });
+  await page.addStyleTag({ content: '.pdf-captura .cursor,.pdf-captura .onda,.pdf-captura .cal-cursor{display:none!important}' });
+  await page.evaluate(() => document.body.classList.add('pdf-captura'));
+  const lams = await page.$$('section.lamina'), paginas = [];
+  let cursores = 0;
+  try {
+    for (let i = 0; i < lams.length; i++) {
+      const l = deck.laminas[i];
+      if (l.tipo === 'camara' && l.vivo !== true) continue;
+      const n = l.tipo === 'camara' ? 1 : await page.evaluate(k => window.PZ.pasos(window.PZ.lams[k]), i);
+      for (let k = 0; k < n; k++) {
+        await page.evaluate(([i, k, vivo]) => {
+          const l = window.PZ.lams[i];
+          if (vivo) l.classList.add('captura-vivo');
+          else window.PZ.mostrar(l, k, Infinity);
+        }, [i, k, l.tipo === 'camara']);
+        const img = path.join(dir, `${i + 1}-${k + 1}.png`);
+        cursores += await page.evaluate(i => [...window.PZ.lams[i].querySelectorAll('.cursor,.onda,.cal-cursor')].filter(e => {
+          const c = getComputedStyle(e); return c.display !== 'none' && c.visibility !== 'hidden' && Number(c.opacity) > 0;
+        }).length, i);
+        await lams[i].screenshot({ path: img, type: 'png' });
+        paginas.push({ n: i + 1, id: l.id || l.tipo, paso: k, pasos: n, img,
+          voz: notaPaso(l.voz, k), accion: notaPaso(l.accion, k, true), si_falla: notaPaso(l.si_falla, k, true) });
+      }
+    }
+  } finally {
+    await page.evaluate(() => {
+      document.body.classList.remove('pdf-captura');
+      document.querySelectorAll('.captura-vivo').forEach(e => e.classList.remove('captura-vivo'));
+    });
+  }
+  return { paginas, cursores };
+}
+
+export async function exportarPdfPasos({ browser, page, deck, dirSalida, W, H, conservarResumen = false }) {
+  const dir = path.join(dirSalida, '.pdf-pasos');
+  try {
+    const { paginas, cursores } = await capturarPasos(page, deck, dir);
+    const rel = paginas.map(p => ({ ...p, img: path.relative(dirSalida, p.img) }));
+    if (rel.length) await imprimir(browser, htmlLaminas(rel, { W, H }), dirSalida, path.join(dirSalida, 'laminas-pasos.pdf'), { ancho: W, alto: H });
+    else fs.rmSync(path.join(dirSalida, 'laminas-pasos.pdf'), { force: true });
+    fs.writeFileSync(path.join(dirSalida, 'notas-por-paso.md'), notasPorPaso(paginas));
+    const pasosSinVoz = paginas.filter(p => !String(p.voz).trim()).map(p => `${p.n}.${p.paso + 1}`);
+    const destino = path.join(dirSalida, 'pdf.json');
+    const previo = conservarResumen && fs.existsSync(destino) ? JSON.parse(fs.readFileSync(destino, 'utf8')) : {};
+    const resumen = { ...previo, paginas_pasos: paginas.length, pasos_sin_voz: pasosSinVoz, cursores_visibles: cursores + (previo.cursores_visibles || 0) };
+    fs.writeFileSync(destino, JSON.stringify(resumen, null, 2));
+    const avisos = deck.en_vivo && pasosSinVoz.length ? [`${pasosSinVoz.length} pasos sin voz en vivo: llena voz[k] antes de pegar notas-por-paso.md en las notas del presentador`] : [];
+    return { ...resumen, avisos };
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }

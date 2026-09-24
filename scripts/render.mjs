@@ -5,16 +5,17 @@
 //              + salida/pasos.json (manifiesto para video y QA) + salida/hojas.json (qué hojas hay y qué láminas cubren)
 //
 //   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales]
-//                           [--pdf [--notas | --sin-notas]] [--pasos] [--qa]
+//                           [--pdf [--notas | --sin-notas]] [--pdf-pasos] [--pasos] [--qa]
 //
 //   --qa        al terminar corre qa.mjs sobre la misma salida: nota, ESTADO y la línea del arco (contrato de tiempo,
 //               revelación y llamados en %), todo en qa.json
 //
 //   --pasos     imprime qué entra en cada paso de cada lámina (sin navegador ni PNG) y sale: para escribir la `voz` con
 //               una frase por paso ANTES de renderizar (LAYOUTS.md, «Pasos que genera cada diseño»)
+//   --pdf-pasos una página por PASO para Keynote/Slides, sin cursor; notas-por-paso.md lleva voz, acción y si falla.
 //   --finales   solo el último paso de cada lámina (para revisar rápido; no genera hoja-pasos.jpg)
 //   --pdf       además, salida/laminas.pdf: una página por lámina (su último paso, sin la mano del cursor), del tamaño
-//               del formato, para Keynote o Google Slides; un `stack` a sangre sale en UNA página con su remate en una
+//               del formato, para mandarlo como documento o imprimir; un `stack` a sangre sale en UNA página con su remate en una
 //               banda. Las `camara` no tienen página. En `propuesta`, `vsl` y `vsl-corto` (o con --notas) también
 //               salida/laminas-notas.pdf: la lámina y su voz como texto, para mandarlo como documento. --sin-notas lo apaga.
 // Con más de 20 láminas la hoja se pagina: hoja-01.jpg, hoja-02.jpg… (20 láminas cada una) y hoja-pasos-01.jpg…
@@ -25,13 +26,16 @@ import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina, archivoPagina, POR_HOJA, FILAS_POR_HOJA } from './lib/hoja.mjs';
-import { duracionTotal, mmss } from './lib/tiempos.mjs';
+import { duracionTotal, duracionPaso, mmss } from './lib/tiempos.mjs';
+import { palabras } from './lib/markup.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
-import { exportarPdf, conNotas } from './lib/pdf.mjs';
+import { exportarPdf, exportarPdfPasos, conNotas } from './lib/pdf.mjs';
 import { duracionVivo } from './lib/construir.mjs';
 import { mensajeSinFirma } from './lib/reglas-deck.mjs';
 
 const { opt, flag, pos } = argumentos(process.argv);
+if (flag('--pdf-pasos') && flag('--finales')) { console.error('✗ --pdf-pasos es incompatible con --finales: exporta todos los pasos o solo los finales'); process.exit(2); }
+if (flag('--pdf-pasos') && flag('--pasos')) console.warn('⚠ --pasos solo imprime el mapa y sale antes del navegador; quita --pasos para generar laminas-pasos.pdf');
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos, revela = [] } = prep;
@@ -41,7 +45,11 @@ if (flag('--pasos')) {
     const nv = Array.isArray(l.voz) ? l.voz.length : l.voz ? 1 : 0;
     const marca = l.tipo === 'camara' ? '' : nv && nv !== pasos[i] ? `  ✗ voz: ${nv} textos` : '';
     console.log(`${String(i + 1).padStart(2)} · ${l.id || l.tipo} (${l.tipo}) · ${pasos[i]} ${pasos[i] === 1 ? 'paso' : 'pasos'}${marca}`);
-    (revela[i] || []).forEach((xs, k) => console.log(`     paso ${k + 1}: ${xs.length ? xs.join(' + ') : '(sin cambio visible)'}`));
+    (revela[i] || []).forEach((xs, k) => {
+      const v = Array.isArray(l.voz) ? l.voz[k] : k === 0 ? l.voz : '', np = palabras(v), d = duracionPaso(l, k);
+      const alerta = d > 5 || (l.dur != null && np / 2.7 + .35 > d + .3);
+      console.log(`     paso ${k + 1}: ${xs.length ? xs.join(' + ') : '(sin cambio visible)'} · ~${d.toFixed(1)} s · ${np} palabras${alerta ? ' ⚠' : ''}`);
+    });
   });
   process.exit(0);
 }
@@ -143,6 +151,11 @@ if (flag('--pdf')) {
   const notas = conNotas(deck.pieza, { notas: flag('--notas'), sinNotas: flag('--sin-notas') });
   const r = await exportarPdf({ browser, page, deck, dirSalida, W, H, notas });
   if (r.paginas) console.log(`PDF → ${path.join(dirSalida, 'laminas.pdf')} (${r.paginas} páginas, una por lámina)${r.notas ? ` + laminas-notas.pdf (la lámina y su voz como texto)` : ''}`);
+  r.avisos.forEach(a => console.warn('⚠ ' + a));
+}
+if (flag('--pdf-pasos')) {
+  const r = await exportarPdfPasos({ browser, page, deck, dirSalida, W, H, conservarResumen: flag('--pdf') });
+  console.log(`PDF → ${path.join(dirSalida, 'laminas-pasos.pdf')} (${r.paginas_pasos} páginas) + notas-por-paso.md`);
   r.avisos.forEach(a => console.warn('⚠ ' + a));
 }
 if (errores.length) console.error('✗ errores de la página:\n  ' + errores.join('\n  '));

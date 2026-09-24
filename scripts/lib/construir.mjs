@@ -1,5 +1,6 @@
 // construir.mjs — deck.json → index.html autocontenido (fuentes, emojis e imágenes copiados a la salida).
 import fs from 'node:fs';
+import { bloqueQr } from './qr.mjs';
 import path from 'node:path';
 import { Emojis, DEFS_GLOBALES } from './emoji.mjs';
 import { crearCtx, escapar, CURSOR_MANO, CURSOR_PUNO, CURSOR_FLECHA } from './comun.mjs';
@@ -122,6 +123,10 @@ function armarLamina(l, i, deck, comun) {
   }
   const oscura = l.tipo === 'oscura' || l.oscura;
   // qué entra en cada paso (pasos.json → revela, render.mjs --pasos, el error de voz de QA)
+  if (l.qr && ['idea', 'lista', 'boton'].includes(l.tipo)) {
+    interior = `<div class="con-qr"><div class="qr-contenido">${interior}</div>${bloqueQr(l.qr, ctx, pasos)}</div>`;
+    pasos = ctx.max + 1;
+  }
   const revela = l.tipo === 'camara' ? [['a cámara']] : describirPasos(interior + extras, pasos, ctx.conexiones);
   return {
     interior, pasos, extras, oscura, revela, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
@@ -162,7 +167,7 @@ function guion(l, pasos) {
   const vozDe = k => (Array.isArray(l.voz) ? l.voz[k] : k === 0 ? l.voz : '') || (l.tipo === 'camara' && k === 0 ? l.nota || '' : '');
   const voz = Array.from({ length: n }, (_, k) => String(vozDe(k) || ''));
   const dur = Array.from({ length: n }, (_, k) => +duracionPaso(l, k).toFixed(2));
-  return `<script type="application/json" class="guion">${jsonSeguro({ voz, dur })}</script>`;
+  return `<script type="application/json" class="guion">${jsonSeguro({ voz, dur, accion: l.accion, si_falla: l.si_falla })}</script>`;
 }
 
 // Tramo en vivo (`camara` con `vivo: true`): la actividad, la demostración o las preguntas de una clase. En el
@@ -255,7 +260,7 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapar(deck.titulo || 'Láminas')}</title>
 <style>${vars}\n${css}</style></head>
-<body class="${F.W < F.H ? 'f-vertical' : 'f-horizontal'}" data-anim="${deck.animacion === 'suave' ? 'suave' : 'seco'}" data-emoji="${em.modo}" data-w="${F.W}" data-h="${F.H}">
+<body class="${F.W < F.H ? 'f-vertical' : 'f-horizontal'}${deck.sala && formato !== '9:16' ? ' sala' : ''}" data-anim="${deck.animacion === 'suave' ? 'suave' : 'seco'}" data-emoji="${em.modo}" data-w="${F.W}" data-h="${F.H}">
 ${DEFS_GLOBALES}
 ${secciones.join('\n')}
 <script>${runtime}</script>

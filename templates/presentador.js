@@ -40,6 +40,9 @@
   const el = (clase, html = '') => { const d = document.createElement('div'); d.className = clase; d.innerHTML = html; document.body.appendChild(d); return d; };
   const esc = t => String(t || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
+  const porPaso = (v, p) => Array.isArray(v) ? v[p] || '' : v || '';
+  const apoyo = (g, p) => [['Acción', g.accion], ['Si falla', g.si_falla]].map(([r, v]) => porPaso(v, p) ? `${r}: ${porPaso(v, p)}` : '').filter(Boolean).join('\n');
+
   function secuencia(lams) {
     const seq = [];
     lams.forEach((l, i) => { if (l.dataset.tipo === 'camara') seq.push({ i, p: 0 }); else for (let p = 0; p < PZ.pasos(l); p++) seq.push({ i, p }); });
@@ -103,7 +106,7 @@
       lams.forEach(x => x.classList.toggle('activa', x === l)); ajustar(l);
       barra.firstChild.style.width = ((pos + 1) / seq.length * 100) + '%';
       const g = guion(l);
-      notas.innerHTML = `<small>lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? (l.hasAttribute('data-vivo') ? ' · ⏱️ en vivo' : ' · 🎥 a cámara') : ''}</small>${esc((g.voz || [])[p]) || '<i>(sin voz)</i>'}`;
+      notas.innerHTML = `<small>lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? (l.hasAttribute('data-vivo') ? ' · ⏱️ en vivo' : ' · 🎥 a cámara') : ''}</small>${esc((g.voz || [])[p]) || '<i>(sin voz)</i>'}${apoyo(g, p) ? `<br>${esc(apoyo(g, p)).replace(/\n/g, '<br>')}` : ''}`;
       const rel = l.querySelector('.vivo-reloj');
       cuentaVivo(l, r => { if (rel) { rel.textContent = reloj(r); clasesCuenta(rel, r); } });
     }
@@ -147,9 +150,10 @@
       const vivo = l.hasAttribute('data-vivo');
       const consigna = vivo ? ((l.querySelector('.vivo-consigna') || {}).textContent || '') : '';
       voz.textContent = vivo ? consigna : (g.voz || [])[p] || (l.dataset.tipo === 'camara' ? '🎥 a cámara' : '(sin voz)');
+      if (apoyo(g, p)) voz.textContent += '\n' + apoyo(g, p);
       if (vivo) { const c = document.createElement('span'); c.className = 'o-cuenta'; voz.prepend(c); cuentaVivo(l, r => { c.textContent = reloj(r); clasesCuenta(c, r); }); }
       else cuentaVivo(null);
-      vozSig.textContent = s ? ((gs.voz || [])[s.p] || '') : '— fin —';
+      vozSig.textContent = s ? [((gs.voz || [])[s.p] || ''), apoyo(gs, s.p)].filter(Boolean).join('\n') : '— fin —';
       posEl.textContent = `lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? ' · a cámara' : ''}`;
       if (i !== lamActual) { lamActual = i; tLam = performance.now(); plan = (g.dur || []).reduce((a, b) => a + b, 0); }
     }

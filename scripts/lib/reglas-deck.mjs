@@ -1,10 +1,19 @@
+import { reglasVariantes } from './variantes.mjs';
+import { reglasQr } from './reglas-qr.mjs';
+export { reglasQr } from './reglas-qr.mjs';
+import { reglasEstilo, reglasLogos } from './reglas-estilo.mjs';
+export { reglasEstilo, reglasLogos } from './reglas-estilo.mjs';
+import { reglasAritmetica } from './aritmetica.mjs';
+export { reglasAritmetica } from './aritmetica.mjs';
+import { reglasSincronia, reglasPersona } from './sincronia.mjs';
+export { reglasSincronia, reglasPersona } from './sincronia.mjs';
 // reglas-deck.mjs — reglas de QA que se leen en el deck.json (sin navegador): duración de la pieza, apertura,
 // voz, proyecciones, pruebas de maqueta, prueba real y credibilidad, objeciones, descargos en pantalla, firma de
 // relleno, llamado, coherencia emoji↔concepto y claves que nadie lee. qa.mjs las suma a sus hallazgos; aquí
 // son funciones puras para probarlas rápido (pruebas/reglas-deck.test.mjs).
 //
 // Todas devuelven { errores: [], avisos: [] } con mensajes accionables que citan la referencia o el archivo.
-import { plano } from './markup.mjs';
+import { plano, palabras } from './markup.mjs';
 import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
 import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedido, esGlifoDibujado } from './emoji.mjs';
@@ -19,8 +28,8 @@ export const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').re
 export const nombre = (deck, i) => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
 
 // Campos que no son texto a la vista: ahí no se buscan frases
-const NO_VISIBLE = new Set(['tipo', 'id', 'voz', 'anclas', 'ancla', 'emoji', 'iconos', 'sobre', 'centro', 'imagen', 'src', 'logo', 'clic',
-  'cursor', 'revelar', 'fondo', 'sello_sobre', 'sello_pos', 'anclar', 'color', 'estilo', 'flecha', 'de', 'a', 'forma', 'grafica', 'lado',
+const NO_VISIBLE = new Set(['tipo', 'id', 'voz', 'accion', 'si_falla', 'procedencia', 'excepcion_persona', 'anclas', 'ancla', 'emoji', 'iconos', 'sobre', 'centro', 'imagen', 'src', 'logo', 'clic',
+  'url', 'cursor', 'revelar', 'fondo', 'sello_sobre', 'sello_pos', 'anclar', 'color', 'estilo', 'flecha', 'de', 'a', 'forma', 'grafica', 'lado',
   'encabezado_pos', 'encabezado_estilo', 'posicion', 'fuente']);
 const noVisible = k => NO_VISIBLE.has(k) || /^(emoji_|avatar|tono|tam)/.test(k);
 
@@ -95,6 +104,14 @@ const SALUDO = /\b(bienvenid[oa]s?|hola a todos|hola,? que tal|me llamo|mi nombr
 export function reglasApertura(deck, pasos) {
   const avisos = [];
   const L = deck.laminas;
+  if (['reel', 'vsl', 'vsl-corto'].includes(deck.pieza)) {
+    const concreta = l => ['chat', 'prueba', 'cifra'].includes(l.tipo) || (l.tipo === 'objeto' && (l.imagen || l.reloj)) || /\d|[$%]|«[^»]+»|de la noche/i.test(textosVisibles(l).join(' '));
+    const p = L.findIndex(l => l.tipo !== 'camara');
+    if (p >= 0 && !concreta(L[p])) {
+      const siguiente = L.findIndex((l, i) => i > p && l.tipo !== 'camara' && concreta(l));
+      avisos.push(`${nombre(deck, p)}: gancho sin conflicto concreto (hora, cifra, chat o captura); ${siguiente >= 0 ? `pon primero la escena de la lámina ${siguiente + 1}` : 'escribe la escena: la hora, el mensaje o el número'} (ARCOS §Reel)`);
+    }
+  }
   if (L.length < 4) return { errores: [], avisos };
   const t = tiemposSecuenciales(deck, pasos);
   const cam = t.find(s => s.camara && s.inicio < 10);
@@ -411,11 +428,12 @@ export function origenFuente(f) {
 export function origenPrueba(l) {
   if (!l || typeof l !== 'object') return null;
   if (l.tipo === 'prueba') {
-    const reales = capturasDe(l).filter(c => c.ejemplo !== true && !c.hueco && (conTexto(c.src) || conTexto(c.fuente)));
+    const reales = capturasDe(l).filter(c => c.ejemplo !== true && !['ia', 'ejemplo'].includes(c.procedencia) && !c.hueco && (conTexto(c.src) || conTexto(c.fuente)));
     if (!reales.length) return null;
     return reales.some(c => !conTexto(c.fuente) || origenFuente(c.fuente) === 'propia') ? 'propia' : 'mercado';
   }
-  if (l.tipo === 'objeto') return conTexto(l.imagen) ? 'propia' : null;
+  if (['ia', 'ejemplo'].includes(l.procedencia)) return null;
+  if (l.tipo === 'objeto') return conTexto(l.imagen) && (l.procedencia === 'real' || conTexto(l.fuente)) ? 'propia' : null;
   if (l.tipo === 'cifra' || l.tipo === 'grafica') return conTexto(l.fuente) ? origenFuente(l.fuente) : null;
   return null;
 }
@@ -438,11 +456,11 @@ export function reglasDemostracion(deck) {
 }
 // El número puede ser un hueco declarado («Más de [CLIENTES] clientes»): el lugar de la cifra existe y QA lo cuenta
 // como dato pendiente aparte (borrador hasta llenarlo), no como «sin credibilidad».
-const NUM_O_HUECO = '(\\d[\\d,.]*|\\[[a-z0-9_]+\\])';
-const CIFRA_CREDIBILIDAD = new RegExp(`${NUM_O_HUECO}\\s*\\+?\\s*(anos|clientes|alumnos|estudiantes|eventos|empresas|negocios|personas|asistentes|casos|proyectos)\\b|\\bdesde (19|20)\\d\\d\\b`);
-// En una propuesta «40 personas» es el equipo del CLIENTE: la credibilidad es del proveedor (años, clientes, empresas,
-// eventos, casos, personas YA capacitadas) o su «desde 20XX».
-const CIFRA_PROVEEDOR = new RegExp(`\\bdesde (19|20)\\d\\d\\b|${NUM_O_HUECO}\\s*\\+?\\s*(anos|clientes|empresas|alumnos|egresados|graduados|eventos|casos|proyectos|generaciones)\\b|${NUM_O_HUECO}\\s*\\+?\\s*(personas|vendedores|equipos|lideres)\\s+(ya\\s+)?(capacitad|formad|entrenad|atendid)`);
+const NUM_O_HUECO = '(\\d[\\d,.]*|\\[[a-z0-9_]+\\]|\\{\\{\\s*[a-z0-9_]+\\s*\\}\\})';
+export const QUIENES_CREDIBILIDAD = ['anos', 'clientes', 'alumnos', 'estudiantes', 'eventos', 'empresas', 'negocios', 'personas', 'asistentes', 'casos', 'proyectos', 'consultores', 'coaches', 'profesionales', 'emprendedores', 'duenos', 'miembros', 'egresados', 'graduados', 'generaciones', 'pacientes', 'vendedores', 'agencias', 'marcas', 'seguidores', 'suscriptores', 'familias', 'comunidades', 'paises', 'ciudades', 'usuarios'];
+const CIFRA_CREDIBILIDAD = new RegExp(`${NUM_O_HUECO}\\s*\\+?\\s*(${QUIENES_CREDIBILIDAD.join('|')})\\b|\\bdesde (19|20)\\d\\d\\b`);
+// En propuestas, personas sin verbo de formación son el equipo del cliente, no credibilidad del proveedor.
+const CIFRA_PROVEEDOR = new RegExp(`\\bdesde (19|20)\\d\\d\\b|${NUM_O_HUECO}\\s*\\+?\\s*(${QUIENES_CREDIBILIDAD.filter(x => !['personas', 'asistentes', 'vendedores'].includes(x)).join('|')})\\b|${NUM_O_HUECO}\\s*\\+?\\s*(personas|vendedores|equipos|lideres)\\s+(ya\\s+)?(capacitad|formad|entrenad|atendid)`);
 // Predicados que usan los avisos y faltaParaFinal (la misma condición, sin comparar textos de mensajes)
 export const hayPruebaReal = deck => deck.laminas.some(esPruebaReal);
 // Sustitutos de GUION §7 que QA cuenta como prueba para final (una captura real sigue siendo mejor):
@@ -483,12 +501,12 @@ const soloMaqueta = l => { const cs = capturasDe(l); return l.tipo === 'prueba' 
 export function hayCifraCredibilidad(deck) {
   const L = deck.laminas, osc = L.findIndex(l => l.tipo === 'oscura' || l.oscura === true);
   const fin = osc >= 0 ? osc : Math.ceil(L.length * 0.6);
-  return L.slice(0, fin).some(l => CIFRA_CREDIBILIDAD.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
+  return L.slice(0, fin).some(l => l.credibilidad === true || CIFRA_CREDIBILIDAD.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
 }
 // Propuesta, bloque 4 (ARCOS.md): quién la imparte con una cifra suya, antes de la inversión, y un caso o una prueba
 export function hayCredencialProveedor(deck) {
   const L = deck.laminas, inv = L.findIndex(esInversion);
-  return L.slice(0, inv >= 0 ? inv : L.length).some(l => CIFRA_PROVEEDOR.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
+  return L.slice(0, inv >= 0 ? inv : L.length).some(l => l.credibilidad === true || CIFRA_PROVEEDOR.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' '))));
 }
 // Un caso: una prueba real, cualquier lámina con `fuente` o el hueco declarado de un caso ([CASO…])
 export const hayCaso = deck => hayPruebaReal(deck) || deck.laminas.some(l => conTexto(l.fuente) || /\[CASO[A-Z0-9_]*\]/.test(textosVisibles(l).join(' ')));
@@ -509,7 +527,7 @@ export function reglasCredibilidad(deck) {
     avisos.push(`sin prueba real en el ${p}: pide 1-3 capturas con permiso o usa un sustituto de GUION §7 (demostración con material real, caso con números y «fuente», dato de mercado publicado con «fuente» (búscalo, no de memoria), prueba lógica con la tasa en la condición o con «fuente», primeros casos con garantía medible)`);
     L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; cámbiala por una captura real o por un sustituto (GUION §7)`); });
   }
-  if (!hayCifraCredibilidad(deck)) avisos.push(`credibilidad sin cifra: di años, clientes o eventos reales antes de la revelación (GUION §7, beat 2: «desde 2016, más de 23,000 clientes»); si no los hay, omítelo, no lo inventes`);
+  if (!hayCifraCredibilidad(deck)) avisos.push(`credibilidad sin cifra: di una cifra real de ${QUIENES_CREDIBILIDAD.join(', ')} antes de la revelación (GUION §7, beat 2: «desde 2016, más de 23,000 clientes»); si no los hay, omítelo, no lo inventes`);
   return { errores: [], avisos };
 }
 
@@ -631,7 +649,7 @@ const CAMPOS_DESCARGO = ['nota', 'titulo', 'subtitulo', 'encabezado', 'arriba'];
 export function reglasDescargo(deck) {
   const avisos = [], enVoz = [];
   deck.laminas.forEach((l, i) => {
-    if (l.tipo === 'prueba') return;
+    if (l.tipo === 'prueba' || (l.tipo === 'cifra' && l.procedencia === 'ejemplo')) return;
     for (const k of CAMPOS_DESCARGO) {
       const v = l[k], t = typeof v === 'string' ? v : v && typeof v === 'object' && typeof v.texto === 'string' ? v.texto : '';
       if (t && DESCARGO.test(sinAcentos(plano(t)))) { avisos.push(`${nombre(deck, i)}: «${plano(t).slice(0, 40)}» en «${k}» es un descargo en pantalla; va una vez en la voz al abrir la escena («Pongamos que…») y la lámina lleva la consecuencia (GUION §3.8 d)`); break; }
@@ -671,20 +689,37 @@ export function emojisDeLamina(l) {
 export const claveIcono = (x, spec) => `${x} (${conceptoDe(spec || x) || 'fuera del diccionario'})`;
 export function inventarioIconos(deck) {
   const inv = {};
+  const etiquetas = new Map(), polaridades = new Map();
+  const comunes = new Set(['el', 'la', 'los', 'las', 'un', 'una', 'de', 'del', 'en', 'con', 'sin', 'para', 'por', 'y', 'o', 'tu', 'tus', 'su', 'sus', 'es', 'son', 'que', 'a', 'al', 'se', 'lo', 'le', 'me', 'nos', 'te', 'si', 'no', 'mas', 'menos', 'este', 'esta', 'esto', 'ya', 'hoy']);
   deck.laminas.forEach((l, i) => emojisDeLamina(l).forEach(e => {
     const spec = `${e.prefijo ? e.prefijo + ':' : ''}${e.base}${e.insignia ? '+' + e.insignia : ''}`;
     // la negación va en la clave: «no:🧮 (…)» junto a «🧮 (…)» deja ver que el mismo emoji se niega en otra lámina [r5]
     const base = e.prefijo ? `${e.prefijo}:${e.base}` : e.base;
-    for (const [x, sp] of [[base, spec], [e.insignia, e.insignia]].filter(([x]) => x)) {
+    polaridades.set(e.base, new Set([...(polaridades.get(e.base) || []), e.prefijo === 'no' ? 'no' : 'si']));
+    const palabras = sinAcentos(e.texto).match(/[a-z0-9]+/g) || [];
+    const significativas = palabras.filter(p => !comunes.has(p)), etiqueta = significativas.join(' ');
+    if (significativas.length <= 5 && etiqueta) etiquetas.set(e.base, new Set([...(etiquetas.get(e.base) || []), etiqueta]));
+    for (const [x, sp] of [[base, spec], [e.insignia, conceptoDe(e.insignia) ? e.insignia : spec]].filter(([x]) => x)) {
       const k = claveIcono(x, sp), r = `lámina ${i + 1}${e.texto ? ` · ${e.texto}` : ''}`;
       (inv[k] = inv[k] || []).includes(r) || inv[k].push(r);
     }
   }));
+  for (const k of Object.keys(inv)) {
+    const b = k.split(' (')[0].replace(/^(no|si):/, ''), n = etiquetas.get(b)?.size || 0;
+    const lista = [...(etiquetas.get(b) || [])].map(t => new Set(t.split(' ')));
+    const disjuntas = lista.some((a, i) => lista.slice(i + 1).some(c => ![...a].some(p => c.has(p))));
+    if (n > 1 && disjuntas) inv[k].push(`revisar: ${n} etiquetas`);
+    if (polaridades.get(b)?.size > 1) inv[k].push('revisar: el emoji aparece afirmado y negado; comprueba dolor → solución');
+  }
   return inv;
 }
 // Emojis de base que no están en el diccionario (una sola línea de info, sin restar nota)
 export function infoIconos(deck) {
-  const fuera = [...new Set(deck.laminas.flatMap(emojisDeLamina).filter(e => e.base && !conceptoDe(`${e.prefijo ? e.prefijo + ':' : ''}${e.base}`)).map(e => e.base))];
+  const fuera = [...new Set(deck.laminas.flatMap(emojisDeLamina).flatMap(e => {
+    const spec = `${e.prefijo ? e.prefijo + ':' : ''}${e.base}${e.insignia ? '+' + e.insignia : ''}`;
+    if (conceptoDe(spec, true)) return [];
+    return [e.base, e.insignia].filter(x => x && !conceptoDe(x));
+  }))];
   return fuera.length ? `emojis fuera del diccionario (${fuera.join(' ')}): usa uno de EMOJIS.md o agrégalo con su concepto; revisa en qa.json → iconos que cada lámina diga el concepto de su emoji` : null;
 }
 export function reglasIconos(deck) {
@@ -724,7 +759,11 @@ export function reglasIconos(deck) {
     });
   });
   const afirmados = new Map();
-  usos.forEach((es, i) => es.forEach(e => { if (e.prefijo === 'si' && !afirmados.has(e.base)) afirmados.set(e.base, i); }));
+  const oferta = inicioOferta(L);
+  usos.forEach((es, i) => es.forEach(e => {
+    const afirma = e.prefijo === 'si' || (e.prefijo !== 'no' && (L[i].tipo === 'stack' || (oferta >= 0 && i >= oferta && !esObjecion(L[i]))));
+    if (afirma && !afirmados.has(e.base)) afirmados.set(e.base, i);
+  }));
   usos.forEach((es, j) => {
     const vistosJ = new Set();
     es.filter(e => e.prefijo === 'no' && !vistosJ.has(e.base)).forEach(e => {
@@ -733,7 +772,7 @@ export function reglasIconos(deck) {
       // vale. Después del mapa, o en una objeción, se lee como «no hagas el paso N».
       const m = mapa.get(e.base);
       if (m && (j > m.i || esObjecion(L[j]))) avisos.push(`${nombre(deck, j)}: no:${e.base} niega el paso ${m.k + 1}${m.et ? ` («${m.et}»)` : ''} del mapa de la ${nombre(deck, m.i)}: se lee «no hagas el paso ${m.k + 1}»; si la objeción es una pregunta usa 🤔, si es «me falta X» niega lo que falta (EMOJIS.md, objeción)`);
-      else if (afirmados.has(e.base) && afirmados.get(e.base) !== j) avisos.push(`${nombre(deck, j)}: no:${e.base} niega el mismo emoji que la ${nombre(deck, afirmados.get(e.base))} afirma con si:${e.base}: el ícono dice lo contrario en el mismo deck; cambia uno (EMOJIS.md, objeción)`);
+      else if (afirmados.has(e.base) && afirmados.get(e.base) !== j && (j > afirmados.get(e.base) || esObjecion(L[j]))) avisos.push(`${nombre(deck, j)}: no:${e.base} niega el mismo emoji que la ${nombre(deck, afirmados.get(e.base))} afirma en la oferta o con si:${e.base}: el ícono dice lo contrario en el mismo deck; cambia uno (EMOJIS.md, objeción)`);
     });
   });
   // d) un emoji ROJO (🎯 ❤️ 🧰 📌) negado con `no:` o tachado en una lista: la ✕ y el tachón son rojos y se funden con él
@@ -747,35 +786,63 @@ export function reglasIconos(deck) {
     const rojos = [...bases].filter(b => b && pctR(b) >= 30);
     if (rojos.length) avisos.push(`${nombre(deck, i)}: ${rojos.join(' ')} ${rojos.length > 1 ? 'son rojos' : 'es rojo'} y va negado o tachado: la ✕ y el tachón rojos se funden con el emoji; usa otro de EMOJIS.md para ese concepto`);
   });
+  if (deck.conceptos && typeof deck.conceptos === 'object') {
+    const porConcepto = new Map();
+    for (const [emoji, concepto] of Object.entries(deck.conceptos)) {
+      const c = sinAcentos(concepto).replace(/[^a-z0-9]+/g, ' ').trim();
+      if (c) porConcepto.set(c, new Set([...(porConcepto.get(c) || []), sinSelector(emoji)]));
+    }
+    for (const [c, emojis] of porConcepto) if (emojis.size > 1) avisos.push(`${[...emojis].join(' y ')} declaran el mismo concepto «${c}»: elige un solo emoji por concepto (EMOJIS.md)`);
+  }
+  const perdidas = /\b(menos|pierdes|pierde|perder|perdida de|se va|se van|baja|bajan|caida de|cae|caen)\s+(?:(?:tu|tus|el|la|los|las)\s+)?(?:ganancias?|dinero|ingresos|ventas|margen|utilidad(?:es)?|clientes)\b/g;
+  usos.forEach((es, i) => es.filter(e => !e.prefijo && ['💰', '📈', '💎'].includes(e.base)).forEach(e => {
+    const t = sinAcentos(e.texto);
+    const opuesto = [...t.matchAll(perdidas)].some(m => {
+      const antes = t.slice(0, m.index), cerca = t.slice(Math.max(0, m.index - 12), m.index + m[0].length + 12);
+      return !/\b(?:no(?:\s+(?:vas|va|van|a|volveras|volver|vuelvas))*|sin)\s*$/.test(antes) && !/\bmas\b/.test(cerca);
+    });
+    if (opuesto) avisos.push(`${nombre(deck, i)}: ${e.base} afirma ganancia o crecimiento, pero «${e.texto}» habla de pérdidas; el emoji debe llevar el mismo signo que la frase (EMOJIS.md)`);
+  }));
   return { errores: [], avisos };
 }
 
 // ---------- ritmo: cada paso es un beat de 2-3 s (GUION §1; mediana medida en la referencia 2.9 s) ----------
 // Con la duración de cada paso (duracionPaso: voz a 2.7 palabras/s + 0.35). Quedan fuera las `camara` y las láminas con
-// `dur` explícito. Un paso de más de 8 s es un párrafo con la lámina quieta: error. Los de más de 5 s van en UN aviso
+// `dur` explícito cuenta como muestra y sus excesos son avisos. Los de más de 5 s van en UN aviso
 // por deck (no uno por lámina: los de 5.2 s, 13 palabras, están al límite y un aviso por lámina hundía la nota),
 // y solo si son muchos (≥ 15%) o si alguno pasa de 6 s.
 export const RITMO_BEAT = { largo: 5, muyLargo: 6, error: 8, mediana: 3.5, proporcion: 0.15 };
 export function reglasRitmo(deck, pasos) {
-  const errores = [], avisos = [], todos = [], largos = [];
+  const errores = [], avisos = [], todos = [], largos = [], deficit = [], origenes = new Set();
   deck.laminas.forEach((l, i) => {
-    if (!l || l.tipo === 'camara' || l.dur != null) return;
+    if (!l || l.tipo === 'camara') return;
     const n = Math.max(1, (pasos && pasos[i]) || 1);
     for (let k = 0; k < n; k++) {
+      const voz = Array.isArray(l.voz) ? l.voz[k] : k === 0 ? l.voz : '';
+      const explicito = typeof l.dur === 'number' || (Array.isArray(l.dur) && l.dur.length > 0);
+      if (!explicito && !voz) continue;
+      origenes.add(explicito ? 'dur' : 'voz');
       const d = duracionPaso(l, k);
       todos.push(d);
-      if (d > RITMO_BEAT.error) errores.push(`${nombre(deck, i)}, paso ${k + 1} dura ${d.toFixed(1)} s: es un párrafo con la lámina quieta; parte el beat en dos pasos o corta a cámara (GUION §1)`);
+      const necesita = palabras(voz) / 2.7 + .35;
+      if (explicito && voz && necesita > d + .3) deficit.push({ lamina: i + 1, paso: k + 1, falta: necesita - d });
+      if (d > RITMO_BEAT.error) (explicito ? avisos : errores).push(`${nombre(deck, i)}, paso ${k + 1} dura ${d.toFixed(1)} s: ${explicito ? 'revisa la duración explícita; divide el sostén si no es intencional' : 'es un párrafo con la lámina quieta; parte el beat en dos pasos o corta a cámara'} (GUION §1)`);
       else if (d > RITMO_BEAT.largo) largos.push({ lamina: i + 1, paso: k + 1, s: +d.toFixed(1) });
     }
   });
   const orden = [...todos].sort((a, b) => a - b);
-  const q = f => (orden.length ? +orden[Math.min(orden.length - 1, Math.floor(f * (orden.length - 1) + 0.5))].toFixed(1) : 0);
-  const ritmo = { mediana: q(0.5), p90: q(0.9), pasos_largos: largos.map(x => `${x.lamina}.${x.paso}`) };
+  const q = f => {
+    if (!orden.length) return null;
+    const pos = f * (orden.length - 1), a = Math.floor(pos), b = Math.ceil(pos);
+    return +(orden[a] + (orden[b] - orden[a]) * (pos - a)).toFixed(1);
+  };
+  const ritmo = { mediana: q(.5), p90: q(.9), origen: origenes.size > 1 ? 'mixto' : [...origenes][0] || 'voz', pasos_largos: largos.map(x => `${x.lamina}.${x.paso}`) };
   if (largos.length && (largos.length / Math.max(1, todos.length) >= RITMO_BEAT.proporcion || largos.some(x => x.s > RITMO_BEAT.muyLargo))) {
     const lista = [...largos].sort((a, b) => b.s - a.s).slice(0, 8).map(x => `${x.lamina}.${x.paso} de ${x.s} s`).join(', ');
     avisos.push(`${largos.length} de ${todos.length} pasos pasan de 5 s (${lista}${largos.length > 8 ? '…' : ''}): parte el beat en dos pasos o recorta la voz (GUION §1, un beat son 2-3 s)`);
   }
   if (orden.length >= 8 && ritmo.mediana > RITMO_BEAT.mediana) avisos.push(`el paso típico va a ${ritmo.mediana} s (mediana; la referencia va a 2.9 s): el ritmo se siente lento; parte los beats (GUION §1)`);
+  if (deficit.length) avisos.push(`${deficit.length} pasos traen más voz de la que cabe en su \`dur\` (${deficit.sort((a, b) => b.falta - a.falta).slice(0, 8).map(x => `${x.lamina}.${x.paso}: faltan ${x.falta.toFixed(1)} s`).join(', ')}): aumenta dur o recorta la voz`);
   return { errores, avisos, ritmo };
 }
 
@@ -863,7 +930,7 @@ export function reglasFuente(deck, { crudo } = {}) {
 // ---------- claves del deck que nadie lee ----------
 // `_datos`, `_marca`, `_duracion`: un aviso de entrega escondido en el deck no llega al usuario. Lo que el
 // usuario debe saber va en qa.json (datos propuestos, firma, duración) o en el mensaje de entrega.
-const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'clase', 'datos', 'laminas', 'piel', '_comentario']);
+const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'conceptos', 'clase', 'datos', 'laminas', 'piel', '_comentario']);
 export function reglasClaves(deck) {
   const avisos = [];
   Object.keys(deck).filter(k => !CLAVES_DECK.has(k)).forEach(k => avisos.push(k.startsWith('_')
@@ -912,16 +979,33 @@ export function estadoQA({ errores = [], borrador = false, nota = 100, falta = [
   return errores.length ? 'con errores' : borrador ? 'borrador' : nota < notaFinal ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
 }
 
+// Contrato de presentación: la sala se declara aparte; Zoom también puede ser en vivo.
+export function reglasPresentacion(deck, pasos = []) {
+  const avisos = [], errores = [];
+  if (deck.en_vivo === true && deck.sala === undefined) avisos.push('¿se proyecta en una sala? declara `sala`: true para proyector o false para una clase por Zoom');
+  if (deck.sala && deck.formato === '9:16') avisos.push('sala se ignora en vertical: usa 16:9 para proyección en sala');
+  deck.laminas.forEach((l, i) => {
+    const n = pasos[i] || (Array.isArray(l.voz) ? l.voz.length : 1);
+    for (const campo of ['accion', 'si_falla']) if (Array.isArray(l[campo]) && l[campo].length !== n) errores.push(`${nombre(deck, i)}: ${campo} tiene ${l[campo].length} entradas para ${n} pasos; alinea una entrada por paso`);
+    if (deck.en_vivo && (l.tipo !== 'camara' || l.vivo === true)) {
+      const vacios = Array.from({ length: n }, (_, k) => Array.isArray(l.voz) ? l.voz[k] : k === 0 ? l.voz : '').filter(v => !String(v || '').trim()).length;
+      if (vacios) avisos.push(`${nombre(deck, i)}: ${vacios} pasos sin voz en vivo; llena voz[k] para cada paso`);
+    }
+    if (PIEZAS_VENTA.includes(deck.pieza) && l.tipo === 'objeto' && conTexto(l.imagen) && !l.procedencia && !l.fuente) avisos.push(`${nombre(deck, i)}: ¿foto real o generada con IA? declara \`procedencia\` (real, ia o ejemplo); sin origen no cuenta como prueba`);
+  });
+  return { errores, avisos };
+}
+
 // Todas juntas
 // `crudo`: el deck antes de sustituir `datos` (qa.mjs lo pasa); dice si un número vino de un {{MARCADOR}}
-export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
+export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [] } = {}) {
   const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck), tasa = reglasTasa(deck, { crudo }), promesa = reglasPromesa(deck);
   const cierre = cierreDeClase(deck, { crudo });
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
     reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck),
-    reglasContrato(deck, pasos)];
+    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo })];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),

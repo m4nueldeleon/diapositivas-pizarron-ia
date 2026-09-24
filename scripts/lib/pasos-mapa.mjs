@@ -17,7 +17,7 @@ function nuevoMarco(tag, attrs, padre) {
   const clase = attr(attrs, 'class') || '';
   const dp = attr(attrs, 'data-p'), tp = attr(attrs, 'data-tachar-p'), ap = attr(attrs, 'data-atenuar');
   return {
-    tag, clase, textos: [], emojis: [], todo: [],
+    tag, clase, rotulo: attr(attrs, 'data-rotulo'), cantidad: attr(attrs, 'data-cantidad'), textos: [], emojis: [], todo: [],
     propio: dp != null, p: dp != null ? Number(dp) : padre ? padre.p : 0,
     tachar: tp != null ? Number(tp) : null, atenuar: ap != null && Number(ap) > 0 ? Number(ap) : null,
     emo: /(^|\s)emo(\s|$)/.test(clase), e: deEmoji(attr(attrs, 'data-e')),
@@ -25,12 +25,14 @@ function nuevoMarco(tag, attrs, padre) {
   };
 }
 function etiqueta(f) {
+  if (/(^|\s)cal-cursor(\s|$)/.test(f.clase)) return 'clic';
+  if (f.rotulo && /llenas/.test(f.clase)) return `★ ${desescapar(f.rotulo)} ${f.cantidad}`;
   const texto = recortar(f.textos.join(f.tag === 'table' ? ' · ' : ' '));
   if (/(^|\s)sello(\s|$)/.test(f.clase)) return `sello «${recortar(f.todo.join(' '))}»`;
   if (/(^|\s)cursor(\s|$)/.test(f.clase)) return 'clic/cursor';
   const partes = [...f.emojis, texto ? `«${texto}»` : ''].filter(Boolean);
   if (f.tag === 'table') return `marco y rótulos${texto ? ` («${texto}»)` : ''}`;
-  if (!partes.length) return f.tag === 'svg' || /grafica|linea|medidor|barra/.test(f.clase) ? 'trazo' : '';
+  if (!partes.length) return f.tag === 'svg' || /grafica|linea|medidor|barra/.test(f.clase) ? 'trazo' : f.propio ? 'trazo/cambio' : '';
   return partes.join(' ');
 }
 

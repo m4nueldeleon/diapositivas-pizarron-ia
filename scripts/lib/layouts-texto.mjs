@@ -1,7 +1,7 @@
 // layouts-texto.mjs — diseños de idea, lista, flujo, pasos, bifurcación, cifra, cita, objeto, tarjetas.
 // Cada diseño devuelve el HTML interior del lienzo. Los pasos de revelado se asignan con ctx.P(k):
 // el paso 0 es lo que se ve al cortar a la lámina; cada paso siguiente suma UN elemento.
-import { marcar, escapar, texto, nota, fuente, bloque, pasoDe, estrellas } from './comun.mjs';
+import { marcar, escapar, texto, nota, fuente, bloque, pasoDe, estrellas, rotuloProcedencia, imagenConHueco } from './comun.mjs';
 import { tamTexto, palabras, plano } from './markup.mjs';
 
 // Etiqueta corta (≤ 3 palabras): no se parte en dos renglones («La / detecta», «Paso / 2»). Si con eso la fila
@@ -80,14 +80,15 @@ export function lista(l, ctx) {
   const mapa = activo || hechos.size;
   const filas = items.map((it, i) => {
     const o = typeof it === 'string' ? { texto: it } : it;
-    const e = o.emoji || vin[l.vineta] || l.vineta || '';
+    const e = l.vineta === 'letras' ? '' : o.emoji || vin[l.vineta] || l.vineta || '';
+    const letra = l.vineta === 'letras' ? `<b class="vineta-letra">${escapar((l.letras || [])[i] || '')}</b>` : '';
     const kT = o.tachado ? ` data-tachar="caja" data-tachar-p="${ctx.paso(i + (l.tachar_despues ? items.length : 0))}"` : '';
-    const apagado = activo && activo !== i + 1 && !hechos.has(i + 1) ? ' style="opacity:.25"' : '';
+    const apagado = activo && activo !== i + 1 && !hechos.has(i + 1) ? ' style="opacity:max(var(--apagado),.25)"' : '';
     const ok = hechos.has(i + 1) ? ctx.em.html('✅', '.9em', 'ok-item') : '';
-    return `<div class="item"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}${apagado}>${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}<span>${marcar(o.texto)}</span>${ok}</div>`;
+    return `<div class="item"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}${apagado}>${letra}${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}<span>${marcar(o.texto)}</span>${ok}</div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}</div>`;
+    <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', mapa ? 0 : Math.max(0, items.length - 1)))}</div>`;
 }
 
 // FLUJO — nodos (emoji + etiqueta) unidos por flechas rojas a mano. A → B → C.
@@ -129,7 +130,7 @@ export function flujo(l, ctx) {
   const signos = [];
   const html = nodos.map((nd, i) => {
     const k = i === 0 ? 0 : i;
-    const vis = nd.imagen ? `<img src="${ctx.img(nd.imagen)}" style="height:${nd.alto || 300}px;width:auto;display:block" alt="">`
+    const vis = nd.imagen ? imagenConHueco(ctx, nd.imagen, nd.alto || 300, 'display:block')
       : Number.isInteger(nd.cantidad) && nd.cantidad > 1 ? pilaCantidad(ctx, nd.emoji, nd.cantidad, tamE) : ctx.emoji(nd.emoji, tamE);
     const sg = i > 0 ? signoDe(i) : '';
     if (sg) signos.push(`<div class="signo" data-signo="${i}"${ctx.P(k)} style="--ts:${Math.round(tamE * 0.45)}px">${escapar(sg)}</div>`);
@@ -176,6 +177,21 @@ export function flujo(l, ctx) {
 // Mapa con íconos [16:40, 28:00]: SIN ruta punteada por omisión, los pasos no activos al 20% y la ✅ de
 // los hechos SIEMPRE a todo color (va fuera de la parte atenuada: es la señal de avance).
 export function pasos(l, ctx) {
+  if (Array.isArray(l.letras) && l.letras.length) {
+    const n = l.letras.length, activo = l.activo || 0, ancho = ctx.util || (ctx.vertical ? 920 : 1720);
+    const columna = Math.floor(ancho / n), largoLetra = Math.max(1, ...l.letras.map(x => [...String(x)].length));
+    const tam = Math.min(ctx.vertical ? 100 : 130, Math.floor((columna - 20) / (largoLetra * .65)));
+    const riel = l.letras.map((letra, i) => `<div class="riel-letra${activo === i + 1 ? ' activa' : activo && i + 1 > activo ? ' pendiente' : ''}" style="font-size:${tam}px"${activo === i + 1 ? ' data-circulo' : ''}>${escapar(letra)}</div>`).join('');
+    const iconos = (l.iconos || []).map((icono, i) => {
+      const etiqueta = (l.etiquetas || [])[i] || '', largo = Math.max(1, ...plano(etiqueta).split(/\s+/).map(t => t.length));
+      const et = Math.max(30, Math.min(ctx.vertical ? 52 : 70, Math.floor((columna - 16) / (largo * .55))));
+      const emo = icono?.imagen ? imagenConHueco(ctx, icono.imagen, Math.min(150, columna - 24)) : ctx.emoji(icono?.emoji || icono, Math.min(150, columna - 24));
+      const k = l.revelar === 'pasos' && !activo ? i : 0;
+      return `<div class="pila letra-concepto${activo && i + 1 > activo ? ' pendiente' : ''}"${ctx.P(k)}${ctx.A('k' + i)}>${emo}<div class="rotulo-paso" style="font-size:${et}px">${marcar(etiqueta)}</div></div>`;
+    }).join('');
+    const kt = pasoDe(l, 'texto_paso', l.revelar === 'pasos' && !activo ? n : 0);
+    return `<div class="pila pasos-letras" style="--letras-n:${n};width:${ancho}px"><div class="riel-letras"${ctx.P(0)}>${riel}</div><div class="letras-conceptos">${iconos}</div>${texto(ctx, l.texto, 'medio mt-m', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
+  }
   const n = l.n || (l.iconos ? l.iconos.length : 3);
   const activo = l.activo || 0;
   const hechos = new Set(l.hechos || []);
@@ -213,11 +229,11 @@ export function pasos(l, ctx) {
   const mEtq = l.clic && !l.iconos ? 75 : 28;
   const cols = [];
   for (let i = 0; i < n; i++) {
-    const apagado = activo && activo !== i + 1 ? ' style="opacity:.2"' : '';
+    const apagado = activo && activo !== i + 1 ? ' style="opacity:var(--apagado)"' : '';
     const sobre = l.sobre ? `<div style="margin-bottom:10px">${ctx.emoji(l.sobre, 120)}</div>` : '';
     let cab;
     if (l.iconos) {
-      cab = `<div${ctx.A('k' + i)}>${ctx.emoji(l.iconos[i], tamIcono)}</div>
+      cab = `<div${ctx.A('k' + i)}>${l.iconos[i]?.imagen ? imagenConHueco(ctx, l.iconos[i].imagen, tamIcono) : ctx.emoji(l.iconos[i]?.emoji || l.iconos[i], tamIcono)}</div>
         ${l.prefijo !== false ? `<div class="rotulo-paso" style="font-size:${tamPref}px;color:var(--gris);margin-top:60px;line-height:1.05;white-space:nowrap">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
         ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
@@ -308,6 +324,7 @@ export function cifra(l, ctx) {
   return `<div class="pila">
     ${l.arriba ? `<div class="nota" ${ctx.P(0)} style="margin-bottom:40px">${marcar(l.arriba)}</div>` : ''}
     ${html}
+    ${l.procedencia === 'ejemplo' ? rotuloProcedencia(l.procedencia) : ''}
     ${l.abajo ? `<div class="etiqueta-chica"${ctx.P(0)}>${marcar(l.abajo)}</div>` : ''}
     ${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', k))}
     ${l.texto ? texto(ctx, l.texto, 'medio mt-l', l.texto_paso ?? k) : ''}
@@ -356,11 +373,12 @@ export function relojSVG(txt, ancho) {
 export function objeto(l, ctx) {
   const vis = l.reloj && RE_RELOJ.test(l.reloj) ? relojSVG(l.reloj, ctx.vertical ? 460 : 600)
     : l.imagen
-      ? `<img src="${ctx.img(l.imagen)}" style="height:${l.alto || 520}px;width:auto;display:block;filter:drop-shadow(0 26px 30px rgba(0,0,0,.14))" alt="">`
+      ? imagenConHueco(ctx, l.imagen, l.alto || 520, 'display:block;filter:drop-shadow(0 26px 30px rgba(0,0,0,.14))')
       : ctx.emoji(l.emoji || '📦', l.emoji_tam || 'heroe');
   return `<div class="pila"><div${ctx.P(0)}${ctx.A('objeto')}>${vis}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto) + ' mt-m', pasoDe(l, 'texto_paso', 0))}
-    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', 0) + 1), 'mt-s')}</div>`;
+    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', 0) + 1), 'mt-s')}
+    ${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', 0))}${l.imagen ? rotuloProcedencia(l.procedencia) : ''}</div>`;
 }
 
 // TARJETAS — criterios o métricas en tarjetas gris suave con emoji. Una por paso.
@@ -388,7 +406,7 @@ export function tarjetas(l, ctx) {
 
 // OSCURA — revelación de producto u oferta: fondo negro con brillo violeta. Rompe el blanco a propósito.
 export function oscura(l, ctx) {
-  const logo = l.imagen ? `<img src="${ctx.img(l.imagen)}" style="height:${l.alto || 150}px;width:auto" alt="">` : (l.emoji ? ctx.emoji(l.emoji, l.emoji_tam || 150) : '');
+  const logo = l.imagen ? imagenConHueco(ctx, l.imagen, l.alto || 150) : (l.emoji ? ctx.emoji(l.emoji, l.emoji_tam || 150) : '');
   return `<div class="pila">${logo ? `<div${ctx.P(0)}>${logo}</div>` : ''}
     ${l.titulo ? `<div class="titulo-marca"${ctx.P(0)} style="${logo ? 'margin-top:30px' : ''}">${marcar(l.titulo)}</div>` : ''}
     ${texto(ctx, l.texto, 'chico mt-m', pasoDe(l, 'texto_paso', 0))}

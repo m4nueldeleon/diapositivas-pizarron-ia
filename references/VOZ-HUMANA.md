@@ -27,6 +27,17 @@ de 1 es aviso), avisa el consenso inventado en la voz de una «Objeción #N» y 
 nunca usas» de MI-MARCA.md. Es aviso, no error: la última palabra
 la tiene tu oído.
 
+**La misma persona en voz y pantalla.** Antes de escribir el deck, declara `persona: "tu"` o
+`persona: "ustedes"`. «Te sirve» no acompaña una voz que dice «ustedes»: reescribe ambas hacia
+el mismo destinatario. QA lo considera error si contradice la persona declarada; sin declaración,
+avisa al encontrar singular en pantalla y plural en la voz del mismo paso, o al revés. No usa
+«su», «sus», «les» ni «los» para adivinar el destinatario. Las citas entre «…» quedan fuera.
+Para una lámina que habla a alguien distinto, usa `excepcion_persona` con `titulo-formula`,
+`cita`, `a-si-mismo` o `a-la-ia` (GUION §1).
+
+Al cambiar «TÚ SÍ» por **«USTEDES SÍ»**, vuelve a medir la lámina: ocupa más ancho. Comprueba
+saltos de línea y encuadre en el formato final, además de oír la frase en el ensayo.
+
 ## 2. Antes y después (casos reales del loop de calidad)
 
 | Antes | Después |

@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { marcar, escapar } from './markup.mjs';
+import { marcar, escapar, RE_HUECO } from './markup.mjs';
 import { tamEmoji } from './emoji.mjs';
 
 export { marcar, escapar, tamEmoji };
@@ -96,7 +96,20 @@ export const texto = (ctx, t, tam, k = 0, extra = '') => {
 
 // De dónde sale un dato o un estudio: «Autor, obra (año)», sans gris de 40 px al pie de la lámina (base.css .fuente). Una
 // sola jerarquía para la misma función: citar con `nota` (Caveat 60 px) daba tres estilos en un mismo deck.
-export const fuente = (ctx, t, k = 0) => (t ? `<div class="fuente"${ctx.P(k)}>${escapar(t)}</div>` : '');
+export const fuente = (ctx, t, k = 0) => (t ? `<div class="fuente"${ctx.P(k)}>${escapar(t).replace(RE_HUECO, '<span class="hueco pendiente">[$1]</span>')}</div>` : '');
 
 export const nota = (ctx, t, k, clase = '') =>
   t ? `<div class="nota ${clase}"${ctx.P(k)}>${marcar(t)}</div>` : '';
+
+// Procedencia declarada: rótulo informativo gris, nunca una marca roja.
+export function rotuloProcedencia(valor) {
+  const t = valor === 'ia' ? 'Imagen creada con IA' : valor === 'ejemplo' ? 'Ejemplo ficticio' : '';
+  return t ? `<div class="procedencia">${escapar(t)}</div>` : '';
+}
+
+// Un logo por confirmar conserva la caja del ícono; una imagen real sigue el contrato local de ctx.img.
+export function imagenConHueco(ctx, src, alto, estilo = '') {
+  const medida = Math.max(16, Math.min(1800, Number(alto) || 180));
+  if (/^\[LOGO_[A-ZÁÉÍÓÚÑÜ0-9_ -]+\]$/.test(String(src))) return `<span class="logo-pendiente" style="width:${medida}px;height:${medida}px">${marcar(src)}</span>`;
+  return `<img src="${ctx.img(src)}" style="height:${medida}px;width:auto;${estilo}" alt="">`;
+}

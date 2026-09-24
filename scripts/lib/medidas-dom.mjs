@@ -109,5 +109,36 @@ export function ejesFlujo(lam, tol = 0.02) {
   return out;
 }
 
-export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado, negritasPlanas, ejesFlujo];
+export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado, negritasPlanas, ejesFlujo, factorLetra, lineasConMuestra, textoConMuestras];
 export const inyectable = () => FUNCIONES_DOM.map(f => `window.${f.name} = ${f.toString()};`).join('\n');
+
+// Pisos por rol a 1920 px, en tamaño nominal (la nota a mano de sala, 72 en Caveat, como en la conferencia real).
+// factorLetra (altura x de Caveat contra Figtree) queda como medida auxiliar: a 88 nominales da ~63 px de Figtree.
+export const PISOS = { video: { principal: 40, nota: 28, secundario: 48, fuente: 36, rotulo: 28 },
+  sala: { principal: 72, nota: 72, secundario: 56, fuente: 44, rotulo: 34 } };
+export function factorLetra(el) {
+  const cs = getComputedStyle(el);
+  if (!/Caveat/.test(cs.fontFamily)) return 1;
+  const c = document.createElement('canvas').getContext('2d');
+  c.font = `${cs.fontWeight} 100px Caveat`;
+  const mano = c.measureText('x').actualBoundingBoxAscent;
+  c.font = `${cs.fontWeight} 100px Figtree`;
+  const sans = c.measureText('x').actualBoundingBoxAscent;
+  return mano > 0 && sans > 0 ? mano / sans : 1;
+}
+
+// Mide renglones con una muestra provisional y restaura el DOM aun si la medición falla.
+export function lineasConMuestra(el, datos = {}) {
+  const huecos = [...el.querySelectorAll('.hueco.pendiente')];
+  if (el.matches('.hueco.pendiente')) huecos.unshift(el);
+  const originales = huecos.map(e => ({ e, texto: e.textContent, clave: e.textContent.replace(/^\[|\]$/g, '') }));
+  try {
+    originales.forEach(({ e, clave }) => { e.textContent = typeof datos[clave]?.muestra === 'string' ? datos[clave].muestra : '0000'; });
+    return { lineas: window.lineasPalabras(el), claves: originales.map(x => x.clave) };
+  } finally { originales.forEach(({ e, texto }) => { e.textContent = texto; }); }
+}
+
+// Un marcador pendiente representa el dato de muestra, no varias palabras separadas por guiones bajos.
+export function textoConMuestras(texto, datos = {}) {
+  return String(texto).replace(/\[([A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ0-9 _-]*)\]/g, (_, clave) => typeof datos[clave]?.muestra === 'string' ? datos[clave].muestra : '0000');
+}

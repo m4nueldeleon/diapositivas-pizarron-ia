@@ -16,7 +16,7 @@ en orden y cada paso tiene su criterio de salida.
 **Antes de escribir, fija la pieza y su duración** ([ARCOS.md](ARCOS.md)): reel, tutorial, VSL corto,
 video, VSL, clase corta, clase, webinar o propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si no se
 pueden deducir, es la única pregunta. Van en el deck como `"pieza"`, `"duracion_objetivo"` y, si se
-presenta en vivo, `"en_vivo": true`. Un deck para presentar en vivo lleva en `voz` el guion completo en
+presenta en vivo, `"en_vivo": true`. Pregunta también si se proyecta en sala: `sala: true` o `{ "distancia_m": 15 }`; una clase por Zoom lleva `sala: false`. Un deck para presentar en vivo lleva en `voz` el guion completo en
 beats (cada paso sigue siendo un beat de 2-3 s); los tramos en vivo sin láminas (demostración,
 actividad, preguntas) van como `camara` con `"vivo": true`, la consigna en `texto` y `dur` en segundos. No
 sustituyen beats.
@@ -175,8 +175,11 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
 | Insertar en su editor | `render.mjs` | `salida/laminas/NN-id-P.png`, un PNG por paso |
 | Las láminas como video | `node scripts/video.mjs mi-video` | `salida/laminas.mp4` con micro-animaciones |
 | Mandarlo como documento (propuesta, VSL) | `render.mjs --finales --pdf --notas` (en `propuesta`, `vsl` y `vsl-corto` ya va por omisión) | `salida/laminas-notas.pdf`: una hoja por lámina con su voz como texto |
-| Llevarlo a Keynote o Slides | `render.mjs --finales --pdf` (`--sin-notas` en propuesta o VSL) | `salida/laminas.pdf`: una página por lámina, sin cursor; el stack con su remate en una página |
+| Llevarlo a Keynote o Slides | `render.mjs --pdf-pasos` | `salida/laminas-pasos.pdf`, un paso por página, y `notas-por-paso.md` |
+| Mandarlo como documento o imprimir | `render.mjs --pdf --sin-notas` | `salida/laminas.pdf`: una página por lámina, sin revelado |
 | Video montado sobre su grabación | ver §6 | `salida/montaje.mp4` + `cortes.csv` |
+
+En Keynote usa transición **ninguna** dentro de la lámina y **disolver 0.3 s** entre láminas. Pega `notas-por-paso.md` en las notas: incluye voz, `accion` y `si_falla`. `--pdf-pasos` es incompatible con `--finales`; `--pasos` solo imprime el mapa y sale antes de abrir el navegador.
 
 Teclas del presentador:
 
@@ -244,3 +247,7 @@ dibujado por IA.
 Cuando el usuario corrija algo, sea el tamaño, un emoji, el ritmo o un diseño que no le gustó,
 escríbelo en `LECCIONES.md` de la skill **antes de cerrar el turno**: la regla, el porqué y un
 ejemplo. La siguiente vez se aplica sin que lo pida.
+
+#### Acceso en vivo
+
+Antes de presentar, abre la URL corta y estable del `qr` y prueba el código proyectado con iPhone y Android desde unos 15 m. Conserva cuatro módulos blancos alrededor y al menos 10 px por módulo a 1920. El cierre lleva QR, URL corta grande o palabra clave; un dominio de relleno impide la entrega. Usa `accion` para dar tiempo de escanear y `si_falla` para dictar la URL o la palabra clave.

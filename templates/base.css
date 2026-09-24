@@ -24,6 +24,13 @@
   --sombra: 0 22px 60px rgba(0, 0, 0, .13), 0 3px 10px rgba(0, 0, 0, .06);
   --sombra-suave: 0 6px 18px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .05);
   --radio: 20px;
+  --apagado: .2;
+  --t-nota: 64px;
+  --t-fuente: 40px;
+  --t-pie: 36px;
+  --t-vivo: 56px;
+  --t-sub: 42px;
+  --t-pastilla: 50px;
   --t-rotulo: 56px;          /* rótulo gris chico («Sin:», «Paso 1», «Objeción #2»): uno solo en todo el estilo */
   --oro: #f2b33d;            /* cifra o precio sobre lámina oscura [36:40 «$25,000»] */
   /* la fuente de emoji al final es la red de seguridad del texto (en modo fluent el emoji del texto ya es imagen) */
@@ -67,7 +74,7 @@ body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: an
 /* estados de revelado */
 [data-p].oculto { visibility: hidden !important; }
 [data-hasta].pasado { visibility: hidden !important; }
-.atenuado-paso { opacity: .2; transition: none; }
+.atenuado-paso { opacity: var(--apagado); transition: none; }
 
 /* ---------- texto ---------- */
 /* Escala medida en la referencia a 1920: la frase de 8-15 palabras de c_0250 da un renglón de 78 px de alto
@@ -99,7 +106,7 @@ s.tachon, .tachon { text-decoration: none; }
 .tono-g { color: var(--gris); } .tono-a { color: var(--azul); } .tono-k { color: var(--tinta); } .tono-o { color: var(--oro); }
 .encabezado { font-size: var(--t-rotulo); color: var(--gris); font-weight: 400; margin-bottom: 56px; }
 .encabezado.entre { margin: 30px 0 14px; }   /* emoji → «Razón #1» → frase en negrita [34:25, 35:15] */
-.nota { font-family: var(--mano); font-weight: 500; font-size: var(--tn, 64px); line-height: 1.15; color: var(--tinta-suave); max-width: var(--ancho-texto); text-wrap: balance; }
+.nota { font-family: var(--mano); font-weight: 500; font-size: var(--tn, var(--t-nota)); line-height: 1.15; color: var(--tinta-suave); max-width: var(--ancho-texto); text-wrap: balance; }
 .nota b { font-weight: 700; color: var(--tinta); }
 .nota.roja { color: var(--rojo); }
 .mano { font-family: var(--mano); font-weight: 600; }
@@ -233,7 +240,7 @@ s.tachon, .tachon { text-decoration: none; }
 .opcion.v { background: linear-gradient(180deg, #7ee07a, #3dbb36); }
 .opcion.n { background: linear-gradient(180deg, #ffb98a, #f08a4b); }
 .opcion.r { background: linear-gradient(180deg, #ef4a4a, #cf1d1d); }
-.opcion.apagada { opacity: .28; box-shadow: none; }
+.opcion.apagada { opacity: max(var(--apagado), .28); box-shadow: none; }
 .boton-ui { padding: 44px 92px; border-radius: 30px; font: 700 76px/1 var(--sans); color: #fff; display: inline-flex; align-items: center; gap: 18px;
   background: linear-gradient(180deg, #62cbb9, #2f9f8f); box-shadow: 0 16px 34px rgba(47, 159, 143, .35), inset 0 2px 0 rgba(255,255,255,.35); }
 .boton-ui .emo { --s: 68px; }   /* ~0.9× la letra del botón (76): a 58 el 📝 de Fluent era una mancha pálida */
@@ -328,7 +335,7 @@ s.tachon, .tachon { text-decoration: none; }
 .pastilla .avatar { width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(180deg, #52dd4c, #1fa51a); display: grid; place-items: center; }
 .pastilla .dato { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
 .pastilla .dato b { font-size: 84px; font-weight: 800; letter-spacing: -.02em; }
-.pastilla .dato span { font-size: 50px; color: #2f6f2c; }
+.pastilla .dato span { font-size: var(--t-pastilla); color: #2f6f2c; }
 .pastilla.gris { background: linear-gradient(180deg, #f4f4f4, #e2e2e2); box-shadow: var(--sombra-suave); padding: 28px 70px; }
 .pastilla.gris .dato b { color: #a8a8a8; } .pastilla.gris .dato span { color: #b5b5b5; }
 .pastilla.chica { padding: 28px 70px; }
@@ -395,11 +402,11 @@ s.tachon, .tachon { text-decoration: none; }
 .marco-mano { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 /* Fuente de un dato o un estudio («Autor, obra (año)»): sans gris sobria pero legible. A 30 px quedaba en ~5.6 px en un
    celular de 360; 40 px da ~7.5 (QA avisa bajo 36). En la captura va pegada al post, un poco más chica. */
-.fuente { margin-top: 26px; font-family: var(--sans); font-style: normal; font-weight: 400; font-size: 40px; line-height: 1.2; color: #555;
+.fuente { margin-top: 26px; font-family: var(--sans); font-style: normal; font-weight: 400; font-size: var(--t-fuente); line-height: 1.2; color: #555;
   max-width: var(--ancho-texto); text-wrap: balance; text-align: center; }
 .f-vertical .fuente { font-size: 36px; }
 .lamina.oscura .fuente { color: #c9c4dc; }
-.captura > .fuente { margin: -24px 0 0; padding: 0 64px 36px; text-align: left; font-size: 36px; }
+.captura > .fuente { margin: -24px 0 0; padding: 0 64px 36px; text-align: left; font-size: var(--t-pie); }
 .post .clave { position: relative; }
 
 /* ---------- rejilla ---------- */
@@ -436,7 +443,7 @@ s.tachon, .tachon { text-decoration: none; }
 .calendario .barra { display: flex; justify-content: flex-start; align-items: center; padding: 24px 40px; font: 800 60px/1 var(--sans); color: #fff;
   text-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .calendario .barra b { font-size: var(--t-barra, 60px); text-align: left; }
-.calendario .barra .sub { font-weight: 500; font-style: normal; font-size: 42px; margin-left: 80px; }
+.calendario .barra .sub { font-weight: 500; font-style: normal; font-size: var(--t-sub); margin-left: 80px; }
 .calendario .barra span { margin-left: auto; background: rgba(255,255,255,.55); color: var(--c-fase, #b05c00); text-shadow: none;
   padding: 12px 26px; border-radius: 14px; font-size: 40px; font-weight: 800; white-space: nowrap; flex: none; margin-left: auto; }
 /* Grande [ref_1760]: barra de ~160-170 px con el nombre a ~64 y celdas cuadradas; el lienzo baja su margen a 40 */
@@ -456,7 +463,7 @@ s.tachon, .tachon { text-decoration: none; }
 .calendario.compacto .dia small { font-size: 22px; }
 /* Fase activa: celdas PASTEL con borde del color y número casi negro (no el degradado saturado de la barra); las
    demás fases, color plano casi blanco con el texto gris [ref_1760, 29:25]. Sin fase: gris neutro atenuado. */
-.calendario .dia.apagado { opacity: .3; }
+.calendario .dia.apagado { opacity: max(var(--apagado), .3); }
 .calendario .dia.apagado.tinte { opacity: 1; box-shadow: none; }
 /* ---------- oscura (revelación de producto u oferta) ---------- */
 .lamina.oscura { background: radial-gradient(120% 80% at 50% 110%, #5b2bd6 0%, #2a1370 32%, #07060d 70%); color: #fff; }
@@ -536,7 +543,7 @@ body.presentador .lamina[data-vivo] > :not(.vivo-pres), .lamina.captura-vivo > :
 body.presentador .lamina[data-vivo] > .vivo-pres, .lamina.captura-vivo > .vivo-pres { display: flex; position: absolute; inset: 0; flex-direction: column; align-items: center;
   justify-content: center; gap: 28px; padding: var(--margen-v) var(--margen-h); text-align: center; background: var(--blanco); }
 .vivo-consigna { font: 500 84px/1.15 var(--sans); color: var(--tinta); max-width: var(--ancho-texto); text-wrap: balance; }
-.vivo-items { font: 500 56px/1.3 var(--sans); color: var(--tinta); text-align: left; padding-left: 1.2em; max-width: var(--ancho-texto); }
+.vivo-items { font: 500 var(--t-vivo)/1.3 var(--sans); color: var(--tinta); text-align: left; padding-left: 1.2em; max-width: var(--ancho-texto); }
 .vivo-reloj { font: 700 150px/1 var(--mano); color: var(--tinta); font-variant-numeric: tabular-nums; }
 .vivo-reloj.final { color: var(--rojo); }
 .vivo-reloj.cero { color: var(--rojo); animation: pz-parpadeo 1s steps(2, start) infinite; }
@@ -594,3 +601,65 @@ body.hoja { display: flex; flex-direction: column; gap: 30px; padding: 30px; ali
 .lamina > .anotacion.tono-n, .escena.clon > .anotacion.tono-n { color: var(--tinta); }
 .lamina.oscura > .anotacion.tono-r { color: #ff4d57; }
 .lamina.oscura > .anotacion.tono-n { color: #ffffff; }
+
+/* Sala explícita: el fondo del foco conserva su opacidad de escenografía. */
+body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; --t-pie: 44px; --t-vivo: 64px; --t-sub: 56px; --t-pastilla: 56px; }
+.sala .nota:not(.foco-frase .nota) { font-size: max(var(--tn, var(--t-nota)), var(--t-nota)); }
+.sala .rejilla .apagado, .sala .rejilla.multitud .celda.apagada { opacity: var(--apagado); }
+.sala .sub-etiqueta { font-size: 56px; }
+
+.procedencia { position: absolute; right: 32px; bottom: 24px; font: 400 34px/1.2 var(--sans); color: #555; text-align: right; }
+.sala .procedencia { font-size: 44px; }
+.captura .procedencia { position: static; padding: 16px 24px; }
+
+.fuente .hueco { border: 2px dashed #b79719; }
+.cifra .hueco.pendiente { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+
+/* Zona segura de Reels: la nota a mano no invade la franja derecha de los botones (140 px). */
+.f-vertical .nota { max-width: min(var(--ancho-texto), 800px); }
+
+.logo-pendiente { display: inline-flex; justify-content: center; align-items: center; border: 3px dashed #b79719; padding: 12px; font: 600 34px/1.2 var(--sans); max-width: 100%; }
+.logo-pendiente .hueco { overflow-wrap: anywhere; max-width: 100%; }
+
+/* B6: bandas con leyenda, riel de letras y tarjetas de prompt/respuesta. */
+.bandas-comparacion { display:flex; align-items:center; justify-content:center; gap:70px; margin-top:40px; }
+.bandas-leyenda { display:flex; flex-direction:column; gap:42px; width:380px; flex-shrink:0; }
+.banda-dato { display:flex; align-items:flex-start; gap:22px; }
+.banda-dato b { display:block; font:700 84px/1.05 var(--sans); }
+.banda-dato .nota { color:var(--gris); font-size:52px; margin-top:12px; }
+.banda-muestra { width:28px; height:28px; border-radius:50%; flex-shrink:0; margin-top:28px; }
+.rejilla-bandas { position:relative; display:grid; grid-template-columns:repeat(var(--banda-columnas),auto); gap:var(--banda-gap); height:var(--banda-alto); }
+.banda-celda { position:relative; border-radius:50%; background:#e2e5e8; }
+.banda-color { position:absolute; inset:0; width:100%; height:100%; }
+.banda-circulo { position:absolute; pointer-events:none; }
+.riel-letras,.letras-conceptos { display:grid; grid-template-columns:repeat(var(--letras-n),minmax(0,1fr)); width:100%; justify-items:center; }
+.riel-letras { border-bottom:4px solid #b9b9b9; padding-bottom:28px; margin-bottom:64px; }
+.riel-letra { font-weight:700; line-height:1.1; padding:8px 18px; color:var(--tinta); }
+.pasos-letras .pendiente { opacity:var(--apagado); }
+.letra-concepto { width:100%; gap:26px; text-align:center; }
+.letra-concepto .rotulo-paso { font-weight:700; line-height:1.1; overflow-wrap:anywhere; }
+.vineta-letra { font-size:1.15em; min-width:1.1em; color:var(--tinta); }
+.chat-tarjeta { position:relative; width:100%; padding:30px 38px; border:3px solid #bcc5ce; border-radius:22px; background:#fff; }
+.chat-tarjeta.respuesta { background:#e8f5e7; border-color:#94b991; }
+.chat-tarjeta .burbuja { max-width:none; padding:0; background:transparent; color:var(--tinta); border-radius:0; font-size:var(--tb, 54px); line-height:1.3; text-align:left; }
+.f-vertical .chat-tarjeta .burbuja { font-size:var(--tb, 58px); }
+.chat-tarjeta .chat-remitente { color:var(--gris); font-size:52px; margin-bottom:20px; }
+.chat-tarjeta .fuente { margin-top:24px; }
+.chat-ejemplo { display:inline-block; margin-top:24px; border:3px solid var(--rojo); padding:6px 14px; transform:rotate(-3deg); color:var(--rojo); font-size:34px; font-weight:800; letter-spacing:.08em; }
+.f-vertical .bandas-comparacion { gap:38px; }
+.f-vertical .bandas-leyenda { width:290px; gap:32px; }
+.f-vertical .banda-dato { gap:14px; }
+.f-vertical .banda-dato b { font-size:72px; }
+.f-vertical .banda-dato .nota { font-size:44px; }
+.f-vertical .banda-muestra { width:22px; height:22px; margin-top:24px; }
+.f-vertical .riel-letra { padding:8px 10px; }
+.f-vertical .chat-tarjeta { padding:28px 30px; }
+
+/* QR: blanco/negro, cuatro módulos libres. Ninguna sombra o tinta cruza el código. */
+.con-qr { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:60px;align-items:center;width:100%; }
+.qr-contenido { min-width:0;display:flex;flex-direction:column;align-items:center;gap:35px; }
+.qr-contenido .t,.qr-contenido .lista { max-width:100%; }
+.qr { width:var(--qr-ancho);flex:none;isolation:isolate;z-index:8; }
+.codigo-qr { display:block;width:100%;height:auto;filter:none!important;box-shadow:none!important;background:#fff; }
+.qr-rotulo { font-family:var(--mano);font-size:72px;color:var(--rojo);text-align:center;line-height:1.15;margin-top:14px; }
+.f-vertical .con-qr { grid-template-columns:1fr;gap:28px;justify-items:center; }

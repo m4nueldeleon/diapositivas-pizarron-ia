@@ -5,6 +5,12 @@ convierte en UN cambio visual que la vuelve obvia. Este documento es el método.
 
 ## 1. Partir el guion en «beats»
 
+**Antes de escribir, elige a quién le hablas.** Declara `persona: "tu"` o `persona: "ustedes"`
+en el deck y conserva esa persona tanto en pantalla como en la voz. Para una cita, un título que
+es una fórmula, un diálogo contigo mismo o una instrucción dirigida a la IA, marca esa lámina con
+`excepcion_persona: "cita" | "titulo-formula" | "a-si-mismo" | "a-la-ia"`. La excepción se usa
+solo donde cambia el destinatario; no sustituye corregir el resto del guion (VOZ-HUMANA.md).
+
 Un beat es una unidad de sentido, normalmente una oración o una cláusula. Cada beat es un paso:
 la lámina nueva o un elemento más sobre la actual.
 
@@ -18,10 +24,28 @@ la lámina nueva o un elemento más sobre la actual.
 
 - **Un beat dura 2 a 3 s**: la mediana medida es 2.9 s. Si un beat dura más de 5 s, pártelo o
   corta a cámara.
+- **Máximo 12 palabras de voz por paso.** Si necesitas más, divide la frase y añade un cambio
+  visual que acompañe cada parte. Comprueba la frase en voz alta al ensayar.
 - **Nueva lámina o paso extra**:
   - Si el beat **sigue la misma idea**, es un paso más en la misma lámina: acumula.
   - Si **cambia de idea**, es lámina nueva.
   - Si **contradice** la anterior, usa `foco`, un tachón o una lámina con ✕.
+
+**Revisa sincronía, además del número de pasos.** `voz[k]` debe explicar lo que entra en
+`revela[k]`: si aparece «plantilla» mientras todavía dices «estructura» y la plantilla se menciona
+en la frase siguiente, mueve el elemento o la frase. Los índices de los campos `*_paso` empiezan
+en 0. QA avisa cuando una palabra clave todavía no se ha dicho y sí aparece en una voz posterior;
+los encabezados grises, los rótulos de tablas y ejes y los sellos de resumen no se tratan como
+una promesa adelantada. No sustituye escuchar el ensayo: una paráfrasis puede necesitar revisión.
+
+En `linea-tiempo`, una marca roja o verde sin `paso` entra junto con el primer tramo cuyo `hasta`
+apunta a esa marca; sin coincidencia, entra en el último paso de los tramos. Las marcas neutras
+entran en 0. Un `paso` explícito manda; QA avisa si adelanta la marca de color a su tramo.
+En láminas de tres pasos o más, evita poner el sello, la nota roja o el tachado de remate en 0.
+
+**La fuente se ve cuando la nombras.** Si «Según Stanford…» está en `voz[0]`, usa
+`fuente_paso: 0` para que la atribución acompañe ese beat, aunque el dato termine de revelarse
+después. QA avisa si una fuente bibliográfica identificable se cita antes de entrar en pantalla.
 
 ## 2. Tabla de traducción: qué dice el guion y qué se dibuja
 
@@ -121,6 +145,15 @@ la lámina nueva o un elemento más sobre la actual.
      vendedores = __$2,500 por vendedor__» no piden condición ni rango. QA lo reconoce cuando una línea divide un
      monto o el precio y el total termina en «por/al/cada + unidad»; «= __$500 al día en ventas__» sigue siendo
      promesa.
+   - f) **La cuenta debe dar, también después de editarla.** Si cambia un costo, rehace la última
+     cuenta y cada resultado que depende de él. «$299 − $120» da $179; el siguiente renglón debe
+     seguir desde $179. QA comprueba operaciones legibles de `cifra.lineas`, incluidas continuaciones,
+     porcentajes y rangos: «$179 − $80-100 = $79-99». Tolera redondeos de hasta 1 unidad o 5%;
+     un redondeo mayor a una cifra significativa debe indicarse con `~`. No interpreta la voz,
+     las cuentas tachadas, los datos pendientes ni las conversiones ambiguas de unidades.
+     En una `rejilla`, el porcentaje o «N de cada M» también debe corresponder a los puntos que
+     se ven, con una diferencia máxima de una celda. Una excepción roja puede representar el
+     complemento del grupo verde, como 99 verdes y 1 rojo para hablar del 99%.
    QA avisa cuando una `cifra` subraya un total de dinero, % o clientes y `arriba` no trae número, y
    también cuando la cuenta no trae NINGÚN rango (§3.8 b); cuando un descargo («de ejemplo», «Ejemplo:»,
    «hipotético») va en pantalla fuera de una `prueba`, y cuando la voz repite que es un ejemplo en más de dos
@@ -163,6 +196,13 @@ la lámina nueva o un elemento más sobre la actual.
   plantillas»).
 
 ## 6. Arcos: el de la referencia y los de cada pieza
+
+**Un dato que vuelve se define una sola vez.** Los años de experiencia y las cantidades de clientes,
+alumnos, personas, empresas o ventas se guardan en `datos` y se repiten como `{{AÑOS}}`, `{{CLIENTES}}`
+o la clave que corresponda. Así una edición no deja «24 años» en una lámina y «25 años» en otra.
+QA avisa ante cantidades literales distintas de la misma unidad en varias láminas; revisa si hablan
+del mismo dato o de contextos diferentes. Los valores que ya vienen de `{{DATO}}` quedan fuera de
+este aviso. Si actualizas un costo, vuelve también a las cuentas que lo usan (§3.8 f).
 
 **Antes de escribir, decide la pieza y su duración** (reel, video, VSL, clase, webinar, propuesta):
 cada una tiene su arco, su número de beats y su peso de oferta en **[ARCOS.md](ARCOS.md)**. Ponlas en
@@ -309,6 +349,16 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   (`prueba` con `src` o `fuente`, `objeto` con `imagen`, `cifra` con `fuente`), si la única es una maqueta, y
   si antes de la revelación no hay una cifra de credibilidad (años, clientes, eventos, alumnos) a la vista ni
   en la voz.
+  La cifra nombra a quien ya lo logró con la palabra que usa el espectador para hablar de sí mismo:
+  «25 consultores» si quien mira se llama consultor, no «25 clientes» si eso le hace pensar en su
+  propio cliente. El catálogo `QUIENES_CREDIBILIDAD` reconoce años, clientes, alumnos, estudiantes,
+  eventos, empresas, negocios, personas, asistentes, casos, proyectos, consultores, coaches,
+  profesionales, emprendedores, dueños, miembros, egresados, graduados, generaciones, pacientes,
+  vendedores, agencias, marcas, seguidores, suscriptores, familias, comunidades, países, ciudades
+  y usuarios. También reconoce «desde 2016». Un `{{X}}` o `[X]` delante de esos términos reserva
+  el dato sin inventarlo; seguirá pendiente hasta confirmarse. Usa `credibilidad: true` cuando la
+  lámina cumple esa función con otra formulación real. En propuestas, el tamaño del equipo del
+  cliente no acredita al proveedor: cuenta a las personas que el proveedor ya formó o atendió.
 - **El llamado aparece al menos 2 veces** (beats 9 y 10), **a la vista**: un `boton`, la palabra clave o
   la flecha al link (`llamado: true` marca esa lámina). Que la voz diga «WhatsApp» o «aparta» no es un
   llamado, y el que va solo en la voz de la cámara final tampoco cuenta. En un webinar, 3 si hay un llamado

@@ -96,7 +96,7 @@ test('clase express: tutorial con "clase": true, tarea y puente al final, sin av
 });
 
 // Emojis que «Evita» de EMOJIS.md prohíbe siempre (los que dependen del contexto, como 🖥️ o 👆, no entran)
-const EVITADOS = ['🍆', '🍑', '🤵', '🧑‍✈️', '🤳', '👨‍👩‍👧‍👦', '🔖', '📇', '🎫', '🪪', '🗂️', '🗓️', '📆'];
+const EVITADOS = ['🍆', '🍑', '🤵', '🧑‍✈️', '🤳', '👨‍👩‍👧‍👦', '🔖', '📇', '🎫', '🗂️', '🗓️', '📆'];
 const sinSel = e => String(e).replace(/\uFE0F/g, '');
 test('ejemplos: ningún emoji que EMOJIS.md manda evitar, y ningún botón con cursor de mano lleva una mano', () => {
   const emojis = fs.readFileSync(path.join(RAIZ, 'references', 'EMOJIS.md'), 'utf8');
