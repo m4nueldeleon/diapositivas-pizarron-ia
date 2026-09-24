@@ -52,7 +52,7 @@ la lámina nueva o un elemento más sobre la actual.
 | un testimonio o prueba | captura con el dato encerrado | `prueba` |
 | lo que NO necesitas / lo que SÍ | bloques rojo y verde | `cuadrantes` |
 | una pregunta retórica | 🤔 + la pregunta | `idea` |
-| una objeción del cliente | emoji negado + «Objeción #N» entre el emoji y la frase + la objeción en negrita y entre comillas; la respuesta en la lámina SIGUIENTE | `idea` con `encabezado_pos: "entre"` |
+| una objeción del cliente | emoji negado si es «me falta X»; 🤔 si la objeción es una pregunta (EMOJIS.md, objeción) + «Objeción #N» entre el emoji y la frase + la objeción en negrita y entre comillas; la respuesta en la lámina SIGUIENTE | `idea` con `encabezado_pos: "entre"` |
 | por qué falla la mayoría | la misma forma con «Razón #N» [34:25, 35:15] | `idea` |
 | credibilidad (años, clientes) [36:10] | la cifra real sobre una foto o captura real | `prueba` u `objeto` |
 | componente numerado «#N» de la oferta [41:10, 41:40] | «#4» + el componente, en blanco | `idea` |
@@ -175,7 +175,7 @@ del **webinar o video largo**:
 6. **Por qué ahora** (11:10-16:30): la curva de crecimiento, la industria y la prueba.
 7. **El sistema paso a paso** (16:35-34:00): el mapa 1-2-3 abre cada paso, con demostraciones.
 8. **Objeciones** (34:20-36:00): «Razón #1», «Razón #2». Todas con la MISMA forma: `idea` con
-   emoji negado, «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita; la
+   emoji negado si es «me falta X»; 🤔 si la objeción es una pregunta (EMOJIS.md, objeción), «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita; la
    respuesta en la lámina siguiente, y si hay contraste, pregunta → «Sí.» → «Pero…» en láminas de una
    frase [34:35-34:45]. Nunca dentro del encabezado de una lista ni pegada a un botón. De 2 a 3
    objeciones antes del precio.
@@ -210,7 +210,7 @@ del **webinar o video largo**:
   | mecanismo con nombre («Market Gap») | 0:31 | `idea` con el término entre comillas |
   | prueba rápida y descargo de resultados | 0:35-0:40 | `prueba` + la voz: «que yo los tenga no quiere decir que tú los tengas» |
   | quién habla | 1:26 | `camara` o `idea` |
-  | contrato de tiempo («los próximos 33 minutos») | 2:03 | `objeto` (reloj) o `cifra` |
+  | contrato de tiempo («los próximos 33 minutos») | 2:03 | `objeto` con `reloj` («33:00» → los minutos de tu clase) + `texto` con los minutos en negrita [2:00] |
   | filtro («si no tienes 33 minutos…») | 2:05 | `idea` |
   | regalo por quedarse hasta el final | 2:12 | `idea` 🎁 |
 - QA avisa si hay cámara antes del segundo 10, saludo en las dos primeras láminas o una primera lámina
@@ -227,14 +227,14 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 
 | # | Beat | Minuto | Diseño |
 |---|---|---|---|
-| 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2: emoji negado, «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita; la respuesta en la lámina siguiente, con un dato real o un paso concreto. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"` |
+| 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2 (emoji negado si es «me falta X», 🤔 si es una pregunta: EMOJIS.md, objeción), «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita; la respuesta en la lámina siguiente, con un dato real o un paso concreto. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"` |
 | 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
 | 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes»). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
 | 3 | Ancla con tu nivel caro real («Quantum… desde $25,000»), opcional | 36:30-36:40 | `cifra` |
-| 4 | Revelación del producto, en 1 paso | 36:15-37:55, 43:00 | `oscura` |
-| 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` |
+| 4 | Revelación del producto, en 1 paso; en oscura pueden seguir sus pilares (lista blanca con emoji que vuelve con uno activo) y para quién es. Si el programa es «hecho contigo», la videollamada «TÚ + tu mentor» lo presenta [36:45] | 36:15-37:55, 43:00 | `oscura` · `lista` + `oscura` · `llamada` |
+| 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`; un componente humano —mentor, consultor, llamadas en vivo— con `llamada` antes de su `lista` [40:10, 41:15]) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` / `llamada` |
 | 6 | Prueba real: el muro de capturas (con `src` o `fuente`). Sin prueba real, un sustituto de la tabla de abajo; nunca una maqueta `ejemplo: true` | 42:00 | `prueba` |
-| 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el «✓ Hecho contigo» es el remate, en su propio corte [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
+| 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el remate es un título en su propio corte: ✓ verde sin caja + frase en 800 a ~140 px [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
 | 7b | **Bonos** (solo si la oferta los tiene): en el MISMO `stack`, después de las piezas base, cada uno con `sub: "Bono #N"` y su nombre desde `{{BONO_N}}` (LAYOUTS.md, `stack`). No hay diseño de bono aparte: la referencia no los tiene | — | `stack` |
 | 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera, o una fecha límite (`calendario` con el día marcado). Siempre desde `{{CUPOS}}` o `{{FECHA_LIMITE}}` con su dato real: «solo hoy», «Quedan solo 3 lugares» escritos a mano son error de QA | 43:00-43:30 | `rejilla` + `destacado_paso`, o `calendario` |
 | 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🧭 |

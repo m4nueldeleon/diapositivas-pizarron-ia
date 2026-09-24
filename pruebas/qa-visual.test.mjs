@@ -43,7 +43,9 @@ test('QA: las reglas nuevas disparan en el fixture de defectos', { timeout: 120_
 test('QA: sello sobre el texto y firma sobre una celda de la tabla (deck de defectos de la ronda 1)', { timeout: 120_000 }, () => {
   const r = qa(fx('defectos-visuales'));
   assert.ok(r.errores.some(e => /sello-texto.*el sello tapa/.test(e)));
-  assert.ok(r.avisos.some(e => /tabla-firma.*la firma cae dentro de la celda/.test(e)));
+  // r5: la firma de texto mide ~260 px y la tabla le deja 70 px abajo: ya no cae en la última fila (el error de QA se
+  // prueba con una firma de logo en estilo-iconos-r5.test.mjs)
+  assert.ok(!r.errores.concat(r.avisos).some(e => /tabla-firma.*firma/.test(e)), r.errores.join('\n'));
   assert.ok(r.errores.some(e => /voz-de-mas.*3 textos y la lámina 1 pasos/.test(e)));
   // lo que arregló el motor ya no aparece: marcas partidas, cursor sobre «mensaje», codo que tacha
   assert.ok(!r.errores.some(e => /marca sin cerrar|cursor tapa|flecha atraviesa/.test(e)), r.errores.join('\n'));

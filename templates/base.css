@@ -55,13 +55,14 @@ body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: an
 .capa-mano { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 5; }
 .capa-mano path, .capa-mano ellipse { stroke-linecap: round; stroke-linejoin: round; }
 .capa-mano path:not([data-relleno]), .capa-mano ellipse { fill: none; }   /* la punta «llena» sí va maciza */
+/* la letra la pone construir.mjs (medidaFirma) para que mida ~260 px [ref_90]; 600, no 700: la del original es más ligera */
 .firma {
   position: absolute; right: 44px; bottom: 30px; z-index: 6;
-  font: 700 50px/1 var(--sans); letter-spacing: -.025em; color: var(--tinta);
+  font: 600 40px/1 var(--sans); letter-spacing: -.025em; color: var(--tinta); white-space: nowrap;
 }
 .firma.arriba { bottom: auto; top: 44px; }
 .firma img { height: 58px; width: auto; display: block; }
-.firma small { font-weight: 500; font-size: .62em; letter-spacing: 0; }
+.firma small { font-weight: 500; font-size: .55em; letter-spacing: 0; }
 
 /* estados de revelado */
 [data-p].oculto { visibility: hidden !important; }
@@ -147,6 +148,17 @@ s.tachon, .tachon { text-decoration: none; }
   text-shadow: 0 2px 2px rgba(40, 60, 90, .35);
 }
 
+/* ✅ del mapa: cuelga bajo la etiqueta sin alargar la pila [28:00] (layouts-texto.mjs, pasos) */
+.ok-paso { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 26px; }
+/* el texto de un mapa que vuelve: el propio encima del más largo del grupo (invisible), en la misma celda */
+.apila { display: grid; justify-items: center; align-items: start; }
+.apila > * { grid-area: 1 / 1; }
+
+/* reloj digital del contrato de tiempo [2:00] (objeto con `reloj`) */
+.reloj-7seg { display: block; filter: drop-shadow(0 26px 30px rgba(0, 0, 0, .14)); }
+.reloj-7seg polygon, .reloj-7seg g > rect { fill: #39E05A; opacity: .08; }
+.reloj-7seg .on { opacity: 1; filter: drop-shadow(0 0 5px rgba(57, 224, 90, .75)); }
+
 /* ---------- lista ---------- */
 .lista { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-lista, 52px); text-align: left; }
 .lista .item { display: flex; align-items: center; font-size: var(--t, 66px); line-height: 1.18; letter-spacing: -.012em; max-width: 1560px; text-wrap-style: pretty; }
@@ -155,6 +167,7 @@ s.tachon, .tachon { text-decoration: none; }
 /* descartes tachados: cada renglón centrado y en seminegrita [m_256 4:16] */
 .lista.centrada { align-items: center; text-align: center; }
 .lista.centrada .item { font-weight: 600; }
+.lista.centrada .item b { font-weight: 800; }   /* 600 → 700 no se distinguía; 600 → 800 sí [r5] */
 
 /* ---------- nodos de flujo ---------- */
 .nodo { display: flex; flex-direction: column; align-items: center; gap: 34px; }
@@ -181,6 +194,8 @@ s.tachon, .tachon { text-decoration: none; }
   white-space: nowrap; --tn: 60px; color: #7d7d7d; }
 .fila-flujo > .retorno-et.tono-v { color: #22a812; }
 .fila-flujo > .retorno-et.tono-r { color: var(--rojo); }
+
+.pila-cantidad { display: flex; flex-direction: column; align-items: center; }
 
 /* ---------- tarjetas ---------- */
 .tarjetas { display: grid; grid-template-columns: repeat(var(--cols, 3), var(--tw, 420px)); grid-auto-rows: 1fr; gap: 36px; justify-content: center; }
@@ -261,8 +276,32 @@ s.tachon, .tachon { text-decoration: none; }
 .lamina.oscura .emo svg [fill="url(#pz-sil)"] { fill: url(#pz-sil-claro); }
 .bento-lleno:is(.c-morado, .c-marino, .c-naranja, .c-verde, .c-azul, .c-negro) .emo > svg:has([fill="url(#pz-sil)"]),
 .lamina.oscura .emo > svg:has([fill="url(#pz-sil)"]) { overflow: visible; filter: drop-shadow(0 calc(var(--s) * .03) calc(var(--s) * .035) rgb(0 0 0 / .28)); }
+/* A sangre el remate es un TÍTULO [42:50 «✓ Done-With-You»]: palomita verde sin caja (alto = la mayúscula) y la frase
+   entera en 800 a ~140 px; un ** no cambia nada. En la pila (9:16, sangre:false) sigue chico bajo las piezas. */
+.t-remate { display: flex; align-items: center; justify-content: center; gap: 24px; font-size: var(--t-remate, 140px); font-weight: 800;
+  letter-spacing: -.02em; line-height: 1.05; max-width: calc(var(--ancho-texto) + 200px); text-wrap: balance; text-align: center; }
+.t-remate b, .t-remate strong { font-weight: 800; }
+.t-remate .palomita { height: .72em; width: auto; flex: none; }
 /* el remate entra en su paso sobre un lienzo limpio: en la referencia es una lámina aparte [42:50] */
 .stack-remate { position: absolute; inset: 0; z-index: 4; background: var(--blanco); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* ---------- llamada (videollamada «TÚ» + persona) [36:45, 40:10, 41:15] ---------- */
+.llamada-col { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.llamada-tarjeta { position: relative; overflow: hidden; border-radius: 14px; background: #6B6B6B; box-shadow: 0 6px 18px rgb(0 0 0 / .18);
+  display: grid; place-items: center; flex: none; }
+.llamada-tarjeta.activa { outline: 4px solid #7CC4F5; outline-offset: -4px; }
+.llamada-yo { color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: .01em; line-height: 1; }
+.llamada-busto { position: absolute; left: 50%; bottom: -9%; height: 82%; aspect-ratio: 1; transform: translateX(-50%); }
+.llamada-busto svg { width: 100%; height: 100%; display: block; }
+.llamada-rotulo { --tn: 56px; color: var(--tinta); font-weight: 600; white-space: nowrap; }
+
+/* ---------- meses (rejilla a sangre) [16:45, 16:50] ---------- */
+.meses { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); grid-auto-rows: 1fr; gap: 2px; background: #cfcfcf; }
+.mes { position: relative; background: #fff; display: grid; place-items: center; }
+.mes > .mes-cuerpo { grid-area: 1 / 1; display: grid; place-items: center; }
+.mes-nombre { position: absolute; left: 18px; top: 14px; font-size: 30px; font-weight: 400; letter-spacing: .04em; text-transform: uppercase; color: #9a9a9a; }
+.mes-emojis { display: flex; gap: 10px; }
+.mes-valor { color: var(--verde); font-weight: 800; letter-spacing: -.02em; }
 
 /* ---------- calificación con estrellas [4:45] ---------- */
 .calificacion { width: 1150px; background: #f4f4f4; border-radius: 28px; box-shadow: var(--sombra-suave); padding: 8px 48px; }
@@ -310,12 +349,24 @@ s.tachon, .tachon { text-decoration: none; }
 .msj .yo-av { background: linear-gradient(180deg, #59b3f5, #2a8fe0); }
 .msj .otro-av { background: linear-gradient(180deg, #aaaeb0, #8f9395); }
 .msj .av-emo { background: #e9e9ec; }   /* un poco más visible: se sigue leyendo como avatar de chat (círculo del original) */
-/* [huecos] de plantilla: resaltador amarillo con tinta negra, legible en la burbuja azul y en la gris (13:1) */
-/* También los datos pendientes ([PRECIO]) en cualquier texto, sobre blanco o sobre la lámina oscura */
-.hueco, .burbuja .hueco { color: #111; background: var(--amarillo); font-weight: 700; border-radius: .25em; padding: 0 .15em;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone; white-space: nowrap; }
-/* un hueco corto («[el problema]») no se parte en dos pastillas; uno de más de 3 palabras sí puede cortarse */
-.hueco.largo { white-space: normal; }
+/* Dato PENDIENTE ([PRECIO], {{CLAVE}} sin valor): contorno punteado del color de su renglón, sin amarillo. Hereda el
+   tono, el peso y el tamaño de la marca que lo envuelve: `{g:{{PRECIO_ANCLA}}}` sigue gris y regular, así la jerarquía de
+   la lámina de precio se juzga en borrador [r5, webinar 23-precio]. currentColor: se ve sobre blanco, sobre la lámina
+   oscura y dentro de la burbuja. El amarillo queda para el resaltador (==…==) y nada más. */
+.hueco { -webkit-box-decoration-break: clone; box-decoration-break: clone; white-space: nowrap; }
+.hueco.pendiente, .burbuja .hueco.pendiente { color: inherit; font-weight: inherit; font-size: inherit;
+  background: color-mix(in srgb, currentColor 7%, transparent); outline: 3px dashed currentColor; outline-offset: -3px;
+  border-radius: .2em; padding: 0 .12em; }
+/* Variable de PLANTILLA del chat ([nombre], [1 de marzo]): lo que el espectador cambia en su mensaje. En la burbuja
+   azul, letra amarilla sin caja y con el peso del mensaje [21:55, c_1315: «[Name]», «[topic]»]; en la gris (donde el
+   amarillo baja a ~2.4:1) va en blanco con un subrayado punteado amarillo. */
+.burbuja .var-plantilla { font-weight: inherit; background: none; padding: 0; white-space: nowrap; }
+.msj.yo .var-plantilla { color: #FFE14D; }
+.msj.otro .var-plantilla { color: #fff; text-decoration: underline dotted #FFE14D; text-decoration-thickness: .08em; text-underline-offset: .15em; }
+/* una variable corta («[el problema]») no se parte; una de más de 3 palabras sí puede cortarse */
+.var-plantilla.largo { white-space: normal; }
+/* {s:/año}: el sufijo chico junto a una cifra [17:00 «$50k/year»] */
+.sufijo { font-size: .55em; font-weight: 400; letter-spacing: 0; }
 
 /* ---------- prueba (capturas) ---------- */
 .pruebas { display: flex; align-items: center; justify-content: center; }
@@ -412,11 +463,15 @@ s.tachon, .tachon { text-decoration: none; }
 .lamina.oscura .firma { color: #fff; opacity: .9; }
 .lamina.oscura .t { color: #fff; }
 .lamina.oscura .nota { color: #cfc8ff; }
+/* los pilares sobre la oscura [37:40]: el rótulo de la lista en blanco, no en gris */
+.lamina.oscura .encabezado { color: rgba(255, 255, 255, .88); }
+.lista .item .emo.ok-item { --s: .9em; margin: 0 0 0 .4em; }
 /* Sobre negro el énfasis va en blanco o dorado; el rojo sube de tono (el #c8101e queda en 3.4:1) */
 .lamina.oscura .tono-r, .lamina.oscura .nota.roja { color: #ff4d57; }
 .lamina.oscura.fondo-azul { background: radial-gradient(90% 60% at 50% -10%, #1f4dff 0%, #0a1a66 30%, #050508 65%); }
 .lamina.oscura.fondo-negro { background: #0b0b0e; }
-.titulo-marca { font-size: 132px; font-weight: 600; letter-spacing: -.03em; }
+/* balance y ancho máximo: «Diplomado en Comunidades / de Pago» dejaba «de Pago» solo en el momento de la revelación [r5] */
+.titulo-marca { font-size: 132px; font-weight: 600; letter-spacing: -.03em; line-height: 1.08; text-wrap: balance; max-width: 15em; margin-inline: auto; }
 
 /* ---------- sello ---------- */
 /* Etiqueta blanca OPACA (tapa lo que hay debajo, como en 6:45) y, dentro, la tinta con doble borde y grano leve.

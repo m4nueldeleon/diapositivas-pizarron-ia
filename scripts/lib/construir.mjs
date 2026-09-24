@@ -16,7 +16,7 @@ export const LAYOUTS = {
   cita: T.cita, objeto: T.objeto, tarjetas: T.tarjetas, oscura: T.oscura, cuadrantes: T.cuadrantes,
   tabla: D.tabla, grafica: D.grafica, 'linea-tiempo': D.lineaTiempo, medidor: D.medidor, opciones: D.opciones,
   rejilla: D.rejilla, prueba: D.prueba, chat: D.chat, reparto: D.reparto, calendario: D.calendario,
-  boton: D.boton, circulos: D.circulos, stack: D.stack, calificacion: D.calificacion,
+  boton: D.boton, circulos: D.circulos, stack: D.stack, calificacion: D.calificacion, llamada: D.llamada, meses: D.meses,
   camara: () => '', foco: T.foco,
 };
 
@@ -48,15 +48,28 @@ function copiarFuentes(dirSkill, dirSalida) {
   return faltan;
 }
 
+// Firma de texto a ~260 px de ancho en 1920 [ESTILO §1; ref_90: «Consulting.com» mide 257×45]: la letra sale del largo
+// (Figtree 600 ≈ 0.5 em por letra; el sufijo o el «.com» final van a .55 em). A 50 px fijos medía 342 y se metía en la
+// última fila de la tabla-marcador [r5, r460]. runtime.js (ajustarFirma) la baja si aun así pasa de 280.
+export function medidaFirma(marca) {
+  if (!marca || typeof marca !== 'object' || marca.logo || !marca.texto) return null;
+  let t = String(marca.texto), suf = marca.sufijo ? String(marca.sufijo) : '';
+  if (!suf) { const m = t.match(/^(.+?)(\.[a-z]{2,4})$/i); if (m) { t = m[1]; suf = m[2]; } }
+  const ef = [...t].length + 0.55 * [...suf].length;
+  const fs = Math.max(26, Math.min(46, Math.round(260 / (0.5 * Math.max(1, ef)))));
+  return { t, suf, fs, ancho: Math.round(fs * 0.5 * ef) };
+}
 // Firma: abajo a la derecha en horizontal; en 9:16 va ARRIBA por omisión (abajo la tapan el caption y
 // los botones de Reels). marca.posicion ('arriba' | 'abajo') lo fuerza.
+const posFirma = (marca, vertical) => marca.posicion || (vertical ? 'arriba' : 'abajo');
 function firma(marca, ctx, vertical) {
   if (!marca || marca === false) return '';
-  const pos = marca.posicion || (vertical ? 'arriba' : 'abajo');
+  const pos = posFirma(marca, vertical);
   const cls = `firma${pos === 'arriba' ? ' arriba' : ''}`;
   if (marca.logo) { const src = ctx.img(marca.logo); if (src) return `<div class="${cls}"><img src="${src}" alt=""></div>`; }
-  if (!marca.texto) return '';
-  return `<div class="${cls}">${escapar(marca.texto)}${marca.sufijo ? `<small>${escapar(marca.sufijo)}</small>` : ''}</div>`;
+  const m = medidaFirma(marca);
+  if (!m) return '';
+  return `<div class="${cls}" style="font-size:${m.fs}px">${escapar(m.t)}${m.suf ? `<small>${escapar(m.suf)}</small>` : ''}</div>`;
 }
 
 // Una lámina: HTML interior + pasos + conexiones + extras (sello, clic).
@@ -123,6 +136,9 @@ function anclaArriba(l) {
   if (l.anclar === 'centro') return false;
   if (l.anclar === 'arriba') return true;
   if (!['lista', 'tarjetas'].includes(l.tipo) || l.revelar === 'todo') return false;
+  // Los pilares de la marca (lista sobre la oscura) y la lista que vuelve con uno activo van centrados, como en 37:40 y
+  // 39:45: la que vuelve entra entera, y si la primera arrancara arriba el regreso saltaría
+  if (l.tipo === 'lista' && (l.oscura || l.activo || (Array.isArray(l.hechos) && l.hechos.length) || l.como)) return false;
   // la lista de descartes va centrada: sus pasos ocultos ya reservan el hueco, así que el primer renglón aparece desde
   // el inicio en su lugar final (~28%), como en 4:05
   if (l.tipo === 'lista' && T.listaCentrada(l)) return false;
@@ -182,9 +198,11 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
   const F = FORMATOS[formato];
   const em = new Emojis({ modo: deck.emoji || 'auto', dirSalida, piel: deck.piel });
   const faltanFuentes = copiarFuentes(dirSkill, dirSalida);
-  const comun = { em, dirDeck, dirSalida, formato, F };
-  const ctxMarca = crearCtx(comun);
+  const ctxMarca = crearCtx({ em, dirDeck, dirSalida, formato, F });
   const marca = em.enTexto(deck.marca === false ? '' : firma(deck.marca || {}, ctxMarca, F.W < F.H));
+  // ancho estimado de la firma cuando va ABAJO (la tabla-marcador le deja sitio en su última columna vacía)
+  const mf = deck.marca && deck.marca !== false && marca ? medidaFirma(deck.marca) : null;
+  const comun = { em, dirDeck, dirSalida, formato, F, firmaAncho: mf && posFirma(deck.marca, F.W < F.H) === 'abajo' ? mf.ancho : 0 };
   const avisos = [...avisosSaneo, ...ctxMarca.avisos];
   if (faltanFuentes.length) avisos.push(`Faltan tipografías (${faltanFuentes.join(', ')}): corre scripts/setup.sh`);
 

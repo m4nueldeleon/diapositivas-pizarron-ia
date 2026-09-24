@@ -125,7 +125,7 @@ test('render r4: multitud, opciones con clic tardío, llave alta, tabla corta, c
       out.tabla = { letra: parseFloat(getComputedStyle(td).fontSize), fila: td.getBoundingClientRect().height, peso: getComputedStyle(td).fontWeight };
       // 6) cifra y 7) hueco
       out.cifra = window.lineasPalabras(L[5].querySelector('.cifra')).length;
-      out.hueco = window.lineasPalabras(L[6].querySelector('.hueco')).length;
+      out.hueco = window.lineasPalabras(L[6].querySelector('.var-plantilla')).length;
       // 8) tarjetas y 9) emoji_lado
       out.tarjetas = [...L[7].querySelectorAll('.tarjeta .emo')].map(e => e.getBoundingClientRect().width);
       out.lado = cj(L[8].querySelector('.emo'), L[8]).w / parseFloat(getComputedStyle(L[8].querySelector('.t')).fontSize);

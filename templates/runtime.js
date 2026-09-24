@@ -165,12 +165,37 @@
     let pts, color = C.rojo, ancho = 7, len = 30, abre = 0.5;
     switch (c.estilo) {
       case 'converge': {
-        // Flechas que salen de las celdas de una columna y convergen en la pregunta [7:30, f_flechas]: salen casi
-        // horizontales por la derecha de la celda y se abren en abanico hasta el borde izquierdo de la nota.
-        const P = [A.x + A.w + 18, A.cy], n = Math.max(1, c.n || 1), off = ((c.i || 0) - (n - 1) / 2) * Math.min(22, B.h / (n + 1));
-        const Q = [B.x - 16, B.cy + off];
-        pts = cubica(P, [P[0] + (Q[0] - P[0]) * 0.45, P[1]], [Q[0] - (Q[0] - P[0]) * 0.25, Q[1]], Q);
-        ancho = 3.6; len = 18; break;
+        // Flechas que salen de las celdas de una columna y convergen en la pregunta [7:30, f_flechas 7:30.1]: salen casi
+        // horizontales por la derecha de la celda y se juntan en UN punto a ~20 px del primer renglón del TEXTO de la
+        // pregunta (no de la caja de la pila, que dejaba la punta lejos del texto centrado). Solo la curva del centro
+        // lleva la punta en V; antes eran tres puntas apiladas a ~100 px de la pregunta [r5, webinar 07-comparar].
+        const txt = eb.querySelector('.conv-texto') || eb, rs = rectsTexto(txt, lam);
+        const T = rs.length ? rs[0] : B, xT = rs.length ? Math.min(...rs.map(q => q.x)) : B.x;
+        const n = Math.max(1, c.n || 1), centro = (c.i || 0) === Math.floor((n - 1) / 2);
+        const P = [A.x + A.w + 14, A.cy];
+        let Q;
+        if (c.abajo) {
+          // 9:16: la pregunta va DEBAJO de la tabla. La curva sale a la derecha del texto de la celda, baja por el borde
+          // de la columna (sin cruzar el texto de las celdas de abajo) y llega a un punto 20 px sobre la pregunta.
+          const td = ea.closest('td, th'), tb = ea.closest('table');
+          const Cd = td ? caja(td, lam) : A, Tb = tb ? caja(tb, lam) : A;
+          // …y entra por la DERECHA del primer renglón de la pregunta (centrada debajo), a 20 px de su última letra
+          const carril = Cd.x + Cd.w - 8, xR = rs.length ? Math.max(...rs.slice(0, 1).map(q => q.x + q.w)) : B.x + B.w;
+          Q = [xR + 20, T.y + T.h / 2];
+          const y1 = P[1] + 40;
+          const y2 = Math.max(y1 + 1, Q[1] - 60);
+          // cuadratica(inicio, fin, control)
+          pts = cuadratica(P, [carril, y1], [carril, P[1]], 8)
+            .concat(linea([carril, y1], [carril, y2], r, 1.2, 6).slice(1))
+            .concat(cuadratica([carril, y2], Q, [carril, Q[1]], 10).slice(1));
+        } else {
+          Q = [xT - 20, T.y + T.h / 2];
+          pts = cubica(P, [P[0] + (Q[0] - P[0]) * 0.45, P[1]], [Q[0] - (Q[0] - P[0]) * 0.25, Q[1]], Q);
+        }
+        const fl = trazo(svg, suave(pts), { color: C.rojo, ancho: 3.6, p, dur: 300, clase: 'flecha', estilo: 'converge' });
+        Object.assign(fl.dataset, { de: c.de, a: c.a });
+        if (centro) trazo(svg, cabezaV(Q, angulo(pts), 26, 0.5, r), { color: C.rojo, ancho: 3.6, p, cabeza: true, clase: 'punta' });
+        return;
       }
       case 'entrada': {
         // Flecha larga que entra desde el borde del lienzo hasta el ancla [15:00]: plumón rojo casi recto
@@ -306,8 +331,15 @@
         return;
       }
       default: { // recta: plumón rojo
-        const P = borde(A, [B.cx, B.cy], 30), Q = borde(B, [A.cx, A.cy], 30);
-        pts = linea(P, Q, r, 2.6); ancho = 7; len = 30;
+        // [c_1045, 12:35, 13:20]: la flecha mide ~250 px (el 55% del hueco entre los dos emojis, de 140 a 260), va
+        // centrada en el hueco con un asta de ~9 px y una punta en V grande (brazos de ~60 px, abierta ~33°, alto de la
+        // punta ≈ 25-30% del largo). De borde a borde (~460 px) con punta de 30 se leía como un palito [r5].
+        const P0 = borde(A, [B.cx, B.cy], 12), Q0 = borde(B, [A.cx, A.cy], 12);
+        const dx = Q0[0] - P0[0], dy = Q0[1] - P0[1], hueco = Math.hypot(dx, dy) || 1, u = [dx / hueco, dy / hueco];
+        const L = Math.max(0, Math.min(hueco - 24, Math.min(260, Math.max(140, 0.55 * hueco))));
+        const M = [(P0[0] + Q0[0]) / 2, (P0[1] + Q0[1]) / 2];
+        const P = [M[0] - u[0] * L / 2, M[1] - u[1] * L / 2], Q = [M[0] + u[0] * L / 2, M[1] + u[1] * L / 2];
+        pts = linea(P, Q, r, 2.6); ancho = 9; len = Math.max(40, Math.min(62, 0.25 * L)); abre = 0.58;
       }
     }
     const fl = trazo(svg, suave(pts), { color, ancho, p, dur: 300, clase: 'flecha', estilo: c.estilo || 'recta' });
@@ -471,7 +503,7 @@
   // área el contenedor de su ancla (captura, tarjeta, burbuja, rejilla) ni otro texto, sello o nota, y (c) queda a ≥ 80 px
   // del ancla (el gancho). Si ningún lado sirve, la letra baja de 4 en 4 hasta 44 px; si aun así no, el lado que menos
   // pisa y un aviso. Antes el borde la regresaba ENCIMA de la tarjeta y su gancho tachaba la propia nota [r5, muro 14].
-  const OBST_ANOT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .captura, .post, .sello, .tabla, .rejilla, .bento, .cuadro, .grafica svg, .dia';
+  const OBST_ANOT = '.t, .t-remate, .llamada-tarjeta, .meses, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .captura, .post, .sello, .tabla, .rejilla, .bento, .cuadro, .grafica svg, .dia';
   function colocarAnotaciones(lam) {
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, aire = 130;
     const cruce = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
@@ -577,6 +609,14 @@
     });
   }
 
+  // ---------- firma de texto: ≤ 280 px de ancho en 1920 [ESTILO §1, ~260] ----------
+  function ajustarFirma(lam) {
+    const f = lam.querySelector(':scope > .firma'); if (!f || f.querySelector('img')) return;
+    const tope = 280 * (lam.offsetWidth >= lam.offsetHeight ? 1 : lam.offsetWidth / 1080);
+    let fs = parseFloat(getComputedStyle(f).fontSize) || 40, guard = 0;
+    while (f.offsetWidth > tope && fs > 22 && guard++ < 30) { fs -= 1; f.style.fontSize = fs + 'px'; }
+  }
+
   function encajar(lam) {
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
       const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes') || h.classList.contains('sangre')) return;
@@ -606,7 +646,7 @@
     if (!lz || !clon || lz.dataset.anclar) return;
     const pila = lz.firstElementChild; if (!pila) return;
     const H = lam.offsetHeight, P = caja(pila, lam), pad = 18;
-    const TXT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .sello-tinta';
+    const TXT = '.t, .t-remate, .llamada-yo, .llamada-rotulo, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .sello-tinta';
     const rs = [...clon.querySelectorAll(TXT)].filter(e => !e.querySelector(TXT)).flatMap(e => rectsTexto(e, lam))
       .concat([...clon.querySelectorAll('svg text')].filter(t => t.textContent.trim()).map(t => caja(t, lam)))
       .filter(r => r.h >= 30 && r.x < P.x + P.w && r.x + r.w > P.x);
@@ -790,6 +830,7 @@
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
+    lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
     const esFoco = l => !!l.querySelector(':scope > .escena.clon');

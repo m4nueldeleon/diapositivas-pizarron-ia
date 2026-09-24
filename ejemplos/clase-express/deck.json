@@ -67,11 +67,9 @@
   },
   {
    "id": "contrato",
-   "tipo": "cifra",
-   "arriba": "Te pido los próximos:",
-   "lineas": [
-    "__10 minutos__"
-   ],
+   "tipo": "objeto",
+   "reloj": "10:00",
+   "texto": "Te pido solo los **próximos 10 minutos.**",
    "voz": [
     "Te pido los próximos diez minutos: tres pasos y dos ejercicios."
    ]

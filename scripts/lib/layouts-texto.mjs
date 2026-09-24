@@ -73,14 +73,21 @@ export function lista(l, ctx) {
   const centrada = listaCentrada(l);
   const gapL = l.separacion || (centrada && items.length <= 3 ? 130 : items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
   const vin = { x: '❌', no: '❌', check: '✅', si: '✅' };
+  // Pilares que vuelven [37:40 → 39:45]: con `activo` (desde 1) la lista entra entera y los demás ítems se apagan al 25%;
+  // los de `hechos` quedan encendidos con su ✅ al final. Se reúsa con `como` (CAMPOS_OBJETO.lista).
+  const activo = Number.isInteger(l.activo) && l.activo > 0 ? l.activo : 0;
+  const hechos = new Set(Array.isArray(l.hechos) ? l.hechos : []);
+  const mapa = activo || hechos.size;
   const filas = items.map((it, i) => {
     const o = typeof it === 'string' ? { texto: it } : it;
     const e = o.emoji || vin[l.vineta] || l.vineta || '';
     const kT = o.tachado ? ` data-tachar="caja" data-tachar-p="${ctx.paso(i + (l.tachar_despues ? items.length : 0))}"` : '';
-    return `<div class="item"${ctx.P(i)}${ctx.A('i' + i)}${kT}>${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}<span>${marcar(o.texto)}</span></div>`;
+    const apagado = activo && activo !== i + 1 && !hechos.has(i + 1) ? ' style="opacity:.25"' : '';
+    const ok = hechos.has(i + 1) ? ctx.em.html('✅', '.9em', 'ok-item') : '';
+    return `<div class="item"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}${apagado}>${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}<span>${marcar(o.texto)}</span>${ok}</div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}</div>`;
+    <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}</div>`;
 }
 
 // FLUJO — nodos (emoji + etiqueta) unidos por flechas rojas a mano. A → B → C.
@@ -91,6 +98,20 @@ export function lista(l, ctx) {
 //   · `retornos` + `aparte`: arcos que regresan a un nodo anterior (arriba) o bajan a un nodo aparte bajo la primera
 //     columna, con su etiqueta manuscrita y su emoji [12:45 «70% 💵» en negro arriba, «30% 💵» en verde hacia «You»].
 export const SIGNOS = ['+', '=', '−', '×'];
+// Cantidad que crece [15:15, 17:00, 17:05]: `nodos[i].cantidad: N` (1-20) repite el emoji en una pila de filas
+// EQUILIBRADAS (5 → 3+2, 6 → 3+3, 10 → 5+5, 20 → 5×4), con copias de ~0.55 × el emoji del nodo y un hueco de 0.25 de la
+// copia; la pila no pasa de 1.6 × el emoji (con 4 filas las copias se achican). El ancla del nodo rodea la pila entera.
+export function filasCantidad(n) {
+  // hasta 3 en una fila; de 4 a 6 en dos (5 → 3+2 [17:00], 6 → 3+3 [17:05]); desde 7, filas de hasta 5
+  const filas = n <= 3 ? 1 : n <= 6 ? 2 : Math.ceil(n / 5), base = Math.floor(n / filas), extra = n % filas;
+  return Array.from({ length: filas }, (_, i) => base + (i < extra ? 1 : 0));
+}
+function pilaCantidad(ctx, emoji, n, tamE) {
+  const filas = filasCantidad(Math.min(20, n));
+  const k = filas.length, s = Math.round(Math.min(0.55 * tamE, (1.6 * tamE) / (k + 0.25 * (k - 1))));
+  const g = Math.round(0.25 * s);
+  return `<div class="pila-cantidad" style="gap:${g}px">${filas.map(m => `<div class="fila" style="gap:${g}px">${Array.from({ length: m }, () => ctx.emoji(emoji, s)).join('')}</div>`).join('')}</div>`;
+}
 export function flujo(l, ctx) {
   const nodos = l.nodos || [];
   const n = nodos.length;
@@ -108,7 +129,8 @@ export function flujo(l, ctx) {
   const signos = [];
   const html = nodos.map((nd, i) => {
     const k = i === 0 ? 0 : i;
-    const vis = nd.imagen ? `<img src="${ctx.img(nd.imagen)}" style="height:${nd.alto || 300}px;width:auto;display:block" alt="">` : ctx.emoji(nd.emoji, tamE);
+    const vis = nd.imagen ? `<img src="${ctx.img(nd.imagen)}" style="height:${nd.alto || 300}px;width:auto;display:block" alt="">`
+      : Number.isInteger(nd.cantidad) && nd.cantidad > 1 ? pilaCantidad(ctx, nd.emoji, nd.cantidad, tamE) : ctx.emoji(nd.emoji, tamE);
     const sg = i > 0 ? signoDe(i) : '';
     if (sg) signos.push(`<div class="signo" data-signo="${i}"${ctx.P(k)} style="--ts:${Math.round(tamE * 0.45)}px">${escapar(sg)}</div>`);
     else if (i > 0 && !sinFlecha) {
@@ -195,9 +217,11 @@ export function pasos(l, ctx) {
       cab = `<div class="tecla" style="--s:${ctx.vertical ? 150 : 170}px"${ctx.A('k' + i)}>${i + 1}</div>
         ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${tamEtqTecla}px;font-weight:700;margin-top:${mEtq}px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
-    const ok = hechos.has(i + 1) ? `<div style="margin-top:26px">${ctx.emoji('✅', 90)}</div>` : '';
+    // La ✅ CUELGA bajo la etiqueta fuera del flujo [28:00: los íconos siguen en y≈345 y las ✅ caen debajo]: en el flujo
+    // alargaba la pila y el lienzo la volvía a centrar, y el mapa que vuelve subía 58 px [r5]
+    const ok = hechos.has(i + 1) ? `<div class="ok-paso">${ctx.emoji('✅', 90)}</div>` : '';
     // flex:0 0 auto: la columna nunca se encoge (encogida partía «Paso / 2»); si la fila no cabe, encaja con zoom
-    cols.push(`<div class="pila" style="flex:0 0 auto"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
+    cols.push(`<div class="pila" style="flex:0 0 auto;position:relative"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
     if (i > 0 && ruta) {
       const j = i - l.clic;   // tramo j-ésimo desde la tecla del clic (0 = el que sale de ella)
       if (arrastra && j >= 0) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: kClic, retraso: 1500 + j * 700, arrastre: j });
@@ -211,9 +235,23 @@ export function pasos(l, ctx) {
     ? `<div class="fila-pasos"${rev ? '' : ctx.P(0)} style="display:grid;grid-template-columns:repeat(${n},${colW}px);justify-items:center;align-items:start">`
     : `<div class="fila"${rev ? '' : ctx.P(0)} style="gap:${l.separacion ?? (l.iconos ? 70 : 110)}px;align-items:flex-start">`;
   // bajo las teclas la frase va a 84 px (ref_115: «3-step "Just-Click-The-Buttons" business» en UN renglón)
+  // Mapa que vuelve (`_grupo_*`, contrato.mjs → marcarGrupos): el texto y la nota reservan el alto del más largo del grupo,
+  // y si alguna lámina del grupo lleva ✅ la frase baja lo que cuelga la ✅ (26 + 90 px) en TODAS: los íconos y las
+  // etiquetas quedan idénticos en cada regreso.
+  const tamT = l.tam_texto || (l.iconos ? 'grande' : 'medio');
+  const conOk = l.iconos && (l._grupo_hechos || hechos.size);
+  const mt = l.iconos ? (conOk ? 'style="margin-top:150px"' : 'class="mt-e"') : 'class="mt-t"';
+  const kn = pasoDe(l, 'nota_paso', kt);
+  const bTexto = apilar(ctx, l.texto, l._grupo_texto, kt, t => texto(ctx, t, tamT, kt), t => `<div class="t ${tamT} pz-oculto"${ctx.P(kt)} aria-hidden="true" style="visibility:hidden">${marcar(t)}</div>`);
+  const bNota = apilar(ctx, l.nota, l._grupo_nota, kn, t => nota(ctx, t, kn), t => `<div class="nota pz-oculto"${ctx.P(kn)} aria-hidden="true" style="visibility:hidden">${marcar(t)}</div>`);
   return `<div class="pila">${fila}${cols.join('')}</div>
-    ${texto(ctx, l.texto, (l.tam_texto || (l.iconos ? 'grande' : 'medio')) + (l.iconos ? ' mt-e' : ' mt-t'), kt)}
-    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
+    ${bTexto ? `<div ${mt}>${bTexto}</div>` : ''}
+    ${bNota ? `<div class="mt-s">${bNota}</div>` : ''}</div>`;
+}
+// El bloque propio encima de un «fantasma» invisible con el texto más largo del grupo: la celda mide lo del más largo
+function apilar(ctx, propio, grupo, k, real, fantasma) {
+  if (!grupo || grupo === propio) return propio ? real(propio) : '';
+  return `<div class="apila">${fantasma(grupo)}${propio ? real(propio) : ''}</div>`;
 }
 
 // BIFURCACIÓN — un origen arriba y dos ramas abajo con flechas negras curvas; llave roja con nota.
@@ -246,7 +284,10 @@ export function cifra(l, ctx) {
   const lineas = (l.lineas || (l.valor ? [l.valor] : [])).map(x => (x && typeof x === 'object' ? x : { texto: x }));
   const unica = lineas.length === 1 && !l.tam;
   const tc = l.tam || (unica ? '140px' : '84px');
-  const peso = unica ? 800 : 500;
+  // Una sola línea va en 800, salvo que traiga **negrita**: ahí la base baja a 500 y la negrita (.cifra b, 800) se
+  // distingue, igual que en las cifras de varias líneas [r5, «30 × $1,000 = **$30,000**» salía parejo]
+  const conNegrita = unica && /\*\*[\s\S]+?\*\*/.test(String(lineas[0].texto ?? ''));
+  const peso = unica && !conNegrita ? 800 : 500;
   // Con 2+ líneas y sin tamaños del autor, el RESULTADO (la última línea) va ~1.2× [3:15: la segunda cuenta es apenas
   // más grande]; el peso se queda en 500 y lo que se destaca va con **negrita** o __subrayado__. Cada línea es una cuenta
   // completa y centrada. runtime.js (ajustarCifras) encoge la ecuación antes de partirla en dos renglones.
@@ -266,20 +307,50 @@ export function cifra(l, ctx) {
     ${nota(ctx, l.nota, (l.nota_paso ?? k + 1), 'mt-m')}</div>`;
 }
 
-// CITA — frase manuscrita con flecha roja curva desde un ícono (la «nota al margen» del profesor).
+// CITA — frase manuscrita con flecha roja curva desde un ícono (la «nota al margen» del profesor). Con **negrita** la
+// frase baja a Caveat 400: 500 → 700 en el mismo color no se distingue [r5, «EXACTAMENTE»].
 export function cita(l, ctx) {
   ctx.con({ de: 'icono', a: 'cita', estilo: 'curva-roja', p: 0 });
   return `<div class="pila">
     <div${ctx.P(0)}${ctx.A('icono')}>${ctx.emoji(l.emoji || '📝', l.emoji_tam, 'medio')}</div>
-    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px">${tacharDespues(marcar(l.texto), ctx, 0, l.tachar_paso)}</div>
+    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px${/\*\*[\s\S]+?\*\*/.test(String(l.texto || '')) ? ';font-weight:400' : ''}">${tacharDespues(marcar(l.texto), ctx, 0, l.tachar_paso)}</div>
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', 1), 'mt-m')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', 0))}</div>`;
 }
 
-// OBJETO — foto real recortada (sin fondo) o emoji gigante como protagonista.
+// RELOJ digital de 7 segmentos [2:00: cuerpo negro, dígitos verdes «33:00» sobre «…in just the **next 33 minutes.**»]: el
+// contrato de tiempo. Los dígitos son polígonos (no una fuente): encendidos #39E05A con brillo, apagados al 8%.
+export const RE_RELOJ = /^\d{1,2}:\d{2}$/;
+const SEGMENTOS = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' };
+function segmento(x0, y0, x1, y1, t = 18) {
+  const h = t / 2, p = x0 === x1
+    ? [[x0, y0], [x0 + h, y0 + h], [x0 + h, y1 - h], [x0, y1], [x0 - h, y1 - h], [x0 - h, y0 + h]]
+    : [[x0, y0], [x0 + h, y0 - h], [x1 - h, y0 - h], [x1, y0], [x1 - h, y0 + h], [x0 + h, y0 + h]];
+  return p.map(q => q.join(',')).join(' ');
+}
+function digito(n, dx) {
+  const L = 10 + dx, R = 90 + dx, g = 5;
+  const seg = { a: [L + g, 10, R - g, 10], b: [R, 10 + g, R, 90 - g], c: [R, 90 + g, R, 170 - g], d: [L + g, 170, R - g, 170],
+    e: [L, 90 + g, L, 170 - g], f: [L, 10 + g, L, 90 - g], g: [L + g, 90, R - g, 90] };
+  const on = SEGMENTOS[n] || '';
+  return Object.entries(seg).map(([k, c]) => `<polygon points="${segmento(...c)}"${on.includes(k) ? ' class="on"' : ''}/>`).join('');
+}
+export function relojSVG(txt, ancho) {
+  let x = 0, cuerpo = '';
+  for (const ch of String(txt)) {
+    if (ch === ':') { cuerpo += `<rect class="on" x="${x + 12}" y="52" width="16" height="16" rx="3"/><rect class="on" x="${x + 12}" y="112" width="16" height="16" rx="3"/>`; x += 40; }
+    else { cuerpo += digito(Number(ch), x); x += 122; }
+  }
+  const w = x - 22 + 100, h = 290;
+  return `<svg class="reloj-7seg vol" viewBox="0 0 ${w} ${h}" width="${ancho}" height="${Math.round(ancho * h / w)}" aria-hidden="true">`
+    + `<rect x="2" y="2" width="${w - 4}" height="${h - 4}" rx="18" fill="#111"/><rect x="10" y="10" width="${w - 20}" height="${h - 20}" rx="12" fill="none" stroke="#2c2c2c" stroke-width="3"/>`
+    + `<g transform="translate(50 55) skewX(-6)">${cuerpo}</g></svg>`;
+}
+// OBJETO — foto real recortada (sin fondo), emoji gigante o el reloj del contrato de tiempo como protagonista.
 export function objeto(l, ctx) {
-  const vis = l.imagen
-    ? `<img src="${ctx.img(l.imagen)}" style="height:${l.alto || 520}px;width:auto;display:block;filter:drop-shadow(0 26px 30px rgba(0,0,0,.14))" alt="">`
-    : ctx.emoji(l.emoji || '📦', l.emoji_tam || 'heroe');
+  const vis = l.reloj && RE_RELOJ.test(l.reloj) ? relojSVG(l.reloj, ctx.vertical ? 460 : 600)
+    : l.imagen
+      ? `<img src="${ctx.img(l.imagen)}" style="height:${l.alto || 520}px;width:auto;display:block;filter:drop-shadow(0 26px 30px rgba(0,0,0,.14))" alt="">`
+      : ctx.emoji(l.emoji || '📦', l.emoji_tam || 'heroe');
   return `<div class="pila"><div${ctx.P(0)}${ctx.A('objeto')}>${vis}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto) + ' mt-m', pasoDe(l, 'texto_paso', 0))}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', 0) + 1), 'mt-s')}</div>`;
@@ -338,5 +409,8 @@ export function foco(l, ctx) {
   // La frase de foco es la PROTAGONISTA, no una nota al margen: Caveat a ~88 px y casi de lado a lado (~1560 px) [15:20]
   const largo = palabras(principal) > 14, horizontal = ctx.F.W > ctx.F.H;
   const tam = l.tam || (horizontal ? (largo ? '84px' : '88px') : (largo ? '88px' : '96px'));
-  return `<div class="pila"><div class="nota"${ctx.P(0)} style="--tn:${tam};color:var(--tinta);font-weight:600;max-width:min(1640px, var(--ancho-texto))">${marcar(principal)}</div>${debajo}</div>`;
+  // Caveat es variable de 400 a 700: con la frase a 600, la **negrita** (700) no se distinguía [r5, «menos de 5»]. Si la
+  // frase trae **, va a 400 y la negrita a 700 (el máximo contraste de peso que da la fuente); sin **, se queda en 600.
+  const peso = /\*\*[\s\S]+?\*\*/.test(principal) ? 400 : 600;
+  return `<div class="pila"><div class="nota"${ctx.P(0)} style="--tn:${tam};color:var(--tinta);font-weight:${peso};max-width:min(1640px, var(--ancho-texto))">${marcar(principal)}</div>${debajo}</div>`;
 }

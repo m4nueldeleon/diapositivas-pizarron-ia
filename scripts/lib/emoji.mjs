@@ -130,7 +130,7 @@ const SIL = (x, s = 1) => `<circle cx="${12 * s + x}" cy="${8 * s}" r="${4.6 * s
 const DEG = (id, a, b, x2 = 0, y2 = 1) => `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
 export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
   + DEG('pz-sil', '#90a6be', '#5c7390') + DEG('pz-sil-claro', '#ffffff', '#dfe6f2') + DEG('pz-ok', '#45c91f', '#1f9a0d') + DEG('pz-pantalla', '#5b8def', '#9b6ee0')
-  + DEG('pz-boleto', '#ff7a8a', '#e0182a', 1, 1) + DEG('pz-cal-cab', '#ff7a7e', '#d8343a') + DEG('pz-cal-cuerpo', '#ffffff', '#e2e7ee')
+  + DEG('pz-boleto', '#ffd84d', '#f2a900', 1, 1) + DEG('pz-cal-cab', '#ff7a7e', '#d8343a') + DEG('pz-cal-cuerpo', '#ffffff', '#e2e7ee')
   + DEG('pz-anillo', '#b9c0cb', '#6f7784') + DEG('pz-hoja', '#ffffff', '#dde3ec') + DEG('pz-doblez', '#7aaaff', '#2f68e6')
   + DEG('pz-marco', '#4a4a4f', '#0d0d0f') + DEG('pz-chat', '#45a8ff', '#0a66dc') + DEG('pz-flecha', '#52b2ff', '#1466dc')
   + '<linearGradient id="pz-brillo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
@@ -140,7 +140,9 @@ const DEF_SIL = '';
 const OBJ = cuerpo => `<svg class="vol" viewBox="0 0 24 24" width="100%" height="100%">${cuerpo}</svg>`;
 // La ✕ llena su caja (la insignia de «no:» cruza la esquina del emoji como en ref_628) y la ✅ es verde
 // saturado con palomita gruesa: el ✅ de Fluent es verde menta pálido y se perdía sobre el cuadrante verde.
-const EQUIS = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M3.5 3.5 20.5 20.5M20.5 3.5 3.5 20.5" stroke="#d3121f" stroke-width="3.6" stroke-linecap="round"/></svg>';
+// La ✕ lleva un halo blanco debajo (6 de ancho, llega de 0.5 a 23.5: cabe en la caja de 24): sobre 🎯 ❤️ 🧰 o el boleto,
+// el rojo sobre rojo solo se leía donde la ✕ salía del glifo [r5, prueba-no]. Sobre blanco el halo no se ve [ref_628].
+const EQUIS = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path class="halo" d="M3.5 3.5 20.5 20.5M20.5 3.5 3.5 20.5" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M3.5 3.5 20.5 20.5M20.5 3.5 3.5 20.5" stroke="#d3121f" stroke-width="3.6" stroke-linecap="round"/></svg>';
 const PALOMITA = '<svg viewBox="0 0 24 24" width="100%" height="100%"><rect x="1.5" y="1.5" width="21" height="21" rx="5" fill="url(#pz-ok)"/><path d="M6.6 12.4l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 // 📱 celular: vertical (1:2), marco negro con degradado, pantalla con brillo y rejilla de apps de color, igual en Apple
 // y en Fluent. El 📱 de Fluent es una tableta morada que se confunde con 📅 (EMOJIS.md, «Se ven distinto según el modo»).
@@ -168,12 +170,14 @@ const CALENDARIO = OBJ('<rect x="2.3" y="3.6" width="19.4" height="18.4" rx="2.8
   + '<rect x="6.6" y="1.4" width="1.9" height="4.6" rx=".95" fill="url(#pz-anillo)"/><rect x="15.5" y="1.4" width="1.9" height="4.6" rx=".95" fill="url(#pz-anillo)"/>'
   + Array.from({ length: 12 }, (_, k) => `<rect x="${f1(4.3 + (k % 4) * 4)}" y="${f1(11.2 + Math.floor(k / 4) * 3.4)}" width="3.2" height="2.6" rx=".6" fill="${k === 6 ? '#e5484d' : '#d2d8e0'}"/>`).join('')
   + '<rect x="2.9" y="20.9" width="18.2" height=".6" rx=".3" fill="#000" fill-opacity=".06"/>');
-// 🎟 🎫 boleto liso, SOLO en apple: el de Apple dice «ADMIT ONE» / «LIVE CONCERT TICKET» en inglés. El de Fluent es un
-// boleto 3D sin texto (rosa 🎟, amarillo 🎫): sale nativo.
-const BOLETO = OBJ('<g transform="rotate(-14 12 12)"><path d="M3.2 6.4h17.6a1.2 1.2 0 0 1 1.2 1.2v2.6a2 2 0 0 0 0 3.8v2.6a1.2 1.2 0 0 1-1.2 1.2H3.2A1.2 1.2 0 0 1 2 16.6V14a2 2 0 0 0 0-3.8V7.6a1.2 1.2 0 0 1 1.2-1.2z" fill="url(#pz-boleto)"/>'
-  + '<path d="M3.4 7.1h17.2a.7.7 0 0 1 .7.7v1H2.7v-1a.7.7 0 0 1 .7-.7z" fill="#fff" fill-opacity=".3"/>'
-  + '<path d="M16.4 7.6v8.8" stroke="#fff" stroke-width=".9" stroke-dasharray="1.1 1.1" stroke-linecap="round"/>'
-  + '<path d="M9.2 9.2l.85 1.75 1.9.27-1.38 1.34.33 1.9-1.7-.9-1.7.9.33-1.9-1.38-1.34 1.9-.27z" fill="#fff" fill-opacity=".92"/></g>');
+// 🎟 boleto liso en ÁMBAR, en los dos sets; 🎫 igual, pero solo en apple. El de Apple dice «ADMIT ONE» / «LIVE CONCERT
+// TICKET» en inglés; el 🎟 de Fluent es rosa y el 🎫 de Fluent ya es amarillo sin texto (sale nativo). Antes era rojo
+// (#ff7a8a → #e0182a, casi el --rojo de la tinta): tachado con `no:` o encerrado en un círculo rojo se volvía una mancha
+// roja [r5, ref_255 usa un 🎫 amarillo]. Los detalles van en café translúcido para leerse sobre el ámbar.
+const BOLETO = OBJ('<g transform="rotate(-14 12 12)"><path d="M3.2 6.4h17.6a1.2 1.2 0 0 1 1.2 1.2v2.6a2 2 0 0 0 0 3.8v2.6a1.2 1.2 0 0 1-1.2 1.2H3.2A1.2 1.2 0 0 1 2 16.6V14a2 2 0 0 0 0-3.8V7.6a1.2 1.2 0 0 1 1.2-1.2z" fill="url(#pz-boleto)" stroke="#b07800" stroke-width=".5"/>'
+  + '<path d="M3.4 7.1h17.2a.7.7 0 0 1 .7.7v1H2.7v-1a.7.7 0 0 1 .7-.7z" fill="#fff" fill-opacity=".35"/>'
+  + '<path d="M16.4 7.6v8.8" stroke="#7a4f00" stroke-opacity=".6" stroke-width=".9" stroke-dasharray="1.1 1.1" stroke-linecap="round"/>'
+  + '<path d="M9.2 9.2l.85 1.75 1.9.27-1.38 1.34.33 1.9-1.7-.9-1.7.9.33-1.9-1.38-1.34 1.9-.27z" fill="#7a4f00" fill-opacity=".6"/></g>');
 // 📄 📃 documento, base de conocimiento: en los dos sets la hoja sale pálida (8-21% medido) y su sustituto era 📋,
 // que ya es «tarea». Hoja con degradado blanco → gris azulado y borde fino (≤ 0.7: el contorno negro de 1.2 la hacía
 // clip-art), renglones gris pizarra y la esquina doblada azul; se lee sobre blanco, tarjeta y lámina oscura.
@@ -188,15 +192,15 @@ const BURBUJA = OBJ('<path d="M8 3h8a6 6 0 0 1 6 6v1.6a6 6 0 0 1-6 6h-4.7l-4.6 4
   + [7.5, 12, 16.5].map(x => `<circle cx="${x}" cy="10" r="1.5" fill="#fff"/>`).join(''));
 // Se dibujan en los DOS sets: el nativo imprime algo, se confunde (la tableta de Fluent) o se pierde en el fondo
 const GLIFOS_SVG = {
-  '📱': CELULAR, '📲': CELULAR_ENTRA, '📄': DOCUMENTO, '📃': DOCUMENTO, '💬': BURBUJA, '🗨': BURBUJA,
+  '📱': CELULAR, '📲': CELULAR_ENTRA, '📄': DOCUMENTO, '📃': DOCUMENTO, '💬': BURBUJA, '🗨': BURBUJA, '🎟': BOLETO,
   '❌': EQUIS, '✖': EQUIS, '✅': PALOMITA, '☑': PALOMITA, '✔': PALOMITA,
   '👤': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}${SIL(0)}</svg>`,
   '👥': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}<g opacity=".75">${SIL(5.2, 0.8)}</g>${SIL(-2.4, 0.86)}</svg>`,
 };
 // Solo en apple: el nativo imprime texto (el calendario con «JUL 17», el boleto «ADMIT ONE»). En fluent el 3D nativo no
 // trae texto y se usa (si el CDN falla, cae a este SVG). En apple también se cambian DENTRO del texto (EN_TEXTO_APPLE).
-const GLIFOS_SVG_APPLE = { '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO, '🎟': BOLETO, '🎫': BOLETO };
-const EN_TEXTO_APPLE = new Set(Object.keys(GLIFOS_SVG_APPLE));
+const GLIFOS_SVG_APPLE = { '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO, '🎫': BOLETO };
+const EN_TEXTO_APPLE = new Set([...Object.keys(GLIFOS_SVG_APPLE), '🎟']);
 export const TODOS_GLIFOS_SVG = { ...GLIFOS_SVG, ...GLIFOS_SVG_APPLE };   // pruebas: geometría de cada glifo
 const sinSel = ch => String(ch || '').replace(/️/g, '');
 // El SVG que se dibuja para ese emoji en ese set ('' si sale del set)

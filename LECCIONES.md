@@ -99,3 +99,17 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Porqué**: los loops escribían «la objeción de siempre» (un consenso que nadie midió) y usaban una tasa inventada como
   «prueba lógica». La referencia respalda la oportunidad con prensa real [11:25-12:00].
 
+## 2026-09-24 · Contraste por peso, la misma imagen al volver y huecos que no se confunden (loop, ronda 5, estilo e íconos)
+- **Regla**: en Caveat (400-700) la **negrita** solo se distingue desde 400: la frase de `foco` o `cita` con `**` va a 400;
+  una cifra de una línea con `**` baja su base a 500. El mapa que vuelve con `como` reserva el alto del texto más largo del
+  grupo y la ✅ cuelga fuera del flujo: los íconos no se mueven. El dato pendiente ([PRECIO]) es un contorno punteado del
+  color de su renglón; la variable de plantilla del chat ([nombre]) es letra amarilla sin caja [c_1315]; el amarillo de
+  caja ya no existe. La firma mide ~260 px y cabe en la columna vacía de la tabla [c_0545]. Las flechas que convergen
+  llegan a UNA punta junto al texto de la pregunta, y el converger «a la Iman» es una lámina aparte con la columna
+  aislada [7:30]. El remate del stack es un título (✓ verde sin caja, 800 a ~140 px) [42:50]. La flecha recta mide
+  ~250 px con punta grande [c_1045]. Un `no:X` nunca niega un paso del mapa después de mostrarlo.
+- **Porqué**: «menos de 5» (600 → 700) se leía igual que el resto; el mapa subía 58 px al aparecer la ✅; un {g:ancla}
+  pendiente salía negro y en negrita sobre amarillo, igual que la plantilla; la firma de 342 px cruzaba la línea de la
+  tabla; tres puntas apiladas a 100 px de una pregunta de 45 px; el ábaco tachado se leía «no calcules».
+- **Cómo se detectó**: auditorías de diseño, fidelidad, íconos, mercadotecnia, técnica y usabilidad (r5) con cortes
+  contra hoja_04, hoja_07, hoja_17, c_0545, c_1045, c_1315 y 42:50; verificadas en /private/tmp/pz-loop/r6/verif.

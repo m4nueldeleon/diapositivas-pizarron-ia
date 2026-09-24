@@ -7,7 +7,7 @@
 import { plano } from './markup.mjs';
 import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
-import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo } from './emoji.mjs';
+import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedido, esGlifoDibujado } from './emoji.mjs';
 import { RELLENO, buscarMarca } from './marca.mjs';
 import { conceptoDe } from './emoji-diccionario.mjs';
 import { reglasTasa, reglasPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
@@ -645,7 +645,9 @@ export function inventarioIconos(deck) {
   const inv = {};
   deck.laminas.forEach((l, i) => emojisDeLamina(l).forEach(e => {
     const spec = `${e.prefijo ? e.prefijo + ':' : ''}${e.base}${e.insignia ? '+' + e.insignia : ''}`;
-    for (const [x, sp] of [[e.base, spec], [e.insignia, e.insignia]].filter(([x]) => x)) {
+    // la negación va en la clave: «no:🧮 (…)» junto a «🧮 (…)» deja ver que el mismo emoji se niega en otra lámina [r5]
+    const base = e.prefijo ? `${e.prefijo}:${e.base}` : e.base;
+    for (const [x, sp] of [[base, spec], [e.insignia, e.insignia]].filter(([x]) => x)) {
       const k = claveIcono(x, sp), r = `lámina ${i + 1}${e.texto ? ` · ${e.texto}` : ''}`;
       (inv[k] = inv[k] || []).includes(r) || inv[k].push(r);
     }
@@ -680,6 +682,42 @@ export function reglasIconos(deck) {
       if (es.some(e => e.base === base && e.prefijo === 'si')) avisos.push(`${nombre(deck, j)}: si:${base} contradice la ${nombre(deck, i)}, donde ${base} es la base de la rejilla (lo que NO cuenta) y ${dest} lo que sí: usa si:${dest} o cambia la base (EMOJIS.md, Eventos)`);
       if (es.some(e => e.base === dest && e.prefijo === 'no')) avisos.push(`${nombre(deck, j)}: no:${dest} contradice la ${nombre(deck, i)}, donde ${dest} es lo que cuenta en la rejilla: usa la base ${base} (EMOJIS.md)`);
     });
+  });
+  // c) un `no:X` que niega el ícono de un paso del mapa (`pasos.iconos`, también el que vuelve con `como`) o un emoji que
+  // otra lámina afirma con `si:X`: el ábaco tachado de «¿Por qué subiste?» se leía «no calcules» cinco láminas después de
+  // «Paso 1 · Calcula» [r5, precios-premium 22]. La objeción que es PREGUNTA va con 🤔 (EMOJIS.md, objeción).
+  const mapa = new Map();
+  L.forEach((l, i) => {
+    if (!l || l.tipo !== 'pasos' || !Array.isArray(l.iconos)) return;
+    l.iconos.forEach((ic, k) => {
+      const b = typeof ic === 'string' ? sinSelector(analizarCompuesto(ic).base) : '';
+      const et = Array.isArray(l.etiquetas) && typeof l.etiquetas[k] === 'string' ? plano(l.etiquetas[k]) : '';
+      if (b && !mapa.has(b)) mapa.set(b, { i, k, et });
+    });
+  });
+  const afirmados = new Map();
+  usos.forEach((es, i) => es.forEach(e => { if (e.prefijo === 'si' && !afirmados.has(e.base)) afirmados.set(e.base, i); }));
+  usos.forEach((es, j) => {
+    const vistosJ = new Set();
+    es.filter(e => e.prefijo === 'no' && !vistosJ.has(e.base)).forEach(e => {
+      vistosJ.add(e.base);
+      // Antes del mapa, el ícono negado es el dolor que ese paso resuelve («no:📅 una cita que se va» → «Paso 3 · Agenda»):
+      // vale. Después del mapa, o en una objeción, se lee como «no hagas el paso N».
+      const m = mapa.get(e.base);
+      if (m && (j > m.i || esObjecion(L[j]))) avisos.push(`${nombre(deck, j)}: no:${e.base} niega el paso ${m.k + 1}${m.et ? ` («${m.et}»)` : ''} del mapa de la ${nombre(deck, m.i)}: se lee «no hagas el paso ${m.k + 1}»; si la objeción es una pregunta usa 🤔, si es «me falta X» niega lo que falta (EMOJIS.md, objeción)`);
+      else if (afirmados.has(e.base) && afirmados.get(e.base) !== j) avisos.push(`${nombre(deck, j)}: no:${e.base} niega el mismo emoji que la ${nombre(deck, afirmados.get(e.base))} afirma con si:${e.base}: el ícono dice lo contrario en el mismo deck; cambia uno (EMOJIS.md, objeción)`);
+    });
+  });
+  // d) un emoji ROJO (🎯 ❤️ 🧰 📌) negado con `no:` o tachado en una lista: la ✕ y el tachón son rojos y se funden con él
+  // (medido: % del glifo a ΔE < 25 del rojo de la tinta, contraste-emojis.json → rojo) [r5, prueba-no]
+  const rojo = contrasteMedido().rojo || {};
+  const setsR = deck.emoji === 'apple' || deck.emoji === 'fluent' ? [deck.emoji] : ['apple', 'fluent'];
+  const pctR = b => Math.max(0, ...setsR.map(set => (esGlifoDibujado(b, set) ? (rojo.svg || {})[b] : (rojo[set] || {})[b]) ?? 0));
+  L.forEach((l, i) => {
+    const bases = new Set(usos[i].filter(e => e.prefijo === 'no').map(e => e.base));
+    if (l && l.tipo === 'lista' && Array.isArray(l.items)) l.items.forEach(it => { if (it && typeof it === 'object' && it.tachado && typeof it.emoji === 'string') bases.add(sinSelector(analizarCompuesto(it.emoji).base)); });
+    const rojos = [...bases].filter(b => b && pctR(b) >= 30);
+    if (rojos.length) avisos.push(`${nombre(deck, i)}: ${rojos.join(' ')} ${rojos.length > 1 ? 'son rojos' : 'es rojo'} y va negado o tachado: la ✕ y el tachón rojos se funden con el emoji; usa otro de EMOJIS.md para ese concepto`);
   });
   return { errores: [], avisos };
 }

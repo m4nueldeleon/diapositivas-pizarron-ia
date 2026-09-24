@@ -41,9 +41,9 @@ const F_OMISION = { W: 1920, H: 1080, mv: 100, mh: 150 };
 // En 9:16 los tamaños con nombre del emoji crecen: el lienzo mide 1920 de alto y no 1080
 const ESCALA_VERTICAL = 1.25;
 
-export function crearCtx({ em, dirDeck, dirSalida, formato, F = F_OMISION, revelarTodo = false, uid = 0 }) {
+export function crearCtx({ em, dirDeck, dirSalida, formato, F = F_OMISION, revelarTodo = false, uid = 0, firmaAncho = 0 }) {
   const ctx = {
-    em, dirDeck, dirSalida, formato, F, revelarTodo, uid,
+    em, dirDeck, dirSalida, formato, F, revelarTodo, uid, firmaAncho,
     max: 0,
     conexiones: [],
     vertical: formato === '9:16',

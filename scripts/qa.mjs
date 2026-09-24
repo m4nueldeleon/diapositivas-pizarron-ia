@@ -86,7 +86,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const opac = e => { let o = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) o *= parseFloat(getComputedStyle(a).opacity); return o; };
   const zoom = e => { let z = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) z *= parseFloat(getComputedStyle(a).zoom) || 1; return z; };
   const corto = (s, n = 30) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
-  const TEXTO = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .post p, .vivo-consigna, .vivo-items li';
+  const TEXTO = '.t, .t-remate, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .post p, .vivo-consigna, .vivo-items li, .llamada-yo, .llamada-rotulo';
   const CAJAS = TEXTO + ', .emo, img, table, .captura, .pastilla, .calendario, .rejilla, .medidor, .boton-ui';
   const PRINCIPAL = '.t, .item, .etiqueta, .burbuja, .tarjeta';
   // Texto secundario que se tiene que LEER (≥ 48 px a 1920, ≈ 9 px en un celular de 360). Los rótulos decorativos
@@ -340,16 +340,37 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
           if (dentro >= 3) E(`el gancho de la anotación «${txt}» tacha su propia nota: sepárala de su ancla`);
         }
       });
-      // Firma: contra renglones (también en tablas) y contra celdas con texto
+      // Firma: ERROR si su caja (con 4 px de margen) toca cualquier tinta de la lámina: un renglón, un emoji, un trazo de
+      // la capa a mano o una LÍNEA de la tabla (el borde de cada celda, tenga texto o no). La firma de 342 px cruzaba la
+      // línea de la columna vacía y se metía en la última fila, y QA solo la comparaba con celdas con texto [r5, r460].
       const firma = lam.querySelector(':scope > .firma');
-      if (firma) {
-        const F = caja(firma, lam);
-        const toca = lineas.find(q => cruza(F, q.b) > 4);
-        if (toca) A(`«${corto(toca.n.nodeValue, 24)}» toca la firma`);
+      if (firma && visible(firma)) {
+        const F0 = caja(firma, lam), F = { x: F0.x - 4, y: F0.y - 4, w: F0.w + 8, h: F0.h + 8 };
+        const toca = lineas.find(q => cruza(F, q.b) > 0);
+        const emo = !toca && [...lam.querySelectorAll('.emo')].find(e => visible(e) && fueraClon(e) && opac(e) > 0.3 && cruza(F, caja(e, lam)) > 0);
+        const bordes = [];
+        if (!toca && !emo) lam.querySelectorAll('.tabla td, .tabla th').forEach(c => {
+          if (!visible(c) || !fueraClon(c)) return;
+          const b = caja(c, lam), cs = getComputedStyle(c), bl = parseFloat(cs.borderLeftWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0;
+          if (bl) bordes.push({ x: b.x, y: b.y, w: bl, h: b.h });
+          if (bt) bordes.push({ x: b.x, y: b.y, w: b.w, h: bt });
+        });
+        const linea = bordes.find(b => cruza(F, b) > 0);
+        let trazoF = null;
+        if (!toca && !emo && !linea) lam.querySelectorAll(':scope > .capa-mano path').forEach(pth => {
+          if (trazoF || pth.closest('defs') || +pth.dataset.p > p || pth.classList.contains('oculto')) return;
+          const tot = pth.getTotalLength ? pth.getTotalLength() : 0;
+          for (let t = 0; t <= tot; t += 6) { const q = pth.getPointAtLength(t); if (q.x > F.x && q.x < F.x + F.w && q.y > F.y && q.y < F.y + F.h) { trazoF = pth; break; } }
+        });
+        if (toca) E(`«${corto(toca.n.nodeValue, 24)}» toca la firma`);
+        else if (emo) E('un emoji toca la firma');
+        else if (linea) E('la firma cruza una línea de la tabla: deja una columna vacía al final (vacias: 1) o usa "firma": false en esta lámina');
+        else if (trazoF) E('un trazo de la capa a mano (flecha, subrayado, círculo) pasa por la firma');
         else if (lam.dataset.tipo === 'tabla') {
-          const celda = [...lam.querySelectorAll('.tabla td, .tabla th')].find(c => c.textContent.trim() && cruza(F, caja(c, lam)) > 0.15 * F.w * F.h);
+          const celda = [...lam.querySelectorAll('.tabla td, .tabla th')].find(c => c.textContent.trim() && cruza(F0, caja(c, lam)) > 0.15 * F0.w * F0.h);
           if (celda) A(`la firma cae dentro de la celda «${corto(celda.textContent, 24)}» de la tabla: usa "firma": false en esta lámina`);
         }
+        if (F0.w > 300) A(`la firma mide ${Math.round(F0.w)} px de ancho (ideal ~260): acorta el texto de la marca`);
       }
       // Elementos vacíos
       [...lam.querySelectorAll('.burbuja, .tarjeta, .cuadro, .lista .item, .nodo .etiqueta, .opcion')]
@@ -377,10 +398,13 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     r.pendientes = [...vistos];
     // Contraste: un hallazgo por lámina con los fragmentos afectados
     const bajos = { e: new Set(), a: new Set() }; let peor = 99;
+    // la variable de plantilla amarilla de la burbuja azul es de la referencia [c_1315] (≈2:1 contra el degradado, como el
+    // blanco del mensaje): se trata como el resto de la burbuja «yo», que no se mide
     lineas.filter(q => !q.el.closest(COMPONENTE) || q.el.closest('.hueco')).forEach(q => {
       const col = colores(getComputedStyle(q.el).color)[0]; if (!col) return;
       const c = razon(lum(col), lumFondo(q.el)), t = corto(q.n.nodeValue, 24);
       // la burbuja azul «yo» es de la referencia (iMessage): ni el blanco llega a 3:1; ahí solo cuenta el error
+      // la variable de plantilla de la burbuja gris va en el blanco del mensaje: no es un texto «de color»
       const deColor = (q.el.closest('[class*="tono-"], .hueco, .roja') || lam.classList.contains('oscura')) && !q.el.closest('.msj.yo');
       if (c < 2) { bajos.e.add(t); peor = Math.min(peor, c); } else if (c < 3 && deColor) { bajos.a.add(t); peor = Math.min(peor, c); }
     });
@@ -502,6 +526,9 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     const visibles = sel => [...lam.querySelectorAll(sel)].filter(e => visible(e) && fueraClon(e) && !e.closest('.escena:not(.lamina)'));
     // Contenido recortado por su contenedor (overflow hidden): el calendario que se comía la última fila
     window.recortes(lam, CAJAS + ', .calendario .dia').forEach(q => EF(`«${q.que}» recortado ${q.px} px por .${q.por}: el contenido no cabe en su caja`));
+    // **Negrita** que no se distingue de su frase (mismo color, peso casi igual): ESTILO §2 pide contraste por peso
+    const planas = window.negritasPlanas(lam);
+    if (planas.length) AF(`la negrita ${planas.map(x => `«${x.texto}»`).join(', ')} no se distingue del resto de su frase (${planas[0].mano ? 'Caveat: 400 → 700' : 'Figtree: al menos 200 de peso'}); baja el peso de la frase o quita la negrita`);
     // Texto suelto y negritas como hijos de un flex/grid: se pierde el espacio antes de la negrita
     window.flexMezclado(lam).forEach(t => EF(`«${t}»: el texto y su negrita quedaron como columnas de un flex (se pierde el espacio): envuélvelo en un solo <span>`));
     // Etiquetas hermanas de una fila de flujo con distinto número de renglones («Le dan / la otra» entre dos de uno), o
@@ -540,6 +567,21 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       const h = ls.find(l => l.join('').replace(/[^\p{L}\p{N}]/gu, '').length <= 2);
       if (h) huerfanos.add(`${h.join(' ')}» en «${corto(e.innerText, 28)}`);
     });
+    // Tabla con flechas que convergen [7:30]: la pregunta se lee (≥ 64 px) y la tabla no se encoge; en 9:16, fuera de
+    // la franja de los botones de Reels
+    const conv = lam.querySelector('.tabla-conv');
+    if (conv && fueraClon(conv)) {
+      const tx = conv.querySelector('.conv-texto');
+      if (enc < 0.9) EF(`la tabla con flechas que convergen se redujo al ${Math.round(enc * 100)}%: pon el converger en una lámina aparte ({ "como": "<id>", "revelar": "todo", "converger": {…} }) para aislar la columna [7:30]`);
+      else if (tx && !conv.classList.contains('aislada') && parseFloat(getComputedStyle(tx).fontSize) * zoom(tx) < 64 * (W / (vertical ? 1080 : 1920))) AF(`la pregunta de las flechas que convergen queda chica: pon el converger en una lámina aparte ({ "como": "<id>", "revelar": "todo", "converger": {…} }); así se aísla la columna como en [7:30]`);
+      if (vertical && tx) { const b = caja(tx, lam); if (b.x + b.w > W - 140) EF('la pregunta de las flechas que convergen entra en la franja de los botones de Reels (140 px a la derecha)'); }
+    }
+    // El nombre del producto en la revelación: un último renglón de 1-2 palabras bajo uno de 3 o más («Diplomado en
+    // Comunidades / de Pago») es una huérfana en el momento más importante de la venta [r5]
+    visibles('.titulo-marca').forEach(e => {
+      const ls = window.lineasPalabras(e);
+      if (ls.length >= 2 && ls.at(-1).length <= 2 && ls.at(-2).length >= 3) AF(`el nombre del producto deja «${ls.at(-1).join(' ')}» solo en el último renglón: acórtalo o repártelo`);
+    });
     // Rótulo de tarjeta o de pieza del stack: dos renglones como máximo y con aire abajo (≥ 24 px del borde)
     visibles('.tarjeta .rotulo, .bento-lleno .b-texto').forEach(e => {
       const ls = window.lineasPalabras(e), caj = e.closest('.tarjeta, .bento-lleno');
@@ -557,7 +599,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       if (ls.length > 1) AF(`la ecuación «${corto(e.innerText, 36)}» se parte en ${ls.length} renglones: acórtala o ponla en dos líneas del deck (lineas: […]), cada una una cuenta completa [3:15]`);
     });
     const partidos = new Set();
-    visibles('.hueco, mark, [data-sub]').filter(e => !e.closest('.cifra')).forEach(e => {
+    visibles('.hueco, .var-plantilla, mark, [data-sub]').filter(e => !e.closest('.cifra')).forEach(e => {
       const ls = window.lineasPalabras(e);
       if (ls.length > 1 && ls.flat().length <= 3) partidos.add(ls.map(l => l.join(' ')).join(' / '));
     });
@@ -769,8 +811,15 @@ porLamina.forEach(r => { if (r.tipo === 'camara') return; sinMano = r.mano ? 0 :
 const oscuras = deck.laminas.filter(l => l.tipo === 'oscura' || l.oscura).length;
 // La referencia solo oscurece REVELACIONES de marca o producto [36:15, 37:40, 43:00]; precio, qué incluye,
 // garantía y llamado van en blanco [38:10-42:25]
+// Sí van en oscura [37:40, 39:45, 36:30-36:40]: los PILARES (una lista de 2-5 ítems con emoji, sin ✅: no es «lo que
+// incluye») y la cifra de para quién es o el ancla, justo después de otra oscura.
+const pilares = l => l.tipo === 'lista' && Array.isArray(l.items) && l.items.length >= 2 && l.items.length <= 5
+  && l.items.every(it => it && typeof it === 'object' && typeof it.emoji === 'string' && it.emoji.trim()) && !['check', 'si', '✅'].includes(l.vineta)
+  && !l.items.some(it => /✅/.test(it.emoji));
 deck.laminas.forEach((l, i) => {
   if (!l.oscura || l.tipo === 'oscura') return;
+  if (pilares(l)) return;
+  if (l.tipo === 'cifra' && i > 0 && deck.laminas[i - 1] && (deck.laminas[i - 1].tipo === 'oscura' || deck.laminas[i - 1].oscura)) return;
   if (['lista', 'cifra', 'tabla', 'tarjetas', 'stack'].includes(l.tipo) || (l.tipo === 'idea' && palabras(l.texto) > 12)) {
     avis.push(`${nombre(i)}: «oscura» en un(a) ${l.tipo}; la referencia solo oscurece la revelación de la marca o el producto (el precio y lo que incluye van en blanco)`);
   }

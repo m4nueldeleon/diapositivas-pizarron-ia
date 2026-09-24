@@ -110,10 +110,10 @@ el rodeo de usar 🏾.
 | una persona sin rol: un prospecto, un lead, alguien que asiste, un integrante o un vendedor de un equipo | 👤 | la audiencia son 👥 o una `rejilla` de 👤; «N vendedores» = una `rejilla` de 👤 (40 vendedores = `total: 40`); el cliente ya es 🧑‍💼 |
 | atraer prospectos | 🧲 | |
 | seguimiento, recordatorio | ⏰ | |
-| objeción | el emoji de lo que dice que le falta, negado: «No tengo dinero» → `no:💰` | la receta de GUION §2; 🙅‍♂️ es «sin mostrar la cara» |
+| objeción | «me falta X» («No tengo dinero», «No tengo tiempo»): el emoji de lo que falta, negado → `no:💰`. Pregunta o duda («¿Por qué subiste?», «¿Y si no funciona?»): 🤔 sin prefijo (❓ en `fluent`). «Ya lo intenté y no funcionó»: lo que intentó, negado | la receta de GUION §2. **Nunca** niegues un emoji que el deck usa en afirmativo (un ícono de `pasos`, un `si:X`): se lee «no hagas el paso N» y QA lo avisa; 🙅‍♂️ es «sin mostrar la cara» |
 | garantía | 🛡️ | con plazo y condición medible (GUION §7) |
 | testimonio | sin emoji | es una `prueba` con captura real |
-| boleto, lugar apartado, cupos | 🎟️ | en Apple se dibuja liso (el de Apple dice «ADMIT ONE»); en Fluent sale el boleto 3D nativo, sin texto. Cupos solo si son reales, con `rejilla` (GUION §7). Usa 🎟️, no 🎫 |
+| boleto, lugar apartado, cupos | 🎟️ | se dibuja como un boleto ámbar liso en los dos sets (el de Apple dice «ADMIT ONE»; el de Fluent es rosa y se funde con el tachado rojo). Cupos solo si son reales, con `rejilla` (GUION §7). Usa 🎟️, no 🎫 |
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
 | página web, en línea, en la nube | 🌐 | ☁️ es pálido en los dos sets |
 | compra en línea, carrito | 🛒 | |
@@ -234,7 +234,9 @@ La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**.
 
 **El prefijo dice lo mismo en todo el deck** [ref_628]:
 - En `cuadrantes` va con el tono: `si:` en verde («esto sí, esto basta») y `no:` en rojo («esto no lo necesitas»).
-- Suelto, en una `idea` con «Objeción #N», `no:X` es la objeción «me falta X» (la receta de Ventas, «objeción»).
+- Suelto, en una `idea` con «Objeción #N», `no:X` es la objeción «me falta X» (la receta de Ventas, «objeción»). Si
+  la objeción es una pregunta, va 🤔 sin prefijo; y nunca se niega un ícono del mapa de `pasos` ni un emoji que otra
+  lámina afirma con `si:` (QA lo avisa: «no:🧮 niega el paso 1»).
 - Un beneficio «sin X» («sin perder tiempo», «sin invertir») va con `no:X` en un cuadrante ROJO de lo que no
   necesitas, o con el emoji positivo (⚡ rápido, `si:💸` $0 de capital); nunca con `no:X` suelto, que se lee como
   la objeción.
@@ -316,7 +318,7 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 | 🤔 | pensativo | con ojos de alarma | para la pregunta retórica en modo `fluent`, ❓ |
 | 🗣️ | perfil que habla | silueta negra pesada, muy distinta al resto de la lámina | para «voz», 🎤 en los dos sets; 🗣️ solo con Apple en lámina clara y no junto a 👤 o 👥 grises |
 | 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | 3D, sin fecha, encabezado azul y distintos (liso, argollas, espiral) | en Apple se dibujan en SVG, un calendario sin fecha con volumen (también dentro del texto); en Fluent salen nativos. Usa 📅 |
-| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | en Apple se dibujan en SVG, un boleto rojo liso; en Fluent salen nativos |
+| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | 🎟️ se dibuja en SVG, un boleto ámbar liso, en los dos sets (el rosa de Fluent y el rojo de antes se fundían con el tachado y el círculo rojos [ref_255]); 🎫 igual en Apple y nativo (amarillo) en Fluent |
 | 📄 📃 | hoja pálida | hoja pálida | se dibujan en SVG, una hoja con renglones y la esquina azul, igual en los dos modos |
 | 💬 🗨️ | burbuja blanca (se pierde en la tarjeta) | burbuja lila casi blanca | se dibujan en SVG, una burbuja azul con tres puntos, igual en los dos modos |
 
@@ -329,7 +331,7 @@ Algunos emojis traen letras: a tamaño de ícono se leen, en inglés o con una f
 |---|---|---|---|
 | 📅 📆 | «JUL 17» | 3D sin fecha | en Apple se dibuja en SVG sin fecha; en Fluent, nativo |
 | 🗓️ | «JUL» | 3D sin fecha | en Apple se dibuja en SVG sin fecha; en Fluent, nativo |
-| 🎟️ | «ADMIT ONE» | liso | en Apple se dibuja en SVG liso; en Fluent, nativo |
+| 🎟️ | «ADMIT ONE» | liso, rosa | se dibuja en SVG liso y ámbar en los dos sets |
 | 🎫 | «LIVE CONCERT TICKET / ZONE A / JAN 09» | liso | en Apple se dibuja en SVG liso; en Fluent, nativo |
 | 🏪 | «24» | «24 H» | QA avisa (`TEXTO_IMPRESO`): usa 🏠 o 🏬 |
 | 🪪 | «Jo Appleseed» | tarjeta azul lisa | QA avisa en Apple: usa 👤 |

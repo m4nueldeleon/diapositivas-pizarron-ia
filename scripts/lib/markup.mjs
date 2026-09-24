@@ -9,8 +9,10 @@
 //   {v:texto}          color semántico: v verde · r rojo · n naranja · g gris · a azul · k negro · o dorado
 //                      (el dorado es para cifras sobre lámina oscura [36:40])
 //   [[nota]]           la misma frase en letra manuscrita (Caveat) dentro de la línea
-//   [PRECIO]           dato pendiente (MAYÚSCULAS entre corchetes): hueco amarillo a la vista; qa.mjs lo
-//                      cuenta como error hasta que se llene (mejor con "datos" y {{PRECIO}}: datos.mjs)
+//   [PRECIO]           dato pendiente (MAYÚSCULAS entre corchetes): contorno punteado del color de su renglón (conserva
+//                      el tono, el peso y el tamaño de la marca que lo envuelve); qa.mjs lo cuenta como error hasta
+//                      que se llene (mejor con "datos" y {{PRECIO}}: datos.mjs)
+//   {s:/año}           sufijo chico: ~55% del tamaño, en peso regular y del mismo color («$50k{s:/año}») [17:00]
 //   \n                 salto de línea forzado. Una marca puede abarcar el salto: «**mejor\nmodelo**»
 //                      sale en negrita en los dos renglones (el subrayado y el tachón se dibujan
 //                      renglón por renglón).
@@ -32,11 +34,14 @@ export function marcar(texto) {
   let h = escapar(texto);
   // Un rango de cifras no se parte en el guion: «$10k–50k» queda en un renglón (word joiner tras el guion)
   h = h.replace(/(\d[kKmM%]?)([–-])(?=\$?\d)/g, '$1$2\u2060');
+  // el sufijo va antes que el tono: «{v:$50k{s:/año}}» deja el sufijo dentro del verde
+  h = h.replace(/\{s:([^{}]+?)\}/g, '<span class="sufijo">$1</span>');
   h = h.replace(/\{([vrngako]):([^{}]+?)\}/g, (m, t, x) => (TONOS.has(t) ? `<span class="tono-${t}">${x}</span>` : m));
   // [\s\S] y no «.»: una marca puede cruzar un salto de línea real (el \n de un deck.json). El salto
   // se vuelve <br> al final, así queda DENTRO de <b>, <s> o <mark>.
   h = h.replace(/\[\[([\s\S]+?)\]\]/g, '<span class="mano">$1</span>');
-  h = h.replace(RE_HUECO, '<span class="hueco">[$1]</span>');
+  // `.hueco.pendiente`: el dato por llenar. La plantilla del chat ([nombre]) es otra cosa: `.var-plantilla` (layouts-datos)
+  h = h.replace(RE_HUECO, '<span class="hueco pendiente">[$1]</span>');
   h = h.replace(/__([\s\S]+?)__/g, '<b class="sub" data-sub>$1</b>');
   h = h.replace(/==([\s\S]+?)==/g, '<mark>$1</mark>');
   h = h.replace(/~~([\s\S]+?)~~/g, '<s class="tachon" data-tachar>$1</s>');
@@ -52,14 +57,15 @@ export function marcar(texto) {
 // word joiner (U+2060, el mismo mecanismo de los rangos de cifras) antes y después de cada guion ENTRE LETRAS, solo
 // en el texto (nunca en etiquetas ni atributos: «tono-v») y nunca dentro de un [DATO-PENDIENTE], que QA cuenta.
 export function unirGuiones(html) {
-  return String(html).split(/(<span class="hueco">[^<]*<\/span>|<[^>]+>)/).map((t, i) => (i % 2 ? t
+  return String(html).split(/(<span class="hueco[^"]*">[^<]*<\/span>|<[^>]+>)/).map((t, i) => (i % 2 ? t
     : t.replace(/(\p{L})-(?=\p{L})/gu, '$1\u2060-\u2060'))).join('');
 }
 
 // Texto plano (para contar palabras y para QA)
 export function plano(texto) {
   return String(texto ?? '')
-    .replace(/\{[vrngako]:([^{}]+?)\}/g, '$1')
+    .replace(/\{s:([^{}]+?)\}/g, '$1')   // el sufijo puede ir dentro de un tono: primero el de adentro
+    .replace(/\{[vrngakos]:([^{}]+?)\}/g, '$1')
     .replace(/\[\[|\]\]|__|==|~~|\*\*|\^\^/g, '')
     .replace(/(^|[^*\w])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![*\w])/g, '$1$2')
     .replace(/\\n|\n/g, ' ')
@@ -96,4 +102,4 @@ export function enfasis(texto) {
 
 // Marcas que quedaron sin convertir en el texto que se VE (una marca sin cerrar, o partida). La usa qa.mjs
 // dentro del navegador: por eso es una cadena de regex y no una RegExp compartida.
-export const MARCA_LITERAL = String.raw`\*\*|~~|__|\^\^|\[\[|\]\]|==\S[\s\S]*?==|\{[vrngako]:`;
+export const MARCA_LITERAL = String.raw`\*\*|~~|__|\^\^|\[\[|\]\]|==\S[\s\S]*?==|\{[vrngakos]:`;

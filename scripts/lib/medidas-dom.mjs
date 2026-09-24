@@ -58,5 +58,32 @@ export function flexMezclado(lam) {
   return out;
 }
 
-export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado];
+// **Negritas** que no se distinguen del resto de su frase: mismo color y menos de 200 de peso de diferencia en Figtree, o
+// menos de 300 en Caveat (la fuente manuscrita llega solo de 400 a 700: 600 → 700 y 500 → 700 se ven iguales; el peso
+// calculado de más de 700 se topa en 700, que es lo que se dibuja) [r5, foco «menos de 5», cifra «$30,000»]. Un color
+// distinto ya es énfasis; una frase que va TODA en negrita no tiene contra qué contrastar; el remate del stack y las
+// mayúsculas van en 800 a propósito. Devuelve [{ texto, dw, mano }].
+export function negritasPlanas(lam) {
+  const out = [];
+  const peso = e => parseFloat(getComputedStyle(e).fontWeight) || 400;
+  const visible = e => { const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && !e.closest('.oculto') && e.getClientRects().length; };
+  const limpio = t => String(t || '').replace(/\s+/g, ' ').trim();
+  const BLOQUE = '.nota, .t, .item, .cifra, .etiqueta, .tarjeta, .burbuja, .rotulo-paso, .b-texto, td, th, .titulo-marca, .opcion, .cal-texto, .cuadro, .post p, .fuente, .llamada-rotulo';
+  lam.querySelectorAll('b, strong').forEach(b => {
+    // los <b> estructurales (el nombre de la fase del calendario, el dato de la pastilla, el usuario del post) no son énfasis
+    if (b.closest('.escena.clon, svg, mark, [data-sub], .emo, .t-remate, .mayus, .hueco, .calendario, .pastilla, .post .cab') || b.matches('.sub, [data-sub]') || !visible(b)) return;
+    const padre = b.parentElement; if (!padre) return;
+    const cb = getComputedStyle(b), cp = getComputedStyle(padre);
+    if (cb.color !== cp.color) return;
+    const txt = limpio(b.textContent), bloque = b.closest(BLOQUE) || padre;
+    if (!txt || limpio(bloque.textContent) === txt) return;
+    const mano = /caveat/i.test(cb.fontFamily.split(',')[0]);
+    const tope = mano ? 700 : 900;
+    const dw = Math.min(tope, peso(b)) - Math.min(tope, peso(padre));
+    if (dw < (mano ? 300 : 200)) out.push({ texto: txt.slice(0, 30), dw, mano });
+  });
+  return out;
+}
+
+export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado, negritasPlanas];
 export const inyectable = () => FUNCIONES_DOM.map(f => `window.${f.name} = ${f.toString()};`).join('\n');

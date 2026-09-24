@@ -31,6 +31,26 @@ export function svgAutonomo(outer) {
   return s.replace(/(<svg[^>]*>)/, `$1${defs}`);
 }
 
+// % de los píxeles opacos del glifo que caen a ΔE76 < 25 del rojo de la tinta (#c8101e): un emoji rojo (🎯 ❤️ 🧰) bajo la ✕
+// de `no:` o tachado se vuelve una mancha roja [r5]. Pura: se inyecta en la página de medir-emojis.mjs.
+export function pctRojo(datos) {
+  const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const lab = (r, g, b) => {
+    const X = (0.4124 * lin(r) + 0.3576 * lin(g) + 0.1805 * lin(b)) / 0.95047, Y = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b), Z = (0.0193 * lin(r) + 0.1192 * lin(g) + 0.9505 * lin(b)) / 1.08883;
+    const f = t => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+    return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+  };
+  const R = lab(200, 16, 30);
+  let op = 0, rojo = 0;
+  for (let i = 0; i < datos.length; i += 4) {
+    if (datos[i + 3] < 128) continue;
+    op++;
+    const L = lab(datos[i], datos[i + 1], datos[i + 2]);
+    if (Math.hypot(L[0] - R[0], L[1] - R[1], L[2] - R[2]) < 25) rojo++;
+  }
+  return op ? Math.round((rojo / op) * 100) : null;
+}
+
 // Puntuación pura (se inyecta también en la página): rgba del glifo contra un fondo [r,g,b]
 export function puntuarGlifo(datos, [br, bg, bb]) {
   const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };

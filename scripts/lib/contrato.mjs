@@ -10,14 +10,14 @@ import { analizarCompuesto, esEmojiTexto, specsDeCampo, esMano } from './emoji.m
 import { palabras, plano } from './markup.mjs';
 import { validarDatos } from './datos.mjs';
 import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
-import { etiquetasBarras } from './layouts-datos.mjs';
+import { etiquetasBarras, tablaAislada } from './layouts-datos.mjs';
 
 const REQUERIDOS = {
   idea: ['texto|emoji'], lista: ['items'], flujo: ['nodos'], pasos: [], bifurcacion: ['origen', 'ramas'],
-  cifra: ['lineas|valor'], cita: ['texto'], objeto: ['imagen|emoji'], tarjetas: ['items'], oscura: ['titulo|texto|imagen|emoji'],
+  cifra: ['lineas|valor'], cita: ['texto'], objeto: ['imagen|emoji|reloj'], tarjetas: ['items'], oscura: ['titulo|texto|imagen|emoji'],
   cuadrantes: ['items'], tabla: ['columnas', 'filas'], grafica: [], 'linea-tiempo': ['marcas'], medidor: [], opciones: ['items'], rejilla: ['total'],
   prueba: ['capturas'], chat: ['mensajes'], reparto: ['total'], calendario: [], boton: ['boton'], circulos: [], camara: [], foco: ['texto|nota'],
-  stack: ['items'], calificacion: ['filas'],
+  stack: ['items'], calificacion: ['filas'], llamada: ['otros|yo'], meses: ['celdas'],
 };
 const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barras', 'marcas', 'tramos', 'partes', 'dias', 'fases',
   'anotaciones', 'capturas', 'mensajes', 'lineas', 'iconos', 'etiquetas', 'destacar', 'hechos', 'anclas', 'flechas', 'celdas', 'retornos'];
@@ -35,15 +35,17 @@ export const COMUNES = ['id', 'tipo', 'como', 'voz', 'dur', 'ancla', 'anclas', '
 export const CAMPOS = {
   idea: ['texto', 'texto_paso', 'tam_texto', 'emoji', 'emoji_tam', 'emoji_lado', 'emoji_paso', 'apagar_emoji', 'estrellas', 'encabezado', 'encabezado_pos',
     'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
-  lista: ['items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'alinear', 'encabezado', 'nota', 'nota_paso'],
+  lista: ['items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'alinear', 'encabezado', 'nota', 'nota_paso', 'activo', 'hechos'],
   flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'retornos', 'aparte', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota',
     'nota_paso', 'fuente', 'fuente_paso'],
   pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'texto', 'texto_paso',
-    'tam_texto', 'nota', 'nota_paso'],
+    'tam_texto', 'nota', 'nota_paso',
+    // internos (los pone resolverComo → marcarGrupos; empiezan con «_» y el autor no los escribe)
+    '_grupo_texto', '_grupo_nota', '_grupo_hechos'],
   bifurcacion: ['origen', 'ramas', 'llave', 'separacion', 'tam_texto', 'emoji_tam'],
   cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'fuente_paso', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
   cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
-  objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
+  objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'reloj', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'emoji_tam', 'encabezado', 'nota', 'nota_paso', 'fuente', 'fuente_paso'],
   oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cuadrantes: ['items', 'columnas'],
@@ -69,6 +71,8 @@ export const CAMPOS = {
   foco: ['texto', 'nota', 'nota_paso', 'tam', 'opacidad'],
   calificacion: ['filas', 'max', 'emoji', 'acumular', 'encabezado', 'nota', 'nota_paso'],
   stack: ['items', 'columnas', 'sangre', 'encabezado', 'remate', 'remate_paso', 'total', 'nota', 'nota_paso'],
+  llamada: ['yo', 'otros', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
+  meses: ['celdas', 'columnas', 'valores_paso'],
 };
 
 // ---------- objetos que vuelven (SKILL, regla 7): `"como": "<id>"` ----------
@@ -80,11 +84,18 @@ export const CAMPOS_OBJETO = {
   pasos: ['n', 'iconos', 'etiquetas', 'prefijo', 'sobre', 'ruta', 'separacion', 'tam_etiqueta'],
   calendario: ['titulo', 'dias', 'fases', 'n', 'columnas', 'palabra_dia', 'color', 'rango'],
   tabla: ['esquina', 'columnas', 'filas', 'ancho_etiqueta', 'vacias'],
+  // los pilares del producto que vuelven con uno activo [37:40 → 39:45]
+  lista: ['items', 'encabezado', 'tam_texto', 'separacion', 'vineta'],
+  // la rejilla de meses que cambia sus emojis por valores [16:45 → 16:50]
+  meses: ['celdas', 'columnas'],
 };
 const firmaObjeto = l => JSON.stringify((CAMPOS_OBJETO[l.tipo] || []).map(k => l[k] ?? null));
 // El «mismo objeto»: el mapa por sus etiquetas (o íconos), el calendario por sus fases y la tabla-marcador (que crece
 // columna por columna) por su esquina y las etiquetas de sus filas
+const textoItem = x => (x && typeof x === 'object' ? x.texto : x);
 const claveObjeto = l => JSON.stringify(l.tipo === 'pasos' ? l.etiquetas || l.iconos || null : l.tipo === 'calendario' ? l.fases || null
+  : l.tipo === 'lista' ? (Array.isArray(l.items) && l.items.length ? l.items.map(textoItem) : null)
+  : l.tipo === 'meses' ? (Array.isArray(l.celdas) && l.celdas.length ? l.celdas.map(c => (c && typeof c === 'object' ? c.mes : c)) : null)
   : Array.isArray(l.filas) && l.filas.length ? [l.esquina ?? '', l.filas.map(f => (f && typeof f === 'object' && !Array.isArray(f) ? f.etiqueta : Array.isArray(f) ? f[0] : f))] : null);
 export function resolverComo(deck) {
   const errores = [], avisos = [];
@@ -109,6 +120,7 @@ export function resolverComo(deck) {
     }
     resueltas.push(l);
   });
+  marcarGrupos(L, resueltas);
   // Copias a mano del mismo objeto sin `como`: se desalinean al editar
   resueltas.forEach((l, i) => {
     if (!l || !CAMPOS_OBJETO[l.tipo] || L[i].como != null) return;
@@ -118,6 +130,23 @@ export function resolverComo(deck) {
     avisos.push(`lámina ${i + 1}${l.id ? ` (${l.id})` : ''}: repite a mano el ${l.tipo} de la lámina ${j + 1}: decláralo una vez y reúsalo con "como": "${madre.id || `<pon un id a la lámina ${j + 1}>`}" (solo cambian activo, hechos, fase_activa, voz…); las copias se desalinean al editar`);
   });
   return { deck: { ...deck, laminas: resueltas }, errores, avisos };
+}
+
+// El mapa que vuelve con `como` es la MISMA imagen [ESTILO §4]: la fila de ✅ y un texto o una nota que cambian de largo
+// no pueden moverlo. Cada miembro del grupo (la madre y las que la reúsan, en cadena) lleva `_grupo_texto` y `_grupo_nota`
+// (el más largo del grupo) y `_grupo_hechos` (alguno lleva ✅): pasos() reserva ese alto en todos [r5, el mapa saltaba
+// 58 px al aparecer la ✅]. Se marca sobre las copias ya resueltas (el deck original no se toca).
+function marcarGrupos(L, resueltas) {
+  const raizDe = i => { let j = i; for (let g = 0; g < 50 && L[j] && L[j].como != null; g++) { const k = L.findIndex(x => x && x.id === L[j].como); if (k < 0 || k >= j) break; j = k; } return j; };
+  const grupos = new Map();
+  resueltas.forEach((l, i) => { if (l && l.tipo === 'pasos') { const r = raizDe(i); if (resueltas[r] && resueltas[r].tipo === 'pasos') grupos.set(r, [...(grupos.get(r) || []), i]); } });
+  const masLargo = (ms, k) => ms.map(i => resueltas[i][k]).filter(v => typeof v === 'string' && v.trim()).sort((a, b) => plano(b).length - plano(a).length)[0];
+  grupos.forEach(ms => {
+    if (ms.length < 2) return;
+    const texto = masLargo(ms, 'texto'), nota = masLargo(ms, 'nota');
+    const hechos = ms.some(i => Array.isArray(resueltas[i].hechos) && resueltas[i].hechos.length);
+    ms.forEach(i => { resueltas[i] = { ...resueltas[i], ...(texto ? { _grupo_texto: texto } : {}), ...(nota ? { _grupo_nota: nota } : {}), ...(hechos ? { _grupo_hechos: true } : {}) }; });
+  });
 }
 
 // Distancia de edición (para sugerir el campo que se quiso escribir)
@@ -136,6 +165,7 @@ const CONFUSIONES = {
   opciones: { opciones: 'items', pastillas: 'items' }, lista: { lista: 'items', elementos: 'items' }, tarjetas: { tarjetas: 'items' },
   boton: { texto_boton: 'boton', etiqueta: 'boton' }, chat: { mensaje: 'mensajes', burbujas: 'mensajes' }, flujo: { pasos: 'nodos', items: 'nodos' },
   stack: { piezas: 'items', incluye: 'items' }, cifra: { numero: 'valor', cifra: 'valor' }, 'linea-tiempo': { hitos: 'marcas' },
+  llamada: { persona: 'otros', personas: 'otros', mentor: 'otros', tu: 'yo' }, meses: { meses: 'celdas', items: 'celdas' },
 };
 // Campos del deck que ese diseño no usa: un error de dedo («sello_pso») o un campo de otro diseño.
 export function camposDesconocidos(l, i) {
@@ -155,7 +185,7 @@ const ELEMENTOS = {
   'tarjetas.items': { claves: ['texto', 'emoji'], texto: true },
   'chat.mensajes': { claves: ['texto'], texto: true },   // + hora, de, avatar
   'cuadrantes.items': { claves: ['texto', 'emoji'], texto: true },
-  'flujo.nodos': { claves: ['emoji', 'imagen', 'etiqueta', 'sub'], texto: true },
+  'flujo.nodos': { claves: ['emoji', 'imagen', 'etiqueta', 'sub'], texto: true },   // + cantidad (1-20), tarjeta, normal
   'bifurcacion.ramas': { claves: ['emoji', 'valor', 'texto'], texto: true },
   'linea-tiempo.marcas': { claves: ['texto', 'arriba', 'pos', 'tono'], texto: true },
   'tabla.filas': { claves: ['etiqueta', 'celdas'], lista: true },
@@ -163,6 +193,7 @@ const ELEMENTOS = {
   'prueba.capturas': { claves: ['src', 'post', 'hueco'] },
   'calificacion.filas': { claves: ['texto', 'emoji'], texto: true },   // + estrellas
   'stack.items': { claves: ['texto', 'emoji', 'imagen'], texto: true },   // + sub, color, tono, doble, alto
+  'meses.celdas': { claves: ['mes', 'emoji', 'valor'], texto: true },    // + n (1-3)
 };
 const vacio = v => v == null || (typeof v === 'string' && !v.trim());
 
@@ -229,6 +260,11 @@ function revisarRangos(l, n, e) {
     const N = Number(l.n) || (Array.isArray(l.iconos) ? l.iconos.length : 3);
     if (Number.isFinite(Number(l.activo)) && Number(l.activo) > N) e.push(`${n} (pasos): activo ${l.activo} y hay ${N} pasos (se cuentan desde 1)`);
     (Array.isArray(l.hechos) ? l.hechos : []).forEach(h => { if (typeof h === 'number' && (h < 1 || h > N)) e.push(`${n} (pasos): hechos incluye ${h} y hay ${N} pasos (se cuentan desde 1: 1..${N})`); });
+  }
+  if (l.tipo === 'lista' && Array.isArray(l.items)) {
+    const N = l.items.length;
+    if (Number.isFinite(Number(l.activo)) && Number(l.activo) > N) e.push(`${n} (lista): activo ${l.activo} y hay ${N} ítems (se cuentan desde 1)`);
+    (Array.isArray(l.hechos) ? l.hechos : []).forEach(h => { if (typeof h === 'number' && (h < 1 || h > N)) e.push(`${n} (lista): hechos incluye ${h} y hay ${N} ítems (se cuentan desde 1: 1..${N})`); });
   }
   if (l.tipo === 'rejilla' && Array.isArray(l.destacar)) {
     const multitud = l.multitud === true;
@@ -314,6 +350,12 @@ export function validarDeck(deck, tipos) {
     if (l.tipo === 'prueba' && Array.isArray(l.capturas)) l.capturas.forEach((c, j) => {
       if (c && typeof c === 'object' && c.plantilla != null && (c.plantilla !== true || !c.hueco)) e.push(`${n} (prueba): capturas[${j}].plantilla es true y va con «hueco» (el lugar para la captura del espectador)`);
     });
+    if (l.tipo === 'objeto' && l.reloj != null && !(typeof l.reloj === 'string' && /^\d{1,2}:\d{2}$/.test(l.reloj))) e.push(`${n} (objeto): «reloj» va como "MM:SS" o "H:MM" ("10:00", "33:00")`);
+    if (l.tipo === 'llamada' && l.otros != null) {
+      const ok = typeof l.otros === 'string' || (Array.isArray(l.otros) && l.otros.every(o => typeof o === 'string' || (o && typeof o === 'object' && !Array.isArray(o))));
+      if (!ok) e.push(`${n} (llamada): «otros» es un texto («Tu mentor») o una lista [{ "rotulo", "activo", "rotulo_pos" }]`);
+      else if (Array.isArray(l.otros) && l.otros.length > 3) e.push(`${n} (llamada): ${l.otros.length} personas en la llamada; van 3 como máximo`);
+    }
     if (l.tipo === 'flujo') revisarFlujo(l, n, e);
     if (l.tipo === 'bifurcacion' && l.origen != null && (typeof l.origen !== 'object' || Array.isArray(l.origen))) e.push(`${n}: «origen» debe ser un objeto { emoji, texto }`);
     if (l.tipo === 'calendario') revisarCalendario(l, n, e);
@@ -336,7 +378,7 @@ const ENUMS = {
   lado: ['izquierda', 'derecha', 'arriba', 'abajo'], signo: ['+', '=', '−', '×'], entra: ['izquierda', 'derecha', 'arriba', 'abajo'], grafica: ['lineas', 'barras', 'crecimiento'], de: ['yo', 'otro'],
   revelar: ['todo', 'columnas', 'celdas', 'filas', 'ramas', 'series', 'barras', 'pasos'],
   sello_pos: ['centro', 'arriba', 'abajo', 'izquierda', 'derecha', 'arriba-izquierda', 'arriba-derecha', 'abajo-izquierda', 'abajo-derecha'],
-  posicion: ['arriba', 'abajo'], alinear: ['izquierda', 'centro'], texto_pos: ['arriba', 'abajo'],
+  posicion: ['arriba', 'abajo'], alinear: ['izquierda', 'centro'], texto_pos: ['arriba', 'abajo'], rotulo_pos: ['arriba', 'abajo'],
   forma: ['recta', 'exponencial', 'curva', 'plana', 's', 'baja'],
 };
 const TAM_TEXTO = new Set(['compacto', 'chico', 'medio', 'grande', 'enorme']);
@@ -347,10 +389,10 @@ const NUMEROS = {
   opacidad: [0, 1], ancho_etiqueta: [0.05, 0.5], elegida: [0, 20, 1], activo: [0, 20, 1], clic: [0, 20, 1], n: [1, 12, 1],
   fase_activa: [0, 20, 1], desde: [0, 1e9], hasta: [0, 1e9], dia: [1, 400, 1], pos: [0, 1], emoji_tam: [16, 700],
   apagar_emoji: [0, 1, 1], peso: [300, 900, 1], paso_ref: [-1, 200, 1], max: [1, 10, 1], estrellas: [0, 10, 1],
-  avatar_tam: [80, 160, 1], ms_ref: [0, 20000, 1],
+  avatar_tam: [80, 160, 1], ms_ref: [0, 20000, 1], cantidad: [1, 20, 1],
 };
 // Rangos que dependen del diseño: `n` son pasos (≤ 12) en `pasos` y días (≤ 42, seis semanas) en `calendario`
-const NUMEROS_TIPO = { calendario: { n: [1, 42, 1] }, stack: { alto: [1, 2, 1] } };
+const NUMEROS_TIPO = { calendario: { n: [1, 42, 1] }, stack: { alto: [1, 2, 1] }, meses: { n: [1, 3, 1] } };
 const num = (v, [a, b, ent], recorte) => {
   const x = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
   if (typeof x !== 'number' || !Number.isFinite(x)) return undefined;
@@ -385,11 +427,14 @@ function sanearObjeto(o, ruta, avisos, tipo) {
     if (k === 'tam_texto') { if (TAM_TEXTO.has(v)) r[k] = v; else if (px(v)) r[k] = px(v); else aviso(); continue; }
     if (k === 'tam') { const p = px(v); if (p) r[k] = p; else aviso(); continue; }
     if (k === 'emoji_tam' && typeof v === 'string') { if (['chico', 'medio', 'grande', 'heroe'].includes(v)) r[k] = v; else aviso(); continue; }
+    // la persona que habla en una `llamada`: otros[i].activo es true o false
+    if (k === 'activo' && typeof v === 'boolean' && ruta.includes('otros')) { r[k] = v; continue; }
     const rango = (NUMEROS_TIPO[tipo] || {})[k] || NUMEROS[k];
     if (rango && !(k === 'hasta' && (v === 'fin' || v === 'aparte')) && (v === null || typeof v !== 'object')) { const x = num(v, rango, recorte(rango)); if (x === undefined) aviso(); else r[k] = x; continue; }
     if (k === 'clic_pos') { const c = Array.isArray(v) && v.length === 2 && v.every(x => Number.isFinite(Number(x))) ? v.map(x => Math.min(1, Math.max(0, Number(x)))) : null; if (c) r[k] = c; else aviso(); continue; }
     // hora de un mensaje de chat: texto corto (se escapa al pintarlo)
     if (k === 'vivo') { if (typeof v === 'boolean') r[k] = v; else aviso(); continue; }
+    if (k === 'reloj') { if (typeof v === 'string' && /^\d{1,2}:\d{2}$/.test(v)) r[k] = v; else aviso(); continue; }
     if (k === 'hora') { if (typeof v === 'string' && v.trim() && v.length <= 24) r[k] = v; else aviso(); continue; }
     // ancla de una anotación y su posición fija (px o % del lienzo): llegan a un atributo y a CSS
     if (k === 'a' && ruta.includes('anotaciones')) { if (typeof v === 'string' && /^[\p{L}\p{N}_-]{1,40}$/u.test(v)) r[k] = v; else aviso(); continue; }
@@ -418,11 +463,13 @@ const NORMALIZAR = {
   flujo: { nodos: x => ({ etiqueta: x }) }, bifurcacion: { ramas: x => ({ texto: x }) }, 'linea-tiempo': { marcas: x => ({ texto: x }) },
   opciones: { items: x => ({ texto: x }) }, stack: { items: x => ({ texto: x }) }, calificacion: { filas: x => ({ texto: x }) },
   tabla: { filas: x => (Array.isArray(x) ? { etiqueta: x[0], celdas: x.slice(1) } : x) },
+  llamada: { otros: x => ({ rotulo: x }) }, meses: { celdas: x => ({ mes: x }) },
 };
 function normalizar(l) {
   const reglas = NORMALIZAR[l && l.tipo];
   if (!reglas) return l;
   const r = { ...l };
+  if (l.tipo === 'llamada' && typeof r.otros === 'string') r.otros = [{ rotulo: r.otros }];
   for (const [k, f] of Object.entries(reglas)) if (Array.isArray(r[k])) r[k] = r[k].map(x => (typeof x === 'string' || typeof x === 'number' || (k === 'filas' && Array.isArray(x)) ? f(typeof x === 'number' ? String(x) : x) : x));
   return r;
 }
@@ -464,6 +511,12 @@ export function sugerenciasDiseno(l, i, formato = '16:9') {
     if (j > 0 && /^[=×x+−\-÷*](\s|$)/u.test(t)) out.push(`${n}: lineas[${j}] «${t.slice(0, 30)}» empieza con el operador y cuelga de la línea anterior: junta la cuenta en una línea completa («1-3 mil × $25,000 = $25-75 millones»), como la referencia [3:15]`);
   });
   if (l.tipo === 'boton' && l.cursor !== 'flecha' && esMano(l.emoji)) out.push(`${n}: el botón lleva ${l.emoji}, una mano, y el cursor ya es otra mano: usa un emoji de objeto (🤖 📝 🚀 📞) como en [23:15], o "cursor": "flecha"`);
+  if (l.tipo === 'meses' && Array.isArray(l.celdas) && l.celdas.length > 16) out.push(`${n}: ${l.celdas.length} celdas en la rejilla de meses; más de 16 ya no se leen: agrupa por trimestre o usa 12`);
+  if (l.tipo === 'tabla' && l.converger && typeof l.converger === 'object' && !l.converger.emoji && tablaAislada(l)) out.push(`${n}: el converger aislado de la referencia lleva un 🤔 sobre la pregunta [7:30]: pon "emoji": "🤔" en «converger»`);
+  if (l.tipo === 'flujo' && Array.isArray(l.nodos)) l.nodos.forEach((nd, j) => {
+    if (nd && typeof nd === 'object' && nd.cantidad != null && nd.imagen) out.push(`${n}: nodos[${j}] lleva «cantidad» e «imagen»: la cantidad repite el emoji; con imagen se ignora`);
+    if (nd && typeof nd === 'object' && nd.cantidad != null && !(Number.isInteger(nd.cantidad) && nd.cantidad >= 1 && nd.cantidad <= 20)) out.push(`${n}: nodos[${j}].cantidad es un entero de 1 a 20`);
+  });
   if (l.tipo === 'chat' && l.sello && !l.sello_sobre) out.push(`${n}: el sello del chat queda suelto; pégalo a la burbuja culpable con "sello_sobre": "m0"…"mN" (se cuentan desde 0)`);
   return out;
 }

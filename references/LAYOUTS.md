@@ -105,7 +105,8 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   { "tipo": "idea", "emoji": "no:⌨️", "encabezado": "Objeción #1", "encabezado_pos": "entre",
     "texto": "**«No sé nada de tecnología»**" }
   ```
-  El emoji es lo que dice que le falta, negado (EMOJIS.md, «Compuestos útiles»: suelto, `no:X` es la objeción).
+  El emoji es lo que dice que le falta, negado (EMOJIS.md, «Compuestos útiles»: suelto, `no:X` es la objeción). Si la
+  objeción es una pregunta («¿Por qué subiste?»), 🤔 sin prefijo; nunca niegues el ícono de un paso del mapa (QA avisa).
   La respuesta va en la lámina siguiente (`idea` con `si:…` o `lista` con `vineta: "check"`); con
   contraste, pregunta → «Sí.» → «Pero…» en láminas de una frase [34:35-34:45]. Nunca dentro del
   `encabezado` de una lista ni pegada al texto de un `boton` (QA lo avisa).
@@ -132,6 +133,10 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   ya en su lugar final). El tachón es un plumón grueso (~10 px) que arranca antes de la viñeta y sale por
   la derecha. `alinear: "centro"` lo fuerza en cualquier lista; `alinear: "izquierda"` lo quita. Las listas
   con encabezado («Sin:», razones) siguen a la izquierda y arriba [1:35, 3:30].
+- **Pilares que vuelven** [37:40 → 39:45]: `activo` (desde 1) muestra la lista entera y apaga los demás ítems al 25%;
+  `hechos: [1, 2]` los deja encendidos con su ✅ al final. La lista se declara una vez y vuelve con
+  `"como": "<id>"` (hereda `items`, `encabezado`, `tam_texto`, `separacion` y `vineta`). Una lista con `activo`,
+  `hechos`, `como` u `oscura` va centrada. Ejemplo en `oscura`.
 
 ### Fuente de un dato o un estudio (`idea`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
 `"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
@@ -221,15 +226,36 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
 { "tipo": "objeto", "imagen": "assets/alcancia.png", "alto": 520, "texto": "Tus ahorros" }
 ```
 Para recortar el fondo de una foto se usa rembg (ver PROTOCOLO.md).
+- `reloj: "33:00"` (MM:SS o H:MM) dibuja en lugar de la foto un reloj digital de 7 segmentos (cuerpo negro, dígitos
+  verdes con brillo, los apagados al 8%; ~600 px de ancho, 460 en 9:16) para el **contrato de tiempo** [2:00]:
+  ```json
+  { "tipo": "objeto", "reloj": "10:00", "texto": "Te pido solo los **próximos 10 minutos.**" }
+  ```
+  `cifra` sigue siendo para cuentas y precios, no para el contrato de tiempo.
 
-### `oscura` — revelación de la marca o el producto  ·  [36:15, 36:20, 37:40, 43:00]
+### `oscura` — revelación de la marca o el producto  ·  [36:15, 36:20, 37:40, 39:45, 43:00]
 Fondo negro con brillo violeta (`fondo`: `azul` o `negro` para las otras dos variantes). Solo para
-el momento «esto es lo que vendo»: nombre, logo y una frase. El precio, lo que incluye y el llamado
-van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachón en rojo claro y
-`{o:…}` pinta una cifra en dorado [36:40]. `emoji_tam` cambia el tamaño del emoji (150).
+el momento «esto es lo que vendo»: nombre, logo y una frase. Sobre negro el subrayado y las flechas salen en
+blanco, el tachón en rojo claro y `{o:…}` pinta una cifra en dorado [36:40]. `emoji_tam` cambia el tamaño del
+emoji (150). El nombre va balanceado (15 em como máximo): QA avisa si deja 1-2 palabras solas en el último renglón.
 ```json
 { "tipo": "oscura", "imagen": "assets/logo.png", "titulo": "Tu Programa", "texto": "Lo que hay dentro" }
 ```
+La revelación sigue en oscura con los diseños de siempre y `oscura: true` (no hay otra lista ni otra cifra):
+```json
+{ "tipo": "lista", "id": "pilares", "oscura": true, "fondo": "azul", "encabezado": "Tu Programa",
+  "items": [{ "emoji": "⚙️", "texto": "El sistema" }, { "emoji": "🤝", "texto": "El acompañamiento" }, { "emoji": "🧭", "texto": "La estrategia" }] }
+```
+<!-- fragmento: vuelve con como -->
+```json
+{ "tipo": "lista", "como": "pilares", "oscura": true, "fondo": "azul", "activo": 2 }
+```
+```json
+{ "tipo": "cifra", "oscura": true, "fondo": "negro", "lineas": ["Para quien factura **$50k al mes**", "El paquete base empieza en {o:$25,000}"] }
+```
+Los pilares [37:40] vuelven con uno encendido al abrir cada sección [39:45]; para quién es y el ancla, justo después
+de la revelación [36:30-36:40]. El precio final, lo que incluye en detalle, la garantía y el llamado van en blanco
+[38:10-42:25]: QA avisa una lista con ✅, una tabla, tarjetas o un stack en oscura.
 
 ## Procesos y relaciones
 
@@ -242,6 +268,17 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   en su paso [19:10-19:15]. El número va en la etiqueta: `"1. Qué producto"`.
 - `flechas: [{ "tachada": true, "etiqueta": "no" }]` va por flecha: el arco tachado se lee
   «esto NO lleva a aquello» [1:45].
+- La flecha **recta** [c_1045, 12:35, 13:20] mide ~250 px (el 55% del hueco entre los emojis, de 140 a 260 px) y va
+  centrada en el hueco; asta de ~9 px con textura de plumón y punta en V con brazos de ~60 px, abierta ~33°, de alto
+  ≈ 25-30% del largo. De borde a borde, con punta de 30 px, se leía como un palito.
+- **Cantidad que crece** [15:15, 17:00, 17:05]: `nodos[i].cantidad` (1-20) repite el emoji en una pila de filas
+  equilibradas (5 → 3+2, 6 → 3+3, 10 → 5+5, 20 → 5×4) que no pasa de 1.6× el emoji; la flecha sale del borde de la
+  pila. Con `{s:…}` el sufijo va chico y regular:
+  ```json
+  { "tipo": "flujo", "nodos": [{ "emoji": "💰", "cantidad": 5, "etiqueta": "**$50k**{s:/año}" },
+    { "emoji": "💰", "cantidad": 10, "etiqueta": "**$100k**{s:/año}" }] }
+  ```
+  Con `imagen` la cantidad se ignora (QA avisa).
 - Un nodo acepta `imagen` (foto recortada), `sub` (texto gris) y `normal: true`, que quita la
   negrita de la etiqueta.
 - Cada nodo aparece en su propio paso junto con la flecha que llega a él. El `texto` del flujo entra en el ÚLTIMO
@@ -283,7 +320,12 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   ```
 - `activo`: número del paso encendido; los demás quedan al 20% [ref_1040].
 - `hechos`: lista de pasos con ✅, por ejemplo `[1, 2]`. La ✅ va siempre a todo color, aunque su
-  columna esté atenuada por `activo`: es la señal de avance [28:00-28:05].
+  columna esté atenuada por `activo`: es la señal de avance [28:00-28:05]. La ✅ CUELGA bajo la etiqueta sin alargar
+  el mapa: los íconos no se mueven cuando aparece [28:00].
+- **El mapa que vuelve es la misma imagen** [ESTILO §4]: en un grupo de `como` (la madre y las que la reúsan), el
+  motor marca cada lámina con `_grupo_texto` y `_grupo_nota` (el texto y la nota más largos del grupo) y
+  `_grupo_hechos` (alguna lleva ✅). Así todas reservan el mismo alto y los íconos quedan a la misma altura en cada
+  regreso, aunque cambien el texto, la nota o los ✅. Son campos internos: no se escriben en el deck.
 - Con `iconos`, «Paso N» va gris a 62 px y la etiqueta a 86 px en negrita, y NO hay ruta punteada
   (la referencia no la dibuja en el mapa); `ruta: true` la fuerza.
 - **Columnas iguales** [ref_1040]: en 16:9 cada paso ocupa una columna del mismo ancho, así los centros
@@ -363,12 +405,27 @@ láminas siguientes los reusan con `"como": "<id>"`: heredan solo los campos del
 
 ### `tabla` — la tabla-marcador escrita a mano  ·  [5:25 → 10:05]
 El recurso estrella: se llena columna por columna a lo largo de varias láminas. `converger: { "columna", "texto",
-"emoji", "paso" }` [7:30]: la pregunta manuscrita va a la derecha de la tabla (que se angosta) y una flecha roja fina
-sale de cada celda de esa columna y converge en ella, todas en el mismo paso. Usa la última columna con datos (la que
-queda junto a la pregunta): desde otra, las flechas cruzan las celdas y QA lo marca. En 9:16 las columnas vacías quedan
-angostas (80 px), el ancho se reparte según la palabra más larga de cada columna y la letra baja por tabla hasta 34 px
-(td) / 38 (th); si una tabla de más de 3 columnas de datos ni así cabe, avisa: pártela con `fijas`. QA da error si el
-texto de una celda sale de su caja (se monta en la vecina).
+"emoji", "paso", "aislar" }` [7:30]: una flecha roja fina sale de cada celda de esa columna y todas se juntan en UNA
+punta a ~20 px del primer renglón de la pregunta (Caveat 700), en el mismo paso.
+- **A la Iman, en una lámina aparte** tras la tabla completa [7:30, f_flechas 7:30.1]: quedan solo la columna de
+  etiquetas y la columna juzgada (~700 px) y la pregunta ocupa el resto, a 76 px, con su emoji de 130 encima (la
+  referencia lleva 🤔; QA lo sugiere). Es lo que pasa por omisión cuando la lámina ya no revela columnas:
+  <!-- fragmento: vuelve con como -->
+  ```json
+  { "tipo": "tabla", "como": "comparar", "revelar": "todo", "converger": { "columna": 1, "texto": "¿Por qué se quedan?", "emoji": "🤔" } }
+  ```
+- En la misma lámina que se revela (`revelar: "celdas"`), la tabla se angosta 620 px y la pregunta va a la derecha a
+  max(68, letra de celda + 8) px. Usa la última columna con datos (la que queda junto a la pregunta): desde otra, las
+  flechas cruzan las celdas y QA lo marca. Si la pregunta queda bajo 64 px, QA pide la lámina aparte; si la tabla se
+  encoge bajo 90%, es error. `aislar: true | false` fuerza cualquiera de los dos.
+- **9:16**: filas de 220 px como máximo, letra hasta 56 px (th hasta 62) según el ancho de su columna y el alto de la
+  fila (0.3 ×), con piso de 34 / 38. Con `converger`, la pregunta va DEBAJO de la tabla, centrada y a ≥ 80 px, y las
+  flechas bajan por el borde de la columna hasta la punta junto a la pregunta (la franja derecha es de los botones de
+  Reels: QA da error si la pregunta entra ahí). Las columnas vacías quedan angostas (80 px) y el ancho se reparte según
+  la palabra más larga de cada columna; si una tabla de más de 3 columnas de datos no cabe, avisa: pártela con `fijas`.
+- Con firma abajo (16:9), la última columna vacía mide al menos la firma + 80 px; sin columna vacía, la tabla deja 70 px
+  libres abajo. QA da ERROR si la firma toca una línea de la tabla, un texto, un emoji o un trazo [c_0545].
+QA da error si el texto de una celda sale de su caja (se monta en la vecina).
 La letra es plumón grueso (Caveat 700) [c_0545]. Con 3 filas o menos la fila se topa en 190 px y la letra crece con
 ella (0.34 × el alto de la fila, de 44 a 64 px): una tabla corta ya no flota en celdas vacías. Si la tabla no cabe o
 una celda llega a 3 renglones, el motor baja la letra de 4 en 4 hasta 40 (primero la columna de etiquetas).
@@ -579,9 +636,11 @@ fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las es
 { "tipo": "chat", "mensajes": [{ "de": "yo", "texto": "¿Quieres trabajar conmigo?" }, { "de": "otro", "texto": "¡Sí, me interesa!" }] }
 ```
 La burbuja de «otro» es gris medio con letra blanca y las dos son pastillas redondas [19:00, 22:00].
-Un texto entre corchetes dentro de una burbuja sale con resaltador amarillo, como `[nombre]`, legible
-en la azul y en la gris: sirve para plantillas de mensaje (escríbelos sobre todo en los mensajes «yo»). En minúsculas es plantilla; en MAYÚSCULAS (`[PRECIO]`) es un dato pendiente y QA lo
-marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{ "texto": … }`.
+Un texto en minúsculas entre corchetes dentro de una burbuja (`[nombre]`, `[1 de marzo]`) es una **variable de
+plantilla**: en la burbuja azul sale en letra amarilla sin caja y con el peso del mensaje, como «[Name]» y «[topic]»
+[21:55, c_1315]; en la gris, blanca con subrayado punteado amarillo. Sirve para plantillas de mensaje (escríbelas sobre
+todo en los mensajes «yo»). En MAYÚSCULAS (`[PRECIO]`) es un dato pendiente: contorno punteado, y QA lo marca como error
+hasta que lo llenes; así una variable de la lección nunca se confunde con un dato por llenar. Un texto suelto en `mensajes` vale como `{ "texto": … }`.
 - Avatar: silueta por omisión. `avatar_yo` / `avatar_otro` (o `avatar` en un mensaje) con un emoji la
   cambian, por ejemplo `"avatar_otro": "🤖"` para la IA; `false` la quita. El emoji llena ~85% de su círculo
   gris, como la silueta del original [17:45, 19:00].
@@ -646,15 +705,17 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 ### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:50]
 En 16:9 va **a sangre**: el bento llena la lámina de borde a borde (18 px de margen), las casillas vacías
 se ven en gris al cortar y cada pieza se llena en su paso como una **tarjeta de producto a color** con la
-letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como una lista. El `remate`
-(con ✅) es una lámina aparte en la referencia [42:50]: entra en su paso sobre un lienzo limpio, con
-`total` y `nota` debajo. Va en blanco, no en lámina oscura.
+letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como una lista. El `remate` es una
+lámina aparte en la referencia [42:50]: entra en su paso sobre un lienzo limpio como un **título**: palomita verde
+sin caja + la frase entera en 800 a ~140 px (baja sola, hasta 110, si pasa de ~18 letras), centrada a media altura;
+`total` (64 px) y `nota` (54 px) debajo. En la pila (9:16 con `sangre: false`, 1:1, 4:5) sigue chico bajo las piezas.
+Va en blanco, no en lámina oscura.
 ```json
 { "tipo": "stack",
   "items": [{ "emoji": "🤖", "texto": "Tu agente de ventas", "doble": true }, { "emoji": "📚", "texto": "Las 12 clases" },
             { "emoji": "🧑‍🏫", "texto": "Un mentor", "alto": 2, "sub": "Por 6 meses" },
             { "emoji": "📞", "texto": "4 llamadas en vivo" }, { "imagen": "assets/logo.png", "texto": "Grupo privado" }],
-  "remate": "Hecho **contigo**" }
+  "remate": "Hecho contigo" }
 ```
 - Cada pieza se nombra como producto: un sustantivo corto, **2 a 4 palabras** (QA avisa desde 6). Más de
   8 piezas ya no se leen: agrupa.
@@ -679,6 +740,37 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 - Como el remate tapa las piezas, la hoja y `--finales` sacan DOS cuadros de esta lámina: el stack
   lleno («N · id · paso K») y el remate («N · id»). Revisa los dos. El PDF (`--pdf`) da UNA página: el stack lleno
   y el remate en una banda debajo.
+
+### `llamada` — la videollamada del componente humano  ·  [36:45, 40:10, 41:15]
+Tarjetas grises 16:10 (radio 14, sombra suave): una con «TÚ» en blanco 800 y las demás con el busto blanco de la persona
+pegado abajo; la que habla lleva borde azul claro. Así presenta el video al mentor, al consultor o las llamadas en vivo
+de la oferta, ANTES de su `lista` o de su pieza en el `stack` (que no reemplaza: el `stack` [42:30] sigue igual).
+```json
+{ "tipo": "llamada", "yo": "Tú", "otros": [{ "rotulo": "Tu mentor" }], "nota": "1 a 1", "texto": "Programa **hecho contigo**" }
+```
+```json
+{ "tipo": "llamada", "otros": [{ "rotulo": "Experto", "rotulo_pos": "arriba" }], "texto": "**4 llamadas en vivo** por 6 meses" }
+```
+- `yo` (opcional): el texto de tu tarjeta («TÚ», en mayúsculas). `otros`: hasta 3 personas `{ rotulo, activo,
+  rotulo_pos }` (un texto suelto vale como `{ "rotulo": … }`); la activa (borde azul) es la de la derecha si ninguna
+  trae `"activo": true`. El rótulo va en Caveat abajo [40:10] o arriba (`rotulo_pos: "arriba"`) [41:15].
+- Medidas: dos tarjetas de ~620×380 con 40 px entre ellas; una sola, ~780×480; en 9:16 van una sobre otra (~760 de ancho).
+- `nota` va arriba con una flecha roja a la tarjeta activa (el «1-on-1» de 36:45); `texto` debajo, en la letra de
+  siempre con `marcar()`.
+- Pasos: tarjetas → rótulos → texto → nota (`texto_paso`, `nota_paso`). Anclas: `t0`, `t1`… (TÚ primero) y `texto`.
+
+### `meses` — rejilla a sangre de meses, con emojis que pasan a valores  ·  [16:45 → 16:50]
+La cantidad que se acumula mes a mes: 4 columnas × 3 filas a sangre (3 × 4 en 9:16, entre la firma y la zona de
+Reels), líneas grises finas, el mes en mayúsculas grises arriba a la izquierda y, al centro, 1-3 emojis
+(`{ "mes", "emoji", "n" }`) o un valor verde en 800 (`{ "mes", "valor" }`).
+```json
+{ "tipo": "meses", "valores_paso": 1,
+  "celdas": [{ "mes": "Marzo", "emoji": "🤝", "n": 1, "valor": "$5,000" }, { "mes": "Abril", "emoji": "🤝", "n": 2, "valor": "$15,000" }] }
+```
+- `valores_paso: N`: en el paso N cada celda cambia sus emojis por su valor, sin mover la rejilla (16:45 → 16:50).
+  Con `valores_paso: 0` se ven los valores desde el corte (útil en una lámina que vuelve con `"como"`).
+- `revelar: "celdas"` las revela de una en una; por omisión entran todas. `columnas` cambia el ancho de la rejilla.
+- Más de 16 celdas ya no se leen (QA avisa). Anclas: `m0`, `m1`…
 
 ## Especiales
 
@@ -874,7 +966,9 @@ texto y se llena UNA vez en `datos`, arriba del deck:
 | `^^frase^^` | remate en su propio renglón, en negrita y ~1.5× [18:30]; puede llevar `__` o `==` dentro |
 | `{v:texto}` `{r:}` `{n:}` `{g:}` `{a:}` `{o:}` | color semántico: verde, rojo, naranja, gris, azul o dorado (cifra sobre lámina oscura) |
 | `[[texto]]` | letra manuscrita dentro de la línea |
-| `[PRECIO]` | dato pendiente (MAYÚSCULAS): hueco amarillo; mejor `{{PRECIO}}` con `datos` |
+| `[PRECIO]` | dato pendiente (MAYÚSCULAS): contorno punteado del color del renglón, sin amarillo; conserva el tono, el peso y el tamaño de la marca que lo envuelve (`{g:{{PRECIO_ANCLA}}}` sigue gris). QA lo cuenta como error hasta llenarlo; mejor `{{PRECIO}}` con `datos` |
+| `[texto en minúsculas]` (en `chat`) | variable de plantilla para el espectador («Hola [nombre]»): letra amarilla sin caja en la burbuja azul [21:55, c_1315]; en la gris, blanca con subrayado punteado amarillo |
+| `{s:/año}` | sufijo chico: ~55% del tamaño, en regular y del mismo color («**$50k**{s:/año}») [17:00] |
 | `\n` | salto de línea. Una marca puede abarcar el salto: `**mejor\nmodelo**` va en negrita en los dos renglones, y el subrayado o el tachón se dibujan renglón por renglón |
 
 ## Emoji compuesto

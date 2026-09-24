@@ -46,7 +46,9 @@ test('emoji: en apple 📅 📆 🗓️ son un calendario SVG sin fecha y 🎟�
   assert.match(fl.glifo('📅'), /^<img[^>]*src="emoji\/1f4c5\.webp"/);
   assert.match(fl.glifo('📆'), /1f4c6\.webp/);
   assert.match(fl.glifo('🗓️'), /1f5d3/);
-  assert.match(fl.glifo('🎟️'), /^<img[^>]*1f39f/);
+  // r5: el 🎟 de Fluent es rosa (se funde con el tachado rojo): se dibuja el boleto ámbar en los dos sets; el 🎫 de
+  // Fluent ya es amarillo y sale nativo
+  assert.ok(fl.glifo('🎟️').includes('url(#pz-boleto)'));
   assert.match(fl.glifo('🎫'), /^<img/);
   for (const modo of ['apple', 'fluent']) {
     const e = new Emojis({ modo, dirSalida: tmp() });

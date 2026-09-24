@@ -32,8 +32,8 @@ test('datos: claves en MAYÚSCULAS y valores de texto o número', () => {
   assert.ok(validarDeck({ datos: { precio: 1 }, laminas: [{ tipo: 'idea', texto: 'x' }] }, Object.keys(LAYOUTS)).some(e => /MAYÚSCULAS/.test(e)));
 });
 
-test('marcar: un [DATO] en MAYÚSCULAS sale como hueco amarillo; [[mano]] y [nombre] no', () => {
-  assert.equal(marcar('Hoy: [PRECIO]'), 'Hoy: <span class="hueco">[PRECIO]</span>');
+test('marcar: un [DATO] en MAYÚSCULAS sale como hueco pendiente; [[mano]] y [nombre] no', () => {
+  assert.equal(marcar('Hoy: [PRECIO]'), 'Hoy: <span class="hueco pendiente">[PRECIO]</span>');
   assert.ok(marcar('[[a mano]]').includes('class="mano"'));
   assert.ok(!marcar('Hola [nombre]').includes('hueco'));
 });

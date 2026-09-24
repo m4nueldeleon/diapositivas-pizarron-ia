@@ -18,7 +18,7 @@ medidos del video y la razón de que funcione.
 | Tiempo en pantalla | 75% lámina blanca, 12% cámara, 13% pantalla o foto | La lámina es la protagonista y la cámara aparece de visita. |
 | Cambio visual | uno cada **2.5 s**; mediana 2.9 s; la mitad central entre 1.8 y 4.1 s | Nunca da tiempo a desconectarse. |
 | Ocupación | el contenido rara vez pasa del 40% del área | Mucho aire. Un solo punto focal. |
-| Firma | marca de la empresa abajo a la derecha, ~260 px de ancho en 1920 | Ancla constante: siempre sabes de quién es el video. |
+| Firma | marca de la empresa abajo a la derecha, ~260 px de ancho en 1920 (Figtree 600; el «.com» o el sufijo a .55 em): el motor saca la letra del largo del texto y la topa en 280 px | Ancla constante: siempre sabes de quién es el video. En la tabla-marcador cabe en la columna vacía sin tocar una línea [c_0545]. |
 
 **Por qué funciona:** el fondo blanco más un solo elemento es el equivalente visual de
 «mírame a mí». El principio de coherencia de Mayer dice que se aprende más cuando se quita
@@ -164,10 +164,17 @@ Reglas:
 4. **Fotos o video de ambiente** solo para emoción: un laberinto para «perdido» o un escenario
    para «comunidad». Pocas.
 5. **Láminas oscuras**: fondo negro con brillo violeta (o azul arriba, o negro plano: `fondo`).
-   Son **solo para REVELAR la marca o el producto**: el nombre y el logo, una frase [36:15,
-   37:40, 37:50, 43:00]. El precio, lo que incluye, los entregables, la garantía y el llamado van
-   en blanco con el estilo normal (✅, cifras, barras) [38:10-42:25]. El cambio de fondo le avisa
-   al ojo que eso es otra cosa; si se usa para todo, deja de avisar.
+   Son **solo para REVELAR la marca o el producto** [36:15, 37:40, 37:50, 43:00]:
+   - el nombre y el logo, y una frase;
+   - sus **pilares** como lista blanca con emoji (2 a 5) [37:40 «⚙️ Software / 🤝 Service»], que
+     VUELVE con uno encendido y los demás al 25% al abrir cada sección [39:45]: `lista` con
+     `oscura: true` y, al volver, `"como": "<id>"` + `activo`;
+   - para quién es y el ancla de precio en dorado (`{o:…}`), una línea por paso, justo después de
+     la revelación [36:30-36:40]: `cifra` con `oscura: true`.
+   Lo que incluye en detalle, la garantía, el precio final del stack y el llamado van en blanco con
+   el estilo normal (✅, cifras, barras) [38:10-42:25]. El cambio de fondo le avisa al ojo que eso
+   es otra cosa; si se usa para todo, deja de avisar (QA avisa una lista con ✅, una tabla, un stack
+   o tarjetas en oscura).
 
 ## 7. Movimiento: casi nada, y siempre con propósito
 
@@ -222,7 +229,7 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 | rótulo gris | 56 px | 60 px |
 | margen de arriba y de abajo | 100 px | 320 px |
 | firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara |
-| tabla-marcador | columnas iguales, 50 / 44 px | vacías de 80 px, columnas según su palabra más larga, letra hasta 38 / 34 px |
+| tabla-marcador | columnas iguales, 50 / 44 px; con `converger`, las flechas terminan en UNA punta a ~20 px del primer renglón de la pregunta (≥ 68 px) [7:30] | filas de 220 px como máximo, vacías de 80 px, columnas según su palabra más larga, letra hasta 62 / 56 px según ancho y alto (piso 38 / 34); con `converger`, la pregunta va DEBAJO de la tabla (≥ 80 px) y las flechas bajan a una sola punta |
 | gráfica | 1500×660 con etiqueta lateral | 940×1000, la banda arriba y dentro |
 | línea de tiempo | letra 56 / 84 px | ×1.35 de letra y alturas |
 | botón y opciones | tamaño base | ×1.6 y ×1.45 |

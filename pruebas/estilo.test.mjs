@@ -126,7 +126,7 @@ test('render: cita con gancho corto al primer renglón, rango sin partir; oscura
         trazos, par: L[2].querySelectorAll('.emo').length, parTxt: L[2].innerHTML.includes(',si:'),
         flechas: L[3].querySelectorAll('path[data-clase="flecha"]').length,
         arriba: L[4].querySelector(':scope > .lienzo').classList.contains('arriba'), itemY: rel(L[4].querySelector('.item'), L[4]).y,
-        hueco: getComputedStyle(L[5].querySelector('.hueco')).backgroundColor, av: L[5].querySelectorAll('.av-emo .emo').length,
+        hueco: getComputedStyle(L[5].querySelector('.var-plantilla')).backgroundColor, av: L[5].querySelectorAll('.av-emo .emo').length,
         emo: rel(L[6].querySelector('.boton-ui .emo'), L[6]), onda: parseFloat(L[6].querySelector('.onda').style.left),
       };
     });
@@ -138,7 +138,7 @@ test('render: cita con gancho corto al primer renglón, rango sin partir; oscura
     assert.equal(r.par, 2); assert.equal(r.parTxt, false);
     assert.equal(r.flechas, 0);
     assert.ok(r.arriba && r.itemY < 400, `la lista no arranca arriba (y=${r.itemY})`);
-    assert.equal(r.hueco, 'rgb(249, 217, 50)');
+    assert.equal(r.hueco, 'rgba(0, 0, 0, 0)', 'la variable de plantilla del chat va sin caja [c_1315]');
     assert.equal(r.av, 1);
     assert.ok(r.onda >= r.emo.x + r.emo.w, 'el dedo cae sobre el emoji del botón');
   });

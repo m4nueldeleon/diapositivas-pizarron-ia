@@ -60,17 +60,21 @@ SKILL.md.
   ronda (`comp_N.jpg` con métrica y el sha256 del deck + `comparar.json` con `deck_sha`); un deck.json junto a los cuadros
   se ignora con aviso. Con un solo argumento (la carpeta de cuadros) compara `pruebas/replica`.
 - `scripts/lib/medidas-dom.mjs`: medidas que QA hace dentro de Chromium (palabras por renglón, recortes, flex
-  con texto y negrita). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
+  con texto y negrita, negritas que no se distinguen de su frase: `negritasPlanas`, 200 de peso en Figtree, 300 en Caveat). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
 - `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
-  sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md. Sobre un fondo de COLOR (pieza del stack, cuadro,
+  sets, tres fondos) y `rojo` (% del glifo en el rojo de la tinta, también para los SVG de la skill: QA avisa un emoji
+  rojo negado con `no:` o tachado). Córrelo al agregar emojis a EMOJIS.md. Sobre un fondo de COLOR (pieza del stack, cuadro,
   botón) QA rasteriza el glifo en cada corrida contra el color real (`scripts/lib/contraste-color.mjs`).
 - `scripts/medir-tonos-fluent.mjs` → `scripts/lib/tonos-fluent.json`: Fluent 1.1.0 trae 🏼/🏽 cruzados en casi todas las
   personas y manos; `emoji.mjs → corregirTono` pide el archivo que de verdad tiene el tono (una secuencia sin medir se
   intercambia). Vuelve a correrlo si cambia la versión del CDN.
 - `scripts/lib/emoji-diccionario.mjs` lee EMOJIS.md y da el concepto de cada emoji (`conceptoDe`): qa.json → iconos
   sale como «💬 (comentar una palabra)».
-- `contrato.mjs → resolverComo`: `"como": "<id>"` (pasos, calendario, tabla) hereda los campos del objeto que vuelve
-  antes de validar; construir.mjs lo corre primero y pipeline.mjs entrega el `crudo` ya resuelto.
+- `contrato.mjs → resolverComo`: `"como": "<id>"` (pasos, calendario, tabla, lista, meses) hereda los campos del objeto
+  que vuelve antes de validar; construir.mjs lo corre primero y pipeline.mjs entrega el `crudo` ya resuelto. En un
+  grupo de `pasos`, `marcarGrupos` pone `_grupo_texto`/`_grupo_nota`/`_grupo_hechos` para que el mapa no salte.
+- La firma de texto sale a ~260 px (`construir.mjs → medidaFirma`, runtime `ajustarFirma` la topa en 280); su ancho
+  llega a los diseños como `ctx.firmaAncho` (la tabla-marcador le deja sitio en su última columna vacía).
 - `references/EMOJIS.md` es la única fuente de verdad de los emojis. `pruebas/emojis-coherencia.test.mjs` falla
   si un emoji queda en dos filas de concepto, si otro documento cita un emoji que no está en el diccionario o
   si un sustituto de `BAJO_CONTRASTE` cambia de concepto. Los grupos de `PARECIDOS` (emoji.mjs) van en su tabla.

@@ -511,6 +511,89 @@
    ]
   },
   {
+   "id": "alianzas",
+   "tipo": "meses",
+   "celdas": [
+    {
+     "mes": "Marzo",
+     "emoji": "🤝",
+     "n": 1,
+     "valor": "$2,000"
+    },
+    {
+     "mes": "Abril",
+     "emoji": "🤝",
+     "n": 2,
+     "valor": "$6,000"
+    },
+    {
+     "mes": "Mayo",
+     "emoji": "🤝",
+     "n": 1,
+     "valor": "$8,000"
+    },
+    {
+     "mes": "Junio",
+     "emoji": "🤝",
+     "n": 2,
+     "valor": "$12,000"
+    },
+    {
+     "mes": "Julio",
+     "emoji": "🤝",
+     "n": 1,
+     "valor": "$14,000"
+    },
+    {
+     "mes": "Agosto",
+     "emoji": "🤝",
+     "n": 2,
+     "valor": "$18,000"
+    },
+    {
+     "mes": "Septiembre",
+     "emoji": "🤝",
+     "n": 1,
+     "valor": "$20,000"
+    },
+    {
+     "mes": "Octubre",
+     "emoji": "🤝",
+     "n": 2,
+     "valor": "$24,000"
+    },
+    {
+     "mes": "Noviembre",
+     "emoji": "🤝",
+     "n": 1,
+     "valor": "$26,000"
+    },
+    {
+     "mes": "Diciembre",
+     "emoji": "🤝",
+     "n": 2,
+     "valor": "$30,000"
+    },
+    {
+     "mes": "Enero",
+     "emoji": "🤝",
+     "n": 1,
+     "valor": "$32,000"
+    },
+    {
+     "mes": "Febrero",
+     "emoji": "🤝",
+     "n": 2,
+     "valor": "$36,000"
+    }
+   ],
+   "valores_paso": 1,
+   "voz": [
+    "Una o dos alianzas nuevas al mes, nada más.",
+    "Y en un año eso ya suma treinta y seis mil dólares al mes."
+   ]
+  },
+  {
    "id": "prueba",
    "tipo": "prueba",
    "capturas": [
@@ -784,6 +867,24 @@
    "texto": "Lo que hay dentro del programa insignia"
   },
   {
+   "id": "mentor",
+   "tipo": "llamada",
+   "yo": "Tú",
+   "otros": [
+    {
+     "rotulo": "Tu mentor"
+    }
+   ],
+   "texto": "Programa **hecho contigo**",
+   "nota": "1 a 1",
+   "voz": [
+    "Y no lo haces solo.",
+    "Tienes un mentor que te acompaña",
+    "en un programa hecho contigo,",
+    "uno a uno."
+   ]
+  },
+  {
    "id": "incluye",
    "tipo": "stack",
    "items": [
@@ -809,7 +910,7 @@
      "texto": "Un mentor"
     }
    ],
-   "remate": "Hecho **contigo**",
+   "remate": "Hecho contigo",
    "voz": [
     "Esto es lo que incluye",
     "tu agente de ventas",

@@ -87,8 +87,12 @@ Colores muestreados:
 | 15:05 | La multitud en gris claro, una silueta oscura y «"Yes"» en verde | `rejilla` + `multitud` + `destacar` + `apagar_resto` + `nota_destacado` |
 | 15:20 | Lámina anterior atenuada + frase manuscrita encima | `foco` |
 | 15:25-15:30 | Pastilla «5k Audience · $30,000» que se parte en 70% gris y 30% verde | `reparto` |
+| 15:15 | Rejilla de 20 💰 (5 × 4) → 🏦 «Your bank account», «$20,000» debajo | `flujo` + `cantidad: 20` |
 | 16:05 | Línea de años con $1B, $2B y $3B | `linea-tiempo` |
 | 16:40 | 🔍 Step 1 Find (los demás atenuados) | `pasos` + `iconos` + `activo` |
+| 16:45 | Rejilla a sangre de 12 meses (MARCH…FEBRUARY), 1-2 🤝 por mes | `meses` |
+| 16:50 | La misma rejilla: cada mes cambia sus 🤝 por un valor verde acumulado ($5,000 … $90,000) | `meses` + `valores_paso` |
+| 17:00 · 17:05 | 💰×5 (3+2) → 💰×10 (5+5), «**$50k**/year» con el sufijo chico; 🤝 → 💰×6 | `flujo` + `cantidad` + `{s:…}` |
 | 17:45 | Burbuja azul «Hey, want to work together?» | `chat` |
 | 18:25 | Documento 📝 + flecha roja curva + promesa manuscrita | `cita` |
 | 18:30 | «Monetisation Gameplan.» subrayado | `idea` |
@@ -107,10 +111,14 @@ Colores muestreados:
 | 36:10 | Credibilidad sobre foto real: «since 2016, over 23,000 clients» | `prueba` u `objeto` |
 | 36:15-37:55 | Láminas oscuras de marca: Consulting.com, Monetise, Quantum, Synthesise AI | `oscura` |
 | 36:38 | Ancla con el nivel caro real: «Quantum… starts at $25,000», antes del producto | `cifra` |
+| 36:45-36:50 | Videollamada: tarjeta «YOU» + persona con borde azul, nota «1-on-1» con flecha, «Done-With-You program» | `llamada` |
+| 37:40 · 39:45 | Pilares sobre la oscura azul: «⚙️ Software / 🤝 Service»; vuelve con uno encendido y los demás apagados | `lista` + `oscura` (+ `como` y `activo`) |
+| 40:10 | «YOU» + «Dedicated Consultant» en Caveat debajo | `llamada` |
 | 39:25 | Avatares → $140,000 cada uno | `flujo` |
 | 40:15-40:50 | «They will:» — lista en blanco que crece renglón por renglón | `lista` |
 | 41:00 · 41:35 | Pregunta de sí después de cada componente: 🤔 «Can you see how…» / «How much easier…» | `idea` |
 | 41:10 · 41:40 | Componentes numerados «#4» y «#5», en blanco | `idea` |
+| 41:15-41:20 | Una tarjeta «Expert» (Caveat arriba) + «4 live consulting calls with experts for 6 months.» | `llamada` |
 | 42:00 | Muro de capturas reales de resultados | `prueba` |
 | 42:30-42:45 | Bento de valor que se llena pieza por pieza | `stack` |
 | 43:00 | «UpLevel · Limited availability» (la segunda revelación oscura) | `oscura` |

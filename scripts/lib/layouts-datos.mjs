@@ -1,7 +1,7 @@
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
 import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas } from './comun.mjs';
-import { unirGuiones } from './markup.mjs';
+import { unirGuiones, plano } from './markup.mjs';
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
 const HEX = { v: '#22a812', r: '#c8101e', n: '#d0661a', g: '#9a9a9a', a: '#3ea6f2', k: '#111111' };
@@ -14,25 +14,62 @@ const celda = c => (typeof c === 'string' || typeof c === 'number' ? { texto: St
 
 // TABLA — la «tabla-marcador» escrita a mano que se llena columna por columna.
 // Anclas: `f<N>` (la etiqueta de la fila N) y `c<N>-<M>` (la celda de la fila N, columna M; desde 0), para las
-// `anotaciones`. `converger: { columna, texto, emoji?, paso? }` [7:30]: la pregunta manuscrita a la derecha de la tabla
-// (que se angosta para dejarle sitio) y una curva roja fina desde cada celda de esa columna, todas en el mismo paso.
+// `anotaciones`. `converger: { columna, texto, emoji?, paso?, aislar? }` [7:30]: la pregunta manuscrita junto a la tabla
+// y una curva roja fina desde cada celda de esa columna; las curvas se juntan en UNA punta junto al primer renglón de la
+// pregunta (runtime.js, 'converge').
+//   · Aislada [7:30, f_flechas 7:30.1]: una lámina APARTE tras la tabla completa. Quedan la columna de etiquetas y la
+//     columna juzgada (~700 px a la izquierda) y la pregunta ocupa el resto (≤ 1000 px, Caveat 700 a 76 px, emoji de 130
+//     encima). Por omisión si la lámina ya no revela columnas (`revelar: "todo"`, `fijas` ≥ columnas o una `como` con la
+//     tabla completa); `aislar: true | false` lo fuerza.
+//   · Sin aislar (la tabla se revela y converge en la misma lámina): la tabla se angosta 620 px y la pregunta va a la
+//     derecha a max(68, letra de celda + 8) px.
+//   · 9:16: la tabla arriba (filas de 220 px como máximo) y la pregunta DEBAJO, centrada y a ≥ 80 px; las curvas bajan
+//     por el borde de la columna hasta un punto sobre la pregunta (la franja derecha es de los botones de Reels).
+// Con firma abajo (16:9), la última columna vacía mide al menos la firma + 80 px; sin columna vacía, la tabla deja 70 px
+// libres abajo [c_0545: la firma cabe en la columna vacía sin tocar ninguna línea].
+const convValido = l => (l.converger && typeof l.converger === 'object' && Number.isInteger(l.converger.columna) && l.converger.columna >= 0
+  && l.converger.columna < (l.columnas || []).length ? l.converger : null);
+export const tablaAislada = l => {
+  const cv = convValido(l);
+  if (!cv) return false;
+  if (cv.aislar === true || cv.aislar === false) return cv.aislar;
+  return (l.revelar || 'columnas') === 'todo' || (Number(l.fijas) || 0) >= (l.columnas || []).length;
+};
 export function tabla(l, ctx) {
+  if (!tablaAislada(l)) return tablaCuerpo(l, ctx, false);
+  const cv = convValido(l), c = cv.columna;
+  const l2 = { ...l, columnas: [l.columnas[c]], filas: (l.filas || []).map(f => ({ ...f, celdas: [((f && f.celdas) || [])[c]] })), vacias: 0, fijas: 0,
+    revelar: 'todo', converger: { ...cv, columna: 0 }, ancho_etiqueta: l.ancho_etiqueta || (ctx.vertical ? 0.4 : 0.45) };
+  return tablaCuerpo(l2, ctx, true);
+}
+function tablaCuerpo(l, ctx, aislada) {
   const cols = l.columnas || [];            // encabezados de las columnas de datos
   const filas = l.filas || [];
   const vacias = l.vacias ?? 0;
   const modo = l.revelar || 'columnas';     // columnas | celdas | filas | todo
   const nCols = cols.length + vacias;
-  const conv = l.converger && typeof l.converger === 'object' && Number.isInteger(l.converger.columna) && l.converger.columna >= 0 && l.converger.columna < cols.length ? l.converger : null;
-  const W = (ctx.vertical ? 1000 : 1840) - (conv ? (ctx.vertical ? 0 : 480) : 0), H = ctx.vertical ? 1500 : 1010;
-  const wEt = Math.round(W * (l.ancho_etiqueta || (ctx.vertical ? 0.24 : 0.155)));
+  const conv = convValido(l);
+  const V = ctx.vertical;
+  const W = aislada ? (V ? 1000 : 700) : V ? 1000 : 1840 - (conv ? 620 : 0);
+  // firma abajo a la derecha (16:9): le deja sitio
+  const fa = !V && !conv && l.firma !== false ? ctx.firmaAncho || 0 : 0;
+  const hueco = fa && vacias === 0 ? 70 : 0;
+  const H = V ? (conv ? 1140 : 1500) : 1010 - hueco;
+  const wEt = Math.round(W * (l.ancho_etiqueta || (V ? 0.24 : 0.155)));
+  const nF = filas.length + 1;
+  // 9:16: fila de 220 px como máximo [el original: celdas de ~145 con letra de ~52]; con filas de 310 la letra de 30
+  // flotaba en una celda enorme [r5, stack916]
+  const hFV = V ? Math.min(Math.round(H / nF), 220) : 0;
+  const anchos = tablaAnchos(l, ctx, W, wEt, hFV);
   const wC = Math.round((W - wEt) / nCols);
-  const anchos = tablaAnchos(l, ctx, W, wEt);
+  const wVacUlt = fa && vacias >= 1 ? Math.max(wC, fa + 80) : wC;
+  const wCd = wVacUlt !== wC && nCols > 1 ? Math.round((W - wEt - wVacUlt) / (nCols - 1)) : wC;
   // Plumón grueso que llena la celda [c_0545: cifras de ~52 px en celdas de ~145]. Con pocas filas (≤ 3 + encabezado)
   // la fila medía ~250 px y la letra de 44 flotaba en una celda vacía: la fila se topa en 190 px y la letra crece con
   // ella (0.34 × el alto, de 44 a 64). Con 4 filas o más, la de siempre (44). runtime.js (ajustarTablas) la baja de 4 en
   // 4 hasta 40 si la tabla no cabe o una celda llega a 3 renglones.
-  const nF = filas.length + 1, pocas = !ctx.vertical && !anchos && nF <= 4;
-  const hF = pocas ? Math.min(Math.round(H / nF), 190) : Math.round(H / nF);
+  const pocas = !V && !anchos && nF <= 4;
+  const hF = V ? hFV : pocas ? Math.min(Math.round(H / nF), 190) : Math.round(H / nF);
   const tt = pocas ? Math.round(Math.max(44, Math.min(64, 0.34 * hF))) : 0;
   // «fijas»: columnas que ya se vieron en láminas anteriores (la tabla crece de lámina en lámina)
   const fijas = Math.min(cols.length, Math.max(0, Math.floor(Number(l.fijas) || 0)));
@@ -46,10 +83,10 @@ export function tabla(l, ctx) {
     filas.forEach(f => { if (modo === 'celdas') paso++; pasoCel[filas.indexOf(f)][c] = paso; });
   }
   if (modo === 'filas') filas.forEach((_, f) => { cols.forEach((__, c) => (pasoCel[f][c] = f + 1)); });
-  const wCol = i => (anchos ? anchos.cols[i] : wC), wVac = anchos ? anchos.vacia : wC;
+  const wCol = i => (anchos ? anchos.cols[i] : wCd), wVac = j => (anchos ? anchos.vacia : j === vacias - 1 ? wVacUlt : wCd);
   const cab = `<tr style="height:${hF}px"><th class="esq" style="width:${wEt}px">${marcar(l.esquina ?? '')}</th>${
     cols.map((c, i) => `<th style="width:${wCol(i)}px"><span${ctx.P(pasoCab[i])}>${marcar(c)}</span></th>`).join('')}${
-    Array.from({ length: vacias }, () => `<th style="width:${wVac}px"></th>`).join('')}</tr>`;
+    Array.from({ length: vacias }, (_, j) => `<th style="width:${wVac(j)}px"></th>`).join('')}</tr>`;
   const cuerpo = filas.map((f, fi) => `<tr style="height:${hF}px"><td class="fila-et"${ctx.A('f' + fi)}>${marcar(f.etiqueta || '')}</td>${
     cols.map((_, ci) => {
       const c = celda((f.celdas || [])[ci]);
@@ -57,23 +94,29 @@ export function tabla(l, ctx) {
       return `<td style="color:${col}"><span${ctx.P(pasoCel[fi][ci])}${ctx.A(`c${fi}-${ci}`)}${c.circulo ? ' data-circulo' : ''}>${marcar(c.texto || '')}</span></td>`;
     }).join('')}${Array.from({ length: vacias }, () => '<td></td>').join('')}</tr>`).join('');
   const letra = anchos ? `;--tt:${anchos.th}px;--td:${anchos.td}px;--tde:${anchos.td + 2}px` : tt ? `;--tt:${Math.round(tt * 1.1)}px;--td:${tt}px;--tde:${tt}px` : '';
-  const tablaHtml = `<table class="tabla${anchos && anchos.parte ? ' parte' : ''}"${ctx.P(0)} data-ajusta style="width:${W}px${letra}">${cab}${cuerpo}</table>`;
+  const tablaHtml = `<table class="tabla${anchos && anchos.parte ? ' parte' : ''}"${ctx.P(0)} data-ajusta style="width:${W}px${letra}${hueco ? `;margin-bottom:${hueco}px` : ''}">${cab}${cuerpo}</table>`;
   // `fuente` (dato publicado): al pie, con el último paso de la tabla
   const pie = fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', modo === 'filas' ? filas.length : paso));
   if (!conv) return pie ? `<div class="pila">${tablaHtml}${pie}</div>` : tablaHtml;
   const kc = pasoDe(conv, 'paso', ctx.max + 1);
-  filas.forEach((_, fi) => ctx.con({ de: `c${fi}-${conv.columna}`, a: 'conv', estilo: 'converge', i: fi, n: filas.length, p: kc }));
-  const pregunta = `<div class="pila"${ctx.P(kc)}${ctx.A('conv')} style="max-width:400px">${conv.emoji ? ctx.emoji(conv.emoji, 110) : ''}<div class="nota" style="--tn:60px;color:var(--tinta);margin-top:14px">${marcar(conv.texto || '')}</div></div>`;
-  const filaConv = `<div class="fila" style="gap:${ctx.vertical ? 40 : 110}px;align-items:center">${tablaHtml}${pregunta}</div>`;
+  filas.forEach((_, fi) => ctx.con({ de: `c${fi}-${conv.columna}`, a: 'conv', estilo: 'converge', i: fi, n: filas.length, p: kc, ...(V ? { abajo: true } : {}) }));
+  const tdL = anchos ? anchos.td : tt || 44;
+  const tn = aislada ? (V ? 84 : 76) : V ? Math.max(80, tdL + 8) : Math.max(68, tdL + 8);
+  const emo = conv.emoji ? `<div style="margin-bottom:14px">${ctx.emoji(conv.emoji, aislada ? 130 : 110)}</div>` : '';
+  const pregunta = `<div class="pila conv-pila"${ctx.P(kc)}${ctx.A('conv')} style="max-width:${aislada ? 1000 : V ? 900 : 560}px">${emo}<div class="nota conv-texto" style="--tn:${tn}px;color:var(--tinta);font-weight:700">${marcar(conv.texto || '')}</div></div>`;
+  const clase = `tabla-conv${aislada ? ' aislada' : ''}`;
+  if (V) return `<div class="pila ${clase}">${tablaHtml}<div style="margin-top:80px">${pregunta}</div>${pie}</div>`;
+  const filaConv = `<div class="fila ${clase}" style="gap:110px;align-items:center">${tablaHtml}${pregunta}</div>`;
   return pie ? `<div class="pila">${filaConv}${pie}</div>` : filaConv;
 }
 
 // En 9:16 (1000 px de ancho) las columnas iguales de 16:9 encimaban las palabras largas («Dropshipping», «$1,000-5,000»):
 // las columnas vacías que se llenan después quedan angostas (80 px) y el resto se reparte según la palabra más larga de
-// cada columna; la letra baja por tabla hasta un piso de 34 px (td) y 38 (th). Si ni así cabe una tabla de más de 3
-// columnas de datos, se avisa: pártela en dos láminas con `fijas` (no se transpone: rompe el revelado por columnas).
+// cada columna. La letra es la MENOR entre la que hace caber la palabra más larga de su columna y 0.3 × el alto de fila
+// (tope 56, piso 34 en td y 38 en th): no se agranda a costa del ancho. Si ni así cabe una tabla de más de 3 columnas de
+// datos, se avisa: pártela en dos láminas con `fijas` (no se transpone: rompe el revelado por columnas).
 const palabraMax = t => Math.max(1, ...String(t ?? '').replace(/[*_=~^]/g, '').split(/[\s\n]+|\\n/).map(w => [...w].length));
-function tablaAnchos(l, ctx, W, wEt) {
+function tablaAnchos(l, ctx, W, wEt, hF = 0) {
   if (!ctx.vertical) return null;
   const cols = l.columnas || [], filas = l.filas || [], vacias = l.vacias ?? 0;
   if (!cols.length) return null;
@@ -83,10 +126,11 @@ function tablaAnchos(l, ctx, W, wEt) {
   const anchosC = largo.map(x => Math.floor(util * x / tot));
   // letra que hace caber la palabra más larga de cada columna (Caveat ≈ 0.5 em por letra, 24 px de relleno)
   const cabe = Math.min(...anchosC.map((w, i) => (w - 24) / (0.5 * largo[i])));
-  const td = Math.max(34, Math.min(44, Math.floor(cabe)));
+  const porAlto = hF ? Math.round(0.3 * hF) : 44;
+  const td = Math.max(34, Math.min(56, porAlto, Math.floor(cabe)));
   const parte = cabe < 34;
   if (parte && cols.length > 3) ctx.avisos.push(`la tabla no cabe en 9:16 con ${cols.length} columnas de datos (la letra quedaría bajo 34 px): pártela en dos láminas con "fijas" o usa 16:9`);
-  return { cols: anchosC, vacia, td, th: Math.max(38, Math.min(50, td + 6)), parte };
+  return { cols: anchosC, vacia, td, th: Math.max(38, Math.min(62, td + 6)), parte };
 }
 
 // Utilidades de SVG para las gráficas
@@ -456,9 +500,10 @@ export function chat(l, ctx) {
   };
   const html = ms.map((m, i) => {
     const yo = (m.de || 'yo') === 'yo';
-    // [x] en minúsculas = lo que personalizas en el mensaje; los [MAYÚSCULAS] ya los marcó marcar()
-    // un hueco corto no se parte en dos pastillas; uno de más de 3 palabras sí puede cortarse dentro de la burbuja
-    const cuerpo = marcar(m.texto).replace(/(?<!class="hueco">)\[([^\[\]<>]+)\]/g, (_, t) => `<span class="hueco${t.trim().split(/\s+/).length > 3 ? ' largo' : ''}">[${t}]</span>`);
+    // [x] en minúsculas = la VARIABLE DE PLANTILLA que el espectador personaliza: letra amarilla sin caja en la burbuja
+    // azul, como «[Name]» y «[topic]» en [21:55, c_1315]. Los [MAYÚSCULAS] (dato pendiente) ya los marcó marcar() como
+    // `.hueco.pendiente`: son otra cosa y se ven distinto. Una variable corta no se parte; una de más de 3 palabras sí.
+    const cuerpo = marcar(m.texto).replace(/(?<!class="hueco[^"]*">)\[([^\[\]<>]+)\]/g, (_, t) => `<span class="var-plantilla${t.trim().split(/\s+/).length > 3 ? ' largo' : ''}">[${t}]</span>`);
     const av = avatar(m, yo), k = l.revelar === 'todo' ? 0 : i;
     // `hora`: el separador gris centrado de un chat real, en el mismo paso que su mensaje. Así el gancho se entiende
     // sin audio (11:40 pm … 9:05 am). Cada burbuja es un ancla m0…mN (sello_sobre: "m2", flechas).
@@ -732,6 +777,8 @@ export function tamEmojiPieza(alto, ancho, conSub = false) {
   const cabe = alto - 48 - 2 * 57 - (conSub ? 58 : 0) - 18 - 24;
   return Math.max(72, Math.min(Math.round(alto * 0.40), Math.round(ancho * 0.45), 220, cabe));
 }
+// La palomita del remate [42:50]: trazo verde suelto, sin la caja del ✅ (ctx.em.html('✅') la pintaba en caja)
+const PALOMITA = '<svg class="palomita" viewBox="0 0 100 80" aria-hidden="true"><path d="M8 44 L36 70 L92 10" fill="none" stroke="#23B914" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function stackSangre(l, ctx) {
   const items = l.items || [];
   const V = ctx.vertical;
@@ -753,10 +800,15 @@ function stackSangre(l, ctx) {
   }).join('');
   const kRem = pasoDe(l, 'remate_paso', items.length + 1);
   const kNota = pasoDe(l, 'nota_paso', kRem + (l.remate || l.total ? 1 : 0));
+  // A sangre el remate es un TÍTULO en su propio corte [42:50 «✓ Done-With-You»]: palomita verde suelta (sin caja) y la
+  // frase entera en 800 a ~140 px (mayúscula de ~105 px), centrada a media altura. Un remate largo baja la letra en
+  // proporción (piso 110) para caber en uno o dos renglones.
+  const largoRem = [...plano(l.remate || '')].length;
+  const tRem = largoRem > 18 ? Math.max(110, Math.round(140 * 18 / largoRem)) : 140;
   const cierre = l.remate || l.total || l.nota ? `<div class="stack-remate"${ctx.P(Math.min(kRem, kNota))}>
-    ${l.remate ? `<div class="t grande"${ctx.P(kRem)}>${ctx.em.html('✅', '1.1em', 'en-linea')}${marcar(l.remate)}</div>` : ''}
-    ${l.total ? `<div class="etiqueta-chica"${ctx.P(kRem)} style="margin-top:24px">${marcar(l.total)}</div>` : ''}
-    ${nota(ctx, l.nota, kNota, 'mt-m')}</div>` : '';
+    ${l.remate ? `<div class="t-remate"${ctx.P(kRem)} style="--t-remate:${tRem}px">${PALOMITA}<span>${marcar(l.remate)}</span></div>` : ''}
+    ${l.total ? `<div class="etiqueta-chica"${ctx.P(kRem)} style="margin-top:28px;font-size:64px">${marcar(l.total)}</div>` : ''}
+    ${l.nota ? `<div class="nota mt-s"${ctx.P(kNota)} style="--tn:54px">${marcar(l.nota)}</div>` : ''}</div>` : '';
   // El cierre tapa las piezas: el paso anterior (el stack lleno) es un cuadro CLAVE para la hoja, el PDF y --finales
   const clave = cierre ? ` data-clave-paso="${Math.min(kRem, kNota) - 1}"` : '';
   const inset = V ? `;inset:${SANGRE_V.arriba}px ${SANGRE_V.lado}px ${SANGRE_V.abajo}px` : '';
@@ -781,4 +833,71 @@ function stackPila(l, ctx) {
     ${l.remate ? `<div class="t chico mt-m"${ctx.P(kRem)}>${ctx.em.html('✅', '1.1em', 'en-linea')}${marcar(l.remate)}</div>` : ''}
     ${l.total ? `<div class="etiqueta-chica"${ctx.P(kRem)} style="margin-top:18px">${marcar(l.total)}</div>` : ''}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kRem + (l.remate || l.total ? 1 : 0)), 'mt-s')}</div>`;
+}
+
+// LLAMADA — la videollamada del componente humano de la oferta [36:45, 40:10, 41:15]: tarjetas grises 16:10 (radio 14,
+// sombra suave), una con «TÚ» en blanco 800 y las demás con el busto blanco de PERSONA pegado abajo; la que habla lleva
+// borde azul claro (#7CC4F5). `yo` (opcional, «TÚ»); `otros: [{ rotulo, activo, rotulo_pos }]` (máx. 3; la activa es la
+// de la derecha si ninguna trae `activo`); el rótulo va en Caveat abajo [40:10] o arriba [41:15]. `texto` debajo (el
+// programa, «4 llamadas en vivo por 6 meses»), `nota` arriba con flecha roja a la tarjeta activa (el «1 a 1» de 36:45).
+// Anclas t0, t1… (en orden: TÚ y luego los otros) y `texto`. Revelado: tarjetas → rótulos → texto → nota.
+// En 9:16 las tarjetas van una sobre otra. No reemplaza al ítem del `stack` [42:30]: es la lámina que lo desarrolla.
+export function otrosLlamada(l) {
+  const o = Array.isArray(l.otros) ? l.otros : typeof l.otros === 'string' && l.otros.trim() ? [l.otros] : [];
+  return o.slice(0, 3).map(x => (typeof x === 'string' ? { rotulo: x } : x && typeof x === 'object' ? x : {}));
+}
+export function llamada(l, ctx) {
+  const V = ctx.vertical;
+  const otros = otrosLlamada(l);
+  const n = otros.length + (l.yo ? 1 : 0);
+  const [w, h] = V ? (n === 1 ? [860, 540] : [760, 475]) : n === 1 ? [780, 480] : n === 2 ? [620, 380] : [520, 325];
+  const jAct = (() => { const j = otros.findIndex(o => o.activo === true); return j >= 0 ? j : otros.length - 1; })();
+  const off = l.yo ? 1 : 0;
+  const kR = otros.some(o => o.rotulo) ? 1 : 0;
+  const kT = pasoDe(l, 'texto_paso', kR + 1);
+  const kN = pasoDe(l, 'nota_paso', l.texto ? kT + 1 : kR + 1);
+  const arriba = otros.some(o => o.rotulo && o.rotulo_pos === 'arriba');
+  const dim = `width:${w}px;height:${h}px`;
+  const yo = l.yo ? `<div class="llamada-col"><div class="llamada-tarjeta" style="${dim}"${ctx.P(0)}${ctx.A('t0')}><span class="llamada-yo" style="font-size:${Math.round(h * 0.24)}px">${marcar(l.yo)}</span></div></div>` : '';
+  const cols = otros.map((o, i) => {
+    const rot = o.rotulo ? `<div class="nota llamada-rotulo"${ctx.P(kR)}>${marcar(o.rotulo)}</div>` : '';
+    const carta = `<div class="llamada-tarjeta${i === jAct ? ' activa' : ''}" style="${dim}"${ctx.P(0)}${ctx.A('t' + (i + off))}><div class="llamada-busto">${PERSONA}</div></div>`;
+    return `<div class="llamada-col">${o.rotulo_pos === 'arriba' ? rot : ''}${carta}${o.rotulo_pos === 'arriba' ? '' : rot}</div>`;
+  }).join('');
+  if (l.nota && otros.length) ctx.con({ de: 'nota-ll', a: 't' + (jAct + off), estilo: 'curva-roja', p: kN });
+  const notaHtml = l.nota ? `<div class="nota"${ctx.P(kN)}${ctx.A('nota-ll')} style="margin-bottom:70px;--tn:60px">${marcar(l.nota)}</div>` : '';
+  return `<div class="pila">${notaHtml}
+    <div class="${V ? 'pila' : 'fila'} llamada" style="gap:40px;align-items:${V ? 'center' : arriba ? 'flex-end' : 'flex-start'}">${yo}${cols}</div>
+    ${texto(ctx, l.texto, (l.tam_texto || (V ? 'grande' : 'medio')) + ' mt-m', kT, ctx.A('texto'))}</div>`;
+}
+
+// MESES — rejilla a sangre de meses [16:45 → 16:50]: celdas separadas por líneas grises finas, el nombre del mes en
+// mayúsculas grises arriba a la izquierda y, al centro, 1-3 emojis (`{ mes, emoji, n }`) o un valor verde en 800
+// (`{ mes, valor }`). Con `valores_paso: N` las MISMAS celdas cambian sus emojis por sus valores en el paso N sin mover la
+// rejilla [16:50: los 🤝 pasan a $5,000 … $90,000]; `revelar: "celdas"` las revela de una en una (por omisión, todas).
+// 4 columnas en 16:9, 3 en 9:16 (entre la firma y la zona de Reels). Se reúsa con `como` (CAMPOS_OBJETO.meses).
+export function meses(l, ctx) {
+  const V = ctx.vertical;
+  const celdas = (l.celdas || []).map(c => (typeof c === 'string' ? { mes: c } : c && typeof c === 'object' ? c : {}));
+  const cols = l.columnas || (V ? 3 : 4);
+  const filas = Math.max(1, Math.ceil(celdas.length / cols));
+  const altoUtil = V ? ctx.F.H - SANGRE_V.arriba - SANGRE_V.abajo : ctx.F.H;
+  const altoC = altoUtil / filas, anchoC = ctx.F.W / cols;
+  const tamE = Math.round(Math.min(110, altoC * 0.3, anchoC * 0.24));
+  const tamV = Math.round(Math.min(64, anchoC * 0.14, altoC * 0.2));
+  const kVal = Number.isInteger(l.valores_paso) ? l.valores_paso : null;
+  const html = celdas.map((c, i) => {
+    const k = l.revelar === 'celdas' ? i : 0;
+    const n = Math.max(1, Math.min(3, Math.round(Number(c.n) || 1)));
+    const emos = c.emoji ? `<div class="mes-emojis">${Array.from({ length: n }, () => ctx.emoji(c.emoji, tamE)).join('')}</div>` : '';
+    const valor = c.valor ? `<div class="mes-valor" style="font-size:${tamV}px">${marcar(c.valor)}</div>` : '';
+    let cuerpo = emos || valor;
+    if (emos && valor && kVal != null) {
+      const kv = Math.max(k, kVal);
+      cuerpo = kv > k ? `<div class="mes-cuerpo" data-hasta="${ctx.paso(kv - 1)}">${emos}</div><div class="mes-cuerpo"${ctx.P(kv)}>${valor}</div>` : valor;
+    } else if (emos && valor) cuerpo = emos;
+    return `<div class="mes"${ctx.P(k)}${ctx.A('m' + i)}><span class="mes-nombre">${escapar(c.mes || '')}</span>${cuerpo}</div>`;
+  }).join('');
+  const inset = V ? `;inset:${SANGRE_V.arriba}px 0 ${SANGRE_V.abajo}px` : '';
+  return `<div class="meses sangre"${ctx.P(0)} style="--cols:${cols}${inset}">${html}</div>`;
 }
