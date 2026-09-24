@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { plano } from './markup.mjs';
-import { PIEZAS, minutosObjetivo, duracionTotal, tiemposSecuenciales, mmss } from './tiempos.mjs';
+import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
 
 const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -43,24 +43,34 @@ export function reglasFirma(deck) {
 }
 
 // ---------- duración de la pieza (ARCOS.md) ----------
+// El objetivo manda sobre el rango de la pieza, pero un objetivo que cae fuera del rango de su pieza avisa (una
+// «clase» de 3 min es un tutorial). «Menos de la mitad» se mide con el tiempo de LÁMINAS: los tramos a cámara
+// con `dur` no rellenan el pizarrón. En clase y webinar, más de la mitad a cámara también avisa.
 export function reglasDuracion(deck, pasos) {
   const errores = [], avisos = [];
   const est = duracionTotal(deck, pasos);
+  const { laminas: lam, camara: cam } = duracionPorTipo(deck, pasos);
   const pieza = PIEZAS[deck.pieza] || null, vivo = deck.en_vivo === true;
   const objetivo = minutosObjetivo(deck.duracion_objetivo);
   const nomPieza = pieza ? pieza.nombre : 'pieza';
   const vivoNota = vivo ? ' En vivo amplías la voz de cada paso, pero cada paso sigue siendo un beat de 2-3 s: faltan beats, no palabras.' : '';
   const corto = (msg) => (vivo ? avisos : errores).push(msg);
+  const deCam = cam > 0 ? ` (de eso, ~${mmss(cam)} es a cámara)` : '';
   if (objetivo) {
-    const r = est / (objetivo * 60);
-    if (r < 0.5) corto(`la voz dura ~${mmss(est)} y el objetivo es ${mmss(objetivo * 60)}: el deck es menos de la mitad de su ${nomPieza}; escribe el guion completo con el arco de ARCOS.md.${vivoNota}`);
-    else if (Math.abs(r - 1) > 0.3) avisos.push(`la voz dura ~${mmss(est)} contra un objetivo de ${mmss(objetivo * 60)} (${r > 1 ? '+' : ''}${Math.round((r - 1) * 100)}%): ajusta beats o el objetivo.${vivoNota}`);
+    if (lam < objetivo * 60 * 0.5) corto(`las láminas cubren ~${mmss(lam)}${deCam} y el objetivo es ${mmss(objetivo * 60)}: el deck es menos de la mitad de su ${nomPieza}; escribe el guion completo con el arco de ARCOS.md.${vivoNota}`);
+    else if (Math.abs(est / (objetivo * 60) - 1) > 0.3) { const r = est / (objetivo * 60); avisos.push(`la voz dura ~${mmss(est)} contra un objetivo de ${mmss(objetivo * 60)} (${r > 1 ? '+' : ''}${Math.round((r - 1) * 100)}%): ajusta beats o el objetivo.${vivoNota}`); }
+    if (pieza && (objetivo < pieza.min * 0.7 || objetivo > pieza.max * 1.3)) {
+      avisos.push(`el objetivo ${mmss(objetivo * 60)} queda fuera de un(a) ${nomPieza} (${pieza.min}-${pieza.max} min): usa la pieza que le toca (tutorial 3-8, vsl-corto 3-6 o libre) en vez de forzar el objetivo (ARCOS.md)`);
+    }
   } else if (pieza) {
-    if (est < pieza.min * 60 * 0.5) corto(`la voz dura ~${mmss(est)} y un(a) ${nomPieza} dura ${pieza.min}-${pieza.max} min: el deck es menos de la mitad; escribe el guion completo con el arco de ARCOS.md.${vivoNota}`);
+    if (lam < pieza.min * 60 * 0.5) corto(`las láminas cubren ~${mmss(lam)}${deCam} y un(a) ${nomPieza} dura ${pieza.min}-${pieza.max} min: el deck es menos de la mitad; escribe el guion completo con el arco de ARCOS.md.${vivoNota}`);
     else if (est < pieza.min * 60 * 0.7 || est > pieza.max * 60 * 1.3) avisos.push(`la voz dura ~${mmss(est)}; un(a) ${nomPieza} dura ${pieza.min}-${pieza.max} min (ARCOS.md).${vivoNota}`);
   }
+  if (['clase', 'webinar'].includes(deck.pieza) && est > 0 && cam / est > 0.5) {
+    avisos.push(`de ~${mmss(est)}, ~${mmss(cam)} son tramos a cámara (${Math.round((cam / est) * 100)}%); las láminas cubren ~${mmss(lam)}. La referencia va ~12% a cámara: los tramos en vivo no rellenan el pizarrón (ARCOS.md)`);
+  }
   if (deck.pieza === 'reel' && est > 60) avisos.push(`el reel dura ~${mmss(est)}: pasa de 60 s; recorta beats (ARCOS.md, reel)`);
-  return { errores, avisos, estimado: est };
+  return { errores, avisos, estimado: est, laminas: lam, camara: cam };
 }
 
 // ---------- apertura: los primeros 10 segundos (GUION §6.1) ----------
@@ -129,6 +139,8 @@ export function reglasVoz(deck, prohibidas = []) {
 
 // ---------- proyecciones al espectador (GUION §3.8) ----------
 const PROMESA = /=[^=]*__[^_]*([$%]|client|venta|platica|alumn|lead)[^_]*__/i;
+// Un rango en algún punto de la cuenta: «10-20%», «de 5 a 10», «entre $3 y $5»
+const RANGO = /\d[\d,.]*\s*(%|k|mil)?\s*[-–]\s*\$?\d|\bde\s+\$?\d[\d,.]*\s*(%|k|mil|millones)?\s+a\s+\$?\d|\bentre\s+\$?\d/i;
 export function reglasProyeccion(deck) {
   const avisos = [];
   deck.laminas.forEach((l, i) => {
@@ -139,6 +151,8 @@ export function reglasProyeccion(deck) {
     const arriba = plano(l.arriba || '');
     if (!arriba || !/\d/.test(arriba) || /^(supuestos?|ejemplo)\s*:?$/i.test(arriba)) {
       avisos.push(`${nombre(deck, i)}: la cuenta subraya un total («${plano(total).slice(0, 40)}») sin condición: escribe en «arriba» la condición con número («Si mandas 10 mensajes al día:») y usa rangos (GUION §3.8). Si es un dato publicado (tamaño de un mercado), pon «fuente»`);
+    } else if (![arriba, ...lineas.map(plano)].some(x => RANGO.test(x))) {
+      avisos.push(`${nombre(deck, i)}: la proyección da un número exacto sin rango («${plano(total).slice(0, 40)}»): pon la tasa o el resultado en rango («10-20%», «$25-75 millones») (GUION §3.8 b). Si es un dato publicado, pon «fuente»`);
     }
   });
   return { errores: [], avisos };
@@ -159,22 +173,32 @@ export function reglasPrueba(deck) {
 }
 
 // ---------- arco: llamado y láminas oscuras según la pieza (ARCOS.md) ----------
-const LLAMADO = /\b(escribe(me)?|entra|agenda|aplica|link|liga|clic|comenta|guarda(lo)?|unete|inscribete|registrate|reserva|aparta|siguiente paso|proxima clase|nos vemos|te espero|whatsapp|mandame|dm)\b/;
-const esLlamado = l => l.tipo === 'boton' || LLAMADO.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' ')));
+// Llamado VISIBLE: un botón, una lámina con `llamado: true` o un texto a la vista que ARRANCA con un imperativo
+// con objeto («Agenda tu diagnóstico», «Escribe "CITA"», «Entra a…»). Una palabra suelta en la voz («WhatsApp»,
+// «aparta», «nos vemos») no es un llamado.
+const IMPERATIVO = /^(da(le)? clic|haz clic|dale click|agenda (tu|una|aqui|hoy|ya)|aplica( (aqui|hoy|ya|en))?|escribe(me|nos)? (["«]|la palabra|aqui|al|a mi|por)|comenta (["«]|la palabra|aqui)|manda(me|nos)? (un )?(dm|mensaje|whatsapp)|entra (a|al|en)|inscribete|registrate|reserva (tu|aqui|ya)|aparta tu (lugar|silla|cupo)|unete|descarga|pide tu|reclama tu|toca (el|aqui)|visita)\b/;
+export const esLlamadoVisible = l => l.llamado === true || l.tipo === 'boton' || textosVisibles(l).some(t => IMPERATIVO.test(sinAcentos(t).replace(/^[^a-z0-9"«]+/, '')));
+// Cierre de una clase: más flexible (también en la voz): próxima clase, nos vemos el…, siguiente paso, comunidad
+const LLAMADO_CIERRE = /\b(proxima clase|nos vemos (el|en|la)|te espero|siguiente paso|unete|comunidad|inscribete|registrate|link|liga)\b/;
+const esCierre = l => esLlamadoVisible(l) || LLAMADO_CIERRE.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' ')));
 export function reglasArco(deck) {
   const avisos = [], p = deck.pieza;
   const L = deck.laminas;
   if (['clase', 'webinar', 'vsl'].includes(p)) {
     const ultimas = L.map((l, i) => [l, i]).filter(([l]) => l.tipo !== 'camara').slice(-3);
-    if (ultimas.length && !ultimas.some(([l]) => esLlamado(l))) avisos.push(`el deck (${p}) termina sin llamado ni siguiente paso: cierra con qué hacer ahora (comunidad, próxima clase, link o palabra clave) (ARCOS.md)`);
+    const cierra = p === 'clase' ? esCierre : esLlamadoVisible;
+    if (ultimas.length && !ultimas.some(([l]) => cierra(l))) avisos.push(`el deck (${p}) termina sin llamado visible ni siguiente paso: cierra con qué hacer ahora (botón, palabra clave, link o próxima clase) a la vista, no solo en la voz (ARCOS.md)`);
   }
   if (['clase', 'reel'].includes(p)) {
     const osc = L.map((l, i) => (l.tipo === 'oscura' || l.oscura ? i + 1 : 0)).filter(Boolean);
     if (osc.length) avisos.push(`láminas oscuras en un(a) ${p} (${osc.join(', ')}): la oscura revela un producto en webinars y VSL; aquí basta el puente al siguiente paso (ARCOS.md)`);
   }
-  if (['webinar', 'vsl'].includes(p)) {
-    const n = L.filter(l => l.tipo !== 'camara' && esLlamado(l)).length;
-    if (n < 2) avisos.push(`el llamado aparece ${n} ${n === 1 ? 'vez' : 'veces'}; en un(a) ${p} va al menos 2 veces: después de la prueba y al final, con qué pasa después del clic (GUION §7)`);
+  if (['webinar', 'vsl', 'vsl-corto'].includes(p)) {
+    // láminas contiguas (sin contar cámara) cuentan como UN llamado: el botón y su «Después del clic»
+    const sinCam = L.filter(l => l.tipo !== 'camara');
+    let n = 0;
+    sinCam.forEach((l, i) => { if (esLlamadoVisible(l) && !(i > 0 && esLlamadoVisible(sinCam[i - 1]))) n++; });
+    if (n < 2) avisos.push(`el llamado visible aparece ${n} ${n === 1 ? 'vez' : 'veces'}; en un(a) ${p} va al menos 2 veces a la vista (botón o palabra clave): después de la prueba y al final, con qué pasa después del clic (GUION §7). Una palabra suelta («WhatsApp», «aparta») no cuenta; marca con "llamado": true la lámina que muestra la palabra clave o la flecha al link`);
   }
   return { errores: [], avisos };
 }

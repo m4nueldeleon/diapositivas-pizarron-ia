@@ -2,9 +2,12 @@
 // y comparar.mjs las inyecta en Chromium para leer los píxeles).
 //
 // «Caja de tinta» = el rectángulo que encierra lo que está dibujado en la lámina:
-//   · píxeles oscuros y poco saturados (luminancia < 120, max−min < 60): texto, emojis oscuros, líneas;
+//   · píxeles oscuros (luminancia < 150, sin importar la saturación): texto, líneas, emojis oscuros;
+//   · píxeles saturados que no son pastel (max−min > 90 y luminancia < 225): el 🏆 dorado, la bolsa 💰 —
+//     antes solo contaban en el JPG del video (la compresión los ensucia) y no en nuestro PNG, y el par
+//     r90/ref_90 daba un falso dy de +13;
 //   · tinta roja (R > 150, G < 90, B < 90): la capa a mano.
-// Los fondos pálidos (cuadrantes, calendario, tarjetas) NO cuentan, y se ignora la esquina inferior derecha
+// Los fondos pálidos (cuadrantes rosa 247,195,195; calendario; tarjetas) NO cuentan, y se ignora la esquina inferior derecha
 // donde viven la marca de agua o la firma (x > 75%, y > 86% del lienzo: una firma larga como
 // «Consulting.com» empieza antes del 81%).
 // Mide ENCUADRE, no estilo: no sustituye la revisión a ojo.
@@ -12,7 +15,7 @@
 // rgba: Uint8ClampedArray/Array de w×h×4. Devuelve {x, y, w, h} en % del lienzo, o null si no hay tinta.
 export function cajaTinta(rgba, w, h) {
   // autocontenida: comparar.mjs la inyecta sola en el navegador
-  const esTintaL = (r, g, b) => { const lum = 0.299 * r + 0.587 * g + 0.114 * b, sat = Math.max(r, g, b) - Math.min(r, g, b); return (lum < 120 && sat < 60) || (r > 150 && g < 90 && b < 90); };
+  const esTintaL = (r, g, b) => { const lum = 0.299 * r + 0.587 * g + 0.114 * b, sat = Math.max(r, g, b) - Math.min(r, g, b); return lum < 150 || (sat > 90 && lum < 225) || (r > 150 && g < 90 && b < 90); };
   const xMarca = w * 0.75, yMarca = h * 0.86;
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -43,4 +46,31 @@ export function emparejar(ids, archivos) {
     if (refs.has(m[1])) { pares.push({ id, seg: +m[1], ref: refs.get(m[1]) }); refs.delete(m[1]); } else sinRef.push(id);
   }
   return { pares: pares.sort((a, b) => a.seg - b.seg), sinRef, sinLamina: [...refs.values()] };
+}
+
+// Densidad de tinta por celda (W×H, por omisión 8×5) de un RGBA de w0×h0: la COMPOSICIÓN de la lámina (dónde
+// hay contenido), con la misma regla de tinta que cajaTinta. Calibrada con la réplica: los pares correctos dan
+// ≥ 0.37 y los cruzados (lámina de otro momento) ≤ 0.29, salvo dos frases centradas, que se parecen de verdad.
+// Una miniatura en gris de 48×27 no separaba nada (un par correcto daba 0.06). Autocontenida (se inyecta).
+export function densidadTinta(rgba, w0, h0, W = 8, H = 5) {
+  const out = new Array(W * H).fill(0);
+  for (let y = 0; y < h0; y++) for (let x = 0; x < w0; x++) {
+    const i = (y * w0 + x) * 4, r = rgba[i], g = rgba[i + 1], b = rgba[i + 2];
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b, sat = Math.max(r, g, b) - Math.min(r, g, b);
+    if (lum < 150 || (sat > 90 && lum < 225) || (r > 150 && g < 90 && b < 90)) out[Math.min(H - 1, Math.floor((y * H) / h0)) * W + Math.min(W - 1, Math.floor((x * W) / w0))]++;
+  }
+  return out;
+}
+
+// Correlación de Pearson entre dos miniaturas (−1 a 1). Sin varianza (toda blanca) devuelve 0, no NaN.
+// Dice si el cuadro del video y nuestra lámina son la MISMA escena (antes de medir encuadre).
+export function correlacionMiniaturas(a, b) {
+  const n = Math.min(a.length, b.length);
+  if (!n) return 0;
+  let ma = 0, mb = 0;
+  for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }
+  ma /= n; mb /= n;
+  let sab = 0, saa = 0, sbb = 0;
+  for (let i = 0; i < n; i++) { const da = a[i] - ma, db = b[i] - mb; sab += da * db; saa += da * da; sbb += db * db; }
+  return saa && sbb ? sab / Math.sqrt(saa * sbb) : 0;
 }

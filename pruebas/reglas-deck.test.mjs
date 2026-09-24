@@ -35,8 +35,27 @@ test('duración: minutos o mm:ss; una «clase» de 4 min es error, en vivo es av
   assert.deepEqual(vivo.errores, []);
   assert.match(vivo.avisos[0], /En vivo/);
   assert.match(reglasDuracion({ laminas, duracion_objetivo: 3 }, unos(60)).avisos[0], /\+\d+%/);
-  assert.deepEqual(reglasDuracion({ laminas, duracion_objetivo: '4:00' }, unos(60)), { errores: [], avisos: [], estimado: est });
+  assert.deepEqual(reglasDuracion({ laminas, duracion_objetivo: '4:00' }, unos(60)), { errores: [], avisos: [], estimado: est, laminas: est, camara: 0 });
   assert.match(reglasDuracion({ pieza: 'reel', laminas }, unos(60)).avisos.join(' '), /pasa de 60 s/);
+});
+
+test('duración: objetivo fuera del rango de su pieza avisa; clase con más de la mitad a cámara avisa; tutorial corto no', () => {
+  // ~3:30 de láminas
+  const laminas = Array.from({ length: 50 }, (_, i) => idea(`Lámina ${i}`, { voz: 'una frase de diez palabras que se dice en voz alta' }));
+  const video = reglasDuracion({ pieza: 'video', duracion_objetivo: '3:30', laminas }, unos(50));
+  assert.ok(video.avisos.some(a => /fuera de un\(a\) video de YouTube \(8-20 min\).*tutorial/.test(a)), video.avisos.join('\n'));
+  assert.deepEqual(video.errores, []);
+  const tutorial = reglasDuracion({ pieza: 'tutorial', laminas }, unos(50));
+  assert.deepEqual([tutorial.errores, tutorial.avisos], [[], []]);
+  // clase de ~24 min: 20 son tres tramos a cámara (300 + 300 + 600 s)
+  const cam = dur => ({ tipo: 'camara', nota: 'demo en vivo', dur });
+  const clase = { pieza: 'clase', duracion_objetivo: 25, laminas: [...laminas.slice(0, 60), cam(300), cam(300), cam(600)] };
+  const r = reglasDuracion(clase, unos(clase.laminas.length));
+  assert.ok(r.avisos.some(a => /son tramos a cámara \(\d+%\)/.test(a)), r.avisos.join('\n'));
+  assert.ok(r.errores.some(a => /las láminas cubren ~\d+:\d\d.*a cámara/.test(a)), 'las láminas son menos de la mitad del objetivo');
+  assert.ok(r.camara >= 1200 && r.laminas < 300);
+  // el objetivo sin pieza sigue sin avisos
+  assert.deepEqual(reglasDuracion({ laminas, duracion_objetivo: '3:30' }, unos(50)).avisos, []);
 });
 
 test('apertura: saludo, título «Cómo…» o cámara antes del segundo 10 avisan; una escena no', () => {
@@ -83,7 +102,16 @@ test('proyección: «Supuesto:» vacío avisa; una condición con número o una 
   const cuenta = { tipo: 'cifra', lineas: ['100 × 20% = 20 pláticas', '20 × 50% = __10 clientes__'] };
   assert.equal(reglasProyeccion({ laminas: [{ ...cuenta, arriba: 'Supuesto:' }] }).avisos.length, 1);
   assert.equal(reglasProyeccion({ laminas: [cuenta] }).avisos.length, 1);
-  assert.deepEqual(reglasProyeccion({ laminas: [{ ...cuenta, arriba: 'Si te escriben 20 al día:' }] }).avisos, []);
+  const conRango = { tipo: 'cifra', lineas: ['100 × 10-20% = 10-20 pláticas', '× 30-50% = __3-10 clientes__'] };
+  assert.deepEqual(reglasProyeccion({ laminas: [{ ...conRango, arriba: 'Si te escriben 20 al día:' }] }).avisos, []);
+  // §3.8 b: condición con número pero la cuenta exacta, sin ningún rango → un aviso aparte
+  const demo = { tipo: 'cifra', arriba: 'Si te contrata el 0.1%:', lineas: ['1,000,000 × **0.1%** = 1,000', '1,000 × $25,000 = __$25,000,000__'] };
+  const b = reglasProyeccion({ laminas: [demo] }).avisos;
+  assert.equal(b.length, 1);
+  assert.match(b[0], /§3\.8 b/);
+  assert.deepEqual(reglasProyeccion({ laminas: [{ ...demo, arriba: 'Si te contrata del 0.1% al 0.3%:', lineas: ['1,000,000 × **0.1-0.3%** = 1,000-3,000', '1,000-3,000 × $25,000 = __$25-75 millones__'] }] }).avisos, []);
+  assert.deepEqual(reglasProyeccion({ laminas: [{ ...demo, fuente: 'Datos del negocio, 2025' }] }).avisos, []);
+  assert.deepEqual(reglasProyeccion({ laminas: [{ ...cuenta, arriba: 'Entre 10 y 20 al día:' }] }).avisos, []);
   assert.deepEqual(reglasProyeccion({ laminas: [{ tipo: 'cifra', lineas: ['1,000 × $25,000 = __$25,000,000__'], fuente: 'Tamaño del mercado, Statista 2025' }] }).avisos, []);
   assert.deepEqual(reglasProyeccion({ laminas: [{ tipo: 'cifra', lineas: ['__42__'] }] }).avisos, []);
 });
@@ -103,4 +131,22 @@ test('arco: clase sin llamado final, oscuras en una clase y un solo llamado en u
   const web = reglasArco({ pieza: 'webinar', laminas: [...cuerpo, { tipo: 'boton', boton: 'Aplica aquí' }] });
   assert.ok(web.avisos.some(a => /aparece 1 vez/.test(a)));
   assert.deepEqual(reglasArco({ laminas: cuerpo }).avisos, []);
+});
+
+test('llamado: solo cuenta el llamado VISIBLE; «WhatsApp», «aparta» o «agenda» sueltos no', () => {
+  const cuerpo = [idea('Uno'), idea('Dos'), idea('Tres')];
+  const falso = reglasArco({ pieza: 'vsl', laminas: [...cuerpo, idea('Recordatorios por WhatsApp', { voz: 'Te llega por WhatsApp' }), idea('Nadie aparta su lugar'), idea('Agenda citas sola')] });
+  assert.ok(falso.avisos.some(a => /aparece 0 veces/.test(a)), falso.avisos.join('\n'));
+  assert.ok(falso.avisos.some(a => /termina sin llamado visible/.test(a)));
+  // botón + «Después del clic» contiguos = UN llamado; el resumen final sin botón no suma
+  const uno = reglasArco({ pieza: 'vsl', laminas: [...cuerpo, { tipo: 'boton', boton: 'Agendar diagnóstico' },
+    { tipo: 'flujo', encabezado: 'Después del clic', nodos: [{ emoji: '📅', etiqueta: 'Eliges hora' }, { emoji: '📞', etiqueta: 'Te llamamos' }] },
+    { tipo: 'lista', items: ['Sala llena', 'Menos faltas'] }, { tipo: 'camara', voz: 'Da clic abajo' }] });
+  assert.ok(uno.avisos.some(a => /aparece 1 vez/.test(a)), uno.avisos.join('\n'));
+  // dos llamados a la vista (botón a media pieza y al final): sin avisos
+  const dos = reglasArco({ pieza: 'vsl', laminas: [...cuerpo, { tipo: 'boton', boton: 'Aplica aquí' }, idea('Cuatro'), idea('Cinco'),
+    idea('Escribe «CITA» al WhatsApp del video'), { tipo: 'camara' }] });
+  assert.deepEqual(dos.avisos, []);
+  // `llamado: true` marca a mano la lámina que muestra la palabra clave o la flecha al link
+  assert.deepEqual(reglasArco({ pieza: 'webinar', laminas: [...cuerpo, idea('La palabra: CITA', { llamado: true }), idea('Cuatro'), { tipo: 'boton', boton: 'Entrar' }] }).avisos, []);
 });

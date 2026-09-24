@@ -40,7 +40,7 @@ la lámina nueva o un elemento más sobre la actual.
 | un cálculo | la ecuación línea por línea, con el total subrayado (si es una proyección al espectador: condición arriba y rangos, ver §3.8) | `cifra` |
 | un número que impresiona | el número solo, enorme | `cifra` con una línea |
 | «tendrías que vender 500» | 500 emojis en rejilla + nota «Son 500» + sello | `rejilla` |
-| un porcentaje | 100 puntos, unos de otro color | `rejilla` + `punto` |
+| un porcentaje | 100 puntos, unos de otro color (agrupa los destacados, los llenos primero y en orden: «41 de 100» se lee de un vistazo; el sello nunca los tapa) | `rejilla` + `punto` |
 | «tú, entre todos ellos» | multitud con uno encendido | `rejilla` + `destacar` |
 | comparar opciones con criterios | tabla-marcador | `tarjetas` y luego `tabla` |
 | crece, escala, se dispara | curva | `grafica` |
@@ -92,7 +92,8 @@ la lámina nueva o un elemento más sobre la actual.
      $10,000-$50,000». Si hay que dar un solo número, sale de la tasa baja.
    - c) Si el total subrayado sostiene la promesa del título, la voz dice el descargo en esa lámina o en el
      gancho, como la referencia [0:38]: «que yo tenga estos resultados no quiere decir que tú los tengas».
-   QA avisa cuando una `cifra` subraya un total de dinero, % o clientes y `arriba` no trae número.
+   QA avisa cuando una `cifra` subraya un total de dinero, % o clientes y `arriba` no trae número, y
+   también cuando la cuenta no trae NINGÚN rango (§3.8 b).
 9. **La nota de remate y el `foco` llevan un dato, una consecuencia concreta o una acción con objeto**
    (qué mandar, a quién, cuándo). Máximo una antítesis «No X, Y» por deck, y nada de cierre motivacional
    genérico («Todo empieza con…», «Mándalo hoy», «Esperar no es una estrategia»). Si la frase viene del
@@ -202,7 +203,10 @@ real**: si no hay cifra de credibilidad, prueba o escasez real, el beat se omite
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
 
-- **El llamado aparece al menos 2 veces** (beats 9 y 10); en un webinar, 3 si hay un llamado temprano.
+- **El llamado aparece al menos 2 veces** (beats 9 y 10), **a la vista**: un `boton`, la palabra clave o
+  la flecha al link (`llamado: true` marca esa lámina). Que la voz diga «WhatsApp» o «aparta» no es un
+  llamado, y el que va solo en la voz de la cámara final tampoco cuenta. En un webinar, 3 si hay un llamado
+  temprano.
 - **Precio, formas de pago y garantía NO están en la referencia**: su llamado es aplicar y agendar una
   llamada, y el único precio es el ancla del nivel caro. Se agregan solo si la oferta tiene precio
   público: el precio con `cifra` (el ancla es algo real que el público ya vio, nunca un «Valor»

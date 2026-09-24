@@ -33,3 +33,21 @@ test('emparejar: r<seg> con ref_<seg>, y avisa lo que sobra de cada lado', () =>
   assert.deepEqual(r.sinRef, ['r999']);
   assert.deepEqual(r.sinLamina, ['ref_460.jpg']);
 });
+
+import { densidadTinta, correlacionMiniaturas } from '../scripts/lib/tinta.mjs';
+
+test('tinta: el dorado saturado (🏆) cuenta igual en PNG que en JPG; el pastel no', () => {
+  const oro = lienzo(100, 50, set => rect(40, 10, 60, 30, [230, 170, 30])(set));
+  assert.deepEqual(cajaTinta(oro, 100, 50), { x: 40, y: 20, w: 20, h: 40 });
+  assert.equal(cajaTinta(lienzo(100, 50, set => rect(0, 0, 100, 50, [255, 235, 200])(set)), 100, 50), null);
+  assert.ok(cajaTinta(lienzo(100, 50, set => rect(10, 10, 20, 20, [200, 150, 30])(set)), 100, 50));
+});
+
+test('parecido de composición: la misma lámina ≈ 1; otra composición < 0.3; toda blanca da 0, no NaN', () => {
+  const arriba = lienzo(160, 90, set => rect(40, 10, 120, 25, [17, 17, 17])(set));
+  const tabla = lienzo(160, 90, set => { for (let x = 10; x < 150; x += 30) rect(x, 30, x + 4, 85, [17, 17, 17])(set); });
+  const d = x => densidadTinta(x, 160, 90);
+  assert.ok(correlacionMiniaturas(d(arriba), d(arriba)) > 0.99);
+  assert.ok(correlacionMiniaturas(d(arriba), d(tabla)) < 0.3);
+  assert.equal(correlacionMiniaturas(d(lienzo(160, 90, () => {})), d(arriba)), 0);
+});

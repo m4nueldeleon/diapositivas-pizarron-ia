@@ -1,0 +1,184 @@
+{
+ "titulo": "replica",
+ "emoji": "apple",
+ "marca": {
+  "texto": "Consulting.com"
+ },
+ "laminas": [
+  {
+   "_cuadro": "0:10 médico que cobra, antes de la nota",
+   "paso_ref": 0,
+   "id": "r10",
+   "tipo": "idea",
+   "emoji": "🧑‍⚕️+💰",
+   "emoji_tam": "heroe",
+   "texto": "People are taking advantage of it to\n__get paid as much as a doctor__",
+   "nota": "Without having any **previous business experience.**"
+  },
+  {
+   "_cuadro": "1:30 trofeo, frase de 2 renglones",
+   "paso_ref": -1,
+   "id": "r90",
+   "tipo": "idea",
+   "emoji": "🏆",
+   "texto": "If you're looking for the **best business\nmodel** to start as a **beginner**..."
+  },
+  {
+   "_cuadro": "1:35 «Without:» con 1 de 2 renglones",
+   "paso_ref": 0,
+   "id": "r95",
+   "tipo": "lista",
+   "encabezado": "Without:",
+   "vineta": "x",
+   "items": [
+    "Spend years **working 10+ hours/day**",
+    "**Build** an audience"
+   ]
+  },
+  {
+   "_cuadro": "1:55 teclas 1 2 3, la mano en la 1",
+   "id": "r115",
+   "tipo": "pasos",
+   "clic": 1,
+   "texto": "3-step “**Just-Click-The-Buttons**\" business",
+   "nota": "Complete beginners are using to get paid as much as doctors"
+  },
+  {
+   "_cuadro": "4:15 lista tachada",
+   "paso_ref": -1,
+   "id": "r255",
+   "tipo": "lista",
+   "items": [
+    {
+     "emoji": "🚚",
+     "texto": "Dropshipping",
+     "tachado": true
+    },
+    {
+     "emoji": "🎫",
+     "texto": "High-Ticket Sales",
+     "tachado": true
+    },
+    {
+     "emoji": "📊",
+     "texto": "Trading",
+     "tachado": true
+    }
+   ]
+  },
+  {
+   "_cuadro": "10:28 cuadrantes rojo/verde",
+   "paso_ref": -1,
+   "id": "r628",
+   "tipo": "cuadrantes",
+   "items": [
+    {
+     "emoji": "no:🎥",
+     "texto": "Creating Content",
+     "tono": "r"
+    },
+    {
+     "emoji": "no:🙅",
+     "texto": "Showing your face online",
+     "tono": "r"
+    },
+    {
+     "emoji": "si:💸",
+     "texto": "**$0** Startup Capital",
+     "tono": "v"
+    },
+    {
+     "emoji": "si:📧",
+     "texto": "Business **Email**",
+     "tono": "v"
+    }
+   ]
+  },
+  {
+   "_cuadro": "17:20 mapa Find/Build/Launch, paso 1",
+   "paso_ref": -1,
+   "id": "r1040",
+   "tipo": "pasos",
+   "iconos": [
+    "🔍",
+    "🛠️",
+    "🚀"
+   ],
+   "etiquetas": [
+    "Find",
+    "Build",
+    "Launch"
+   ],
+   "activo": 1,
+   "prefijo": "Step"
+  },
+  {
+   "_cuadro": "29:20 calendario, fase 2",
+   "paso_ref": -1,
+   "id": "r1760",
+   "tipo": "calendario",
+   "fase_activa": 2,
+   "palabra_dia": "DAY",
+   "dias": [
+    {
+     "sub": "Investment"
+    },
+    {
+     "sub": "Identification"
+    },
+    {
+     "sub": "Community"
+    },
+    {
+     "sub": "Authority"
+    },
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ],
+   "fases": [
+    {
+     "nombre": "Phase 1",
+     "desde": 1,
+     "hasta": 3,
+     "color": "amarillo"
+    },
+    {
+     "nombre": "PHASE 2 · Value Delivery",
+     "desde": 4,
+     "hasta": 9,
+     "color": "azul"
+    },
+    {
+     "nombre": "Phase 3",
+     "desde": 10,
+     "hasta": 14,
+     "color": "verde"
+    }
+   ]
+  },
+  {
+   "_cuadro": "4:20 «They're all viable»",
+   "paso_ref": -1,
+   "id": "r260",
+   "tipo": "idea",
+   "emoji": "💰",
+   "texto": "They're all viable business models."
+  },
+  {
+   "_cuadro": "7:40 «similar situation to dropshipping»",
+   "paso_ref": -1,
+   "id": "r460",
+   "tipo": "idea",
+   "texto": "It's a pretty similar situation\nto **dropshipping**."
+  }
+ ],
+ "_nota": "Réplica versionada del video de referencia: cada lámina r<seg> se compara con ref_<seg>.jpg (fuera del repo, en pizarron-ref/replica). paso_ref: paso visible en el cuadro (desde 0; -1 = el último). Ver PROTOCOLO §4b."
+}

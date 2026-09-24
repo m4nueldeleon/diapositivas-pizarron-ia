@@ -103,3 +103,34 @@ test('clic_pos, sello_pos y sello_sobre pasan por listas cerradas', () => {
   assert.equal(deck.laminas[1].sello_sobre, undefined);
   assert.equal(avisos.length, 3);
 });
+
+test('calendario: n hasta 42 días (pasos sigue en 12); un recorte avisa; fases, anotaciones y título que no cuadran son error', () => {
+  const s = l => sanearDeck({ laminas: [l] });
+  assert.equal(s({ tipo: 'calendario', n: 14 }).deck.laminas[0].n, 14);
+  assert.deepEqual(s({ tipo: 'calendario', n: 28 }).avisos, []);
+  const r = s({ tipo: 'calendario', n: 99 });
+  assert.equal(r.deck.laminas[0].n, 42);
+  assert.ok(r.avisos.some(a => /n: 99 → 42, fuera de rango/.test(a)));
+  assert.equal(s({ tipo: 'pasos', n: 14 }).deck.laminas[0].n, 12);
+  const v = l => validarDeck({ laminas: [l] }, tipos);
+  assert.deepEqual(v({ tipo: 'calendario', titulo: 'Calendario de 14 días', n: 14, fases: [{ nombre: 'F', desde: 1, hasta: 14 }], fase_activa: 1 }), []);
+  assert.ok(v({ tipo: 'calendario', n: 14, fases: [{ nombre: 'F', desde: 15, hasta: 28 }] }).some(e => /llega al día 28 y el calendario tiene 14/.test(e)));
+  assert.ok(v({ tipo: 'calendario', titulo: 'Calendario de 14 días', n: 12 }).some(e => /dice 14 días y se dibujan 12/.test(e)));
+  assert.ok(v({ tipo: 'calendario', fases: [{ nombre: 'F', desde: 1, hasta: 3 }], fase_activa: 2 }).some(e => /fase_activa 2 y hay 1/.test(e)));
+  assert.ok(v({ tipo: 'calendario', n: 7, anotaciones: [{ dia: 9, texto: 'x' }] }).some(e => /anotaciones\[0\] apunta al día 9/.test(e)));
+});
+
+test('pasos acepta separacion, tam_etiqueta y arrastre; foco, nota_paso; tachar_paso en idea, cita y cifra', () => {
+  for (const [t, c] of [['pasos', 'separacion'], ['pasos', 'tam_etiqueta'], ['pasos', 'arrastre'], ['foco', 'nota_paso'], ['idea', 'tachar_paso'], ['cita', 'tachar_paso'], ['cifra', 'tachar_paso']]) {
+    assert.ok(CAMPOS[t].includes(c), `${t}.${c}`);
+  }
+  assert.equal(sanearDeck({ laminas: [{ tipo: 'pasos', tam_etiqueta: '64px' }] }).deck.laminas[0].tam_etiqueta, 64);
+  assert.ok(COMUNES.includes('llamado') && COMUNES.includes('paso_ref'));
+});
+
+test('references/LAYOUTS.md documenta todo campo que leen los diseños (y los de ítem más usados)', () => {
+  const md = fs.readFileSync(new URL('../references/LAYOUTS.md', import.meta.url), 'utf8');
+  const todos = new Set([...COMUNES, ...Object.values(CAMPOS).flat(), 'valor_texto', 'emoji', 'tono', 'sub', 'numero']);
+  const faltan = [...todos].filter(k => !new RegExp('[`"]' + k + '\\b').test(md));
+  assert.deepEqual(faltan, [], `sin documentar en LAYOUTS.md: ${faltan.join(', ')}`);
+});

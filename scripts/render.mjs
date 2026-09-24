@@ -18,7 +18,8 @@ const { opt, flag, pos } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos } = prep;
-console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji} · voz ~${mmss(duracionTotal(deck, pasos))})`);
+const auto = !prep.crudo.emoji || prep.crudo.emoji === 'auto' ? ` (auto → ${modoEmoji} en esta máquina; fluent en Linux: fija "emoji" en el deck)` : '';
+console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji}${auto} · voz ~${mmss(duracionTotal(deck, pasos))})`);
 avisosBuild.forEach(a => console.warn('⚠ ' + a));
 if (flag('--solo-html')) process.exit(0);
 

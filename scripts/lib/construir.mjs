@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Emojis, DEFS_GLOBALES } from './emoji.mjs';
-import { crearCtx, escapar, marcar, CURSOR_MANO, CURSOR_FLECHA } from './comun.mjs';
+import { crearCtx, escapar, CURSOR_MANO, CURSOR_PUNO, CURSOR_FLECHA } from './comun.mjs';
 import * as T from './layouts-texto.mjs';
 import * as D from './layouts-datos.mjs';
 import { validarDeck, sanearDeck } from './contrato.mjs';
@@ -15,7 +15,7 @@ export const LAYOUTS = {
   tabla: D.tabla, grafica: D.grafica, 'linea-tiempo': D.lineaTiempo, medidor: D.medidor, opciones: D.opciones,
   rejilla: D.rejilla, prueba: D.prueba, chat: D.chat, reparto: D.reparto, calendario: D.calendario,
   boton: D.boton, circulos: D.circulos, stack: D.stack,
-  camara: () => '', foco: () => '',
+  camara: () => '', foco: T.foco,
 };
 
 export const FORMATOS = {
@@ -68,9 +68,12 @@ function armarLamina(l, i, deck, comun) {
     const k = ctx.paso(l.sello_paso ?? pasos);
     // posición: centrado en un ancla (sello_sobre), en una zona del lienzo (sello_pos) o al centro; el
     // runtime lo acota para que, girado, no se salga del lienzo y lo reduce si es muy largo
-    // En la rejilla el sello cae centrado SOBRE las cajas, como en la referencia [6:35 «A LOT OF SKILL»]
-    const sobre = l.sello_sobre || (l.tipo === 'rejilla' && !l.sello_pos ? 'rejilla' : '');
-    const pos = `${sobre ? ` data-sobre="${escapar(sobre)}"` : ''}${l.sello_pos ? ` data-pos="${escapar(l.sello_pos)}"` : ''}`;
+    // En la rejilla el sello cae centrado SOBRE las cajas, como en la referencia [6:35 «A LOT OF SKILL»].
+    // Ese ancla automático lleva data-auto: si la rejilla tiene celdas destacadas (ya no son intercambiables),
+    // runtime.js busca la banda entre renglones que menos destacadas tapa, o lo saca a una franja libre.
+    const auto = !l.sello_sobre && l.tipo === 'rejilla' && !l.sello_pos;
+    const sobre = l.sello_sobre || (auto ? 'rejilla' : '');
+    const pos = `${sobre ? ` data-sobre="${escapar(sobre)}"` : ''}${auto ? ' data-auto="1"' : ''}${l.sello_pos ? ` data-pos="${escapar(l.sello_pos)}"` : ''}`;
     // La etiqueta blanca opaca va por fuera y la tinta (con el grano) por dentro: base.css
     extras += `<div class="sello" data-p="${k}"${pos}><div class="sello-tinta">${escapar(l.sello)}</div></div>`;
     pasos = Math.max(pasos, k + 1);
@@ -80,13 +83,14 @@ function armarLamina(l, i, deck, comun) {
   if (clic) {
     const tipo = (clic.tipo || l.cursor) === 'flecha' ? 'flecha' : 'mano';
     clic.p = ctx.paso(clic.p);
-    extras += `<div class="cursor" data-p="${clic.p}" data-tipo="${tipo}">${tipo === 'flecha' ? CURSOR_FLECHA : CURSOR_MANO}</div><div class="onda" data-p="${clic.p}"></div>`;
+    const dibujo = tipo === 'flecha' ? CURSOR_FLECHA : clic.fin ? `<span class="c-dedo">${CURSOR_MANO}</span><span class="c-puno">${CURSOR_PUNO}</span>` : CURSOR_MANO;
+    extras += `<div class="cursor" data-p="${clic.p}" data-tipo="${tipo}">${dibujo}</div><div class="onda" data-p="${clic.p}"></div>`;
     pasos = Math.max(pasos, clic.p + 1);
   }
   const oscura = l.tipo === 'oscura' || l.oscura;
   return {
     interior, pasos, extras, oscura, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
-    clic: clic ? JSON.stringify({ a: clic.a, p: clic.p, ...(clic.pos ? { pos: clic.pos } : {}) }) : '',
+    clic: clic ? JSON.stringify({ a: clic.a, p: clic.p, ...(clic.pos ? { pos: clic.pos } : {}), ...(clic.fin ? { fin: clic.fin } : {}) }) : '',
   };
 }
 
@@ -119,7 +123,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   const errores = validarDeck(crudo, Object.keys(LAYOUTS));
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
   // {{CLAVE}} → valor de «datos» (o «[CLAVE]», que QA cuenta como pendiente). Luego, listas cerradas.
-  const { deck: conDatos, faltan } = sustituirDatos(crudo);
+  const { deck: conDatos, faltan, propuestos } = sustituirDatos(crudo);
   const { deck, avisos: avisosSaneo, sugerencias } = sanearDeck(conDatos);
   fs.mkdirSync(dirSalida, { recursive: true });
   const formato = FORMATOS[deck.formato || '16:9'] ? deck.formato || '16:9' : '16:9';
@@ -145,7 +149,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
       const prev = armadas[i - 1];
       const op = Number.isFinite(l.opacidad) ? l.opacidad : 0.2;
       const fondo = prev ? `<div class="escena clon" style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
-      cuerpo = `${fondo}<div class="lienzo" style="z-index:3"><div class="nota" data-p="0" style="--tn:${l.tam || '60px'};color:var(--tinta);font-weight:600;max-width:1300px">${marcar(l.texto || l.nota || '')}</div></div>`;
+      cuerpo = `${fondo}<div class="lienzo" style="z-index:3">${a.interior}</div>`;
     }
     const tipo = escapar(l.tipo);
     const claseFondo = a.oscura && ['azul', 'negro'].includes(l.fondo) ? ` fondo-${l.fondo}` : '';
@@ -177,5 +181,5 @@ ${secciones.join('\n')}
 <script>${runtime}</script>
 <script>${presentador}</script>
 </body></html>`;
-  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos), faltan };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos), faltan, propuestos };
 }

@@ -26,8 +26,12 @@ SKILL.md.
 - `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA.
 - `templates/presentador.js` es el presentador en vivo y la vista de ensayo (`?modo=orador`), sobre
   `window.PZ`. Lee la voz del `<script class="guion">` que `construir.mjs` mete en cada lámina.
-- `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica contra los cuadros del video: ver
-  PROTOCOLO §4b.
+- `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica versionada (`pruebas/replica/deck.json`) contra
+  los cuadros del video, que viven fuera del repo: ver PROTOCOLO §4b.
+- `scripts/lib/medidas-dom.mjs`: medidas que QA hace dentro de Chromium (palabras por renglón, recortes, flex
+  con texto y negrita). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
+- `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
+  sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md.
 
 ## Reglas de mantenimiento
 1. **Un diseño nuevo exige cinco cosas**:

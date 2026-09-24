@@ -51,6 +51,9 @@ export const PIEZAS = {
   clase: { min: 40, max: 60, nombre: 'clase' },
   webinar: { min: 60, max: 90, nombre: 'webinar' },
   propuesta: { min: 5, max: 20, nombre: 'propuesta' },
+  // piezas cortas con arco propio (ARCOS.md): no son el arco largo comprimido
+  tutorial: { min: 3, max: 8, nombre: 'tutorial' },
+  'vsl-corto': { min: 3, max: 6, nombre: 'VSL corto' },
   libre: null,
 };
 
@@ -68,6 +71,15 @@ export function minutosObjetivo(v) {
 export function duracionTotal(deck, pasos) {
   const t = tiemposSecuenciales(deck, pasos);
   return t.length ? t[t.length - 1].fin : 0;
+}
+
+// Segundos de voz sobre láminas y segundos a cámara, por separado: una «clase de 25 min» con 20 min de cámara
+// tiene 5 min de pizarrón (la referencia va ~12% a cámara).
+export function duracionPorTipo(deck, pasos) {
+  return tiemposSecuenciales(deck, pasos).reduce((a, s) => {
+    a[s.camara ? 'camara' : 'laminas'] += s.fin - s.inicio;
+    return a;
+  }, { laminas: 0, camara: 0 });
 }
 
 export const mmss = seg => { const s = Math.max(0, Math.round(seg)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };

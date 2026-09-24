@@ -19,6 +19,12 @@ export const CURSOR_MANO = `<svg viewBox="0 0 34 39" width="100%" height="100%">
 <rect x="11" y="1.2" width="6" height="21" rx="3"/><rect x="16.6" y="10" width="5.6" height="12.5" rx="2.8"/>
 <rect x="21.8" y="11.4" width="5.4" height="11.2" rx="2.7"/><rect x="26.6" y="13.2" width="5" height="9.6" rx="2.5"/></g>
 <rect x="11.9" y="21.4" width="18.8" height="8" fill="#fff"/></svg>`;
+// Mano cerrada (agarre) para el arrastre de la ruta punteada [1:55]: más gris que la de dedo, como en el video
+export const CURSOR_PUNO = `<svg viewBox="0 0 34 39" width="100%" height="100%"><g stroke="#111" stroke-width="1.7" stroke-linejoin="round" fill="#e2e2e2">
+<path d="M8.5 17.5v8.8c0 4.4 3.2 8.6 8.6 8.6h5.6c4.6 0 7.9-3.6 7.9-8.3v-9.1z"/>
+<rect x="8.5" y="11.5" width="5.6" height="9" rx="2.8"/><rect x="13.9" y="10.4" width="5.6" height="10" rx="2.8"/>
+<rect x="19.3" y="11" width="5.6" height="9.6" rx="2.8"/><rect x="24.7" y="12.6" width="5.3" height="8.2" rx="2.65"/>
+<path d="M8.6 22.5c-2.6-.6-4.6.9-4.4 3 .1 1.6 1.4 2.6 3.1 3.4l2.2 1" fill="none"/></g></svg>`;
 export const CURSOR_FLECHA = '<svg viewBox="0 0 26 38" width="100%" height="100%"><path d="M2 2v28.5l7.2-6.6 4.6 10.6 4.7-2-4.5-10.5h9.3z" fill="#fff" stroke="#111" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
 const EXT_IMG = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);

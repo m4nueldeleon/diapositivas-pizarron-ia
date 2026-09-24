@@ -52,7 +52,8 @@ test('contrato: el par de emojis solo en idea; flecha «ninguna»; campos nuevos
   const { deck, avisos } = sanearDeck({ laminas: [{ tipo: 'flujo', flecha: 'ninguna', nodos: ['a'], anclar: 'lado', fondo: 'rosa', apagar_emoji: 7 }] });
   assert.equal(deck.laminas[0].flecha, 'ninguna');
   assert.equal(deck.laminas[0].apagar_emoji, 1);
-  assert.equal(avisos.length, 2, avisos.join('\n'));   // anclar y fondo fuera de su lista
+  assert.equal(avisos.length, 3, avisos.join('\n'));   // anclar y fondo fuera de su lista; apagar_emoji 7 → 1 se recorta con aviso
+  assert.ok(avisos.some(a => /apagar_emoji: 7 → 1, fuera de rango/.test(a)));
 });
 
 test('render: sello opaco y centrado en la rejilla; mapa con ✅ a color y sin ruta; tarjetas alineadas', { timeout: 120_000 }, async () => {

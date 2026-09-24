@@ -324,10 +324,25 @@
   {
    "id": "cuentas",
    "tipo": "cifra",
-   "arriba": "Si te contrata el 0.1%:",
+   "arriba": "Si te contrata el 0.1-0.3%:",
    "lineas": [
-    "1,000,000 × **0.1%** = 1,000",
-    "1,000 × $25,000 = __$25,000,000__"
+    "1 millón × **0.1-0.3%** = 1-3 mil",
+    "× $25,000 = __$25-75 millones__"
+   ]
+  },
+  {
+   "id": "techo",
+   "tipo": "cifra",
+   "lineas": [
+    {
+     "texto": "~~Más horas = más dinero~~",
+     "tachar_paso": 1
+    },
+    "Más **alcance** = más dinero"
+   ],
+   "voz": [
+    "Te enseñaron que más horas es más dinero",
+    "pero lo que multiplica es el alcance"
    ]
   },
   {

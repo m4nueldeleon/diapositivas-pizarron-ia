@@ -169,7 +169,10 @@ Reglas:
   listas crecen renglón por renglón y la tabla se llena columna por columna.
 - Solo cuatro micro-efectos:
   1. El **cursor** entra, hace clic con una onda y elige una opción.
-  2. La **ruta punteada** se dibuja.
+  2. La **ruta punteada** se dibuja, y la dibuja la mano [1:53-1:55]: tras el clic en la tecla, la mano
+     cerrada (más chica y gris) sale hacia la siguiente con la ruta naciendo detrás, ~700 ms por tramo,
+     y termina de dedo sobre la última tecla. En `pasos` es el comportamiento por omisión con `clic`
+     (`arrastre: false` lo apaga).
   3. El **sello** cae con golpe y un temblor.
   4. **Foco**: la lámina anterior queda al 20% y encima aparece una frase manuscrita.
 - Los trazos a mano se dibujan en unos 300 ms.

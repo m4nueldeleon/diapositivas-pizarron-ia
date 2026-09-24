@@ -6,7 +6,7 @@
 //              valor raro se descarta con aviso en lugar de romper el render. Además normaliza los ítems
 //              escritos como texto suelto (tarjetas, chat, cuadrantes, nodos…) y devuelve `sugerencias`:
 //              avisos suaves (campo que ese diseño no usa, emoji dudoso) que QA cuenta como aviso, no error.
-import { analizarCompuesto } from './emoji.mjs';
+import { analizarCompuesto, esEmojiTexto } from './emoji.mjs';
 import { validarDatos } from './datos.mjs';
 import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
 
@@ -24,16 +24,20 @@ const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barra
 // Campos que lee cada diseño (además de los COMUNES). Si agregas un campo a un layout, agrégalo aquí:
 // pruebas/contrato.test.mjs revisa que todo «l.campo» de layouts-*.mjs esté en esta tabla.
 export const COMUNES = ['id', 'tipo', 'voz', 'dur', 'ancla', 'anclas', 'revelar', 'sello', 'sello_paso', 'sello_pos', 'sello_sobre',
-  'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar'];
+  'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar',
+  // `llamado: true` marca una lámina como llamado visible (reglas-deck.mjs); `paso_ref` elige el paso que
+  // comparar.mjs mide contra el cuadro del video (réplica)
+  'llamado', 'paso_ref'];
 export const CAMPOS = {
   idea: ['texto', 'texto_paso', 'tam_texto', 'emoji', 'emoji_tam', 'emoji_lado', 'emoji_paso', 'apagar_emoji', 'encabezado', 'encabezado_pos',
-    'nota', 'nota_paso'],
+    'nota', 'nota_paso', 'tachar_paso'],
   lista: ['items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'encabezado', 'nota', 'nota_paso'],
   flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
+  pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'texto', 'texto_paso',
+    'tam_texto', 'nota', 'nota_paso'],
   bifurcacion: ['origen', 'ramas', 'llave', 'separacion', 'tam_texto', 'emoji_tam'],
-  cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'texto', 'texto_paso', 'nota', 'nota_paso'],
-  cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso'],
+  cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
+  cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso'],
   objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'encabezado', 'nota', 'nota_paso'],
   oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
@@ -54,7 +58,7 @@ export const CAMPOS = {
   circulos: ['radio', 'radio_interior', 'tono', 'tono_interior', 'personas', 'emoji', 'centro', 'centro_paso', 'interior_paso', 'texto',
     'texto_paso', 'nota', 'nota_paso'],
   camara: ['nota'],
-  foco: ['texto', 'nota', 'tam', 'opacidad'],
+  foco: ['texto', 'nota', 'nota_paso', 'tam', 'opacidad'],
   stack: ['items', 'columnas', 'encabezado', 'remate', 'remate_paso', 'total', 'nota', 'nota_paso'],
 };
 
@@ -112,6 +116,41 @@ function revisarEmojis(o, ruta, errores, avisos) {
   }
 }
 
+// Textos que se dibujan DENTRO de un <svg> (gráfica, línea de tiempo): ahí el emoji no se cambia por la imagen
+// de Fluent y sale con la fuente del sistema (Apple en Mac, Noto o un cuadro vacío en Linux).
+function textosSvg(l) {
+  const out = [];
+  const de = (lista, campos, nom) => (Array.isArray(lista) ? lista : []).forEach((x, j) => x && typeof x === 'object' && campos.forEach(c => out.push([`${nom}[${j}].${c}`, x[c]])));
+  if (l.tipo === 'grafica') {
+    de(l.barras, ['etiqueta', 'valor_texto'], 'barras'); de(l.series, ['nombre'], 'series');
+    ['banda', 'eje_x', 'eje_y'].forEach(c => out.push([c, l[c]]));
+  } else if (l.tipo === 'linea-tiempo') { de(l.tramos, ['etiqueta'], 'tramos'); de(l.marcas, ['texto', 'arriba'], 'marcas'); }
+  return out.filter(([, v]) => typeof v === 'string');
+}
+const segG = new Intl.Segmenter('es', { granularity: 'grapheme' });
+export function emojisEnSvg(l) {
+  return textosSvg(l).flatMap(([campo, v]) => [...segG.segment(v)].map(x => x.segment).filter(esEmojiTexto).map(e => [campo, e]));
+}
+
+// Calendario: fases, anotaciones y título que no cuadran con los días que se dibujan
+function revisarCalendario(l, n, e) {
+  const dias = Array.isArray(l.dias) && l.dias.length ? l.dias.length : Math.min(Number(l.n) || 14, NUMEROS_TIPO.calendario.n[1]);
+  const fases = Array.isArray(l.fases) ? l.fases : [];
+  fases.forEach((f, j) => {
+    if (!f || typeof f !== 'object') return;
+    if (Number(f.hasta) > dias) e.push(`${n} (calendario): fases[${j}] llega al día ${f.hasta} y el calendario tiene ${dias} días: sube «n» o agrega días`);
+    if (Number(f.desde) > Number(f.hasta)) e.push(`${n} (calendario): fases[${j}] empieza (${f.desde}) después de terminar (${f.hasta})`);
+  });
+  if (Number(l.fase_activa) > fases.length) e.push(`${n} (calendario): fase_activa ${l.fase_activa} y hay ${fases.length} fases`);
+  (Array.isArray(l.anotaciones) ? l.anotaciones : []).forEach((a, j) => {
+    if (a && Number(a.dia) > dias) e.push(`${n} (calendario): anotaciones[${j}] apunta al día ${a.dia} y el calendario tiene ${dias} días`);
+  });
+  for (const c of ['titulo', 'rango']) {
+    const m = typeof l[c] === 'string' && l[c].match(/(\d+)\s*d[ií]as\b/i);
+    if (m && +m[1] !== dias) e.push(`${n} (calendario): «${c}» dice ${m[1]} días y se dibujan ${dias}: pon "n": ${m[1]} (hasta ${NUMEROS_TIPO.calendario.n[1]}) o corrige el texto`);
+  }
+}
+
 export function validarDeck(deck, tipos) {
   const e = [];
   if (!deck || typeof deck !== 'object') return ['deck.json no es un objeto'];
@@ -161,6 +200,7 @@ export function validarDeck(deck, tipos) {
       else if (conFuente && ejemplo) e.push(`${n} (prueba): capturas[${j}] trae «fuente» y «ejemplo» a la vez: un post es real o es maqueta`);
     });
     if (l.tipo === 'bifurcacion' && l.origen != null && (typeof l.origen !== 'object' || Array.isArray(l.origen))) e.push(`${n}: «origen» debe ser un objeto { emoji, texto }`);
+    if (l.tipo === 'calendario') revisarCalendario(l, n, e);
     revisarEmojis(l, n, e, []);
   });
   return e;
@@ -185,12 +225,15 @@ const NUMEROS = {
   total: [1, 1200, 1], radio: [60, 520], radio_interior: [0, 480], personas: [0, 60, 1],
   opacidad: [0, 1], ancho_etiqueta: [0.05, 0.5], elegida: [0, 20, 1], activo: [0, 20, 1], clic: [0, 20, 1], n: [1, 12, 1],
   fase_activa: [0, 20, 1], desde: [0, 1e9], hasta: [0, 1e9], dia: [1, 400, 1], pos: [0, 1], emoji_tam: [16, 700],
-  apagar_emoji: [0, 1, 1], peso: [300, 900, 1],
+  apagar_emoji: [0, 1, 1], peso: [300, 900, 1], paso_ref: [-1, 200, 1],
 };
-const num = (v, [a, b, ent]) => {
+// Rangos que dependen del diseño: `n` son pasos (≤ 12) en `pasos` y días (≤ 42, seis semanas) en `calendario`
+const NUMEROS_TIPO = { calendario: { n: [1, 42, 1] } };
+const num = (v, [a, b, ent], recorte) => {
   const x = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
   if (typeof x !== 'number' || !Number.isFinite(x)) return undefined;
   const y = Math.min(b, Math.max(a, x));
+  if (y !== x && recorte) recorte(y);
   return ent ? Math.round(y) : y;
 };
 const px = v => {
@@ -199,13 +242,17 @@ const px = v => {
 };
 const cuadro = v => (Array.isArray(v) && v.length >= 4 && v.slice(0, 4).every(x => Number.isFinite(Number(x))) ? v.slice(0, 4).map(Number) : undefined);
 
-function sanearObjeto(o, ruta, avisos) {
+function sanearObjeto(o, ruta, avisos, tipo) {
   if (Array.isArray(o)) return o.map((x, i) => sanearObjeto(x, `${ruta}[${i}]`, avisos));
   if (!o || typeof o !== 'object') return o;
   const r = {};
   for (const [k, v] of Object.entries(o)) {
     const aviso = () => avisos.push(`${ruta}.${k}: valor «${String(JSON.stringify(v)).slice(0, 40)}» no válido, se ignoró`);
-    if (k.endsWith('_paso') || k === 'paso') { const x = num(v, [0, 200, 1]); if (x === undefined) aviso(); else r[k] = x; continue; }
+    // un número fuera de rango se recorta, pero nunca en silencio (un calendario de 28 días salía con 12)
+    const recorte = rango => y => avisos.push(`${ruta}.${k}: ${v} → ${ent(rango, y)}, fuera de rango (${rango[0]}-${rango[1]})`);
+    const ent = (rango, y) => (rango[2] ? Math.round(y) : y);
+    if (k.endsWith('_paso') || k === 'paso') { const x = num(v, [0, 200, 1], recorte([0, 200, 1])); if (x === undefined) aviso(); else r[k] = x; continue; }
+    if (k === 'tam_etiqueta') { const p = px(v); if (p) r[k] = parseFloat(p); else aviso(); continue; }
     if (k === 'tono') {
       if (typeof v === 'string' && (TONOS.has(v) || (ruta.endsWith('medidor') && /^#[0-9a-f]{3,8}$/i.test(v)))) r[k] = v; else aviso();
       continue;
@@ -216,7 +263,8 @@ function sanearObjeto(o, ruta, avisos) {
     if (k === 'tam_texto') { if (TAM_TEXTO.has(v)) r[k] = v; else if (px(v)) r[k] = px(v); else aviso(); continue; }
     if (k === 'tam') { const p = px(v); if (p) r[k] = p; else aviso(); continue; }
     if (k === 'emoji_tam' && typeof v === 'string') { if (['chico', 'medio', 'grande', 'heroe'].includes(v)) r[k] = v; else aviso(); continue; }
-    if (NUMEROS[k] && !(k === 'hasta' && v === 'fin') && (v === null || typeof v !== 'object')) { const x = num(v, NUMEROS[k]); if (x === undefined) aviso(); else r[k] = x; continue; }
+    const rango = (NUMEROS_TIPO[tipo] || {})[k] || NUMEROS[k];
+    if (rango && !(k === 'hasta' && v === 'fin') && (v === null || typeof v !== 'object')) { const x = num(v, rango, recorte(rango)); if (x === undefined) aviso(); else r[k] = x; continue; }
     if (k === 'clic_pos') { const c = Array.isArray(v) && v.length === 2 && v.every(x => Number.isFinite(Number(x))) ? v.map(x => Math.min(1, Math.max(0, Number(x)))) : null; if (c) r[k] = c; else aviso(); continue; }
     if (k === 'sello_sobre') { if (typeof v === 'string' && /^[\p{L}\p{N}_-]{1,40}$/u.test(v)) r[k] = v; else aviso(); continue; }
     if (k === 'circulo' && !(typeof v === 'boolean')) { const c = cuadro(v); if (c) r[k] = c; else aviso(); continue; }
@@ -253,7 +301,8 @@ export function sanearDeck(deck) {
   const laminas = deck.laminas.map((l, i) => {
     sugerencias.push(...camposDesconocidos(l, i));
     revisarEmojis(l, `lámina ${i + 1}`, [], sugerencias);
-    return sanearObjeto(normalizar(l), `lámina ${i + 1}${l.tipo === 'medidor' ? ' medidor' : ''}`, avisos);
+    if (deck.emoji == null || deck.emoji === 'auto') emojisEnSvg(l).forEach(([campo, e]) => sugerencias.push(`lámina ${i + 1} (${l.id || l.tipo}): el emoji ${e} de «${campo}» va dentro de la gráfica (SVG) y sale con la fuente del sistema: con emoji "auto", en Linux saldrá distinto; ponlo en la nota, en el nodo o en barras[].emoji (EMOJIS.md)`));
+    return sanearObjeto(normalizar(l), `lámina ${i + 1}${l.tipo === 'medidor' ? ' medidor' : ''}`, avisos, l.tipo);
   });
   const marca = deck.marca && typeof deck.marca === 'object' ? sanearObjeto(deck.marca, 'marca', avisos) : deck.marca;
   return { deck: { ...deck, marca, laminas }, avisos, sugerencias };

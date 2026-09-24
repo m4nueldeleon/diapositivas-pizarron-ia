@@ -129,6 +129,9 @@
       const mp = document.createElementNS(NS, 'path');
       mp.setAttribute('d', d); mp.setAttribute('stroke', '#fff'); mp.setAttribute('stroke-width', (o.ancho || 4) + 10); mp.setAttribute('fill', 'none');
       mp.setAttribute('pathLength', '1'); mp.setAttribute('stroke-dasharray', '1 1'); mp.dataset.trazo = '1'; mp.dataset.p = o.p || 0; mp.dataset.dur = o.dur || 700;
+      if (o.retraso) mp.dataset.retraso = o.retraso;
+      // tramo que arrastra la mano [1:55]: el cursor sigue la punta de esta máscara (ver mostrar)
+      if (o.arrastre != null) Object.assign(e.dataset, { arrastre: o.arrastre, retraso: o.retraso || 0, dur: o.dur || 700 });
       m.appendChild(mp); svg.querySelector('defs').appendChild(m); e.setAttribute('mask', `url(#${mid})`);
     } else if (!o.relleno) {
       e.setAttribute('pathLength', '1'); e.setAttribute('stroke-dasharray', '1 1'); e.dataset.trazo = '1'; e.dataset.dur = o.dur || 300;
@@ -217,7 +220,7 @@
         const P = [A.x + A.w + 14, A.cy + (arriba ? -A.h * 0.22 : A.h * 0.22)], Q = [B.x - 14, B.cy + (arriba ? -B.h * 0.22 : B.h * 0.22)];
         const d = Q[0] - P[0], alto = (arriba ? -1 : 1) * Math.max(90, d * 0.42);
         pts = cubica(P, [P[0] + d * 0.12, P[1] + alto], [Q[0] - d * 0.2, Q[1] + alto * 0.9], Q);
-        trazo(svg, suave(pts), { color: C.grisClaro, ancho: 4, dash: '7 11', p, textura: false, dur: 650 });
+        trazo(svg, suave(pts), { color: C.grisClaro, ancho: 4, dash: '7 11', p, textura: false, dur: 650, retraso: c.retraso, arrastre: c.arrastre });
         return;
       }
       case 'linea': {
@@ -304,24 +307,33 @@
   function cursor(esc, lam, r) {
     const spec = esc.dataset.clic ? JSON.parse(esc.dataset.clic) : null; if (!spec) return;
     const el = ancla(esc, spec.a); if (!el) { avisos.push(`lámina ${+lam.dataset.i + 1}: el clic apunta a «${spec.a}», que no existe`); return; }
-    const b = caja(el, lam), cur = esc.querySelector(':scope > .cursor'), onda = esc.querySelector(':scope > .onda');
+    const cur = esc.querySelector(':scope > .cursor'), onda = esc.querySelector(':scope > .onda');
     const mano = cur.dataset.tipo !== 'flecha', W = mano ? 104 : 72, H = mano ? 119 : 106;
-    let tx = b.x + b.w * (mano ? (b.w > 300 ? 0.84 : 0.6) : 0.74), ty = b.y + b.h * (mano ? 0.56 : 0.62);
-    if (Array.isArray(spec.pos)) { tx = b.x + b.w * spec.pos[0]; ty = b.y + b.h * spec.pos[1]; }   // clic_pos manda
-    else if (mano && el.classList.contains('boton-ui')) {
-      // botón [23:15]: la punta del dedo a la derecha del emoji (~0.45 de su ancho), a media altura; el emoji
-      // se ve entero. Sin emoji, en el relleno de la derecha sin tapar el texto.
-      const emo = el.querySelector('.emo');
-      tx = b.x + b.w - Math.max(40, b.h * 0.35); ty = b.y + b.h * 0.6;
-      if (emo) {
-        const e = caja(emo, lam);
-        tx = Math.min(Math.max(tx, e.x + e.w * 1.45), b.x + b.w * 0.95);
-        if (tx < e.x + e.w * 1.1) { tx = e.x + e.w * 1.1; ty = e.y + e.h * 0.95; }
+    // Punta del dedo (o de la flecha) sobre un ancla
+    const punta = e => {
+      const b = caja(e, lam);
+      let tx = b.x + b.w * (mano ? (b.w > 300 ? 0.84 : 0.6) : 0.74), ty = b.y + b.h * (mano ? 0.56 : 0.62);
+      if (Array.isArray(spec.pos)) { tx = b.x + b.w * spec.pos[0]; ty = b.y + b.h * spec.pos[1]; }   // clic_pos manda
+      else if (mano && e.classList.contains('boton-ui')) {
+        // botón [23:15]: la punta del dedo a la derecha del emoji (~0.45 de su ancho), a media altura; el emoji
+        // se ve entero. Sin emoji, en el relleno de la derecha sin tapar el texto.
+        const emo = e.querySelector('.emo');
+        tx = b.x + b.w - Math.max(40, b.h * 0.35); ty = b.y + b.h * 0.6;
+        if (emo) {
+          const q = caja(emo, lam);
+          tx = Math.min(Math.max(tx, q.x + q.w * 1.45), b.x + b.w * 0.95);
+          if (tx < q.x + q.w * 1.1) { tx = q.x + q.w * 1.1; ty = q.y + q.h * 0.95; }
+        }
       }
-    }
+      return [tx, ty];
+    };
+    const [tx, ty] = punta(el);
     const px = tx - W * (mano ? 0.41 : 0.08), py = ty - H * (mano ? 0.03 : 0.05);
     Object.assign(cur.style, { width: W + 'px', height: H + 'px', left: px + 'px', top: py + 'px' });
     Object.assign(onda.style, { left: tx + 'px', top: ty + 'px' });
+    // Arrastre: al terminar, la mano queda sobre la última tecla (mismo punto relativo que la del clic)
+    const elFin = spec.fin && ancla(esc, spec.fin);
+    if (elFin) { const [fx, fy] = punta(elFin); Object.assign(cur.dataset, { tx, ty, fx: fx - tx, fy: fy - ty }); }
   }
 
   // Si el contenido no cabe en el lienzo (formatos verticales, textos largos), se reduce con zoom
@@ -355,6 +367,7 @@
     const s = lam.querySelector(':scope > .sello'); if (!s) return;
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
     let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
+    let rejilla = null;
     if (s.dataset.sobre) {
       const el = ancla(lam, s.dataset.sobre);
       if (el) {
@@ -364,14 +377,43 @@
           const fs = parseFloat(getComputedStyle(tinta).fontSize) || 104;
           tinta.style.fontSize = clamp(fs * (b.w * 0.6) / (s.offsetWidth || 1), 72, 140).toFixed(1) + 'px';
         }
+        if (s.dataset.auto && el.classList.contains('rejilla')) rejilla = el;
       } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
     }
     const w = s.offsetWidth, h = s.offsetHeight;
     const k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
     const bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2, bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
+    if (rejilla) [cx, cy] = selloEnRejilla(lam, rejilla, [cx, cy], w * k, h * k, a, bw, bh, m);
     cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, m + bh, H - m - bh);
     Object.assign(s.style, { left: cx + 'px', top: cy + 'px' });
     s.dataset.k = k.toFixed(3);
+  }
+
+  // Sello sobre una rejilla con celdas DESTACADAS: esas celdas son el dato que se cuenta y no se tapan. Se prueba
+  // el centro de cada banda entre renglones (y el centro) y gana la que tapa menos destacadas; si aun la mejor
+  // tapa más de 2, el sello sale a una franja libre (abajo, arriba, derecha o izquierda de la rejilla) que no
+  // pise texto. Sin destacadas se queda centrado sobre las cajas, como en la referencia [6:45].
+  function selloEnRejilla(lam, rej, centro, w, h, a, bw, bh, m) {
+    const dest = [...rej.querySelectorAll('[data-a^="d"]')].map(e => caja(e, lam));
+    if (!dest.length) return centro;
+    const W = lam.offsetWidth, H = lam.offsetHeight, c = Math.cos(-a), sn = Math.sin(-a);
+    const tapa = ([cx, cy]) => dest.filter(d => {
+      const x = d.cx - cx, y = d.cy - cy, u = x * c - y * sn, v = x * sn + y * c;   // al marco del sello (girado −5°)
+      return Math.abs(u) <= w / 2 && Math.abs(v) <= h / 2;
+    }).length;
+    const R = caja(rej, lam);
+    const filas = [...new Set([...rej.children].map(e => Math.round(caja(e, lam).cy)))].sort((p, q) => p - q);
+    const cands = [centro, ...filas.slice(1).map((y, i) => [R.cx, (y + filas[i]) / 2])]
+      .map(p => [p[0], clamp(p[1], m + bh, H - m - bh)])
+      .map(p => ({ p, n: tapa(p), d: Math.abs(p[1] - centro[1]) }))
+      .sort((p, q) => p.n - q.n || p.d - q.d);
+    if (cands[0].n <= 2) return cands[0].p;
+    const textos = [...lam.querySelectorAll('.t, .nota, .encabezado, .etiqueta')].filter(e => e.getClientRects().length).map(e => caja(e, lam));
+    // pegado al borde de la rejilla y acotado al lienzo: puede pisar celdas NO destacadas, nunca una destacada
+    const acota = ([cx, cy]) => [clamp(cx, m + bw, W - m - bw), clamp(cy, m + bh, H - m - bh)];
+    const libre = ([cx, cy]) => !textos.some(t => t.x < cx + bw && t.x + t.w > cx - bw && t.y < cy + bh && t.y + t.h > cy - bh) && !tapa([cx, cy]);
+    const fuera = [[R.cx, R.y + R.h + bh + 16], [R.cx, R.y - bh - 16], [R.x + R.w + bw + 16, R.cy], [R.x - bw - 16, R.cy]].map(acota).find(libre);
+    return fuera || cands[0].p;
   }
 
   function dibujar(lam) {
@@ -419,12 +461,15 @@
     }
     lam.querySelectorAll('.cursor[data-p]').forEach(cur => {
       const p = +cur.dataset.p, onda = cur.parentElement.querySelector(':scope > .onda');
-      let dx = 0, dy = 0, sc = 1, oo = 0, os = 20;
+      const arrastra = cur.dataset.fx != null;
+      let dx = 0, dy = 0, sc = 1, oo = 0, os = 20, cerrada = false;
       if (!fin && p === paso) {
         const k = easeInOut(clamp(t / 560)); dx = (1 - k) * 280; dy = (1 - k) * 210;
         if (t > 600 && t < 740) sc = 0.86;
         if (t > 600 && t < 1050) { const q = (t - 600) / 450; oo = 0.9 * (1 - q); os = 20 + q * 110; }
-      }
+        if (arrastra && t > 740) { const q = arrastre(cur, t); dx = q[0]; dy = q[1]; cerrada = q[2]; if (cerrada) sc = 0.85; }
+      } else if (arrastra && (fin || p < paso)) { dx = +cur.dataset.fx; dy = +cur.dataset.fy; }
+      cur.classList.toggle('cerrada', cerrada);
       cur.style.transform = `translate(${dx}px,${dy}px) scale(${sc})`; cur.style.transformOrigin = '40% 5%';
       if (onda) Object.assign(onda.style, { opacity: oo, width: os + 'px', height: os + 'px' });
     });
@@ -440,9 +485,34 @@
       });
     }
   }
+  // Arrastre [1:55]: la mano cerrada sigue la punta de cada tramo de la ruta punteada (el mismo avance que su
+  // máscara) y, al terminar, vuelve a la mano de dedo sobre la última tecla. Devuelve [dx, dy, cerrada].
+  function arrastre(cur, t) {
+    const lam = cur.closest('.lamina');
+    const tramos = [...lam.querySelectorAll('.capa-mano path[data-arrastre]')].sort((p, q) => p.dataset.arrastre - q.dataset.arrastre);
+    const tx = +cur.dataset.tx, ty = +cur.dataset.ty, fx = +cur.dataset.fx, fy = +cur.dataset.fy;
+    if (!tramos.length) return [fx, fy, false];
+    const ini = e => +e.dataset.retraso || 0, dur = e => +e.dataset.dur || 700;
+    const ult = tramos[tramos.length - 1], tFin = ini(ult) + dur(ult);
+    const puntaDe = (e, k) => { const L = e.getTotalLength(), q = e.getPointAtLength(clamp(k) * L); return [q.x - tx, q.y - ty]; };
+    if (t >= tFin + 250) return [fx, fy, false];
+    if (t >= tFin) { const [ex, ey] = puntaDe(ult, 1), k = easeOut((t - tFin) / 250); return [ex + (fx - ex) * k, ey + (fy - ey) * k, k < 1]; }
+    if (t < ini(tramos[0])) return [0, 0, false];
+    const e = tramos.find(x => t < ini(x) + dur(x)) || ult;
+    const k = easeOut(clamp((t - ini(e)) / dur(e)));
+    const [ex, ey] = puntaDe(e, k);
+    // al salir de la tecla del clic la mano se desliza hasta la punta del trazo (sin salto de un cuadro)
+    const b = e === tramos[0] ? clamp(k * 3) : 1;
+    return [ex * b, ey * b, true];
+  }
   const pasos = lam => Math.max(1, Math.floor(+lam.dataset.pasos) || 1);
   const animaDur = (lam, paso) => {
-    if (lam.querySelector(`.cursor[data-p="${paso}"]`)) return 1100;
+    if (lam.querySelector(`.cursor[data-p="${paso}"]`)) {
+      // con arrastre, hasta que la mano llega a la última tecla
+      let fin = 1100;
+      lam.querySelectorAll('.capa-mano path[data-arrastre]').forEach(e => { if (+e.dataset.p === paso) fin = Math.max(fin, (+e.dataset.retraso || 0) + (+e.dataset.dur || 700) + 300); });
+      return fin;
+    }
     if (lam.querySelector(`.sello[data-p="${paso}"]`)) return 400;
     let m = 0;
     lam.querySelectorAll(`[data-trazo][data-p="${paso}"]`).forEach(e => (m = Math.max(m, (+e.dataset.dur || 300) + (+e.dataset.retraso || 0))));

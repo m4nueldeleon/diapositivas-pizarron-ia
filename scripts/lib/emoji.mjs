@@ -145,6 +145,18 @@ export function analizarCompuesto(spec) {
 
 const RE_EMOJI_TEXTO = /^\p{RGI_Emoji}$/v;
 const segmentador = new Intl.Segmenter('es', { granularity: 'grapheme' });
+// Símbolos que existen como emoji pero se usan como tipografía: sin FE0F se quedan como texto
+const TIPOGRAFICOS = /^[©®™#*0-9\u2194-\u21AA\u2934\u2935\u2B05-\u2B07▪▫▶◀◻◼◽◾‼⁉〰〽♀♂⚕]$/u;
+// Un grafema es emoji para el texto: RGI tal cual o, si es un símbolo de presentación texto escrito SIN FE0F
+// (✔ ❤ ☎ ⚠ ✉ ✂ ☀), con el FE0F que le falta. Devuelve la forma a dibujar, o '' si es texto.
+export function formaEmoji(g) {
+  if (RE_EMOJI_TEXTO.test(g)) return g;
+  const cps = [...g];
+  if (cps.length !== 1 || TIPOGRAFICOS.test(g) || !/\p{Extended_Pictographic}/u.test(g) || /\p{Emoji_Presentation}/u.test(g)) return '';
+  const con = g + '\uFE0F';
+  return RE_EMOJI_TEXTO.test(con) ? con : '';
+}
+export const esEmojiTexto = g => Boolean(formaEmoji(g));
 
 export class Emojis {
   constructor({ modo = 'auto', dirSalida }) {
@@ -197,7 +209,8 @@ export class Emojis {
       if (dentroEmo) return t;
       let out = '';
       for (const { segment: g } of segmentador.segment(t)) {
-        out += RE_EMOJI_TEXTO.test(g) ? `<span class="emo en-texto" style="--s:1.15em">${this.glifo(g)}</span>` : g;
+        const f = formaEmoji(g);
+        out += f ? `<span class="emo en-texto" style="--s:1.15em">${this.glifo(f)}</span>` : g;
       }
       return out;
     }).join('');
@@ -212,20 +225,39 @@ export function tamEmoji(v, porOmision = 'medio') {
   return TAM_EMOJI[v] || TAM_EMOJI[porOmision];
 }
 
-// Emojis que casi desaparecen según el set y el fondo (muestrario de la ronda 1 sobre blanco, tarjeta,
-// cuadrantes y lámina oscura). QA avisa y propone el sustituto. Sin selector de variación (FE0F).
+// Emojis que casi desaparecen según el set y el fondo. Dos fuentes:
+//   · BAJO_CONTRASTE: la tabla revisada a ojo, con el SUSTITUTO que QA propone (sin selector FE0F);
+//   · contraste-emojis.json: la medida de scripts/medir-emojis.mjs (% del glifo que se distingue del fondo).
+//     Bajo UMBRAL_CONTRASTE QA avisa, salvo los de VISTOS_OK (medida baja pero se leen: la línea roja de 📈).
 export const BAJO_CONTRASTE = {
   apple: {
-    claro: { '🏷': '💵', '✉': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩' },
+    claro: { '🏷': '💵', '✉': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩', '🖱': '👆', '☁': '🌐' },
     oscura: { '🗨': '💬', '📞': '☎', '💲': '💵', '🎥': '📹', '🤍': '❤' },
   },
   fluent: {
-    claro: { '💬': '📲', '🗨': '📲', '💭': '💡', '✉': '📧', '📩': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩' },
+    claro: { '💬': '📲', '🗨': '📲', '💭': '💡', '✉': '📧', '📩': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩',
+      '🔧': '🛠', '📨': '📧', '📃': '📋', '🗒': '📋', '☁': '🌐', '🖱': '👆', '⚙': '🛠' },
     oscura: { '🗣': '🎤', '🤍': '❤' },
   },
 };
-// Devuelve el sustituto sugerido si el emoji es de bajo contraste en ese set y fondo, o '' si se ve bien.
+export const UMBRAL_CONTRASTE = 15;
+// Sustituto para un emoji que solo la MEDIDA marca (p. ej. 💬 de Apple sobre tarjeta gris)
+export const SUGERIDO = { '💬': '📲', '🗨': '📲', '💭': '💡', '📑': '📋', '📃': '📋', '🗒': '📋', '🔖': '📌', '☁': '🌐', '🖱': '👆', '🔧': '🛠', '📨': '📧', '📩': '📧', '🧾': '📋', '📄': '📋', '✉': '📧', '🏷': '💵', '🤍': '❤', '🏳': '🚩' };
+export const VISTOS_OK = { apple: ['📈', '📉', '💡', '📩'], fluent: [] };
+// Emojis que cambian de SENTIDO entre sets (no de contraste): EMOJIS.md, «Se ven distinto según el modo»
+export const DIVERGE = { fluent: { '🤔': '❓' }, apple: {} };
+let medidas = null;
+export function contrasteMedido() {
+  if (medidas) return medidas;
+  try { medidas = JSON.parse(fs.readFileSync(new URL('./contraste-emojis.json', import.meta.url), 'utf8')); } catch { medidas = { apple: {}, fluent: {} }; }
+  return medidas;
+}
+// Sustituto sugerido si el emoji es de bajo contraste en ese set y fondo ('claro' | 'tarjeta' | 'oscura'); ''
+// si se ve bien. Un emoji medido bajo el umbral sin sustituto en la tabla devuelve '?' (elige otro).
 export function bajoContraste(ch, modo, fondo) {
+  const k = String(ch || '').replace(/\uFE0F/g, '');
   const t = (BAJO_CONTRASTE[modo] || {})[fondo === 'oscura' ? 'oscura' : 'claro'] || {};
-  return t[String(ch || '').replace(/\uFE0F/g, '')] || '';
+  if (t[k]) return t[k];
+  const m = ((contrasteMedido()[modo] || {})[fondo === 'oscura' ? 'oscura' : fondo === 'tarjeta' ? 'tarjeta' : 'claro'] || {})[k];
+  return m != null && m < UMBRAL_CONTRASTE && !(VISTOS_OK[modo] || []).includes(k) ? SUGERIDO[k] || '?' : '';
 }

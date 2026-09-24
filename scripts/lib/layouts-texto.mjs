@@ -4,6 +4,17 @@
 import { marcar, escapar, texto, nota, bloque, pasoDe } from './comun.mjs';
 import { tamTexto, palabras } from './markup.mjs';
 
+// Etiqueta corta (≤ 3 palabras): no se parte en dos renglones («La / detecta», «Paso / 2»). Si con eso la fila
+// no cabe, encajar() la reduce y QA lo cuenta.
+const corta = t => (palabras(t) <= 3 ? ' corta' : '');
+
+// `~~tachado~~` dentro de un texto: por omisión el trazo cae en el mismo paso que el texto; con
+// `tachar_paso: n` cae n pasos DESPUÉS, para que el texto se alcance a leer antes de tacharlo [4:05].
+function tacharDespues(html, ctx, k, n) {
+  if (!Number.isInteger(n) || n < 1 || !/data-tachar>/.test(html)) return html;
+  return html.replace(/data-tachar>/g, `data-tachar data-tachar-p="${ctx.paso(k + n)}">`);
+}
+
 // Par antes/después [10:55]: dos emojis en fila; `apagar_emoji` (0|1) atenúa el negado y `emoji_paso`
 // revela el segundo en un paso aparte.
 function parEmoji(l, ctx) {
@@ -28,7 +39,7 @@ export function idea(l, ctx) {
   const rotulo = cls => (l.encabezado ? `<div class="encabezado${cls}"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : '');
   if (l.emoji_lado && !par) {
     return `<div class="pila">${rotulo('')}
-      <div class="fila gap-s t ${tam}"${ctx.P(kTexto)}${ctx.A('texto')}><span${ctx.A('emoji')}>${emo.replace('class="emo ', 'class="emo en-linea ')}</span><span>${marcar(l.texto)}</span></div>
+      <div class="fila gap-s t ${tam}"${ctx.P(kTexto)}${ctx.A('texto')}><span${ctx.A('emoji')}>${emo.replace('class="emo ', 'class="emo en-linea ')}</span><span>${tacharDespues(marcar(l.texto), ctx, kTexto, l.tachar_paso)}</span></div>
       ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
   }
   const vis = par ? parEmoji(l, ctx) : emo ? `<div${ctx.P(0)}${ctx.A('emoji')}>${emo}</div>` : '';
@@ -37,7 +48,7 @@ export function idea(l, ctx) {
     ${entre ? '' : rotulo('')}
     ${vis}
     ${entre ? rotulo(' entre') : ''}
-    ${texto(ctx, l.texto, tam + (hayEmo && !(entre && l.encabezado) ? ' mt-e' : ''), kTexto, ctx.A('texto'))}
+    ${tacharDespues(texto(ctx, l.texto, tam + (hayEmo && !(entre && l.encabezado) ? ' mt-e' : ''), kTexto, ctx.A('texto')), ctx, kTexto, l.tachar_paso)}
     ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
 }
 
@@ -80,7 +91,7 @@ export function flujo(l, ctx) {
     const aNodo = ctx.vertical ? ctx.A('n' + i) : '', aVis = ctx.vertical ? '' : ctx.A('n' + i);
     return `<div class="nodo" style="--te:${te}"${ctx.P(k)}${aNodo}>
       <div${aVis}>${vis}</div>
-      ${nd.etiqueta ? `<div class="etiqueta ${nd.normal || sinFlecha ? 'normal' : ''}">${marcar(nd.etiqueta)}</div>` : ''}
+      ${nd.etiqueta ? `<div class="etiqueta ${nd.normal || sinFlecha ? 'normal' : ''}${corta(nd.etiqueta)}">${marcar(nd.etiqueta)}</div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;
   }).join('');
   const dir = ctx.vertical ? 'pila' : 'fila';
@@ -101,28 +112,45 @@ export function pasos(l, ctx) {
   const activo = l.activo || 0;
   const hechos = new Set(l.hechos || []);
   const rev = l.revelar === 'pasos' && !activo && !l.hechos;
+  const horizontal = !ctx.vertical;
+  // Medidas del mapa con íconos según cuántos pasos hay: con 3 queda el aire de la referencia [16:40]; con 4
+  // o 5 el hueco, el ícono y la etiqueta bajan para que los nombres quepan en UN renglón cada uno.
+  const tamIcono = horizontal && n >= 5 ? 150 : 180;
+  const tamEtq = l.tam_etiqueta || (horizontal ? (n <= 3 ? 86 : n === 4 ? 74 : 64) : 86);
+  const tamPref = horizontal ? Math.round(tamEtq * 0.72) : 62;
+  const kt = pasoDe(l, 'texto_paso', rev ? n : 0);
+  const kClic = l.clic ? pasoDe(l, 'clic_paso', kt + 1) : -1;
+  const ruta = l.ruta ?? !l.iconos;
+  // Arrastre [1:55]: la mano aprieta la tecla del clic y ARRASTRA la ruta punteada hasta la última tecla. Los
+  // tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada uno) al terminar la
+  // onda (~760 ms). `arrastre: false` deja la ruta completa desde el paso 0 y la mano quieta.
+  const arrastra = l.clic && ruta && l.arrastre !== false && !rev && l.clic < n;
   const cols = [];
   for (let i = 0; i < n; i++) {
     const apagado = activo && activo !== i + 1 ? ' style="opacity:.2"' : '';
     const sobre = l.sobre ? `<div style="margin-bottom:10px">${ctx.emoji(l.sobre, 120)}</div>` : '';
     let cab;
     if (l.iconos) {
-      cab = `<div${ctx.A('k' + i)}>${ctx.emoji(l.iconos[i], 180)}</div>
-        ${l.prefijo !== false ? `<div style="font-size:62px;color:var(--gris);margin-top:60px;line-height:1.05">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
-        ${l.etiquetas ? `<div style="font-size:86px;font-weight:700;letter-spacing:-.02em;line-height:1.05${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
+      cab = `<div${ctx.A('k' + i)}>${ctx.emoji(l.iconos[i], tamIcono)}</div>
+        ${l.prefijo !== false ? `<div class="rotulo-paso" style="font-size:${tamPref}px;color:var(--gris);margin-top:60px;line-height:1.05;white-space:nowrap">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
+        ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
       cab = `<div class="tecla" style="--s:${ctx.vertical ? 150 : 170}px"${ctx.A('k' + i)}>${i + 1}</div>
-        ${l.etiquetas ? `<div style="font-size:56px;font-weight:700;margin-top:28px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
+        ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${l.tam_etiqueta || 56}px;font-weight:700;margin-top:28px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
     const ok = hechos.has(i + 1) ? `<div style="margin-top:26px">${ctx.emoji('✅', 90)}</div>` : '';
-    cols.push(`<div class="pila"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
-    const ruta = l.ruta ?? !l.iconos;
-    if (i > 0 && ruta) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: rev ? i : 0 });
+    // flex:0 0 auto: la columna nunca se encoge (encogida partía «Paso / 2»); si la fila no cabe, encaja con zoom
+    cols.push(`<div class="pila" style="flex:0 0 auto"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
+    if (i > 0 && ruta) {
+      const j = i - l.clic;   // tramo j-ésimo desde la tecla del clic (0 = el que sale de ella)
+      if (arrastra && j >= 0) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: kClic, retraso: 760 + j * 700, arrastre: j });
+      else ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: rev ? i : 0 });
+    }
   }
-  const kt = pasoDe(l, 'texto_paso', rev ? n : 0);
   // con etiquetas bajo la tecla, la mano aprieta la parte de arriba para no taparlas
-  if (l.clic) ctx.clic = { a: 'k' + (l.clic - 1), p: pasoDe(l, 'clic_paso', kt + 1), ...(l.etiquetas && !l.iconos ? { pos: [0.6, 0.4] } : {}) };
-  const gapP = ctx.vertical ? (l.iconos ? 70 : 110) : (l.iconos ? 230 : 330);
+  if (l.clic) ctx.clic = { a: 'k' + (l.clic - 1), p: kClic, ...(l.etiquetas && !l.iconos ? { pos: [0.6, 0.4] } : {}), ...(arrastra ? { fin: 'k' + (n - 1) } : {}) };
+  const gapP = l.separacion ?? (ctx.vertical ? (l.iconos ? 70 : 110)
+    : l.iconos ? ({ 1: 230, 2: 230, 3: 230, 4: 150 }[n] ?? 80) : ({ 1: 330, 2: 330, 3: 330, 4: 230 }[n] ?? 150));
   return `<div class="pila"><div class="fila"${rev ? '' : ctx.P(0)} style="gap:${gapP}px;align-items:flex-start">${cols.join('')}</div>
     ${texto(ctx, l.texto, (l.tam_texto || 'grande') + (l.iconos ? ' mt-e' : ' mt-t'), kt)}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
@@ -140,7 +168,7 @@ export function bifurcacion(l, ctx) {
   const rs = ramas.map((r, i) => `<div class="nodo"${ctx.P(l.revelar === 'ramas' ? 1 + i : 1)}${ctx.A('r' + i)}>
       ${r.emoji ? ctx.emoji(r.emoji, tamE) : ''}
       ${r.valor ? `<div class="valor">${marcar(r.valor)}</div>` : ''}
-      ${r.texto ? `<div class="etiqueta normal" style="--te:54px">${marcar(r.texto)}</div>` : ''}</div>`).join('');
+      ${r.texto ? `<div class="etiqueta normal${corta(r.texto)}" style="--te:54px">${marcar(r.texto)}</div>` : ''}</div>`).join('');
   return `<div class="pila">
     <div class="nodo"${ctx.P(0)}>${o.emoji ? ctx.emoji(o.emoji, tamE) : ''}
       <div class="t grande"${ctx.A('o')} style="font-size:${tamT}">${marcar(o.texto || '')}</div></div>
@@ -158,7 +186,7 @@ export function cifra(l, ctx) {
   const peso = unica ? 800 : 500;
   const html = lineas.map((x, i) => {
     const col = TONO_LINEA[x.tono] ? `color:${TONO_LINEA[x.tono]};` : '';
-    return `<div class="cifra"${ctx.P(i)}${ctx.A('l' + i)} style="--tc:${x.tam || tc};font-weight:${x.peso || peso};${col}${i ? 'margin-top:34px' : ''}">${marcar(x.texto)}</div>`;
+    return `<div class="cifra"${ctx.P(i)}${ctx.A('l' + i)} style="--tc:${x.tam || tc};font-weight:${x.peso || peso};${col}${i ? 'margin-top:34px' : ''}">${tacharDespues(marcar(x.texto), ctx, i, x.tachar_paso ?? l.tachar_paso)}</div>`;
   }).join('');
   const k = Math.max(0, lineas.length - 1);
   return `<div class="pila">
@@ -175,7 +203,7 @@ export function cita(l, ctx) {
   ctx.con({ de: 'icono', a: 'cita', estilo: 'curva-roja', p: 0 });
   return `<div class="pila">
     <div${ctx.P(0)}${ctx.A('icono')}>${ctx.emoji(l.emoji || '📝', l.emoji_tam, 'medio')}</div>
-    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px">${marcar(l.texto)}</div>
+    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px">${tacharDespues(marcar(l.texto), ctx, 0, l.tachar_paso)}</div>
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', 1), 'mt-m')}</div>`;
 }
 
@@ -221,4 +249,12 @@ export function cuadrantes(l, ctx) {
   const html = items.map((it, i) => `<div class="cuadro ${['r', 'v', 'n', 'g', 'a', 'b'].includes(it.tono) ? it.tono : 'g'}"${ctx.P(l.revelar === 'todo' ? 0 : i)}>
       ${it.emoji ? `<div>${ctx.emoji(it.emoji, it.emoji_tam || 130)}</div>` : ''}<div>${marcar(it.texto || '')}</div></div>`).join('');
   return `<div class="cuadrantes" style="--cols:${cols}">${html}</div>`;
+}
+
+// FOCO — atenúa la lámina anterior (el fondo lo arma construir.mjs) y escribe encima la frase a mano [15:20].
+// `nota` va debajo, más chica, en el mismo corte (o en `nota_paso`): nunca se descarta en silencio.
+export function foco(l, ctx) {
+  const principal = l.texto || l.nota || '';
+  const debajo = l.texto && l.nota ? `<div class="nota"${ctx.P(pasoDe(l, 'nota_paso', 0))} style="--tn:46px;margin-top:28px;max-width:1300px">${marcar(l.nota)}</div>` : '';
+  return `<div class="pila"><div class="nota"${ctx.P(0)} style="--tn:${l.tam || '60px'};color:var(--tinta);font-weight:600;max-width:1300px">${marcar(principal)}</div>${debajo}</div>`;
 }

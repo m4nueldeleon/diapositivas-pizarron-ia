@@ -34,15 +34,25 @@ duración sin inventar beats.
 | `clase` (en vivo) | 40-60 min | el guion completo en beats, más tramos en vivo con `dur` | 500-900 + tramos | 220-400 | sin oscuras; puente al siguiente paso | al final: comunidad, próxima clase o invitación suave |
 | `webinar` | 60-90 min | el arco completo de la referencia, estirado | 1,000-1,600 + tramos | 450-700 | ~20% final, oscura solo la revelación | 3 o más |
 | `propuesta` | 5-20 min | 800-3,200 | 100-400 | 45-180 | inversión + siguiente paso | 1 |
+| `tutorial` | 3-8 min | 500-1,300 | 60-160 | 25-70 | ninguna | 1 |
+| `vsl-corto` | 3-6 min | 500-1,000 | 60-120 | 25-55 | el 25-30% final | 2 |
+
+`tutorial` y `vsl-corto` son arcos propios de piezas cortas, no el arco largo comprimido. Si el encargo
+fija el número de láminas («18-30 láminas»), la duración sale de ahí (≈ láminas × 2.2 pasos × 3 s ≈ 2-5
+min): escoge la pieza cuyo rango la contiene en vez de forzar el objetivo sobre una pieza larga.
 
 `"duracion_objetivo"` (minutos o `"mm:ss"`) manda sobre el rango de la tabla. QA estima la duración con
 la voz (y los `dur`) y:
 
-- da **error** si el deck dura menos de la mitad de su objetivo o del mínimo de su pieza (con
-  `"en_vivo": true` baja a aviso);
-- da **aviso** si se aleja más de 30% del objetivo, o si un reel pasa de 60 s;
-- avisa si una clase, VSL o webinar termina sin llamado o siguiente paso, si una clase o un reel llevan
-  láminas oscuras, o si un VSL o webinar tiene menos de 2 llamados.
+- da **error** si las LÁMINAS cubren menos de la mitad de su objetivo o del mínimo de su pieza (los
+  tramos `camara` no cuentan para esto; con `"en_vivo": true` baja a aviso);
+- da **aviso** si la voz total se aleja más de 30% del objetivo, si el objetivo cae fuera del rango de su
+  pieza (una «clase» de 3 min es un `tutorial`), si en una clase o webinar más de la mitad es cámara (la
+  referencia va ~12%), o si un reel pasa de 60 s;
+- avisa si una clase, VSL o webinar termina sin llamado visible o siguiente paso, si una clase o un reel
+  llevan láminas oscuras, o si un VSL o webinar tiene menos de 2 llamados VISIBLES (botón, palabra clave o
+  `llamado: true`; una palabra suelta en la voz no cuenta).
+- `qa.json → duracion` trae la voz total y, aparte, `laminas` y `camara`.
 
 ## Las plantillas
 
@@ -85,6 +95,18 @@ El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
 5. Objeciones (2-3).
 6. Oferta en el ~20% final, beat por beat (GUION §7). Oscura solo la revelación; el llamado aparece 3
    veces o más.
+
+### Tutorial (3-8 min)
+1. El resultado o el error en vivo (≤ 20 s).
+2. Los pasos, uno por bloque, con el mapa 1-2-3 si son 3 o más.
+3. Un siguiente paso concreto (1 llamado).
+
+### VSL corto (3-6 min)
+1. Gancho con el resultado o el conflicto (≤ 30 s).
+2. Problema y costo de no hacer nada (≤ 1 min).
+3. Mecanismo con nombre (1-2 min) y una prueba real.
+4. Oferta en el 25-30% final: qué es, qué pasa después del clic, llamado; y el llamado otra vez al final
+   (2 llamados visibles).
 
 ### Propuesta
 1. Diagnóstico: dónde está hoy, con sus números.

@@ -75,3 +75,31 @@ test('hoja de contacto: el rótulo es el número del PNG y del QA (cámaras incl
   const f = filasPasos(manifiesto);
   assert.deepEqual(f.map(x => x.pasos.map(p => p.etiqueta)), [['1.1', '1.2'], ['3.1']]);
 });
+
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+test('datos propuestos: se pintan con su valor, se listan en propuestos y QA los deja en por_confirmar', { timeout: 120_000 }, () => {
+  const datos = { TIEMPO_LLAMADA: { valor: '30 minutos', propuesto: true }, PRODUCTO: 'Sala Llena' };
+  assert.deepEqual(validarDatos(datos), []);
+  const { deck: d, propuestos, faltan } = sustituirDatos({ datos, laminas: [{ tipo: 'idea', texto: 'Una llamada de {{TIEMPO_LLAMADA}}' }, { tipo: 'idea', texto: '{{PRODUCTO}} en {{TIEMPO_LLAMADA}}' }] });
+  assert.equal(d.laminas[0].texto, 'Una llamada de 30 minutos');
+  assert.ok(!JSON.stringify(d.laminas).includes('[object Object]'));
+  assert.deepEqual(propuestos, { TIEMPO_LLAMADA: [1, 2] });
+  assert.deepEqual(faltan, {});
+  // lo sensible nunca se propone; un objeto sin valor es error; un valor liso sigue igual
+  assert.equal(validarDatos({ PRECIO: { valor: '$4,997', propuesto: true } }).length, 1);
+  assert.equal(validarDatos({ GARANTIA_DIAS: { valor: 30, propuesto: true } }).length, 1);
+  assert.equal(validarDatos({ TIEMPO: { propuesto: true } }).length, 1);
+  assert.equal(validarDatos({ TIEMPO: { valor: 'x', propuesto: 'si' } }).length, 1);
+  assert.deepEqual(validarDatos({ PRECIO: '$4,997' }), []);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-prop-'));
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ marca: false, emoji: 'apple', datos, laminas: [{ tipo: 'idea', emoji: '📞', texto: 'Una llamada de {{TIEMPO_LLAMADA}}' }] }));
+  const r = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/qa.mjs', import.meta.url)), dir, '--salida', path.join(dir, 's'), '--json'], { encoding: 'utf8' });
+  const q = JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));
+  assert.deepEqual(q.por_confirmar, { TIEMPO_LLAMADA: { valor: '30 minutos', laminas: [1] } });
+  assert.ok(q.avisos.some(a => /dato propuesto TIEMPO_LLAMADA .*el deck no es final/.test(a)));
+});

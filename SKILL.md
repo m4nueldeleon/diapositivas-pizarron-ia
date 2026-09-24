@@ -40,9 +40,17 @@ deducir.
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
    usuario prefiere dejarlos para después, escribe `{{PRECIO}}` en el texto y deja `"datos"` sin esa
    clave: sale como hueco amarillo `[PRECIO]` y QA lo marca como error hasta que se llene.
-5. **Decide la pieza y su duración** antes de escribir (ARCOS.md): reel, video, VSL, clase, webinar o
-   propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si no, es la
-   única pregunta. Van en el deck como `pieza`, `duracion_objetivo` y `en_vivo`.
+   **Si no puedes preguntar** (agente de fondo, el mini, un loop), un dato que no es sensible (el nombre
+   del programa, cuánto tarda la llamada) se PROPONE como `{ "valor": "30 minutos", "propuesto": true }`,
+   nunca como valor liso: un comentario `_datos` no cuenta. Precio, garantía, cupos, fechas límite,
+   descuentos, bonos, testimonios y cifras de resultados o credibilidad **nunca** se proponen: van como
+   hueco `{{CLAVE}}`.
+5. **Decide la pieza y su duración** antes de escribir (ARCOS.md): reel, tutorial, VSL corto, video, VSL,
+   clase, webinar o propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si
+   no, es la única pregunta. Van en el deck como `pieza`, `duracion_objetivo` y `en_vivo`. **Si el encargo
+   fija el número de láminas**, la duración sale de ahí (≈ láminas × 2.2 pasos × 3 s): escoge la pieza cuyo
+   rango la contiene (`tutorial` 3-8 min, `vsl-corto` 3-6 o `libre`); no fuerces `duracion_objetivo` sobre
+   una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas cosas).
 6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 26 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
@@ -108,7 +116,11 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   y **?** la ayuda. La lámina `camara` se proyecta en negro limpio.
 - `deck.json` acepta:
   - `formato`: `16:9` por omisión, o `9:16`, `1:1` y `4:5`, que están en beta;
-  - `emoji`: `auto` (Apple en Mac, Fluent 3D con licencia MIT en lo demás), `apple` o `fluent`;
+  - `emoji`: en un deck nuevo pon SIEMPRE `"apple"` (PNG o video exportados en una Mac, la laptop o el
+    mini: el más fiel a la referencia) o `"fluent"` (Fluent 3D, MIT: se renderiza en Linux, un VPS o la nube,
+    o el HTML se abre en otros equipos). `auto` (apple en Mac, fluent en lo demás) queda solo como respaldo
+    heredado: el mismo deck cambia de familia según la máquina, y QA revisa los dos sets (EMOJIS.md, «Qué
+    set usar»);
   - `animacion`: `seco`, como la referencia, o `suave`, que añade notas que se escriben solas y
     emojis que brotan;
   - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
@@ -116,15 +128,16 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
     caption y los botones de Reels). `"posicion": "arriba"` o `"abajo"` lo fuerza. Un valor de relleno
     («tumarca.com», «@tuusuario») es error de QA;
   - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md);
-  - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto (LAYOUTS.md).
+  - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
+    `{ "valor": …, "propuesto": true }` (LAYOUTS.md, «Datos que se llenan una vez»).
 - El demo con los 26 diseños está en `ejemplos/demo/deck.json`.
 
 ## 4. Qué entregar al usuario
 
 - La ruta del presentador, de `hoja.jpg` y de `hoja-pasos.jpg`, la nota de QA y la duración estimada de
   la voz contra la de la pieza.
-- Si `qa.json` trae `pendientes`, lístalos (el dato y sus láminas) y no llames «final» al deck hasta
-  que estén llenos en `"datos"`.
+- Si `qa.json` trae `pendientes` o `por_confirmar`, lístalos (el dato, su valor propuesto y sus láminas)
+  y no llames «final» al deck hasta que estén llenos o confirmados en `"datos"` (sin `propuesto`).
 - Si va sin firma, dilo en una línea y pide la @, el dominio o el logo.
 - Si hubo montaje, cuántas anclas se ubicaron y la ruta de `cortes.csv`.
 - Lo que quedó fuera o dudoso: fotos que faltan, pruebas que hay que conseguir o un corte que

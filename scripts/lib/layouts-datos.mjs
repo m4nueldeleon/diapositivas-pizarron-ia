@@ -49,7 +49,7 @@ export function tabla(l, ctx) {
 // Utilidades de SVG para las gráficas
 const path = pts => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
 const formas = {
-  recta: x => x, exponencial: x => Math.pow(x, 2.3), curva: x => Math.sqrt(x), plana: x => 0.12 + x * 0.1,
+  recta: x => x, exponencial: x => Math.pow(x, 2.3), curva: x => Math.sqrt(x), plana: x => 0.02 + x * 0.1,   // plana nace abajo: no «va ganando» al inicio
   s: x => 1 / (1 + Math.exp(-10 * (x - 0.5))), baja: x => 1 - Math.pow(x, 0.7),
 };
 
@@ -65,9 +65,14 @@ export function grafica(l, ctx) {
     const nb = Math.max(1, bs.length), gap = nb > 1 ? Math.max(40, Math.min(230, (W - 200) * 0.35 / (nb - 1))) : 0;
     const bw = Math.min(250, (W - 200 - gap * (nb - 1)) / nb);
     const inicio = (W - (bs.length * bw + (bs.length - 1) * gap)) / 2;
+    // Sobre la barra van, de abajo hacia arriba, la cifra (valor_texto) y el emoji. La altura que ocupan se
+    // reserva UNA vez para toda la gráfica (misma escala en todas las barras): así la barra más alta no manda
+    // el emoji al título y el emoji nunca tapa la cifra [6:15, 16:15].
+    const hayEmoji = bs.some(b => b.emoji), hayValor = bs.some(b => b.valor_texto);
+    const cabeza = 80 + (hayEmoji ? (hayValor ? 240 : 180) : 0);
     svg += `<line x1="40" y1="${y0}" x2="${W - 40}" y2="${y0}" stroke="#bdbdbd" stroke-width="3"/>`;
     bs.forEach((b, i) => {
-      const h = Math.max(20, (val(b) / max) * (y0 - 80));
+      const h = Math.max(20, (val(b) / max) * (y0 - cabeza));
       const x = inicio + i * (bw + gap), c = HEX[b.tono] || HEX[i === bs.length - 1 ? 'v' : 'a'];
       const k = l.revelar === 'barras' ? i : 0;
       const gid = `gb-${ctx.uid}-${i}`;
@@ -75,7 +80,7 @@ export function grafica(l, ctx) {
         <rect x="${x}" y="${y0 - h}" width="${bw}" height="${h}" rx="6" fill="url(#${gid})"/>
         <text x="${x + bw / 2}" y="${y0 + 66}" text-anchor="middle" font-size="50" font-weight="500" fill="#222">${escapar(b.etiqueta || '')}</text>
         ${b.valor_texto ? `<text x="${x + bw / 2}" y="${y0 - h - 30}" text-anchor="middle" font-size="56" font-weight="800" fill="${c}">${escapar(b.valor_texto)}</text>` : ''}</g>`;
-      if (b.emoji) ctx.extraSobreBarras = (ctx.extraSobreBarras || []).concat({ i, x: x + bw / 2, y: y0 - h, e: b.emoji, k });
+      if (b.emoji) ctx.extraSobreBarras = (ctx.extraSobreBarras || []).concat({ i, x: x + bw / 2, y: y0 - h, e: b.emoji, k, v: !!b.valor_texto });
     });
   } else {
     const series = l.series || (tipo === 'crecimiento' ? [{ forma: 'exponencial', tono: 'v' }] : []);
@@ -89,20 +94,38 @@ export function grafica(l, ctx) {
       const k = l.revelar === 'series' ? i : 0;
       finales.push({ p: pts[40], c, s, k, pts });
       svg += `<g${ctx.P(k)}><path d="${path(pts)}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" data-trazo pathLength="1"/>
-        <path d="M${pts[40][0] - 28} ${pts[40][1] + 6} L${pts[40][0]} ${pts[40][1]} L${pts[40][0] - 10} ${pts[40][1] + 28}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M${pts[40][0] - 28} ${pts[40][1] + 6} L${pts[40][0]} ${pts[40][1]} L${pts[40][0] - 10} ${pts[40][1] + 28}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" data-punta/>
         ${s.puntos ? pts.filter((_, j) => j % 8 === 4).map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="10" fill="${c}"/>`).join('') : ''}
         __ETQ${i}__</g>`;
     });
-    // Etiquetas de serie: la de arriba a la izquierda de su línea, la de abajo a la derecha (no chocan)
+    // Etiquetas de serie: cada una junto a SU línea, sin cruzar ninguna línea, sin tocar la punta de flecha y sin
+    // pasar del eje. Se prueban posiciones cerca del final de la línea (arriba-izquierda, abajo-izquierda,
+    // abajo-derecha) y, si chocan, más atrás; la de la serie de arriba empieza por encima de su línea.
     const orden = finales.map((f, i) => ({ i, y: f.p[1] })).sort((a, b) => a.y - b.y);
-    finales.forEach((f, i) => {
-      const s = f.s; let etq = '';
-      if (s.nombre) {
-        const pts = f.pts, arriba = orden[0].i === i && finales.length > 1;
-        const q = pts[arriba ? 30 : 34];
-        etq = `<text x="${q[0] + (arriba ? -24 : 26)}" y="${q[1] + (arriba ? -24 : 40)}" text-anchor="${arriba ? 'end' : 'start'}" font-size="46" fill="${f.c}" font-weight="600">${escapar(s.nombre)}</text>`;
+    const ancho = t => [...t].length * 46 * 0.56;
+    const obst = [];
+    if (l.banda && finales.length >= 2) obst.push({ x0: x1 + 24, x1: x1 + 324, y0: Math.min(...finales.map(f => f.p[1])) - 36, y1: Math.min(...finales.map(f => f.p[1])) + 36 });
+    const choca = b => finales.some(f => f.pts.some((q, j) => j && [0, 0.25, 0.5, 0.75].some(t => {
+      const x = f.pts[j - 1][0] + (q[0] - f.pts[j - 1][0]) * t, y = f.pts[j - 1][1] + (q[1] - f.pts[j - 1][1]) * t;
+      return x > b.x0 - 10 && x < b.x1 + 10 && y > b.y0 - 10 && y < b.y1 + 10;
+    }))) || obst.some(o => o.x0 < b.x1 && o.x1 > b.x0 && o.y0 < b.y1 && o.y1 > b.y0);
+    const caja = (x, y, fin, w) => ({ x0: fin ? x - w : x, x1: fin ? x : x + w, y0: y - 40, y1: y + 10 });
+    const dentro = b => b.x0 >= x0 + 10 && b.x1 <= x1 + 60 && b.y0 >= y1 - 40 && b.y1 <= y0 - 10;
+    orden.forEach(({ i }, rango) => {
+      const f = finales[i];
+      if (!f.s.nombre) { svg = svg.replace(`__ETQ${i}__`, ''); return; }
+      const w = ancho(f.s.nombre), arriba = rango === 0 && finales.length > 1;
+      const cands = [];
+      for (const j of arriba ? [30, 26, 34, 22, 18] : [34, 30, 26, 22, 18, 14]) {
+        const q = f.pts[j];
+        const sobre = [q[0] - 24, q[1] - 24, true], bajo = [q[0] - 20, q[1] + 56, true], der = [q[0] + 26, q[1] + 56, false];
+        cands.push(...(arriba ? [sobre, bajo, der] : [bajo, sobre, der]));
       }
-      svg = svg.replace(`__ETQ${i}__`, etq);
+      let elegido = cands.find(([x, y, fin]) => { const b = caja(x, y, fin, w); return dentro(b) && !choca(b); });
+      if (!elegido) { const q = f.pts[arriba ? 30 : 34]; elegido = arriba ? [q[0] - 24, q[1] - 24, true] : [q[0] - 20, Math.min(q[1] + 56, y0 - 16), true]; }
+      const [x, y, fin] = elegido;
+      obst.push(caja(x, y, fin, w));
+      svg = svg.replace(`__ETQ${i}__`, `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${fin ? 'end' : 'start'}" font-size="46" fill="${f.c}" font-weight="600">${escapar(f.s.nombre)}</text>`);
     });
     if (l.banda && finales.length >= 2) {
       const ys = finales.map(f => f.p[1]).sort((a, b) => a - b);
@@ -113,7 +136,8 @@ export function grafica(l, ctx) {
   }
   const arriba = (l.titulo ? `<div style="font-size:72px;font-weight:700;letter-spacing:-.02em;line-height:1.05">${marcar(l.titulo)}</div>` : '') +
     (l.subtitulo ? `<div style="font-size:46px;color:var(--gris);margin-top:8px">${marcar(l.subtitulo)}</div>` : '');
-  const emojis = (ctx.extraSobreBarras || []).map(e => `<div${ctx.P(e.k)} style="position:absolute;left:${e.x}px;top:${e.y - 170}px;transform:translateX(-50%)">${ctx.emoji(e.e, 140)}</div>`).join('');
+  // emoji de 140 px: sin cifra, de y−170 a y−30; con cifra (línea base en y−30, ~56 px de alto) sube a y−240 → y−100
+  const emojis = (ctx.extraSobreBarras || []).map(e => `<div${ctx.P(e.k)} style="position:absolute;left:${e.x}px;top:${e.y - (e.v ? 240 : 170)}px;transform:translateX(-50%)">${ctx.emoji(e.e, 140)}</div>`).join('');
   ctx.extraSobreBarras = null;
   return `<div class="pila grafica">${arriba ? `<div${ctx.P(0)} style="margin-bottom:30px">${arriba}</div>` : ''}
     <div${ctx.P(0)} style="position:relative;width:${W}px;height:${H + 60}px"><svg viewBox="0 0 ${W} ${H + 60}" width="${W}" height="${H + 60}" overflow="visible">${svg}</svg>${emojis}</div>
@@ -158,7 +182,7 @@ export function opciones(l, ctx) {
   const items = l.items || [{ texto: 'FÁCIL', tono: 'v' }, { texto: 'MEDIO', tono: 'n' }, { texto: 'DIFÍCIL', tono: 'r' }];
   const el = l.elegida ?? items.length - 1;
   ctx.clic = { a: 'op' + el, p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor || 'flecha' };
-  return `<div class="pila gap-m"${ctx.P(0)}>${items.map((it, i) => `<div class="opcion ${['v', 'n', 'r'].includes(it.tono) ? it.tono : 'v'} ${i === el ? '' : 'apagada'}"${ctx.A('op' + i)}>${marcar(it.texto)}</div>`).join('')}
+  return `<div class="pila gap-m"${ctx.P(0)}>${items.map((it, i) => `<div class="opcion ${['v', 'n', 'r'].includes(it.tono) ? it.tono : 'v'} ${i === el ? '' : 'apagada'}"${ctx.A('op' + i)}><span>${marcar(it.texto)}</span></div>`).join('')}
     </div>${texto(ctx, l.texto, 'medio mt-l', pasoDe(l, 'texto_paso', 0))}`;
 }
 
@@ -283,7 +307,12 @@ export function calendario(l, ctx) {
   const activa = iAct >= 0 ? fases[iAct] || null : null;
   const barra = colores[(activa && activa.color) || l.color] || colores.amarillo;
   const dias = l.dias || Array.from({ length: l.n || 14 }, (_, i) => ({ titulo: `DÍA ${i + 1}` }));
-  const cols = l.columnas || 5;
+  // Con más de 20 días (4-6 semanas) van de 7 en 7; la fila se achica para que todo quepa en el alto útil
+  const cols = l.columnas || (dias.length > 20 ? 7 : 5);
+  const filas = Math.ceil(dias.length / cols);
+  const altoUtil = ctx.F.H - 2 * ctx.F.mv, barraH = 106, pad = 66;
+  const altoDia = Math.floor(Math.min(196, (altoUtil - barraH - pad - 20 * (filas - 1)) / filas));
+  const compacto = altoDia < 110;
   const faseDe = d => fases.findIndex(f => d + 1 >= f.desde && d + 1 <= f.hasta);
   // Con fase activa, todas las fases conservan su tinte: la activa saturada y las demás apagadas al 30%
   // [29:05-29:25]. Sin fase activa los 14 días van en gris neutro (la lámina que presenta el plan, 28:45).
@@ -292,7 +321,9 @@ export function calendario(l, ctx) {
     const encendida = activa ? f === iAct : false;
     const st = activa && c ? `background:linear-gradient(180deg,${c[0]},${c[1]});color:#111` : '';
     const apagada = activa && !encendida ? ` apagado${c ? ' tinte' : ''}` : '';
-    return `<div class="dia${apagada}" style="width:calc((100% - ${(cols - 1) * 20}px)/${cols});${st}"${ctx.A('dia' + i)}><small>${escapar(d.titulo || l.palabra_dia || 'DÍA')}</small><b>${escapar(String(d.numero ?? i + 1))}</b>${d.sub ? `<span>${escapar(d.sub)}</span>` : ''}</div>`;
+    // «10 / mensajes»: un subtítulo de 2 palabras cortas no se parte
+    const sd = String(d.sub || '').trim(), corto = sd.split(/\s+/).length <= 2 && sd.length <= 12 ? ' class="corta"' : '';
+    return `<div class="dia${apagada}" style="width:calc((100% - ${(cols - 1) * 20}px)/${cols});${st}"${ctx.A('dia' + i)}><small>${escapar(d.titulo || l.palabra_dia || 'DÍA')}</small><b>${escapar(String(d.numero ?? i + 1))}</b>${d.sub ? `<span${corto}>${escapar(d.sub)}</span>` : ''}</div>`;
   }).join('');
   (l.anotaciones || []).forEach((a, i) => ctx.con({ de: 'an' + i, a: 'dia' + (a.dia - 1), estilo: 'curva-roja', p: a.paso ?? 1 }));
   // `arriba`: px (número) o un porcentaje del alto («40%»); `tam` en px (52-58 en m_1740, 56 por omisión)
@@ -300,8 +331,12 @@ export function calendario(l, ctx) {
   const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};top:${arriba(a)};--tn:${a.tam || '56px'};color:var(--tinta);max-width:340px">${marcar(a.texto)}</div>`).join('');
   const sub = activa && activa.sub ? `<em class="sub">${escapar(activa.sub)}</em>` : '';
   // con notas al margen el calendario se angosta para que la nota quede FUERA, como en m_1740
-  const angosto = (l.anotaciones || []).length && !ctx.vertical ? ' style="width:1080px"' : '';
-  return `<div class="calendario"${ctx.P(0)}${angosto}><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})"><b>${escapar(activa ? activa.nombre : (l.titulo || 'Calendario'))}</b>${sub}<span>${escapar(activa ? `${l.palabra_dia ? l.palabra_dia + 'S' : 'DÍAS'} ${activa.desde}-${activa.hasta}` : (l.rango || `DÍAS 1-${dias.length}`))}</span></div>
+  const angosto = (l.anotaciones || []).length && !ctx.vertical;
+  // Una fase de un solo día dice «DÍA 10», no «DÍAS 10-10»
+  const pastilla = !activa ? (l.rango || `DÍAS 1-${dias.length}`)
+    : activa.desde === activa.hasta ? `${l.palabra_dia || 'DÍA'} ${activa.desde}` : `${l.palabra_dia ? l.palabra_dia + 'S' : 'DÍAS'} ${activa.desde}-${activa.hasta}`;
+  const estilo = `--alto-dia:${altoDia}px${angosto ? ';width:1080px' : ''}`;
+  return `<div class="calendario${compacto ? ' compacto' : ''}"${ctx.P(0)} style="${estilo}"><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})"><b>${escapar(activa ? activa.nombre : (l.titulo || 'Calendario'))}</b>${sub}<span>${escapar(pastilla)}</span></div>
     <div class="dias" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px">${html}</div></div>${anot}`;
 }
 

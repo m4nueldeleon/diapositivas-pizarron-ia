@@ -3,7 +3,18 @@
 Regla: **literal, universal y constante**. Mismo concepto, mismo emoji en todo el deck, **y un emoji =
 un concepto** dentro del deck: no uses dos emojis que se ven casi iguales (🧑‍💼/👨‍💼, 📅/🗓️) para
 conceptos distintos, ni el mismo emoji para dos cosas. Cada emoji de este diccionario tiene un solo
-concepto; los nuevos se probaron con `render.mjs` en modo `apple` y `fluent`.
+concepto. El contraste de cada uno está **medido** en los dos sets y tres fondos con
+`scripts/medir-emojis.mjs` (`scripts/lib/contraste-emojis.json`), y QA lo revisa (ver «Bajo contraste»).
+
+## Qué set usar
+- **`"emoji": "apple"`** cuando los PNG o el video se exportan en una Mac (la laptop o el mini, que también
+  es Mac). Es el más fiel a la referencia.
+- **`"emoji": "fluent"`** cuando se renderiza en Linux, un VPS o la nube, o cuando el HTML del presentador se
+  comparte para abrirse en otros equipos.
+- **Un solo set por deck**, escrito en el deck. `auto` (apple en Mac, fluent en lo demás) queda como respaldo
+  heredado: el mismo deck cambia de familia según la máquina. Con `auto`, QA revisa los DOS sets y avisa lo
+  que se pierde en el otro («deck en emoji "auto": en fluent se pierde 💬 → 📲»).
+- Lo que cambia de un set a otro está en «Ojo: se ven distinto según el modo» y en «Bajo contraste».
 
 ## Dinero y negocio
 | Concepto | Emoji | Notas |
@@ -49,7 +60,7 @@ concepto; los nuevos se probaron con `render.mjs` en modo `apple` y `fluent`.
 | construir | 🛠️ |
 | lanzar | 🚀 |
 | automatizar, IA | 🤖 |
-| pocos clics | 👆 · 🖱️ |
+| pocos clics | 👆 (el 🖱️ de Apple es un mouse blanco sobre blanco) |
 | escribir, plan | 📝 |
 | enviar mensaje | 📲 · 📩 en Apple (el 💬 de Fluent es lila casi blanco) |
 | llamada | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro) |
@@ -148,8 +159,13 @@ para una secuencia usa un `flujo`.
 ## Emojis dentro del texto y modo Fluent
 - En modo `fluent` los emojis escritos dentro de un texto (burbujas, etiquetas, tarjetas) también se
   cambian por la imagen 3D, así la lámina usa una sola familia. En modo `apple` el texto no cambia.
-- Excepción: el texto manuscrito que se dibuja en SVG (la etiqueta de una flecha, los textos de una
-  gráfica) no admite imagen; ahí el emoji sale con la fuente del sistema. Evítalo.
+- Un símbolo escrito sin su selector (✔ ❤ ☎ ⚠ ✉ ✂ ☀) también se vuelve imagen; las flechas y los
+  símbolos tipográficos (→ ↔ ▶ ™ © #) se quedan como texto.
+- Excepción: lo que se dibuja en SVG no admite imagen y el emoji sale con la fuente del sistema (en Linux,
+  Noto o un cuadro vacío). Son la etiqueta de una flecha y los textos de `grafica` (`barras[].etiqueta`,
+  `valor_texto`, `series[].nombre`, `banda`, `eje_x`, `eje_y`) y de `linea-tiempo` (`tramos[].etiqueta`,
+  `marcas[].texto`, `marcas[].arriba`). El emoji va en `barras[].emoji`, en la `nota` o en el nodo. QA lo
+  avisa en `fluent` (y el contrato con `auto`).
 - Si Fluent no tiene un emoji con tono de piel o de Unicode 15.1, se usa el más cercano (🤝🏽 → 🤝,
   🐦‍🔥 → 🐦) y QA lo avisa como «aproximado». © ® ™ nunca se vuelven imagen.
 
@@ -175,14 +191,20 @@ para una secuencia usa un `flujo`.
 
 ## Bajo contraste (por set y fondo)
 
-Estos emojis casi desaparecen según el set y el fondo (muestrario sobre blanco, tarjeta gris,
-cuadrantes y lámina oscura). QA avisa con el sustituto; la tabla vive en `scripts/lib/emoji.mjs`
-(`BAJO_CONTRASTE`).
+Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en `scripts/lib/emoji.mjs`:
+- la **medida** (`contraste-emojis.json`, de `node scripts/medir-emojis.mjs`): % del glifo que se distingue
+  del fondo (contraste ≥ 2:1 o saturación ≥ 0.45) sobre blanco, tarjeta gris y lámina oscura. Bajo 15, QA
+  avisa, salvo los revisados a ojo que sí se leen (`VISTOS_OK`: 📈 📉 💡 📩 de Apple). Revisa la base y las
+  insignias. Al agregar emojis al diccionario, vuelve a correr la medida;
+- la **tabla revisada** (`BAJO_CONTRASTE`), con el sustituto que QA propone.
 
 | Set | Fondo | Se pierden | Usa en su lugar |
 |---|---|---|---|
-| Fluent | blanco, tarjeta, cuadrantes | 💬 🗨️ 💭 ✉️ 📩 (lila casi blanco) | mensaje → 📲 · correo → 📧 · pensamiento → 💡 |
-| Apple | blanco, tarjeta, rosa | 🏷️ (beige pálido), ✉️ | precio → 💵 · correo → 📧 |
+| Fluent | blanco, tarjeta, cuadrantes | 💬 🗨️ 💭 ✉️ 📩 📨 (lila casi blanco) | mensaje → 📲 · correo → 📧 · pensamiento → 💡 |
+| Fluent | blanco, tarjeta | ⚙️ 🔧 (lila lavado) · 📃 🗒️ | 🛠️ · 📋 |
+| Apple | blanco, tarjeta, rosa | 🏷️ (beige pálido), ✉️, 🖱️ (mouse blanco) | precio → 💵 · correo → 📧 · clic → 👆 |
+| Apple | tarjeta gris | 💬 (burbuja blanca) | 📲 |
+| los dos | claro | ☁️ | «en la nube» → 🌐 |
 | los dos | claro | 🤍 🏳️ 📄 🧾 | ❤️ · 🚩 · 📋 |
 | Apple | oscura | 🗨️ 📞 💲 🎥 | 💬 · ☎️ · 💵 · 📹 |
 | Fluent | oscura | 🗣️ | 🎤 |

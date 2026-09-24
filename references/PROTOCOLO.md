@@ -95,19 +95,27 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
 ## 4b. Calibrar contra la referencia (solo quien mantiene la skill)
 
 ```bash
-node scripts/comparar.mjs <deck-réplica> <carpeta-con-ref_SEG.jpg> --salida /tmp/comparar
+node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /private/tmp/pz-loop/r<N>/comparar
 ```
 
-- Empareja cada lámina `id: "r<seg>"` con `ref_<seg>.jpg` y usa su último paso. Avisa si una lámina
-  no tiene referencia o sobra una referencia (y sale con código 1).
+- La réplica vive versionada en `pruebas/replica/deck.json` (solo texto); los cuadros `ref_*.jpg` siguen
+  FUERA del repo. Cada lámina lleva `_cuadro` («4:15 lista tachada») y, si el cuadro es un momento
+  intermedio del revelado, `paso_ref` (desde 0; `-1` = el último).
+- Empareja cada lámina `id: "r<seg>"` con `ref_<seg>.jpg`. Sin `paso_ref` compara el paso que más se
+  parece al cuadro. Avisa si una lámina no tiene referencia o sobra una referencia (y sale con código 1).
+- Antes de medir, revisa que sea la MISMA escena (correlación de la densidad de tinta en 8×5 celdas,
+  `--min-parecido`, 0.3 por omisión: los pares correctos dan ≥ 0.37 y los cruzados ≤ 0.29). Un par por
+  debajo es «no parece la misma lámina» (id desfasado o cuadro de otro momento): no cuenta en el encuadre
+  y hace salir con código 1. Límite: dos frases centradas se parecen de verdad; ahí manda el ojo.
 - Deja `comp_N.jpg` (5 pares por hoja, referencia a la izquierda) y `comparar.json`.
-- La métrica es la **caja de tinta** de cada lado: lo oscuro y poco saturado más la tinta roja, sin
-  fondos pálidos y sin la esquina de la marca de agua. Un par falla si x, y, ancho o alto difieren más
+- La métrica es la **caja de tinta** de cada lado: lo oscuro (luminancia < 150), lo saturado que no es
+  pastel (el 🏆 dorado) y la tinta roja, sin fondos pálidos y sin la esquina de la marca de agua. Un par falla si x, y, ancho o alto difieren más
   de 8 puntos del lienzo.
 - **Límite**: mide encuadre, no estilo. Dos láminas pueden pasar con tipografías distintas; la
   revisión a ojo de `comp_N.jpg` sigue mandando.
-- Cada ronda del loop de mejora anota el número «pares que pasan / total» para ver si la réplica se
-  acerca o se aleja del video.
+- Cada ronda del loop de mejora anota el número «pares que pasan / total» sobre `pruebas/replica` para ver
+  si la réplica se acerca o se aleja del video. Ronda 2: **5/10** (pasan r10, r90, r95, r460, r628; fallan
+  de verdad r115 —título en 2 renglones—, r255 —lista más arriba y más chica—, r260, r1040 y r1760).
 
 ## 5. Entrega
 

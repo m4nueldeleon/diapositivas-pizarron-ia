@@ -6,14 +6,17 @@ ese diseño.
 
 **Campos del deck** (arriba de `laminas`)
 
-- `titulo`, `formato` (`16:9`, `9:16`, `1:1`, `4:5`), `emoji` (`auto`, `apple`, `fluent`), `animacion`
+- `titulo`, `formato` (`16:9`, `9:16`, `1:1`, `4:5`), `emoji` (`apple` o `fluent`; `auto` solo como respaldo
+  heredado: cambia de set según la máquina y QA revisa los dos; ver EMOJIS.md, «Qué set usar»), `animacion`
   (`seco`, `suave`), `idioma`.
 - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
   **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
   «@tuusuario», «<…>») es error de QA.
-- `pieza`: `reel`, `video`, `vsl`, `clase`, `webinar`, `propuesta` o `libre`; `duracion_objetivo`:
-  minutos (`45`) o `"mm:ss"`; `en_vivo: true` si se presenta en vivo. QA mide la voz contra eso
-  ([ARCOS.md](ARCOS.md)).
+- `pieza`: `reel`, `tutorial` (3-8 min), `vsl-corto` (3-6 min), `video`, `vsl`, `clase`, `webinar`,
+  `propuesta` o `libre`; `duracion_objetivo`: minutos (`45`) o `"mm:ss"`; `en_vivo: true` si se presenta en
+  vivo. QA mide la voz contra eso ([ARCOS.md](ARCOS.md)): un objetivo fuera del rango de su pieza avisa (usa
+  la pieza corta que le toca), «menos de la mitad» se mide con el tiempo de LÁMINAS (la cámara no rellena) y
+  en clase o webinar más de la mitad a cámara avisa. `qa.json → duracion` separa `laminas` y `camara`.
 - `datos`: ver [Datos que se llenan una vez](#datos-que-se-llenan-una-vez).
 
 **Campos que acepta cualquier lámina**
@@ -25,7 +28,10 @@ ese diseño.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
 - `sello`: texto de sello de goma que cae en un paso extra. Es una etiqueta blanca OPACA con doble
   borde rojo: tapa lo que queda debajo, como en [6:45]. Por omisión va al centro del lienzo (en
-  `rejilla`, centrado sobre las cajas). Se mueve con:
+  `rejilla`, centrado sobre las cajas, como en [6:45]; si la rejilla tiene celdas en `destacar`, esas celdas
+  son el dato que se cuenta: el sello se acomoda solo en la banda entre renglones que menos destacadas tapa
+  o, si todas tapan más de 2, en una franja libre junto a la rejilla. QA da error si un sello tapa más de 2
+  destacadas o más del 10%). Se mueve con:
   - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
     ~60% de su ancho (letra de 72 a 140 px). No lo pongas sobre notas ni flechas: QA lo avisa;
   - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,
@@ -43,6 +49,13 @@ ese diseño.
 - `_comentario` (o cualquier campo que empiece con `_`): notas tuyas; el motor las ignora. Un campo
   que ese diseño no usa se ignora también, pero QA lo avisa y sugiere el nombre correcto.
 - `firma: false`: oculta la firma en esa lámina.
+- `llamado: true`: marca la lámina como **llamado visible** (la que muestra la palabra clave o la flecha
+  al link). QA solo cuenta como llamado un `boton`, una lámina con `llamado: true` o un texto a la vista que
+  ARRANCA con un imperativo con objeto («Agenda tu diagnóstico», «Escribe «CITA»», «Entra a…»); una palabra
+  suelta en la voz («WhatsApp», «aparta») no cuenta. En `vsl` y `webinar` pide 2 llamados visibles (láminas
+  contiguas, como el botón y su «Después del clic», cuentan como uno).
+- `paso_ref`: solo para la réplica (`scripts/comparar.mjs`): el paso de la lámina que se ve en el cuadro del
+  video, desde 0 (`-1` = el último).
 - `anclas`: frases que disparan cada paso en el montaje.
 
 ---
@@ -75,6 +88,7 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - **Entrada y remate** [18:30]: `"Eso es lo que yo llamo un\n^^__plan de monetización__^^"`: el
   remate va en su renglón, en negrita y ~1.5×. El tamaño automático cuenta solo la entrada.
 - `nota_paso`: por omisión la nota aparece en el paso 1.
+- `tachar_paso: 1`: el `~~tachado~~` del texto cae un paso DESPUÉS del texto (ver [Marcas](#marcas-de-texto)).
 - Sin emoji es una **frase sola** [3:20 «So let's get started.»].
 
 ### `lista` — encabezado gris + viñetas, una por paso  ·  [1:35, 13:35, 40:15]
@@ -106,13 +120,16 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
 
 ### `cifra` — números y ecuaciones grandes, una línea por paso  ·  [3:10, 14:10]
 ```json
-{ "tipo": "cifra", "lineas": ["1,000,000 × **0.1%** = 1,000", "1,000 × $25,000 = __$25,000,000__"] }
+{ "tipo": "cifra", "arriba": "Si te contrata el 0.1-0.3%:",
+  "lineas": ["1 millón × **0.1-0.3%** = 1-3 mil", "× $25,000 = __$25-75 millones__"] }
 ```
 - Con una sola línea sale enorme, a 140 px.
+- **Algo que se descarta** [4:05]: `{ "texto": "~~Más horas = más dinero~~", "tachar_paso": 1 }` como línea:
+  se lee primero y el tachón rojo llega en el paso siguiente (`tachar_paso` en la lámina vale para todas).
 - `arriba`: nota manuscrita encima. `abajo`: etiqueta chica, como «Seguidores».
 - **Proyección al espectador** (lo que ganará o conseguirá quien mira): `arriba` es el lugar de la
   **condición, con número**, y las tasas van en **rango**, como la referencia [33:45-33:55]. Nunca un
-  «Supuesto:» vacío; QA lo avisa (GUION §3.8):
+  «Supuesto:» vacío; QA lo avisa, y también una cuenta que no trae NINGÚN rango (GUION §3.8 b):
   ```json
   { "tipo": "cifra", "arriba": "Si mandas 10 mensajes al día por 10 días:", "lineas": [
     "100 × 10-20% = 10-20 pláticas", "× 30-50% = __3-10 clientes__"] }
@@ -173,9 +190,20 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   columna esté atenuada por `activo`: es la señal de avance [28:00-28:05].
 - Con `iconos`, «Paso N» va gris a 62 px y la etiqueta a 86 px en negrita, y NO hay ruta punteada
   (la referencia no la dibuja en el mapa); `ruta: true` la fuerza.
+- **Mapa de 4 o 5 pasos**: en 16:9 las medidas bajan con `n` para que los nombres quepan en UN renglón
+  cada uno (el mapa los necesita juntos, como en [16:40]): hueco 230 / 150 / 80 px (3 / 4 / 5+ pasos),
+  ícono 180 (150 con 5+), etiqueta 86 / 74 / 64 px y «Paso N» al 72% de la etiqueta. Ni «Paso N» ni la
+  etiqueta se parten; si aun así la fila no cabe, se reduce entera y QA lo cuenta. **Con 5 o más pasos,
+  etiquetas de 1 palabra, ≤ 10 letras.** A mano: `separacion` (px entre columnas) y `tam_etiqueta` (px).
+  QA da error si un rótulo del mapa se parte en dos renglones («Paso / 2»).
 - Con teclas, la frase va ~240 px debajo [ref_115] y la ruta punteada se dibuja por omisión.
 - `sobre: "✋"` pone un emoji arriba de cada tecla. `clic: 2` hace que el cursor presione la
   tecla 2. `ruta: false` quita la ruta punteada.
+- **Arrastre** [1:55]: con `clic` y ruta, la mano presiona la tecla y ARRASTRA la ruta punteada hasta la
+  última tecla: los tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada
+  uno, al terminar la onda), con la mano cerrada y gris en la punta del trazo; al final queda la mano de
+  dedo sobre la última tecla (así sale en el PNG). Los tramos anteriores a la tecla del clic se ven desde
+  el paso 0. `arrastre: false` lo apaga: ruta completa desde el paso 0 y la mano quieta en su tecla.
 - Por omisión teclas, texto y nota entran en un solo corte, como en la referencia [1:55]; el cursor
   llega en el paso siguiente. Con `revelar: "pasos"` cada tecla entra en su propio paso, la ruta se
   dibuja tramo por tramo y el texto llega al final (sin `activo` ni `hechos`).
@@ -199,6 +227,7 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
 ```json
 { "tipo": "circulos", "texto": "Reservada para **unos pocos**", "tono": "r", "tono_interior": "v", "personas": 12, "emoji": "🧑‍💼", "centro": "⭐" }
 ```
+- `radio` (360) y `radio_interior` (130), en px, cambian el tamaño de los dos círculos.
 
 ## Datos
 
@@ -220,6 +249,7 @@ El recurso estrella: se llena columna por columna a lo largo de varias láminas.
 - Una celda con `"circulo": true` lleva el dato encerrado.
 - Tip: repite la misma tabla en varias láminas, sumando una columna cada vez con `fijas` igual a
   las columnas previas, e intercala láminas de explicación entre ellas.
+- `ancho_etiqueta`: fracción del ancho para la columna de etiquetas (0.155 en 16:9, 0.24 en 9:16).
 
 ### `tarjetas` — criterios o métricas, una por paso  ·  [5:00, 9:25]
 ```json
@@ -232,6 +262,8 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 - `columnas`, `ancho` (px por tarjeta) y `tam_texto` (px, por omisión 46) ajustan a mano.
 - El emoji va arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia
   abajo [9:25]. Las tarjetas arrancan arriba de la lámina (`anclar`).
+- La negrita a media frase («Tu oferta en **una frase**») conserva su espacio: el rótulo es un bloque de
+  texto. QA da error si un contenedor flex mezcla texto suelto y negritas (se comía el espacio).
 
 ### `grafica` — líneas, barras o crecimiento  ·  [6:15, 7:25, 16:15, 38:10]
 ```json
@@ -243,6 +275,17 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 - `forma` de cada serie: `recta`, `exponencial`, `curva`, `plana`, `s` o `baja`.
 - Una serie con `puntos: true` lleva puntos sobre la línea.
 - Las barras se definen así: `"barras": [{ "etiqueta": "Sueldo", "valor": 45, "tono": "a" }, { "etiqueta": "Producto", "valor": 100, "tono": "v", "emoji": "💰" }]`.
+- `valor_texto`: la cifra sobre la barra («50%», «$9,000»), en negrita y del color de la barra. `emoji`
+  va encima de la barra (140 px). Con los dos, de abajo hacia arriba: barra, cifra, emoji; la altura que
+  ocupan se reserva UNA vez para toda la gráfica (~240 px con los dos, ~180 solo con emoji), así que las
+  barras se acortan igual y ninguna manda el emoji al título. QA da error si un emoji tapa un texto y avisa
+  si el de una gráfica queda pegado al borde de arriba.
+- La etiqueta de cada serie (`nombre`) va junto a SU línea, cerca de su final, sin cruzar ninguna línea,
+  sin tocar la punta de flecha ni pasar del eje (se prueban varias posiciones). QA da error si una línea o
+  su punta atraviesa un texto. `plana` nace abajo (no «va ganando» al inicio).
+- **Sin emojis en los textos de la gráfica** (`etiqueta`, `valor_texto`, `nombre`, `banda`, `eje_x`, `eje_y`):
+  van dentro del SVG y salen con la fuente del sistema. El emoji va en `barras[].emoji`, en la `nota` o en el
+  `texto`. QA lo avisa (en `fluent` y con `auto`).
 - `eje_x` y `eje_y` son las etiquetas de los ejes. `revelar: "series"` o `"barras"` hace que
   aparezca una por paso.
 
@@ -251,7 +294,8 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 { "tipo": "linea-tiempo", "marcas": [{ "texto": "Día 1" }, { "texto": "Día 14", "tono": "v" }, { "texto": "Día 30", "tono": "v" }],
   "tramos": [{ "desde": 1, "hasta": 2, "tono": "v", "etiqueta": "Ideal" }, { "desde": 2, "hasta": "fin", "tono": "r", "etiqueta": "Aquí renuncian" }] }
 ```
-- Una marca acepta `pos` (de 0 a 1) y `arriba`, un texto sobre la marca como «$1B».
+- Una marca acepta `pos` (de 0 a 1) y `arriba`, un texto sobre la marca como «$1B». Los textos de marcas
+  y tramos van en SVG: sin emojis (ver `grafica`).
 - Cada tramo aparece en su propio paso.
 
 ### `medidor` — barra verde → rojo con pin  ·  [4:20]
@@ -277,7 +321,12 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   ```json
   { "tipo": "rejilla", "emoji": "👤", "total": 40, "columnas": 10, "destacar": [14], "emoji_destacado": "🧑‍💻", "etiqueta_destacado": "Tú" }
   ```
-- Con `apagar_resto: true` todo lo que no está destacado queda gris.
+- Con `apagar_resto: true` todo lo que no está destacado queda gris. `tono` y `tono_destacado` (`v`, `r`,
+  `g`) pintan los puntos; `emoji_etiqueta` pone un emoji sobre la `etiqueta_destacado`; `aspecto` (ancho/alto,
+  1.55 por omisión) decide las columnas si no das `columnas`.
+- **Sello y destacadas**: sobre cajas iguales el sello cae encima [6:45]; con `destacar`, el sello NUNCA tapa
+  las destacadas (se acomoda solo, ver `sello` arriba). Agrupa las destacadas (las llenas primero, en orden)
+  para que «41 de 100» se lea de un vistazo.
 - `destacado_paso: N` hace que el color de las destacadas aparezca en el paso N, sobre la rejilla ya
   vista [43:15] (sin `etiqueta_destacado`).
 - `encabezado` sale como rótulo gris; `encabezado_estilo: "frase"` lo pone negro a tamaño de frase,
@@ -303,6 +352,12 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   "anotaciones": [{ "texto": "«Me gusta su contenido»", "dia": 1, "lado": "izquierda", "arriba": "12%" }] }
 ```
 - `color`: `amarillo`, `azul`, `verde` o `rojo`.
+- Cuántos días: `dias` (uno por día, con `sub`, `titulo` o `numero`) o `n` (14 por omisión, **hasta 42**:
+  seis semanas). Con más de 20 días van de 7 en 7 (`columnas` lo cambia) y la fila se achica para caber;
+  con 5-6 semanas se ocultan los `sub`. `palabra_dia` cambia «DÍA» (el rótulo de cada tarjeta y la
+  pastilla); `rango` cambia la pastilla sin fase activa («DÍAS 1-14»). Una fase de un solo día dice
+  «DÍA 10». Es error de contrato una fase que llega más allá de los días, `fase_activa` mayor que las
+  fases, una anotación a un día que no existe o un `titulo`/`rango` que dice «N días» con otros N.
 - `fase_activa` cuenta desde 1, igual que `activo` en `pasos` y `dia` en `anotaciones`. Sin
   `fase_activa` los días van en gris (la lámina que presenta el calendario, [28:45]); con ella, la
   fase activa va saturada y las demás con su tinte apagado al 30% [29:05-29:25].
@@ -369,6 +424,8 @@ chico. Va en blanco, no en lámina oscura.
 { "tipo": "foco", "texto": "Sigues cobrando mientras el creador siga promoviendo el producto." }
 ```
 - `opacidad`: por omisión 0.2.
+- `nota`: con `texto`, va debajo, más chica y a mano, en el mismo corte (`nota_paso` la mueve). Sin
+  `texto`, la `nota` es la frase principal.
 - No puede ir como primera lámina.
 - El fondo atenuado repite el contenido y las flechas de la lámina anterior, pero no su sello ni
   su cursor.
@@ -401,14 +458,17 @@ chico. Va en blanco, no en lámina oscura.
 | `anclar` | cualquiera | `arriba` o `centro`: dónde arranca el contenido. |
 | `fondo` | lámina oscura | `violeta`, `azul` o `negro`. |
 | `tam` | cifra y foco | Tamaño de letra en px. |
-| `separacion` | lista, flujo, bifurcacion, reparto | Espacio entre elementos, en px. |
+| `separacion` | lista, flujo, pasos, bifurcacion, reparto | Espacio entre elementos, en px. |
+| `tam_etiqueta` | pasos | Tamaño de la etiqueta de cada paso, en px (86 / 74 / 64 según `n`). |
+| `tachar_paso` | idea, cita, cifra (lámina o línea) | Pasos DESPUÉS del texto en que cae el tachón de `~~frase~~`. |
+| `arrastre` | pasos con `clic` | `false`: la mano no arrastra la ruta (ver `pasos`). |
 | `alto`, `ancho` | objeto, flujo (nodo), prueba, rejilla, tarjetas (`ancho`) | Tamaño en px. |
 | `prefijo` | pasos con íconos | Texto antes del número. Por omisión «Paso»; con `false` se quita. |
 | `ancla` | cualquiera | Frase que dispara el paso 0 en el montaje (atajo de `anclas[0]`). |
 | `oscura: true` | cualquiera | Pinta esa lámina con el fondo oscuro de la oferta. |
 | `sello_sobre`, `sello_pos`, `clic_pos` | cualquiera | Mueven el sello y la punta del cursor (ver arriba). |
 
-Un valor fuera de rango o con tipo equivocado se descarta con aviso, y la revisión de calidad lo
+Un valor con tipo equivocado se descarta con aviso y uno fuera de rango se recorta con aviso (`n: 99 → 42`), y la revisión de calidad lo
 cuenta como error. Un campo que el diseño no usa se ignora con aviso (−3), con sugerencia si parece
 un error de dedo.
 
@@ -436,6 +496,14 @@ texto y se llena UNA vez en `datos`, arriba del deck:
 - Una `{{CLAVE}}` sin valor sale como `[CLAVE]` en un **hueco amarillo**, igual que un `[PRECIO]`
   escrito a mano. QA lo cuenta como error de dato pendiente, con sus láminas, y lo deja en `qa.json` →
   `pendientes`. Nunca se inventa una cifra para rellenar.
+- **Dato propuesto** (sin nadie a quien preguntar: agente de fondo, el mini, un loop): un dato que no es
+  sensible se escribe como objeto y se pinta igual, pero QA lo lista en `qa.json → por_confirmar` con sus
+  láminas y avisa; el deck no es final hasta confirmarlo:
+  ```json
+  { "datos": { "TIEMPO_LLAMADA": { "valor": "30 minutos", "propuesto": true }, "PRECIO": "$4,997" } }
+  ```
+  Precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios y resultados **nunca** se
+  proponen (es error de contrato): van como hueco `{{CLAVE}}`. Un comentario `_datos` no cuenta.
 - El `[x]` en minúsculas dentro de un `chat` es otra cosa: lo que el usuario personaliza en el mensaje
   (`[nombre]`), no un dato pendiente.
 
@@ -446,7 +514,7 @@ texto y se llena UNA vez en `datos`, arriba del deck:
 | `**frase**` | negrita: la frase clave |
 | `__frase__` | negrita + subrayado rojo a mano |
 | `==frase==` | negrita + resaltador amarillo |
-| `~~frase~~` | tachón rojo |
+| `~~frase~~` | tachón rojo a mano (solo el rojo: sin el tachón negro del navegador). Por omisión cae en el paso del texto; con `tachar_paso: 1` (idea, cita, cifra) llega un paso después, para que se lea antes [4:05]. QA avisa el tachado que aparece ya tachado |
 | `*frase*` | cursiva: la voz de otro (una objeción) [17:25]. El asterisco va pegado al texto: `5 * 3` no cambia |
 | `^^frase^^` | remate en su propio renglón, en negrita y ~1.5× [18:30]; puede llevar `__` o `==` dentro |
 | `{v:texto}` `{r:}` `{n:}` `{g:}` `{a:}` `{o:}` | color semántico: verde, rojo, naranja, gris, azul o dorado (cifra sobre lámina oscura) |

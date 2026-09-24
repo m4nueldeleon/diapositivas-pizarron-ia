@@ -71,3 +71,58 @@ test('📱 se dibuja en SVG (celular vertical) igual en apple y en fluent: no se
     assert.ok(!h.includes('<img'), modo);
   }
 });
+
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { formaEmoji, bajoContraste, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, BAJO_CONTRASTE } from '../scripts/lib/emoji.mjs';
+import { emojisEnSvg, sanearDeck } from '../scripts/lib/contrato.mjs';
+
+test('enTexto (fluent): ✔ ❤ ☎ ⚠ sin FE0F también se vuelven imagen; flechas y ™ © # siguen como texto', () => {
+  assert.equal(formaEmoji('☎'), '☎️');
+  assert.equal(formaEmoji('→'), '');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-emo-'));
+  const em = new Emojis({ modo: 'fluent', dirSalida: dir });
+  const html = em.enTexto('Listo ✔ y ❤ y ☎ y ⚠');
+  assert.equal((html.match(/class="emo en-texto"/g) || []).length, 4, html);
+  assert.ok(html.includes('<svg'), '✔ es la palomita dibujada');
+  const tipo = 'a → b ↔ c ▶ ™ © 1 #';
+  assert.equal(em.enTexto(tipo), tipo);
+});
+
+test('contraste medido: 🖱️ de Apple y ⚙️ de Fluent avisan con sustituto; 📈 de Apple no (visto a ojo)', () => {
+  assert.equal(bajoContraste('🖱️', 'apple', 'claro'), '👆');
+  assert.equal(bajoContraste('⚙️', 'fluent', 'tarjeta'), '🛠');
+  assert.equal(bajoContraste('📈', 'apple', 'claro'), '');
+  assert.equal(bajoContraste('💰', 'fluent', 'tarjeta'), '');
+  // la medida existe y recupera lo que la tabla revisada ya sabía
+  const m = contrasteMedido();
+  assert.ok(m.fluent.claro['💬'] < UMBRAL_CONTRASTE && m.apple.claro['🖱'] < UMBRAL_CONTRASTE);
+  for (const set of ['apple', 'fluent']) for (const ch of Object.keys(BAJO_CONTRASTE[set].claro)) {
+    const v = m[set].claro[ch];
+    // ⚙️ de Fluent (30) va en la tabla por revisión a ojo: lila lavado sobre la tarjeta
+    if (v != null) assert.ok(v < 35 || VISTOS_OK[set].includes(ch), `${set} ${ch} medido ${v}`);
+  }
+});
+
+test('emoji en textos de gráfica (SVG): el contrato lo detecta y, con emoji "auto", sugiere moverlo', () => {
+  const l = { tipo: 'grafica', grafica: 'barras', barras: [{ etiqueta: 'Operación ⚙️', valor: 1 }, { etiqueta: 'Listo ✔', valor: 2 }] };
+  assert.deepEqual(emojisEnSvg(l).map(x => x[1]), ['⚙️', '✔']);
+  assert.ok(sanearDeck({ laminas: [l] }).sugerencias.some(s => /⚙️ de «barras\[0\]\.etiqueta».*en Linux saldrá distinto/.test(s)));
+  assert.deepEqual(sanearDeck({ emoji: 'apple', laminas: [l] }).sugerencias, []);
+});
+
+test('QA: con emoji "auto" revisa también el otro set; en fluent avisa el emoji dentro de un texto SVG', { timeout: 180_000 }, () => {
+  const correr = deck => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-emoqa-'));
+    fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify(deck));
+    const r = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/qa.mjs', import.meta.url)), dir, '--salida', path.join(dir, 's'), '--json'], { encoding: 'utf8' });
+    return JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));
+  };
+  const auto = correr({ marca: false, laminas: [{ tipo: 'idea', emoji: '💬', texto: 'Contesta rápido' }, { tipo: 'idea', emoji: '🤔', texto: '¿Por qué?' }] });
+  if (process.platform === 'darwin') assert.ok(auto.avisos.some(a => /deck en emoji "auto": en fluent .*💬 → 📲/.test(a)), auto.avisos.join('\n'));
+  assert.ok(auto.avisos.some(a => /🤔 en fluent → ❓/.test(a)), auto.avisos.join('\n'));
+  const fl = correr({ emoji: 'fluent', marca: false, laminas: [{ tipo: 'grafica', grafica: 'barras', barras: [{ etiqueta: 'Operación ⚙️', valor: 50 }, { etiqueta: 'Sueldo', valor: 30 }] }] });
+  assert.ok(fl.avisos.some(a => /emoji dentro de un texto de gráfica.*⚙️/.test(a)), fl.avisos.join('\n'));
+});
