@@ -1,0 +1,130 @@
+/* presentador.js — presentar en vivo y ensayar. Corre después de runtime.js, sobre window.PZ.
+   Ventana del público (por omisión):
+     → ↓ espacio Intro   avanza          ← ↑ Retroceso   regresa        Inicio / Fin
+     F  pantalla completa                N  notas del orador (banda abajo, para una sola pantalla)
+     O  abre la vista de ensayo (?modo=orador) en otra ventana; las dos se siguen por BroadcastChannel
+     B o .  pantalla en negro            W  pantalla en blanco (cualquier avance las quita)
+     5 G  (o 5 Intro)  salta a la lámina 5            G  índice de láminas          ?  ayuda
+   La lámina `camara` se proyecta en negro limpio: el público no ve el letrero «A cámara».
+   Vista de ensayo: el paso actual, el siguiente en miniatura, la voz grande, la siguiente atenuada,
+   el cronómetro total y el de la lámina contra lo planeado (dur de cada paso, a 2.7 palabras por segundo). */
+(function () {
+  'use strict';
+  const PZ = window.PZ;
+  if (!PZ || !['presentador', 'orador'].includes(PZ.modo)) return;
+  const canal = 'BroadcastChannel' in window ? new BroadcastChannel('pz-' + location.pathname) : null;
+  const guion = l => { try { return JSON.parse((l.querySelector(':scope > script.guion') || {}).textContent || '{}'); } catch (e) { return {}; } };
+  const reloj = s => { s = Math.max(0, Math.round(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  const el = (clase, html = '') => { const d = document.createElement('div'); d.className = clase; d.innerHTML = html; document.body.appendChild(d); return d; };
+  const esc = t => String(t || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  function secuencia(lams) {
+    const seq = [];
+    lams.forEach((l, i) => { if (l.dataset.tipo === 'camara') seq.push({ i, p: 0 }); else for (let p = 0; p < PZ.pasos(l); p++) seq.push({ i, p }); });
+    return seq;
+  }
+  // Escala una lámina (o su clon) para que quepa en una caja, centrada
+  function encuadrar(l, x, y, w, h) {
+    const s = Math.min(w / l.offsetWidth, h / l.offsetHeight);
+    l.style.left = '0'; l.style.top = '0';
+    l.style.transform = `translate(${x + (w - l.offsetWidth * s) / 2}px, ${y + (h - l.offsetHeight * s) / 2}px) scale(${s})`;
+  }
+
+  // Navegación compartida por las dos ventanas: teclas, salto por número y sincronía
+  function navegar(lams, seq, pintar, extra) {
+    let pos = Math.min(seq.length - 1, Math.max(0, parseInt((location.hash || '').slice(1), 10) || 0)), raf = 0, digitos = '';
+    function ir(n, animar, remoto) {
+      pos = Math.max(0, Math.min(seq.length - 1, n)); cancelAnimationFrame(raf);
+      const { i, p } = seq[pos], l = lams[i];
+      pintar(pos);
+      history.replaceState(null, '', location.search + '#' + pos);
+      if (!remoto && canal) canal.postMessage({ pos });
+      if (!animar) { PZ.mostrar(l, p, Infinity); return; }
+      const t0 = performance.now(), dur = PZ.animaDur(l, p) + 80;
+      const tick = () => { const t = performance.now() - t0; PZ.mostrar(l, p, t); if (t < dur) raf = requestAnimationFrame(tick); else PZ.mostrar(l, p, Infinity); };
+      tick();
+    }
+    const saltar = () => { const k = parseInt(digitos, 10) - 1; digitos = ''; const n = seq.findIndex(s => s.i === k); if (n >= 0) ir(n, false); return n >= 0; };
+    if (canal) canal.onmessage = e => { if (e.data && Number.isInteger(e.data.pos) && e.data.pos !== pos) ir(e.data.pos, true, true); };
+    addEventListener('keydown', e => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (/^[0-9]$/.test(e.key)) { digitos = (digitos + e.key).slice(-3); return; }
+      if ((e.key === 'g' || e.key === 'G') && digitos) { e.preventDefault(); saltar(); return; }
+      if (e.key === 'Enter' && digitos) { e.preventDefault(); saltar(); return; }
+      digitos = '';
+      if (extra && extra(e.key, e) === true) return;
+      if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); ir(pos + 1, true); }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); ir(pos - 1, false); }
+      else if (e.key === 'Home') ir(0, false); else if (e.key === 'End') ir(seq.length - 1, false);
+      else if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+    });
+    return { ir, pos: () => pos };
+  }
+
+  // ---------- ventana del público ----------
+  function presentador(lams) {
+    document.body.classList.remove('preparando'); document.body.classList.add('presentador');
+    const seq = secuencia(lams);
+    const barra = el('barra-pres', '<i></i>'), velo = el('velo-pres'), notas = el('notas-pres'), indice = el('indice-pres'), ayuda = el('ayuda-pres');
+    indice.innerHTML = lams.map((l, i) => `<button data-i="${i}">${i + 1} · ${esc(l.dataset.id)}</button>`).join('');
+    ayuda.innerHTML = '<b>Teclas</b><br>→ espacio Intro: avanza · ←: regresa · Inicio/Fin<br>F pantalla completa · N notas · O vista de ensayo<br>B o . negro · W blanco · 5 G salta a la lámina 5 · G índice · ? esta ayuda · Esc cierra';
+    const ajustar = l => encuadrar(l, 0, 0, innerWidth, innerHeight);
+    function pintar(pos) {
+      const { i, p } = seq[pos], l = lams[i];
+      lams.forEach(x => x.classList.toggle('activa', x === l)); ajustar(l);
+      barra.firstChild.style.width = ((pos + 1) / seq.length * 100) + '%';
+      const g = guion(l);
+      notas.innerHTML = `<small>lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? ' · 🎥 a cámara' : ''}</small>${esc((g.voz || [])[p]) || '<i>(sin voz)</i>'}`;
+    }
+    const alternar = (x, clase) => x.classList.toggle(clase);
+    const nav = navegar(lams, seq, pintar, (k, e) => {
+      if (k === 'Escape') { indice.classList.remove('abierto'); ayuda.classList.remove('abierto'); return true; }
+      if (k === 'b' || k === 'B' || k === '.') { velo.className = velo.className === 'velo-pres negro' ? 'velo-pres' : 'velo-pres negro'; return true; }
+      if (k === 'w' || k === 'W') { velo.className = velo.className === 'velo-pres blanco' ? 'velo-pres' : 'velo-pres blanco'; return true; }
+      if (k === 'n' || k === 'N') { alternar(notas, 'abierto'); return true; }
+      if (k === 'g' || k === 'G') { alternar(indice, 'abierto'); return true; }
+      if (k === '?') { alternar(ayuda, 'abierto'); return true; }
+      if (k === 'o' || k === 'O') { window.open(location.pathname + '?modo=orador#' + nav.pos(), 'pz-orador'); return true; }
+      if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter', 'ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) velo.className = 'velo-pres';
+      return false;
+    });
+    indice.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const n = seq.findIndex(s => s.i === +b.dataset.i); indice.classList.remove('abierto'); if (n >= 0) nav.ir(n, false); e.stopPropagation(); });
+    addEventListener('click', e => { if (e.target.closest('.indice-pres, .ayuda-pres')) return; velo.className = 'velo-pres'; nav.ir(nav.pos() + (e.clientX < innerWidth * 0.25 ? -1 : 1), e.clientX >= innerWidth * 0.25); });
+    addEventListener('resize', () => ajustar(lams[seq[nav.pos()].i]));
+    nav.ir(nav.pos(), false, true);
+  }
+
+  // ---------- vista de ensayo (?modo=orador) ----------
+  function orador(lams) {
+    const seq = secuencia(lams);
+    const ui = el('orador-ui', '<div class="o-actual"></div><div class="o-lado"><div class="o-sig"></div><div class="o-pos"></div><div class="o-reloj"></div></div><div class="o-voz"></div><div class="o-voz-sig"></div>');
+    const [actual, sig, posEl, relojEl, voz, vozSig] = ['.o-actual', '.o-sig', '.o-pos', '.o-reloj', '.o-voz', '.o-voz-sig'].map(q => ui.querySelector(q));
+    let clon = null, t0 = performance.now(), tLam = t0, lamActual = -1, plan = 0;
+    function pintar(pos) {
+      const { i, p } = seq[pos], l = lams[i];
+      lams.forEach(x => x.classList.toggle('activa', x === l));
+      const r = actual.getBoundingClientRect(); encuadrar(l, r.left, r.top, r.width, r.height);
+      if (clon) clon.remove(); clon = null;
+      const s = seq[pos + 1];
+      if (s) {
+        clon = lams[s.i].cloneNode(true); clon.classList.add('activa', 'clon-sig'); clon.removeAttribute('data-i');
+        document.body.appendChild(clon); PZ.mostrar(clon, s.p, Infinity);
+        const q = sig.getBoundingClientRect(); encuadrar(clon, q.left, q.top, q.width, q.height);
+      }
+      const g = guion(l), gs = s ? guion(lams[s.i]) : {};
+      voz.textContent = (g.voz || [])[p] || (l.dataset.tipo === 'camara' ? '🎥 a cámara' : '(sin voz)');
+      vozSig.textContent = s ? ((gs.voz || [])[s.p] || '') : '— fin —';
+      posEl.textContent = `lámina ${i + 1}/${lams.length} · paso ${p + 1}/${l.dataset.tipo === 'camara' ? 1 : PZ.pasos(l)}${l.dataset.tipo === 'camara' ? ' · a cámara' : ''}`;
+      if (i !== lamActual) { lamActual = i; tLam = performance.now(); plan = (g.dur || []).reduce((a, b) => a + b, 0); }
+    }
+    function tic() {
+      const ahora = performance.now(), enLam = (ahora - tLam) / 1000, dif = enLam - plan;
+      relojEl.innerHTML = `total <b>${reloj((ahora - t0) / 1000)}</b> · lámina <b>${reloj(enLam)}</b> / ${reloj(plan)} <span class="${dif > 0 ? 'tarde' : ''}">${dif > 0 ? '+' : '−'}${reloj(Math.abs(dif))}</span>`;
+    }
+    const nav = navegar(lams, seq, pintar);
+    addEventListener('resize', () => pintar(nav.pos()));
+    nav.ir(nav.pos(), false, true); setInterval(tic, 500); tic();
+  }
+
+  PZ.listo.then(() => (PZ.modo === 'orador' ? orador : presentador)(PZ.lams));
+})();

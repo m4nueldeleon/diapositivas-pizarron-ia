@@ -3,10 +3,6 @@
  "formato": "16:9",
  "emoji": "auto",
  "animacion": "seco",
- "marca": {
-  "texto": "tumarca",
-  "sufijo": ".com"
- },
  "laminas": [
   {
    "id": "gancho",
@@ -328,6 +324,7 @@
   {
    "id": "cuentas",
    "tipo": "cifra",
+   "arriba": "Si te contrata el 0.1%:",
    "lineas": [
     "1,000,000 × **0.1%** = 1,000",
     "1,000 × $25,000 = __$25,000,000__"
@@ -460,19 +457,10 @@
    "tipo": "prueba",
    "capturas": [
     {
-     "post": {
-      "nombre": "Ana (ejemplo)",
-      "usuario": "@cuenta_de_ejemplo",
-      "fecha": "24 ene",
-      "texto": [
-       "Hoy tuve mi primera llamada de alianza. Duró una hora y me dijeron que SÍ.",
-       "$3,000 por adelantado + 20% de las ventas.",
-       "Los pasos chiquitos sí funcionan."
-      ],
-      "clave": "$3,000 por adelantado + 20% de las ventas."
-     }
+     "hueco": "Tu primera captura va aquí"
     }
-   ]
+   ],
+   "encabezado": "Tu prueba real, con permiso:"
   },
   {
    "id": "plan14",

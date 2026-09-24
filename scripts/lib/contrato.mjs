@@ -7,6 +7,8 @@
 //              escritos como texto suelto (tarjetas, chat, cuadrantes, nodos…) y devuelve `sugerencias`:
 //              avisos suaves (campo que ese diseño no usa, emoji dudoso) que QA cuenta como aviso, no error.
 import { analizarCompuesto } from './emoji.mjs';
+import { validarDatos } from './datos.mjs';
+import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
 
 const REQUERIDOS = {
   idea: ['texto|emoji'], lista: ['items'], flujo: ['nodos'], pasos: [], bifurcacion: ['origen', 'ramas'],
@@ -30,7 +32,7 @@ export const CAMPOS = {
   flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   bifurcacion: ['origen', 'ramas', 'llave', 'separacion', 'tam_texto', 'emoji_tam'],
-  cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
+  cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso'],
   objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'encabezado', 'nota', 'nota_paso'],
@@ -87,7 +89,7 @@ const ELEMENTOS = {
   'linea-tiempo.marcas': { claves: ['texto', 'arriba', 'pos', 'tono'], texto: true },
   'tabla.filas': { claves: ['etiqueta', 'celdas'], lista: true },
   'opciones.items': { claves: ['texto'], texto: true },
-  'prueba.capturas': { claves: ['src', 'post'] },
+  'prueba.capturas': { claves: ['src', 'post', 'hueco'] },
   'stack.items': { claves: ['texto', 'emoji', 'imagen'], texto: true },
 };
 const vacio = v => v == null || (typeof v === 'string' && !v.trim());
@@ -116,6 +118,10 @@ export function validarDeck(deck, tipos) {
   if (!Array.isArray(deck.laminas) || !deck.laminas.length) return ['falta «laminas» (una lista con al menos una lámina)'];
   if (deck.formato && !['16:9', '9:16', '1:1', '4:5'].includes(deck.formato)) e.push(`formato «${deck.formato}» no existe (usa 16:9, 9:16, 1:1 o 4:5)`);
   if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe (usa auto, apple o fluent)`);
+  e.push(...validarDatos(deck.datos));
+  if (deck.pieza != null && !PIEZAS[deck.pieza]) e.push(`pieza «${deck.pieza}» no existe (usa ${Object.keys(PIEZAS).join(', ')})`);
+  if (deck.duracion_objetivo != null && minutosObjetivo(deck.duracion_objetivo) == null) e.push(`duracion_objetivo «${deck.duracion_objetivo}» no se entiende: minutos (45) o "mm:ss" ("0:45")`);
+  if (deck.en_vivo != null && typeof deck.en_vivo !== 'boolean') e.push('«en_vivo» es true o false');
   deck.laminas.forEach((l, i) => {
     const n = `lámina ${i + 1}${l && l.id ? ` (${l.id})` : ''}`;
     if (!l || typeof l !== 'object' || Array.isArray(l)) { e.push(`${n}: no es un objeto`); return; }
@@ -146,6 +152,14 @@ export function validarDeck(deck, tipos) {
     if (Array.isArray(l.emoji) && (l.tipo !== 'idea' || !l.emoji.length || l.emoji.some(x => typeof x !== 'string'))) {
       e.push(l.tipo !== 'idea' ? `${n} (${l.tipo}): «emoji» como lista solo existe en idea (par antes/después); aquí va un solo emoji` : `${n}: «emoji» como lista lleva 1 o 2 emojis de texto`);
     }
+    // Un post escrito debe decir qué es: real con permiso (`fuente`) o maqueta (`ejemplo: true`). Nunca un
+    // testimonio armado que se lea como real (regla 9)
+    if (l.tipo === 'prueba' && Array.isArray(l.capturas)) l.capturas.forEach((c, j) => {
+      if (!c || typeof c !== 'object' || !c.post) return;
+      const conFuente = typeof c.fuente === 'string' && c.fuente.trim(), ejemplo = c.ejemplo === true;
+      if (!conFuente && !ejemplo) e.push(`${n} (prueba): capturas[${j}] es un post sin «fuente» ni «ejemplo»: pon "fuente": "real, con permiso" si es real, o "ejemplo": true si es maqueta (o usa { "hueco": "La tuya va aquí" })`);
+      else if (conFuente && ejemplo) e.push(`${n} (prueba): capturas[${j}] trae «fuente» y «ejemplo» a la vez: un post es real o es maqueta`);
+    });
     if (l.tipo === 'bifurcacion' && l.origen != null && (typeof l.origen !== 'object' || Array.isArray(l.origen))) e.push(`${n}: «origen» debe ser un objeto { emoji, texto }`);
     revisarEmojis(l, n, e, []);
   });

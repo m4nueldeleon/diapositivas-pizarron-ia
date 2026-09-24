@@ -17,7 +17,8 @@ Gadzhi.
 - **Revelado por acumulación**: cada frase suma un elemento sin mover nada. Es el ritmo de la
   referencia: un cambio visual cada 2.5 segundos.
 - **Cuatro salidas**:
-  1. **Presentador HTML** para clases en vivo (→ avanza, F pantalla completa).
+  1. **Presentador HTML** para clases en vivo: → avanza, F pantalla completa, N notas del orador,
+     O vista de ensayo con la voz y el cronómetro, B pantalla en negro, 5 G salta a la lámina 5.
   2. **PNG por paso** para tu editor.
   3. **Video** con micro-animaciones: el cursor hace clic, la ruta punteada se dibuja y el sello
      cae.
@@ -45,7 +46,8 @@ Para video y montaje también necesitas `ffmpeg` (`brew install ffmpeg`).
 Pídele cosas como:
 
 - «Hazme las láminas estilo pizarrón de este guion».
-- «Quiero la clase del lunes sobre X con diapositivas estilo Iman».
+- «Quiero la clase del lunes sobre X con diapositivas estilo Iman» (una clase en vivo de 40-60 min:
+  el guion sale del largo de la pieza, no de 4 minutos).
 - «Monta las láminas sobre mi video `crudo.mp4`».
 
 Claude lee la biblia del estilo, parte tu guion en beats, elige el diseño de cada uno, escribe
@@ -56,8 +58,8 @@ PNG o el video.
 
 ```bash
 S=~/.claude/skills/diapositivas-pizarron-ia
-node $S/scripts/render.mjs mi-video      # salida/index.html + salida/laminas/*.png + salida/hoja.jpg
-node $S/scripts/qa.mjs mi-video          # nota 0-100
+node $S/scripts/render.mjs mi-video      # salida/index.html + salida/laminas/*.png + hoja.jpg + hoja-pasos.jpg
+node $S/scripts/qa.mjs mi-video          # nota 0-100 y duración estimada de la voz
 node $S/scripts/video.mjs mi-video       # salida/laminas.mp4
 node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json   # salida/montaje.mp4
 ```
@@ -66,7 +68,6 @@ Un `deck.json` mínimo:
 
 ```json
 {
-  "marca": { "texto": "tumarca", "sufijo": ".com" },
   "laminas": [
     { "tipo": "idea", "emoji": "🧑‍⚕️+💰", "texto": "La gente la usa para\n__ganar lo mismo que un médico__",
       "nota": "Sin experiencia previa.", "voz": ["La gente la usa para ganar lo mismo que un médico", "sin experiencia previa"] },
@@ -75,6 +76,11 @@ Un `deck.json` mínimo:
   ]
 }
 ```
+
+Sin `marca`, las láminas salen sin firma. Con tu firma real: `"marca": { "texto": "<tu @ o dominio>" }`
+o `{ "logo": "assets/logo.png" }` (nunca un valor de ejemplo: QA lo marca). Para que QA mida la duración,
+agrega `"pieza"` (`reel`, `video`, `vsl`, `clase`, `webinar`, `propuesta`) y `"duracion_objetivo"` en
+minutos ([`references/ARCOS.md`](references/ARCOS.md)).
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
 El demo con los 26 diseños, en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json).

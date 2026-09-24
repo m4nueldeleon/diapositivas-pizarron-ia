@@ -41,6 +41,37 @@ export function tiemposSecuenciales(deck, pasos, desde = 0) {
   });
 }
 
+// ---------- duración de la pieza ----------
+// Rango de duración por tipo de pieza, en minutos (references/ARCOS.md). Sale del RITMO de arriba: cada paso
+// sigue siendo un beat de 2-3 s en todas las piezas; lo que cambia es cuántos beats lleva.
+export const PIEZAS = {
+  reel: { min: 0.5, max: 1, nombre: 'reel' },
+  video: { min: 8, max: 20, nombre: 'video de YouTube' },
+  vsl: { min: 8, max: 20, nombre: 'VSL' },
+  clase: { min: 40, max: 60, nombre: 'clase' },
+  webinar: { min: 60, max: 90, nombre: 'webinar' },
+  propuesta: { min: 5, max: 20, nombre: 'propuesta' },
+  libre: null,
+};
+
+// «duracion_objetivo»: minutos (45) o "mm:ss" ("0:45", "42:30"). null si no se entiende.
+export function minutosObjetivo(v) {
+  if (typeof v === 'number') return Number.isFinite(v) && v > 0 && v <= 600 ? v : null;
+  if (typeof v !== 'string') return null;
+  const m = v.trim().match(/^(\d{1,3}):([0-5]\d)$/);
+  if (m) { const x = +m[1] + +m[2] / 60; return x > 0 ? x : null; }
+  const n = Number(v.trim());
+  return v.trim() && Number.isFinite(n) && n > 0 && n <= 600 ? n : null;
+}
+
+// Segundos estimados del deck completo (voz a 2.7 palabras/s, dur explícito, cámara 4 s)
+export function duracionTotal(deck, pasos) {
+  const t = tiemposSecuenciales(deck, pasos);
+  return t.length ? t[t.length - 1].fin : 0;
+}
+
+export const mmss = seg => { const s = Math.max(0, Math.round(seg)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+
 // ---------- alineación con transcripción ----------
 export function normalizar(t) {
   return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')

@@ -198,28 +198,42 @@ export function rejilla(l, ctx) {
     ${texto(ctx, l.texto, 'chico mt-m', l.texto_paso ?? 0)}</div>`;
 }
 
-// PRUEBA — capturas reales (o un post armado) con sombra, círculo rojo y datos tachados.
+// PRUEBA — capturas reales con sombra, círculo rojo y datos tachados [0:35, 15:45, 19:30].
+// Tres variantes por captura:
+//   { src }                         la captura real (con permiso), con `circulo` y `tachar`;
+//   { post, fuente | ejemplo }      un post escrito: con `fuente` («real, con permiso») se pinta como post
+//                                   y la fuente va abajo; con `ejemplo: true` es una MAQUETA: sin avatar,
+//                                   usuario ni fecha, con sello «EJEMPLO», y sin círculo sobre dinero;
+//   { hueco }                       tarjeta punteada vacía («La tuya va aquí»): prueba que aún no tienes.
+// Nunca un testimonio inventado que parezca real (SKILL, regla 9).
+export const DATO_DURO = /[$%€]|\d[\d,.]*\s*(k|mil|clientes?|ventas?|usd|mxn)\b/i;
+function post(p, ejemplo) {
+  const clave = p.clave && !(ejemplo && DATO_DURO.test(p.clave)) ? escapar(p.clave) : '';
+  const parr = (p.texto || []).map(x => {
+    let h = marcar(x);
+    if (clave) h = h.replace(clave, `<span class="clave" data-circulo="caja">${clave}</span>`);
+    return `<p>${h}</p>`;
+  }).join('');
+  if (ejemplo) return `<div class="post ejemplo"><div class="sello-ejemplo"><div class="sello-tinta">Ejemplo</div></div>${parr}</div>`;
+  return `<div class="post"><div class="cab"><div class="av"></div><div><b>${escapar(p.nombre || 'Nombre')}</b><span>${escapar(p.usuario || '')}${p.fecha ? ' • ' + escapar(p.fecha) : ''}</span></div><div style="margin-left:auto;color:#999;font-size:40px">···</div></div>${parr}</div>`;
+}
 export function prueba(l, ctx) {
   const caps = l.capturas || [];
   const html = caps.map((c, i) => {
     const giro = caps.length > 1 ? `transform:rotate(${[-1.5, 1.2, -0.8][i % 3]}deg);z-index:${i + 1}` : '';
+    const k = ctx.P(l.revelar === 'todo' ? 0 : i);
+    if (c.hueco) return `<div class="captura hueco-prueba"${k} style="${giro}"><span class="mano">${marcar(c.hueco)}</span></div>`;
     let dentro;
-    if (c.post) {
-      const p = c.post;
-      const parr = (p.texto || []).map(x => {
-        let h = marcar(x);
-        if (p.clave) { const k = escapar(p.clave); h = h.replace(k, `<span class="clave" data-circulo="caja">${k}</span>`); }
-        return `<p>${h}</p>`;
-      }).join('');
-      dentro = `<div class="post"><div class="cab"><div class="av"></div><div><b>${escapar(p.nombre || 'Nombre')}</b><span>${escapar(p.usuario || '')}${p.fecha ? ' • ' + escapar(p.fecha) : ''}</span></div><div style="margin-left:auto;color:#999;font-size:40px">···</div></div>${parr}</div>`;
-    } else {
+    if (c.post) dentro = post(c.post, c.ejemplo === true);
+    else {
       const extra = [
         c.circulo ? ` data-circulo-img="${c.circulo.join(',')}"` : '',
         c.tachar ? ` data-tachon-img="${escapar(JSON.stringify(c.tachar))}"` : '',
       ].join('');
       dentro = `<img src="${ctx.img(c.src)}" alt=""${extra} style="${Number.isFinite(c.alto) ? `max-height:${c.alto}px` : ''}">`;
     }
-    return `<div class="captura"${ctx.P(l.revelar === 'todo' ? 0 : i)} style="${giro}">${dentro}</div>`;
+    const fuente = c.post && c.ejemplo !== true && typeof c.fuente === 'string' && c.fuente.trim() ? `<div class="fuente">${escapar(c.fuente)}</div>` : '';
+    return `<div class="captura"${k} style="${giro}">${dentro}${fuente}</div>`;
   }).join('');
   return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="pruebas">${html}</div>
     ${texto(ctx, l.texto, 'chico mt-l', l.texto_paso ?? Math.max(0, caps.length - 1))}</div>`;
@@ -238,7 +252,8 @@ export function chat(l, ctx) {
   };
   const html = ms.map((m, i) => {
     const yo = (m.de || 'yo') === 'yo';
-    const cuerpo = marcar(m.texto).replace(/\[([^\[\]]+)\]/g, '<span class="hueco">[$1]</span>');
+    // [x] en minúsculas = lo que personalizas en el mensaje; los [MAYÚSCULAS] ya los marcó marcar()
+    const cuerpo = marcar(m.texto).replace(/(?<!class="hueco">)\[([^\[\]<>]+)\]/g, '<span class="hueco">[$1]</span>');
     const av = avatar(m, yo);
     return `<div class="msj ${yo ? 'yo' : 'otro'}"${ctx.P(l.revelar === 'todo' ? 0 : i)}>${yo ? '' : av}<div class="burbuja">${cuerpo}</div>${yo ? av : ''}</div>`;
   }).join('');

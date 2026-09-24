@@ -4,6 +4,18 @@ Cada lámina de `deck.json` es un objeto con `tipo` más sus campos. Todo texto 
 [markup](#marcas-de-texto). Entre corchetes va el momento del video de referencia donde aparece
 ese diseño.
 
+**Campos del deck** (arriba de `laminas`)
+
+- `titulo`, `formato` (`16:9`, `9:16`, `1:1`, `4:5`), `emoji` (`auto`, `apple`, `fluent`), `animacion`
+  (`seco`, `suave`), `idioma`.
+- `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
+  **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
+  «@tuusuario», «<…>») es error de QA.
+- `pieza`: `reel`, `video`, `vsl`, `clase`, `webinar`, `propuesta` o `libre`; `duracion_objetivo`:
+  minutos (`45`) o `"mm:ss"`; `en_vivo: true` si se presenta en vivo. QA mide la voz contra eso
+  ([ARCOS.md](ARCOS.md)).
+- `datos`: ver [Datos que se llenan una vez](#datos-que-se-llenan-una-vez).
+
 **Campos que acepta cualquier lámina**
 
 - `id`: nombre corto para los archivos y los cortes.
@@ -98,6 +110,15 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
 ```
 - Con una sola línea sale enorme, a 140 px.
 - `arriba`: nota manuscrita encima. `abajo`: etiqueta chica, como «Seguidores».
+- **Proyección al espectador** (lo que ganará o conseguirá quien mira): `arriba` es el lugar de la
+  **condición, con número**, y las tasas van en **rango**, como la referencia [33:45-33:55]. Nunca un
+  «Supuesto:» vacío; QA lo avisa (GUION §3.8):
+  ```json
+  { "tipo": "cifra", "arriba": "Si mandas 10 mensajes al día por 10 días:", "lineas": [
+    "100 × 10-20% = 10-20 pláticas", "× 30-50% = __3-10 clientes__"] }
+  ```
+- `fuente`: de dónde sale un dato publicado (el tamaño de un mercado); sale chica y gris abajo y exime
+  la cuenta del aviso de proyección.
 - `[[palabra]]` pone una palabra en letra de mano dentro de la ecuación: `100-250 [[ventas]] × $100`.
 - Cada línea puede ser un objeto `{ "texto", "tam", "peso", "tono" }` para jerarquizar. **Precio con
   ancla** — el ancla es algo real que el público ya vio (la columna cara de la tabla, un sueldo, tu
@@ -304,14 +325,22 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
   cambian, por ejemplo `"avatar_otro": "🤖"` para la IA; `false` la quita.
 - `tam_texto` (px) cambia la letra de las burbujas (54 en 16:9, 58 en 9:16).
 
-### `prueba` — capturas reales o un post armado, con el dato encerrado  ·  [0:35, 15:45, 19:30]
+### `prueba` — capturas reales, con el dato encerrado  ·  [0:35, 15:45, 19:30]
 ```json
 { "tipo": "prueba", "capturas": [
-  { "src": "assets/captura.png", "circulo": [62, 40, 30, 12], "tachar": [[5, 3, 25, 6]] },
-  { "post": { "nombre": "Ana", "usuario": "@ana", "texto": ["Hoy cerré mi primera alianza.", "$3,000 por adelantado."], "clave": "$3,000 por adelantado." } } ] }
+  { "src": "assets/captura.png", "circulo": [62, 40, 30, 12], "tachar": [[5, 3, 25, 6]] } ] }
 ```
 - `circulo` y `tachar` van en porcentaje de la imagen: x, y, ancho, alto.
-- Usa **solo testimonios y resultados reales, con permiso**. Tacha los datos personales.
+- **Regla 9: nunca inventes testimonios, capturas ni cifras.** Usa solo resultados reales, con permiso,
+  y tacha los datos personales. Si todavía no tienes la prueba, no la finjas:
+  - `{ "hueco": "La tuya va aquí" }`: tarjeta punteada y vacía, con la frase a mano.
+  - `{ "post": { "nombre", "usuario", "fecha", "texto": [...], "clave" }, "fuente": "real, con permiso" }`:
+    un post que transcribes de uno real. Se pinta como post y la `fuente` va abajo, tal cual.
+  - `{ "post": { "texto": [...] }, "ejemplo": true }`: una **maqueta visible**, nunca un testimonio. Sale
+    sin avatar, usuario, fecha ni «···», con un sello rojo «EJEMPLO» en la tarjeta, y `clave` no encierra
+    dinero, porcentajes ni números de clientes o ventas. QA avisa si una maqueta trae cifras o
+    resultados («cerré», «cliente», «venta»).
+  - Un `post` sin `fuente` ni `ejemplo`, o con los dos, es error de contrato.
 
 ### `boton` — botón de interfaz y cursor que lo aprieta  ·  [23:15, 38:15]
 ```json
@@ -349,6 +378,10 @@ chico. Va en blanco, no en lámina oscura.
 ```json
 { "tipo": "camara", "voz": "Déjame contarte cómo empecé", "dur": 4 }
 ```
+- En el presentador se proyecta en **negro limpio**; la `nota` («🎥 A cámara») solo sale en los PNG, la
+  hoja y la vista de ensayo.
+- Un tramo en vivo sin láminas (demostración, actividad, preguntas) es una `camara` con su `nota` y
+  `dur` en segundos (`"dur": 300`): cuenta en la duración de la pieza (ARCOS.md).
 
 ---
 
@@ -389,6 +422,23 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 `l0`… (cifra), `icono` y `cita` (cita), `objeto`, `medidor`, `op0`… (opciones), `rejilla`, `anot` y
 `d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`.
 
+## Datos que se llenan una vez
+
+Un dato que falta o que se repite (precio, días, WhatsApp) se escribe como `{{CLAVE}}` en cualquier
+texto y se llena UNA vez en `datos`, arriba del deck:
+
+```json
+{ "datos": { "PRECIO": "$4,997", "WHATSAPP": "33 1234 5678" },
+  "laminas": [ { "tipo": "cifra", "lineas": ["Hoy: __{{PRECIO}}__"], "voz": ["Hoy cuesta {{PRECIO}}"] } ] }
+```
+
+- La clave va en MAYÚSCULAS. Se sustituye en todos los textos, también en la `voz`.
+- Una `{{CLAVE}}` sin valor sale como `[CLAVE]` en un **hueco amarillo**, igual que un `[PRECIO]`
+  escrito a mano. QA lo cuenta como error de dato pendiente, con sus láminas, y lo deja en `qa.json` →
+  `pendientes`. Nunca se inventa una cifra para rellenar.
+- El `[x]` en minúsculas dentro de un `chat` es otra cosa: lo que el usuario personaliza en el mensaje
+  (`[nombre]`), no un dato pendiente.
+
 ## Marcas de texto
 
 | Marca | Resultado |
@@ -401,6 +451,7 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 | `^^frase^^` | remate en su propio renglón, en negrita y ~1.5× [18:30]; puede llevar `__` o `==` dentro |
 | `{v:texto}` `{r:}` `{n:}` `{g:}` `{a:}` `{o:}` | color semántico: verde, rojo, naranja, gris, azul o dorado (cifra sobre lámina oscura) |
 | `[[texto]]` | letra manuscrita dentro de la línea |
+| `[PRECIO]` | dato pendiente (MAYÚSCULAS): hueco amarillo; mejor `{{PRECIO}}` con `datos` |
 | `\n` | salto de línea. Una marca puede abarcar el salto: `**mejor\nmodelo**` va en negrita en los dos renglones, y el subrayado o el tachón se dibujan renglón por renglón |
 
 ## Emoji compuesto

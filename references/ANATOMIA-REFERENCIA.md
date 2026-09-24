@@ -47,12 +47,13 @@ Colores muestreados:
 | 0:25 | Cursor de flecha + «If you clicked on this video because…» | `idea` + `clic` |
 | 0:30 | «"Market Gap"» entre comillas: término acuñado | `idea` |
 | 0:35 | Estado de cuenta con nombre tachado en rojo y monto | `prueba` |
-| 0:38 | «100% transparent» con resaltador amarillo | `idea` con `==` |
+| 0:38 | «100% transparent» con resaltador amarillo; el descargo «just because I got these results, doesn't mean you will» | `idea` con `==` |
 | 1:00-1:20 | Capturas de prueba que se apilan con sombra | `prueba` |
 | 1:35 | «Without:» + ❌ ítems, uno por frase | `lista` |
 | 1:45 | Alcancía → arco negro con ✕ → tragamonedas (fotos recortadas) | `flujo` + `tachada` |
 | 1:55 | Teclas 1 2 3, ruta punteada que se dibuja, cursor de mano que hace clic | `pasos` |
-| 2:00 | Reloj digital «33:00» | `objeto` |
+| 1:26 | Quién habla (el nombre llega hasta aquí, no al inicio) | `camara` |
+| 2:00-2:12 | Reloj digital «33:00» (contrato de tiempo), el filtro «if you don't have 33 minutes…» y el regalo por quedarse | `objeto` + `idea` |
 | 2:40 | Billete con anotaciones manuscritas y flechas | `objeto` + notas |
 | 3:10-3:15 | 1,000,000 × 0.1% = 1,000, luego × $25,000 = $25,000,000 subrayado | `cifra` |
 | 3:50 | Meme de película («That is an excellent question») | imagen |
@@ -96,10 +97,26 @@ Colores muestreados:
 | 23:15 | Botón «Generate 🤖» + cursor de mano | `boton` |
 | 28:00 | Step 1 ✅ Step 2 ✅ Step 3 Launch | `pasos` + `hechos` |
 | 28:45-29:20 | Calendario de 14 días con 3 fases de color y notas manuscritas | `calendario` |
-| 33:45-33:55 | «100-250 sales × $100-200 = $10,000-$50,000», «Your 30% cut» en verde | `cifra` |
+| 33:45-33:55 | Condición arriba («For a creator with 50K-100K followers») y rangos: «100-250 sales × $100-200 = $10,000-$50,000», «Your 30% cut» en verde | `cifra` con `arriba` |
 | 34:10 | Barras rojas chicas → barras verdes altas: $5K → $30K+ | `grafica` + `barras` |
 | 34:25-35:15 | «Reason #1», «Reason #2» | `idea` |
 | 35:45-35:50 | Foto de laberinto: sentirse perdido | `objeto` |
+| 36:10 | Credibilidad sobre foto real: «since 2016, over 23,000 clients» | `prueba` u `objeto` |
 | 36:15-37:55 | Láminas oscuras de marca: Consulting.com, Monetise, Quantum, Synthesise AI | `oscura` |
+| 36:38 | Ancla con el nivel caro real: «Quantum… starts at $25,000», antes del producto | `cifra` |
 | 39:25 | Avatares → $140,000 cada uno | `flujo` |
+| 40:15-40:50 | «They will:» — lista en blanco que crece renglón por renglón | `lista` |
+| 41:00 · 41:35 | Pregunta de sí después de cada componente: 🤔 «Can you see how…» / «How much easier…» | `idea` |
+| 41:10 · 41:40 | Componentes numerados «#4» y «#5», en blanco | `idea` |
+| 42:00 | Muro de capturas reales de resultados | `prueba` |
+| 42:30-42:45 | Bento de valor que se llena pieza por pieza | `stack` |
+| 43:00 | «UpLevel · Limited availability» (la segunda revelación oscura) | `oscura` |
 | 43:15 | Rejilla «Enrolled / Waiting» | `rejilla` |
+| 43:20 | «Small number of spots» (escasez real) | `idea` o `rejilla` |
+| 43:30 | «Waitlist months long» | `idea` |
+| 43:35 · 44:30 | Flecha roja al link (sobre una captura real, no sobre fondo oscuro de plantilla); el link sale dos veces | `prueba` + flecha, o `boton` |
+| 43:40 | «2 minutes»: cuánto tarda aplicar | `idea` ⏱️ |
+| 43:50 | La invitación de calendario: qué pasa después del clic | `calendario` o `prueba` |
+| 44:05 | «If it's not, we'll point you in the right direction»: la salida honesta | `idea` 🤝 |
+| 44:20-44:25 | Resumen del stack | `lista` |
+| 44:35-44:40 | Por qué ahora y cierre de identidad; 44:45 a cámara | `idea`, luego `camara` |

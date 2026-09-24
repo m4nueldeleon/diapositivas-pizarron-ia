@@ -9,6 +9,8 @@
 //   {v:texto}          color semántico: v verde · r rojo · n naranja · g gris · a azul · k negro · o dorado
 //                      (el dorado es para cifras sobre lámina oscura [36:40])
 //   [[nota]]           la misma frase en letra manuscrita (Caveat) dentro de la línea
+//   [PRECIO]           dato pendiente (MAYÚSCULAS entre corchetes): hueco amarillo a la vista; qa.mjs lo
+//                      cuenta como error hasta que se llene (mejor con "datos" y {{PRECIO}}: datos.mjs)
 //   \n                 salto de línea forzado. Una marca puede abarcar el salto: «**mejor\nmodelo**»
 //                      sale en negrita en los dos renglones (el subrayado y el tachón se dibujan
 //                      renglón por renglón).
@@ -21,6 +23,9 @@ export function escapar(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// Dato pendiente a la vista: [PRECIO], [WHATSAPP], [DÍAS] (solo MAYÚSCULAS; «[nombre]» es plantilla de chat)
+export const RE_HUECO = /\[([A-ZÁÉÍÓÚÑÜ0-9][A-ZÁÉÍÓÚÑÜ0-9 _\-]{1,30})\]/g;
+
 const TONOS = new Set(['v', 'r', 'n', 'g', 'a', 'k', 'o']);
 
 export function marcar(texto) {
@@ -31,6 +36,7 @@ export function marcar(texto) {
   // [\s\S] y no «.»: una marca puede cruzar un salto de línea real (el \n de un deck.json). El salto
   // se vuelve <br> al final, así queda DENTRO de <b>, <s> o <mark>.
   h = h.replace(/\[\[([\s\S]+?)\]\]/g, '<span class="mano">$1</span>');
+  h = h.replace(RE_HUECO, '<span class="hueco">[$1]</span>');
   h = h.replace(/__([\s\S]+?)__/g, '<b class="sub" data-sub>$1</b>');
   h = h.replace(/==([\s\S]+?)==/g, '<mark>$1</mark>');
   h = h.replace(/~~([\s\S]+?)~~/g, '<s class="tachon" data-tachar>$1</s>');

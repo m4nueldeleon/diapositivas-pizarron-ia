@@ -104,13 +104,22 @@ export function resolverFluent(ch, dirSalida, aproximados) {
 const SIL = (x, s = 1) => `<circle cx="${12 * s + x}" cy="${8 * s}" r="${4.6 * s}" fill="url(#pz-sil)"/><path d="M${x + 3 * s} ${22 * s}c0-5 ${4 * s}-${8.2 * s} ${9 * s}-${8.2 * s}s${9 * s} ${3.2 * s} ${9 * s} ${8.2 * s}z" fill="url(#pz-sil)"/>`;
 // El degradado de las siluetas se define UNA vez fuera de las láminas (construir.mjs → DEFS_GLOBALES):
 // si viviera dentro de una lámina oculta, las demás láminas lo perderían en el presentador.
-export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#90a6be"/><stop offset="1" stop-color="#5c7390"/></linearGradient><linearGradient id="pz-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45c91f"/><stop offset="1" stop-color="#1f9a0d"/></linearGradient></defs></svg>';
+export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#90a6be"/><stop offset="1" stop-color="#5c7390"/></linearGradient><linearGradient id="pz-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45c91f"/><stop offset="1" stop-color="#1f9a0d"/></linearGradient><linearGradient id="pz-pantalla" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8def"/><stop offset="1" stop-color="#9b6ee0"/></linearGradient></defs></svg>';
 const DEF_SIL = '';
 // La ✕ llena su caja (la insignia de «no:» cruza la esquina del emoji como en ref_628) y la ✅ es verde
 // saturado con palomita gruesa: el ✅ de Fluent es verde menta pálido y se perdía sobre el cuadrante verde.
 const EQUIS = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M3.5 3.5 20.5 20.5M20.5 3.5 3.5 20.5" stroke="#d3121f" stroke-width="3.6" stroke-linecap="round"/></svg>';
 const PALOMITA = '<svg viewBox="0 0 24 24" width="100%" height="100%"><rect x="1.5" y="1.5" width="21" height="21" rx="5" fill="url(#pz-ok)"/><path d="M6.6 12.4l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// 📱 celular: vertical (1:2), cuerpo negro y rejilla de apps de color, igual en Apple y en Fluent. El 📱 de
+// Fluent es una tableta morada que se confunde con 📅 (EMOJIS.md, «Se ven distinto según el modo»).
+const APPS = ['#ff5f57', '#ffbd2e', '#28c840', '#5ac8fa', '#af52de', '#ff9500', '#34c759', '#007aff', '#ff2d55', '#ffcc00', '#30b0c7', '#5856d6'];
+const CELULAR = `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect x="6.2" y="0.6" width="11.6" height="22.8" rx="2.7" fill="#1c1c1e"/>`
+  + `<rect x="7.2" y="2" width="9.6" height="20" rx="1.7" fill="url(#pz-pantalla)"/><rect x="10.3" y="1.3" width="3.4" height="1" rx=".5" fill="#1c1c1e"/>`
+  + APPS.map((c, k) => `<rect x="${(7.8 + (k % 3) * 3.1).toFixed(1)}" y="${(4 + Math.floor(k / 3) * 3.1).toFixed(1)}" width="2.2" height="2.2" rx=".6" fill="${c}"/>`).join('')
+  + `<rect x="7.8" y="18.2" width="8.4" height="2.9" rx=".9" fill="#fff" fill-opacity=".35"/>`
+  + ['#28c840', '#007aff', '#ff9500'].map((c, k) => `<rect x="${(8.1 + k * 2.75).toFixed(2)}" y="18.55" width="2.2" height="2.2" rx=".6" fill="${c}"/>`).join('') + '</svg>';
 const GLIFOS_SVG = {
+  '📱': CELULAR,
   '❌': EQUIS, '✖': EQUIS, '✅': PALOMITA, '☑': PALOMITA, '✔': PALOMITA,
   '👤': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}${SIL(0)}</svg>`,
   '👥': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}<g opacity=".75">${SIL(5.2, 0.8)}</g>${SIL(-2.4, 0.86)}</svg>`,

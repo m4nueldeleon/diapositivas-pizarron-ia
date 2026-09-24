@@ -37,7 +37,7 @@ la lámina nueva o un elemento más sobre la actual.
 | un proceso de N pasos | teclas 1-2-3 + ruta punteada | `pasos` |
 | «estás en el paso 2» | la misma lámina con `activo: 2` y `hechos: [1]` | `pasos` |
 | «lo mismo, dos resultados» | origen → dos ramas + llave «mismo trabajo» | `bifurcacion` |
-| un cálculo | la ecuación línea por línea, con el total subrayado | `cifra` |
+| un cálculo | la ecuación línea por línea, con el total subrayado (si es una proyección al espectador: condición arriba y rangos, ver §3.8) | `cifra` |
 | un número que impresiona | el número solo, enorme | `cifra` con una línea |
 | «tendrías que vender 500» | 500 emojis en rejilla + nota «Son 500» + sello | `rejilla` |
 | un porcentaje | 100 puntos, unos de otro color | `rejilla` + `punto` |
@@ -54,14 +54,18 @@ la lámina nueva o un elemento más sobre la actual.
 | una pregunta retórica | 🤔 + la pregunta | `idea` |
 | una objeción del cliente | emoji negado + «Objeción #N» entre el emoji y la frase + la objeción en negrita y entre comillas; la respuesta en la lámina SIGUIENTE | `idea` con `encabezado_pos: "entre"` |
 | por qué falla la mayoría | la misma forma con «Razón #N» [34:25, 35:15] | `idea` |
-| lo que incluye la oferta | bento que se llena pieza por pieza [42:30] | `stack` |
+| credibilidad (años, clientes) [36:10] | la cifra real sobre una foto o captura real | `prueba` u `objeto` |
+| componente numerado «#N» de la oferta [41:10, 41:40] | «#4» + el componente, en blanco | `idea` |
+| pregunta de sí después de un componente [41:00, 41:35] | 🤔 + «¿Ves cómo…?» | `idea` |
+| lo que incluye la oferta, el stack que crece [42:30] | bento que se llena pieza por pieza | `stack`, `tarjetas` o `rejilla` |
+| qué pasa después del clic [43:35-43:50] | flecha roja al link, «2 minutos», la invitación del calendario | `boton` o `calendario` |
 | el precio | ancla real chica y gris → precio grande (una línea por paso) | `cifra` con líneas-objeto |
-| cupos o lista de espera | rejilla con el color de los ocupados en un paso posterior + la fuente | `rejilla` + `destacado_paso` |
+| cupos o lista de espera (solo si son reales) [43:15-43:30] | rejilla con el color de los ocupados en un paso posterior + la fuente | `rejilla` + `destacado_paso` |
 | antes / después | en UNA lámina: bloques rojo y verde, o el par de emojis | `cuadrantes` o `idea` con par |
 | una fila de conceptos sin causa→efecto | nodos numerados sin flechas [19:15] | `flujo` + `flecha: "ninguna"` |
 | una frase textual de alguien | letra manuscrita + flecha | `cita` |
 | una idea que resume la anterior | atenuar la anterior + nota encima | `foco` |
-| la revelación del producto o la marca | lámina oscura (nombre, logo, una frase) | `oscura` |
+| la revelación del producto o la marca (SOLO eso: el resto de la oferta va en blanco, §7) | lámina oscura (nombre, logo, una frase) | `oscura` |
 | historia personal, confesión o llamado | nada: cámara | `camara` |
 
 ## 3. Cómo escribir el texto de la lámina
@@ -79,6 +83,22 @@ la lámina nueva o un elemento más sobre la actual.
    subrayan.
 7. **Las cifras siempre con número** y en la unidad que se dice: «$10k al mes», no «diez mil
    mensuales».
+8. **Proyecciones al espectador.** Cuando la cuenta promete lo que ganará o conseguirá quien mira
+   (dinero, clientes, ventas). No aplica al tamaño de un mercado ni a un dato publicado: ahí va `fuente`.
+   - a) La condición concreta va en `arriba`, con número: «Si te escriben 20 personas al día:» o «Con 10
+     mensajes diarios:». Nunca un «Supuesto:» vacío.
+   - b) Las tasas y los resultados van en rango y en la unidad que se dice, como en la referencia
+     [33:45-33:55]: arriba «For a creator with 50K-100K followers», abajo «100-250 sales × $100-200 =
+     $10,000-$50,000». Si hay que dar un solo número, sale de la tasa baja.
+   - c) Si el total subrayado sostiene la promesa del título, la voz dice el descargo en esa lámina o en el
+     gancho, como la referencia [0:38]: «que yo tenga estos resultados no quiere decir que tú los tengas».
+   QA avisa cuando una `cifra` subraya un total de dinero, % o clientes y `arriba` no trae número.
+9. **La nota de remate y el `foco` llevan un dato, una consecuencia concreta o una acción con objeto**
+   (qué mandar, a quién, cuándo). Máximo una antítesis «No X, Y» por deck, y nada de cierre motivacional
+   genérico («Todo empieza con…», «Mándalo hoy», «Esperar no es una estrategia»). Si la frase viene del
+   guion hablado, corrígela en el guion y no solo en la lámina, para no romper la regla 5. Lista completa
+   y pares antes/después en [VOZ-HUMANA.md](VOZ-HUMANA.md); QA avisa las fórmulas y las palabras de
+   «Palabras que nunca usas» de MI-MARCA.
 
 ## 4. Cómo elegir el emoji
 
@@ -90,7 +110,9 @@ la lámina nueva o un elemento más sobre la actual.
 - **Revisa el contraste del emoji** (EMOJIS.md, «Bajo contraste»): en Fluent 💬 y ✉️ casi
   desaparecen sobre blanco; en Apple 🏷️ se pierde. QA lo avisa y propone el sustituto.
 - **La negación se dibuja**: `"no:🎥"` en lugar de escribir «sin video».
-- **Mismo concepto, mismo emoji** en todo el deck: si «producto» fue 📦, lo sigue siendo.
+- **Mismo concepto, mismo emoji** en todo el deck: si «producto» fue 📦, lo sigue siendo. Y al revés:
+  **un emoji, un concepto**. No uses dos emojis que se ven casi iguales (🧑‍💼 y 👨‍💼, 📅 y 🗓️) para
+  conceptos distintos.
 - Diccionario completo en [EMOJIS.md](EMOJIS.md).
 
 ## 5. Ritmo y variedad
@@ -104,12 +126,17 @@ la lámina nueva o un elemento más sobre la actual.
 - **Hay objetos que regresan**: la tabla-marcador y el mapa de pasos se repiten creciendo. Esa
   repetición le da estructura al video.
 
-## 6. Arco narrativo que usa la referencia
+## 6. Arcos: el de la referencia y los de cada pieza
 
-Estos son los grandes bloques del video de referencia, con su minuto aproximado:
+**Antes de escribir, decide la pieza y su duración** (reel, video, VSL, clase, webinar, propuesta):
+cada una tiene su arco, su número de beats y su peso de oferta en **[ARCOS.md](ARCOS.md)**. Ponlas en
+el deck (`"pieza"`, `"duracion_objetivo"`, `"en_vivo"`) y QA mide la voz contra el objetivo. Una
+«clase» de 4 minutos no es una clase: es un resumen.
 
-1. **Gancho** (0:00-2:30): promesa, «sin…» y prueba rápida con capturas. Presenta el sistema
-   1-2-3.
+Estos son los grandes bloques del video de referencia (44:55), con su minuto aproximado. Es el arco
+del **webinar o video largo**:
+
+1. **Gancho** (0:00-2:30): ver §6.1. Presenta el sistema 1-2-3.
 2. **Credibilidad** (2:30-3:20): quién habla, con logos y cifras.
 3. **Criterios** (4:00-5:20): por qué la mayoría falla. Presenta 6 métricas.
 4. **Comparación** (5:20-10:05): la tabla-marcador se llena modelo por modelo.
@@ -121,16 +148,64 @@ Estos son los grandes bloques del video de referencia, con su minuto aproximado:
    respuesta en la lámina siguiente, y si hay contraste, pregunta → «Sí.» → «Pero…» en láminas de una
    frase [34:35-34:45]. Nunca dentro del encabezado de una lista ni pegada a un botón. De 2 a 3
    objeciones antes del precio.
-9. **Oferta** (36:00-44:50): revelaciones oscuras (36:15, 37:40, 37:50, 43:00) y todo lo demás en
-   blanco (38:10, 38:15, 38:25, 39:30, 40:15-40:45, 42:15-42:25):
-   - **Lo que incluye**: `stack`, pieza por pieza, con logos reales si los hay.
-   - **Precio**: el ancla es algo real que el público ya vio: la columna cara de la tabla-marcador,
-     un sueldo, el costo de no hacer nada o tu nivel superior real (36:30-36:40: primero el nivel
-     caro con su «desde $X», luego el producto). Nunca un «Valor» inventado; el precio tachado es
-     opcional y la referencia no lo usa.
-   - **Escasez**: solo si es real, con su fuente (43:15-43:20).
-   - **Garantía**: plazo + condición medible + cómo se reclama, en una `idea`.
-   - **Llamado**: una serie de láminas de UNA idea (43:30-44:10): ⏳ espera → `prueba` con flecha al
-     link → ⏱️ cuánto tarda → 🔍 qué pasa después → 🤝 «si no es para ti, te orientamos».
+9. **Oferta** (36:00-44:50, el 20% final): **ver §7, beat por beat.** En resumen: puente del dolor,
+   credibilidad, ancla con el nivel caro, revelación oscura, componentes «#N» con su pregunta de sí,
+   prueba real, stack que se llena, escasez real, llamado con qué pasa después, resumen y llamado otra
+   vez, por qué ahora. Oscura SOLO la revelación de marca; todo lo demás en blanco con emoji.
 
-Úsalo como plantilla para clases, VSL o webinars.
+### 6.1 Los primeros 10 segundos
+
+- **Antes del segundo ~10 el espectador ya vio el resultado o el conflicto concreto.** Nada de saludo,
+  «bienvenido», presentación personal ni el título de la clase («Cómo…») como primera lámina. La
+  bienvenida y el «quién soy» van después de la primera prueba: en la referencia el nombre llega en 1:26.
+- Aperturas que sirven:
+  - una escena concreta con hora y lugar: «11:40 pm. Alguien quiere comprarte…»;
+  - el resultado más «sin…» [0:10-0:19];
+  - el error en vivo: el chat que se queda en visto;
+  - un dato contraintuitivo.
+- Se permite una tesis breve antes, como el «We are entering a new era» de la referencia [0:00-0:10],
+  siempre que el resultado llegue en 10 s o menos.
+- En un reel (menos de 60 s) el conflicto concreto va en la lámina 1, no después del mapa.
+- Los beats de retención de la referencia entre 0:00 y 2:30, con su minuto:
+  | Beat | Minuto | En la lámina |
+  |---|---|---|
+  | resultado + «sin…» | 0:10-0:19 | `idea` + `lista` «Sin:» |
+  | llamado a quién es («si hiciste clic es porque…») | 0:26 | `idea` + `clic` |
+  | mecanismo con nombre («Market Gap») | 0:31 | `idea` con el término entre comillas |
+  | prueba rápida y descargo de resultados | 0:35-0:40 | `prueba` + la voz: «que yo los tenga no quiere decir que tú los tengas» |
+  | quién habla | 1:26 | `camara` o `idea` |
+  | contrato de tiempo («los próximos 33 minutos») | 2:03 | `objeto` (reloj) o `cifra` |
+  | filtro («si no tienes 33 minutos…») | 2:05 | `idea` |
+  | regalo por quedarse hasta el final | 2:12 | `idea` 🎁 |
+- QA avisa si hay cámara antes del segundo 10, saludo en las dos primeras láminas o una primera lámina
+  que empieza con «Cómo» o «Aprende a».
+
+## 7. La oferta, beat por beat (referencia 36:00-44:50)
+
+La regla de fondo: **oscura SOLO en la revelación de la marca o el producto** (36:15-37:55 y 43:00).
+Todo lo demás va en lámina **blanca con emoji**, con la capa a mano de siempre: la lista «They will:»,
+las preguntas 🤔, los «#4» y «#5», la lista de espera y el «2 minutes» son blancos. La oferta escala con
+la pieza (ARCOS.md): un reel no lleva oferta y una clase solo un puente al siguiente paso. **Todo dato es
+real**: si no hay cifra de credibilidad, prueba o escasez real, el beat se omite; nunca se inventa.
+
+| # | Beat | Minuto | Diseño |
+|---|---|---|---|
+| 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
+| 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes») | 36:10 | `prueba` u `objeto` con foto real |
+| 3 | Ancla con tu nivel caro real («Quantum… desde $25,000»), opcional | 36:30-36:40 | `cifra` |
+| 4 | Revelación del producto, en 1 paso | 36:15-37:55, 43:00 | `oscura` |
+| 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` |
+| 6 | Prueba real: el muro de capturas | 42:00 | `prueba` |
+| 7 | El stack que se llena pieza por pieza | 42:30-42:45 | `stack`, `tarjetas` o `rejilla` |
+| 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera | 43:00-43:30 | `rejilla` + `destacado_paso` |
+| 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🤝 |
+| 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
+| 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
+
+- **El llamado aparece al menos 2 veces** (beats 9 y 10); en un webinar, 3 si hay un llamado temprano.
+- **Precio, formas de pago y garantía NO están en la referencia**: su llamado es aplicar y agendar una
+  llamada, y el único precio es el ancla del nivel caro. Se agregan solo si la oferta tiene precio
+  público: el precio con `cifra` (el ancla es algo real que el público ya vio, nunca un «Valor»
+  inventado; el tachado es opcional) y la garantía en una `idea` 🛡️ con plazo, **condición medible** y
+  cómo se reclama. Los datos que falten van con `{{PRECIO}}` en el texto y `"datos"` en el deck
+  (LAYOUTS.md, «Datos que se llenan una vez»): QA los lista como pendientes.

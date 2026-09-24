@@ -18,6 +18,14 @@ SKILL.md.
   prueba en `pruebas/qa-visual.test.mjs` (fixtures en `pruebas/fixtures/`).
 - `scripts/lib/contrato.mjs` guarda en `CAMPOS` lo que lee cada diseño. Si un layout lee un campo
   nuevo, agrégalo ahí: la prueba lo exige, y un campo fuera de la tabla sale como aviso en QA.
+- `scripts/lib/reglas-deck.mjs`: reglas de QA que se leen en el deck.json sin navegador (firma de
+  relleno, duración de la pieza, apertura, voz humana, proyecciones, posts de maqueta, llamado). Son
+  funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs`.
+- `scripts/lib/datos.mjs` sustituye `{{CLAVE}}` con `datos` antes de sanear; lo que falta queda como
+  `[CLAVE]`, que `marcar()` pinta como hueco y QA cuenta como pendiente.
+- `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA.
+- `templates/presentador.js` es el presentador en vivo y la vista de ensayo (`?modo=orador`), sobre
+  `window.PZ`. Lee la voz del `<script class="guion">` que `construir.mjs` mete en cada lámina.
 - `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica contra los cuadros del video: ver
   PROTOCOLO §4b.
 

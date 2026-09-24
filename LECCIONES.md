@@ -30,3 +30,12 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Porqué**: con la máscara sobre todo el elemento, el contenido se veía a través de las letras
   («VENTAS PERDIDAS» salía café o verde olivo). En 6:45 la etiqueta tapa las cajas.
 
+
+## 2026-09-24 · La pieza manda el largo; la prueba es real o se ve como maqueta (loop, ronda 1)
+- **Regla**: antes del guion se fija la pieza y su duración (ARCOS.md); una «clase» o un «webinar» no se
+  comprimen a 4 minutos. La oferta sigue la referencia beat por beat (GUION §7): oscura solo la
+  revelación. Un post escrito lleva `fuente` o `ejemplo: true`; la firma de ejemplo nunca se copia.
+- **Porqué**: tres decks generados por agentes distintos salieron de 3-4 minutos, firmados «tumarca.com»,
+  con un testimonio armado que se leía real y con la lista, el precio y la garantía en láminas oscuras.
+  La skill lo enseñaba así: «guion corto», el demo con «Ana (ejemplo)» y la firma de relleno.
+- **Cómo se detectó**: auditoría de mercadotecnia y usabilidad contra las hojas 14-18 y la transcripción.

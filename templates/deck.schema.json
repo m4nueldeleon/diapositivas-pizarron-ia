@@ -11,10 +11,14 @@
     "emoji": { "enum": ["auto", "apple", "fluent"], "default": "auto", "description": "auto = Apple en macOS, Fluent 3D (MIT) en lo demás" },
     "animacion": { "enum": ["seco", "suave"], "default": "seco" },
     "idioma": { "type": "string", "default": "es" },
+    "pieza": { "enum": ["reel", "video", "vsl", "clase", "webinar", "propuesta", "libre"], "description": "Tipo de pieza: fija el arco y el rango de duración (references/ARCOS.md). QA mide la voz contra él." },
+    "duracion_objetivo": { "oneOf": [{ "type": "number", "exclusiveMinimum": 0, "maximum": 600 }, { "type": "string", "pattern": "^\\d{1,3}:[0-5]\\d$" }], "description": "Minutos (45) o \"mm:ss\" (\"0:45\"). Manda sobre el rango de la pieza." },
+    "en_vivo": { "type": "boolean", "description": "Se presenta en vivo: un deck corto frente a su duración baja de error a aviso." },
+    "datos": { "type": "object", "propertyNames": { "pattern": "^[A-ZÁÉÍÓÚÑÜ0-9_][A-ZÁÉÍÓÚÑÜ0-9 _-]{0,30}$" }, "additionalProperties": { "type": ["string", "number"] }, "description": "Datos que se llenan una vez: {{CLAVE}} en cualquier texto. Sin valor sale como hueco [CLAVE] y QA lo cuenta como pendiente." },
     "marca": {
       "oneOf": [
         { "const": false },
-        { "type": "object", "properties": { "texto": { "type": "string" }, "sufijo": { "type": "string" }, "logo": { "type": "string" } }, "additionalProperties": false }
+        { "type": "object", "description": "Tu firma real; omítela si no hay marca. Un valor de relleno (tumarca.com, @tuusuario) es error de QA.", "properties": { "texto": { "type": "string" }, "sufijo": { "type": "string" }, "logo": { "type": "string" }, "posicion": { "enum": ["arriba", "abajo"] } }, "additionalProperties": false }
       ]
     },
     "laminas": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/lamina" } }

@@ -464,40 +464,9 @@
     return lams;
   }
 
-  function presentador(lams) {
-    document.body.classList.add('presentador');
-    const barra = document.createElement('div'); barra.className = 'barra-pres'; barra.innerHTML = '<i></i>'; document.body.appendChild(barra);
-    const seq = []; lams.forEach((l, i) => { if (l.dataset.tipo === 'camara') seq.push({ i, p: 0 }); else for (let p = 0; p < pasos(l); p++) seq.push({ i, p }); });
-    let pos = Math.min(seq.length - 1, Math.max(0, parseInt((location.hash || '').slice(1), 10) || 0)), raf = 0;
-    function ajustar(l) {
-      const s = Math.min(innerWidth / l.offsetWidth, innerHeight / l.offsetHeight);
-      l.style.left = '0'; l.style.top = '0';
-      l.style.transform = `translate(${(innerWidth - l.offsetWidth * s) / 2}px, ${(innerHeight - l.offsetHeight * s) / 2}px) scale(${s})`;
-    }
-    function ir(n, animar) {
-      pos = Math.max(0, Math.min(seq.length - 1, n)); cancelAnimationFrame(raf);
-      const { i, p } = seq[pos], l = lams[i];
-      lams.forEach(x => x.classList.toggle('activa', x === l)); ajustar(l);
-      barra.firstChild.style.width = ((pos + 1) / seq.length * 100) + '%';
-      history.replaceState(null, '', '#' + pos);
-      if (!animar) { mostrar(l, p, Infinity); return; }
-      const t0 = performance.now(), dur = animaDur(l, p) + 80;
-      const tick = () => { const t = performance.now() - t0; mostrar(l, p, t); if (t < dur) raf = requestAnimationFrame(tick); else mostrar(l, p, Infinity); };
-      tick();
-    }
-    addEventListener('keydown', e => {
-      if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); ir(pos + 1, true); }
-      else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); ir(pos - 1, false); }
-      else if (e.key === 'Home') ir(0, false); else if (e.key === 'End') ir(seq.length - 1, false);
-      else if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
-    });
-    addEventListener('click', e => ir(pos + (e.clientX < innerWidth * 0.25 ? -1 : 1), e.clientX >= innerWidth * 0.25));
-    addEventListener('resize', () => ajustar(lams[seq[pos].i]));
-    ir(pos, false);
-  }
-
   const modo = new URLSearchParams(location.search).get('modo') || 'presentador';
   document.body.classList.add(modo === 'presentador' ? 'preparando' : modo);
-  window.PZ = { mostrar, pasos, animaDur, avisos, listo: null };
-  window.PZ.listo = preparar().then(lams => { window.PZ.lams = lams; if (modo === 'presentador') presentador(lams); return lams.length; });
+  // El presentador y la vista de ensayo viven en templates/presentador.js y arrancan sobre PZ.listo
+  window.PZ = { mostrar, pasos, animaDur, avisos, modo, listo: null };
+  window.PZ.listo = preparar().then(lams => { window.PZ.lams = lams; return lams.length; });
 })();

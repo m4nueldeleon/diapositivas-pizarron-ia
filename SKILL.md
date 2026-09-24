@@ -26,16 +26,24 @@ deducir.
 1. Lee **[references/ESTILO.md](references/ESTILO.md)** completa. Es la biblia: qué hace cada
    pieza y por qué.
 2. Lee **[references/GUION-A-LAMINAS.md](references/GUION-A-LAMINAS.md)**: el método de
-   traducción de frase a imagen.
+   traducción de frase a imagen, los primeros 10 segundos (§6.1) y la oferta beat por beat (§7).
+   Con él, **[references/ARCOS.md](references/ARCOS.md)** (cuánto dura cada pieza y cómo se reparte) y
+   **[references/VOZ-HUMANA.md](references/VOZ-HUMANA.md)** (las fórmulas de IA que no van).
 3. Lee **[LECCIONES.md](LECCIONES.md)**: las correcciones que ya hizo el usuario, que mandan
    sobre todo lo demás.
 4. Busca `MI-MARCA.md` en la carpeta de trabajo, con la firma, el formato y el idioma. Si no
-   existe, usa `templates/MI-MARCA.md` y los valores por omisión: firma vacía, 16:9, español.
+   existe, usa `templates/MI-MARCA.md` y los valores por omisión: sin firma, 16:9, español.
+   **Si no hay MI-MARCA.md, o su firma está vacía, OMITE la clave `marca` en deck.json.** Nunca copies
+   un valor de ejemplo («tumarca.com» es error de QA). Al entregar, avisa en una línea: «Va sin firma:
+   dame tu @, tu dominio o tu logo (PNG sin fondo) y la agrego».
    Si el deck lleva oferta, toma sus datos de la sección «Oferta» de MI-MARCA o del guion. Si faltan
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
-   usuario prefiere dejarlos para después, usa huecos en MAYÚSCULAS entre corchetes (`[PRECIO]`),
-   nunca cifras inventadas; QA los marca como error.
-5. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 26 diseños y sus campos) y
+   usuario prefiere dejarlos para después, escribe `{{PRECIO}}` en el texto y deja `"datos"` sin esa
+   clave: sale como hueco amarillo `[PRECIO]` y QA lo marca como error hasta que se llene.
+5. **Decide la pieza y su duración** antes de escribir (ARCOS.md): reel, video, VSL, clase, webinar o
+   propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si no, es la
+   única pregunta. Van en el deck como `pieza`, `duracion_objetivo` y `en_vivo`.
+6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 26 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
@@ -45,12 +53,12 @@ las tipografías.
 
 | Fase | Qué haces | Sale |
 |---|---|---|
-| **1. Entrada** | Tema → escribe un guion en beats. Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). | beats |
+| **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). | beats |
 | **2. Beats → diseños** | Cada beat de 2 a 3 s es un paso. Mismo tema, mismo paso de la misma lámina; tema nuevo, lámina nueva. Elige el diseño con la tabla de GUION-A-LAMINAS §2. | lista de láminas |
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
-| **5. Revisión visual** | **Mira `hoja.jpg` y los PNG dudosos con tus propios ojos.** ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? | correcciones |
-| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: 90 o más y cero errores. | `qa.json` |
+| **5. Revisión visual** | **Mira `hoja.jpg` y los PNG dudosos con tus propios ojos**, y `hoja-pasos.jpg` para el orden del revelado. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
+| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: 90 o más y cero errores. También mide la duración contra la pieza. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
 
@@ -77,7 +85,9 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
    precio, lo que incluye, los entregables, la garantía y el llamado van en blanco con el estilo
    normal (✅, cifras, `stack`).
 9. **Prueba real o nada.** Nunca inventes testimonios, capturas ni cifras. Si no hay prueba, la
-   lámina lo dice como hipótesis o no existe.
+   lámina lo dice como hipótesis, usa un `hueco` («La tuya va aquí») o no existe. Un post escrito lleva
+   `fuente` (real, con permiso) o `ejemplo: true` (maqueta con sello, sin cifras). Las proyecciones al
+   espectador llevan la condición con número y rangos (GUION §3.8).
 10. **Marcas con su logo real**, nunca dibujadas ni hechas con emoji.
 
 ## 3. Comandos
@@ -92,22 +102,30 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
 ```
 
 - El presentador está en `salida/index.html`. → o espacio avanza, ← regresa, F pone pantalla
-  completa y un clic avanza.
+  completa y un clic avanza. **N** muestra las notas del orador (la `voz`), **O** abre la vista de
+  ensayo sincronizada (`?modo=orador`: paso actual, el siguiente, la voz y el cronómetro contra lo
+  planeado), **B** o **.** pone negro y **W** blanco, **5 G** salta a la lámina 5, **G** abre el índice
+  y **?** la ayuda. La lámina `camara` se proyecta en negro limpio.
 - `deck.json` acepta:
   - `formato`: `16:9` por omisión, o `9:16`, `1:1` y `4:5`, que están en beta;
   - `emoji`: `auto` (Apple en Mac, Fluent 3D con licencia MIT en lo demás), `apple` o `fluent`;
   - `animacion`: `seco`, como la referencia, o `suave`, que añade notas que se escriben solas y
     emojis que brotan;
-  - `marca`: `{ "texto": "tumarca", "sufijo": ".com" }` o `{ "logo": "assets/logo.png" }`. Va abajo
-    a la derecha; en 9:16 va arriba (abajo la tapan el caption y los botones de Reels).
-    `"posicion": "arriba"` o `"abajo"` lo fuerza. QA avisa si sigue la firma de ejemplo «tumarca».
+  - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
+    **Omítela si no hay marca real.** Va abajo a la derecha; en 9:16 va arriba (abajo la tapan el
+    caption y los botones de Reels). `"posicion": "arriba"` o `"abajo"` lo fuerza. Un valor de relleno
+    («tumarca.com», «@tuusuario») es error de QA;
+  - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md);
+  - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto (LAYOUTS.md).
 - El demo con los 26 diseños está en `ejemplos/demo/deck.json`.
 
 ## 4. Qué entregar al usuario
 
-- La ruta del presentador y de `hoja.jpg`, más la nota de QA.
+- La ruta del presentador, de `hoja.jpg` y de `hoja-pasos.jpg`, la nota de QA y la duración estimada de
+  la voz contra la de la pieza.
 - Si `qa.json` trae `pendientes`, lístalos (el dato y sus láminas) y no llames «final» al deck hasta
-  que estén llenos.
+  que estén llenos en `"datos"`.
+- Si va sin firma, dilo en una línea y pide la @, el dominio o el logo.
 - Si hubo montaje, cuántas anclas se ubicaron y la ruta de `cortes.csv`.
 - Lo que quedó fuera o dudoso: fotos que faltan, pruebas que hay que conseguir o un corte que
   conviene revisar.

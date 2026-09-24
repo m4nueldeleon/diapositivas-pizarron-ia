@@ -13,19 +13,23 @@
 //   · burbuja, tarjeta, ítem, cuadro, etiqueta u opción vacíos;
 //   · contraste menor a 2:1 entre el texto y su fondo (en degradados, contra su color medio);
 //   · dato pendiente a la vista: [PRECIO], [WHATSAPP], [DÍAS]… (un error por dato, con sus láminas);
-//   · `voz` o `anclas` como lista con distinto largo que los pasos de la lámina.
+//   · `voz` o `anclas` como lista con distinto largo que los pasos de la lámina;
+//   · firma de relleno («tumarca.com», «@tuusuario»); deck de menos de la mitad de su duración (reglas-deck.mjs).
 // Avisos (−3 c/u):
 //   · más de 22 palabras en un paso, más de 2 énfasis, letra efectiva menor a 40 px (a 1920 de ancho);
 //   · encaje de 85% o menos, sello reducido a menos de 70% (texto largo para un sello);
 //   · texto que toca la firma, firma sobre una celda con texto de la tabla;
 //   · contraste menor a 3:1 en texto de color (tonos, huecos, notas rojas) o sobre la lámina oscura;
 //   · campo que ese diseño no usa (¿error de dedo?), emoji dudoso o aproximado en Fluent;
-//   · `voz` de un solo texto en una lámina de varios pasos; firma por omisión («tumarca»);
+//   · `voz` de un solo texto en una lámina de varios pasos;
 //   · 9:16: contenido en menos del 35% del alto, o dentro de la zona que tapa la interfaz de Reels;
 //   · sello que tapa una flecha; flecha de anotación o de nota al margen de menos de 60 px (un garabato);
 //   · emoji de bajo contraste para su set y su fondo (💬 Fluent sobre blanco, 🗨️ Apple sobre oscura…);
 //   · lámina oscura en algo que no es una revelación (lista, cifra, tabla, tarjetas, stack, idea larga);
 //   · objeción metida en el encabezado de una lista o en un botón (la receta es una `idea` propia);
+//   · reglas del deck (reglas-deck.mjs): duración ±30% del objetivo, apertura con saludo, título o cámara,
+//     fórmulas de IA y más de una antítesis, palabras vetadas de MI-MARCA, proyección sin condición,
+//     post de maqueta con cifras, clase/webinar sin llamado final, oscuras en clase o reel;
 //   · un mismo diseño 4 veces seguidas o en más del 45% del deck, 4 láminas seguidas sin capa a mano,
 //     más de 15% de láminas oscuras.
 import fs from 'node:fs';
@@ -33,11 +37,13 @@ import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE } from './lib/emoji.mjs';
+import { revisarDeck } from './lib/reglas-deck.mjs';
+import { mmss, minutosObjetivo } from './lib/tiempos.mjs';
 
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, dirSalida, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [] } = prep;
+const { deck, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [] } = prep;
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 
 const porLamina = await page.evaluate(([W, H, MARCA, BAJO]) => {
@@ -277,7 +283,7 @@ porLamina.forEach(r => {
 // Datos pendientes: UN error por dato distinto, con las láminas donde aparece
 const pendientes = {};
 porLamina.forEach(r => r.pendientes.forEach(t => (pendientes[t] = pendientes[t] || []).push(r.i + 1)));
-Object.entries(pendientes).forEach(([t, ls]) => errores.push(`dato pendiente ${t} en ${ls.length > 1 ? 'las láminas' : 'la lámina'} ${ls.join(', ')}: llénalo antes de entregar`));
+Object.entries(pendientes).forEach(([t, ls]) => errores.push(`dato pendiente ${t} en ${ls.length > 1 ? 'las láminas' : 'la lámina'} ${ls.join(', ')}: llénalo en "datos" (${t.replace(/^\[|\]$/g, '')}) y escribe {{${t.replace(/^\[|\]$/g, '')}}} en el texto`));
 // Voz y anclas contra los pasos (una frase por paso; si no cuadran, los cortes del montaje se desalinean)
 deck.laminas.forEach((l, i) => {
   if (l.tipo === 'camara') return;
@@ -288,8 +294,11 @@ deck.laminas.forEach((l, i) => {
   }
   if (typeof l.voz === 'string' && pasos[i] > 1) avis.push(`${nombre(i)}: «voz» es un solo texto y la lámina tiene ${pasos[i]} pasos; los pasos 2 en adelante quedan sin voz ni ancla (usa una lista)`);
 });
-const marca = deck.marca && typeof deck.marca === 'object' ? deck.marca : null;
-if (marca && /^tumarca$/i.test(String(marca.texto || '').trim())) avis.push('la firma es la de ejemplo («tumarca»): pon la tuya en "marca" o usa "marca": false');
+// Reglas del deck.json (sin navegador): firma de relleno, duración de la pieza, apertura, voz, proyecciones,
+// posts de maqueta y llamado (scripts/lib/reglas-deck.mjs)
+const delDeck = revisarDeck(deck, pasos, { dirDeck });
+errores.push(...delDeck.errores);
+avis.push(...delDeck.avisos);
 // Reglas del deck completo
 const tipos = deck.laminas.map(l => l.tipo).filter(t => t !== 'camara');
 let racha = 1;
@@ -315,11 +324,13 @@ deck.laminas.forEach((l, i) => {
 if (tipos.length >= 8 && oscuras / tipos.length > 0.15) avis.push(`${oscuras} láminas oscuras: resérvalas para revelar el producto o la oferta (≤ 15%)`);
 
 const nota = Math.max(0, 100 - 12 * errores.length - 3 * avis.length);
-const informe = { nota, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), errores, avisos: avis, pendientes, fecha: new Date().toISOString() };
+const objetivo = minutosObjetivo(deck.duracion_objetivo);
+const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDeck.duracion), ...(objetivo ? { objetivo: mmss(objetivo * 60) } : {}), ...(deck.pieza ? { pieza: deck.pieza } : {}) };
+const informe = { nota, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, errores, avisos: avis, pendientes, fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
-  console.log(`QA ${nota}/100 · ${informe.laminas} láminas · ${informe.pasos} pasos`);
+  console.log(`QA ${nota}/100 · ${informe.laminas} láminas · ${informe.pasos} pasos · voz ~${duracion.estimada}${duracion.objetivo ? ` (objetivo ${duracion.objetivo})` : ''}`);
   errores.forEach(e => console.log('  ✗ ' + e));
   avis.forEach(e => console.log('  ⚠ ' + e));
   if (!errores.length && !avis.length) console.log('  ✓ sin hallazgos');

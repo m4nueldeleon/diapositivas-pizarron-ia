@@ -1,4 +1,4 @@
-{ "titulo": "ciego", "emoji": "apple", "marca": { "texto": "tumarca", "sufijo": ".com" },
+{ "titulo": "ciego", "emoji": "apple", "marca": { "texto": "pizarron", "sufijo": ".ia" },
   "laminas": [
     { "id": "markup-salto", "tipo": "idea", "emoji": "🏆", "texto": "Si buscas el **mejor modelo\nde negocio** para empezar como **principiante**...", "voz": "Si buscas el mejor modelo de negocio para empezar" },
     { "id": "sello-texto", "tipo": "idea", "emoji": "💰", "texto": "Esta frase **importante** queda\njusto debajo del sello", "sello": "Ojo aquí", "voz": ["Esta frase importante", "queda debajo del sello"] },

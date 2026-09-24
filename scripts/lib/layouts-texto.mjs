@@ -165,6 +165,7 @@ export function cifra(l, ctx) {
     ${l.arriba ? `<div class="nota" ${ctx.P(0)} style="margin-bottom:40px">${marcar(l.arriba)}</div>` : ''}
     ${html}
     ${l.abajo ? `<div class="etiqueta-chica"${ctx.P(0)}>${marcar(l.abajo)}</div>` : ''}
+    ${l.fuente ? `<div class="fuente"${ctx.P(k)}>${escapar(l.fuente)}</div>` : ''}
     ${l.texto ? texto(ctx, l.texto, 'medio mt-l', l.texto_paso ?? k) : ''}
     ${nota(ctx, l.nota, (l.nota_paso ?? k + 1), 'mt-m')}</div>`;
 }

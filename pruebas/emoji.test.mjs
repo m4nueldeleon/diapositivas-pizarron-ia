@@ -62,3 +62,12 @@ test('enTexto: en modo apple el HTML sale idéntico', () => {
   const html = '<div class="burbuja">Perfecto 🚀 ✅</div>';
   assert.equal(em.enTexto(html), html);
 });
+
+test('📱 se dibuja en SVG (celular vertical) igual en apple y en fluent: no se confunde con 📅', () => {
+  for (const modo of ['apple', 'fluent']) {
+    const em = new Emojis({ modo });
+    const h = em.html('📱', 200);
+    assert.ok(h.includes('<svg') && h.includes('url(#pz-pantalla)'), modo);
+    assert.ok(!h.includes('<img'), modo);
+  }
+});

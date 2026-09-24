@@ -6,6 +6,8 @@ import { crearCtx, escapar, marcar, CURSOR_MANO, CURSOR_FLECHA } from './comun.m
 import * as T from './layouts-texto.mjs';
 import * as D from './layouts-datos.mjs';
 import { validarDeck, sanearDeck } from './contrato.mjs';
+import { sustituirDatos } from './datos.mjs';
+import { duracionPaso } from './tiempos.mjs';
 
 export const LAYOUTS = {
   idea: T.idea, lista: T.lista, flujo: T.flujo, pasos: T.pasos, bifurcacion: T.bifurcacion, cifra: T.cifra,
@@ -103,10 +105,22 @@ const sinPasos = html => html.replace(/ data-p="\d+"/g, '');
 
 const jsonSeguro = x => JSON.stringify(x).replace(/</g, '\\u003c');
 
+// Guion del orador: la voz y la duración planeada de cada paso. No se dibuja (PNG, video y montaje no
+// cambian); lo leen el presentador (tecla N) y la vista de ensayo (?modo=orador).
+function guion(l, pasos) {
+  const n = l.tipo === 'camara' ? 1 : pasos;
+  const vozDe = k => (Array.isArray(l.voz) ? l.voz[k] : k === 0 ? l.voz : '') || (l.tipo === 'camara' && k === 0 ? l.nota || '' : '');
+  const voz = Array.from({ length: n }, (_, k) => String(vozDe(k) || ''));
+  const dur = Array.from({ length: n }, (_, k) => +duracionPaso(l, k).toFixed(2));
+  return `<script type="application/json" class="guion">${jsonSeguro({ voz, dur })}</script>`;
+}
+
 export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   const errores = validarDeck(crudo, Object.keys(LAYOUTS));
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
-  const { deck, avisos: avisosSaneo, sugerencias } = sanearDeck(crudo);
+  // {{CLAVE}} → valor de «datos» (o «[CLAVE]», que QA cuenta como pendiente). Luego, listas cerradas.
+  const { deck: conDatos, faltan } = sustituirDatos(crudo);
+  const { deck, avisos: avisosSaneo, sugerencias } = sanearDeck(conDatos);
   fs.mkdirSync(dirSalida, { recursive: true });
   const formato = FORMATOS[deck.formato || '16:9'] ? deck.formato || '16:9' : '16:9';
   const F = FORMATOS[formato];
@@ -141,11 +155,13 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   ${l.tipo === 'camara' ? `<div class="lienzo"><div class="nota" style="color:#999">🎥 ${escapar(l.nota || 'A cámara')}</div></div>` : ''}
   ${marca && l.firma !== false && l.tipo !== 'camara' ? marca : ''}
   <script type="application/json" class="con">${jsonSeguro(a.conexiones)}</script>
+  ${guion(l, pasos)}
 </section>`;
   });
 
   const css = fs.readFileSync(path.join(dirSkill, 'templates', 'base.css'), 'utf8');
   const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8');
+  const presentador = fs.readFileSync(path.join(dirSkill, 'templates', 'presentador.js'), 'utf8');
   const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO};--grano-suave:${GRANO_SUAVE}}`;
   if (em.faltantes.size) avisos.push(`Emojis sin imagen Fluent (se usará la fuente del sistema): ${[...em.faltantes].join(' ')}`);
   em.malformados.forEach((motivo, spec) => avisos.push(`emoji «${spec}»: ${motivo}`));
@@ -159,6 +175,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
 ${DEFS_GLOBALES}
 ${secciones.join('\n')}
 <script>${runtime}</script>
+<script>${presentador}</script>
 </body></html>`;
-  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos) };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos), faltan };
 }

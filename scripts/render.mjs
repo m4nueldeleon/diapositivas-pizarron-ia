@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 // render.mjs — deck.json → salida/index.html (presentador) + salida/laminas/NN-id-P.png (un PNG por paso)
-//              + salida/hoja.jpg (hoja de contacto) + salida/pasos.json (manifiesto para video y QA)
+//              + salida/hoja.jpg (hoja de contacto: el último paso de cada lámina, «N · id» igual que el PNG y el QA)
+//              + salida/hoja-pasos.jpg (todos los pasos, una fila por lámina: el orden del revelado)
+//              + salida/pasos.json (manifiesto para video y QA)
 //
 //   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales]
 //
-//   --finales   solo el último paso de cada lámina (para revisar rápido)
+//   --finales   solo el último paso de cada lámina (para revisar rápido; no genera hoja-pasos.jpg)
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
+import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos } from './lib/hoja.mjs';
+import { duracionTotal, mmss } from './lib/tiempos.mjs';
 
 const { opt, flag, pos } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji } = prep;
-console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji})`);
+const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos } = prep;
+console.log(`HTML → ${htmlPath}  (${deck.laminas.length} láminas · ${W}x${H} · emoji ${modoEmoji} · voz ~${mmss(duracionTotal(deck, pasos))})`);
 avisosBuild.forEach(a => console.warn('⚠ ' + a));
 if (flag('--solo-html')) process.exit(0);
 
@@ -27,7 +31,6 @@ fs.mkdirSync(dirPng, { recursive: true });
 const { browser, page, errores, avisos } = await abrir(htmlPath, W, H, { escala });
 avisos.forEach(a => console.warn('⚠ ' + a));
 const manifiesto = [];
-const finales = [];
 const lams = await page.$$('section.lamina');
 for (let i = 0; i < lams.length; i++) {
   const l = deck.laminas[i];
@@ -38,28 +41,31 @@ for (let i = 0; i < lams.length; i++) {
     const nombre = `${String(i + 1).padStart(2, '0')}-${String(l.id || l.tipo).replace(/[^\w-]/g, '') || 'lamina'}-${p + 1}.png`;
     await lams[i].screenshot({ path: path.join(dirPng, nombre), type: 'png' });
     manifiesto.push({ lamina: i, id: l.id || l.tipo, tipo: l.tipo, paso: p, pasos: n, archivo: `laminas/${nombre}` });
-    if (p === n - 1) finales.push(`laminas/${nombre}`);
   }
 }
 fs.writeFileSync(path.join(dirSalida, 'pasos.json'), JSON.stringify(manifiesto, null, 2));
 console.log(`PNG → ${dirPng} (${manifiesto.filter(m => m.archivo).length} imágenes de ${lams.length} láminas)`);
 
-if (!flag('--sin-hoja') && finales.length) {
-  const cols = finales.length <= 4 ? 2 : finales.length <= 9 ? 3 : 4, ancho = 560, alto = Math.round(ancho * H / W);
-  const hoja = `<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#dcdcdc;font:600 18px system-ui}
-  .g{display:grid;grid-template-columns:repeat(${cols},${ancho}px);gap:18px;padding:18px}
-  figure{margin:0;position:relative}img{width:${ancho}px;height:${alto}px;display:block;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-  figcaption{position:absolute;left:8px;top:8px;background:#111;color:#fff;padding:2px 8px;border-radius:4px}</style>
-  <div class="g">${finales.map((f, k) => `<figure><img src="${f}"><figcaption>${k + 1}</figcaption></figure>`).join('')}</div>`;
+// Captura de una hoja de contacto (HTML temporal junto a los PNG)
+async function capturar(html, ancho, destino) {
   const hp = path.join(dirSalida, '.hoja.html');
-  fs.writeFileSync(hp, hoja);
-  const p2 = await browser.newPage({ viewport: { width: cols * (ancho + 18) + 18, height: 400 } });
+  fs.writeFileSync(hp, html);
+  const p2 = await browser.newPage({ viewport: { width: ancho, height: 400 } });
   await p2.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
-  await p2.screenshot({ path: path.join(dirSalida, 'hoja.jpg'), type: 'jpeg', quality: 82, fullPage: true });
+  await p2.screenshot({ path: destino, type: 'jpeg', quality: 82, fullPage: true });
+  await p2.close();
   fs.unlinkSync(hp);
-  console.log(`Hoja → ${path.join(dirSalida, 'hoja.jpg')}`);
+  console.log(`Hoja → ${destino}`);
+}
+const cuadros = cuadrosHoja(manifiesto);
+if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
+  const h = htmlHoja(cuadros, { W, H });
+  await capturar(h.html, h.cols * (h.ancho + 18) + 18, path.join(dirSalida, 'hoja.jpg'));
+  const filas = filasPasos(manifiesto);
+  fs.rmSync(path.join(dirSalida, 'hoja-pasos.jpg'), { force: true });
+  if (!soloFinales && filas.length) { const hp = htmlHojaPasos(filas, { W, H }); await capturar(hp.html, hp.anchoTotal, path.join(dirSalida, 'hoja-pasos.jpg')); }
 }
 if (errores.length) console.error('✗ errores de la página:\n  ' + errores.join('\n  '));
 await browser.close();
-console.log(`Presentador: abre ${htmlPath} en el navegador (→ avanza, ← regresa, F pantalla completa)`);
+console.log(`Presentador: abre ${htmlPath} (→ avanza, ← regresa, N notas, O vista de ensayo, B negro, 5 G salta, ? ayuda)`);
 process.exit(errores.length ? 1 : 0);
