@@ -129,3 +129,10 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   porque setup.sh exigía terminal.
 - **Cómo se detectó**: auditorías de diseño, fidelidad, mercadotecnia, íconos y usabilidad de la ronda 5 sobre
   webinar-comunidad, reel-ia-ceo y precios-premium, con hoja_07 [16:35-17:25] y 34:25-36:05 de la referencia.
+
+## 2026-09-24 · La rejilla que sigue un ejemplo no es un dato publicado (loop, ronda 5, integración)
+- **Qué cambió**: el aviso «¿dato publicado?» de la rejilla (reglasFuente) calla si su propia voz lo dice como ejemplo
+  («Imagina…», «Pongamos…») o si una de las 3 láminas anteriores lo planteó como ejemplo con el mismo total.
+- **Porqué**: al re-renderizar precios-premium con el motor de r5, «Se pueden ir 5 de 30» (lám 9) pedía fuente aunque
+  sale del «Pongamos: treinta clientes» de la lámina 7; un falso positivo que bajaba la nota sin tope de 97 a 94.
+- **Cómo se detectó**: comparación ANTES | DESPUÉS de los 3 decks de la ronda (integrador r5).

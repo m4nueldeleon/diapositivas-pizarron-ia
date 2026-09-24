@@ -828,6 +828,19 @@ export const CON_FUENTE = new Set(['idea', 'flujo', 'grafica', 'cifra', 'cita', 
 export const RE_CITA = /[A-ZÁÉÍÓÚÑ][\p{L}'-]+(\s+(y|e|&)\s+[A-ZÁÉÍÓÚÑ][\p{L}'-]+|\s+et al\.)?.*\((1[89]|20)\d\d\)/u;
 // `rejilla`, `tabla`, `tarjetas` y `linea-tiempo` también llevan `fuente` (r5): el gancho con un dato publicado la trae en la
 // misma lámina, porque la primera vista es muda (GUION §6.1)
+const EJEMPLO = /[¿?]|\b(imagina|pongamos|supongamos|digamos|si)\b/;
+// La rejilla que CONTINÚA un ejemplo [r5, precios-premium: «Pongamos: 30 clientes» (lám 7) → «Se pueden ir 5 de 30»
+// (lám 9)]: una de las 3 láminas anteriores lo dice como ejemplo (en su texto o su voz) y nombra el mismo total.
+function sigueUnEjemplo(L, i) {
+  const total = Number(L[i].total);
+  if (!Number.isFinite(total) || total <= 0) return false;
+  const conTotal = new RegExp(`(^|[^\\d.,])${total}([^\\d.,]|$)`);
+  return L.slice(Math.max(0, i - 3), i).some(x => {
+    if (!x) return false;
+    const vis = sinAcentos(plano(textosVisibles(x).join(' / ')));
+    return EJEMPLO.test(`${vis} ${sinAcentos(vozDe(x))}`.replace(/[¿?]/g, '')) && conTotal.test(vis);
+  });
+}
 export function reglasFuente(deck, { crudo } = {}) {
   const avisos = [];
   const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
@@ -841,7 +854,7 @@ export function reglasFuente(deck, { crudo } = {}) {
     if (!l || l.tipo !== 'rejilla' || l.multitud === true || conTexto(l.fuente) || /\{\{/.test(JSON.stringify(C[i] || {}))) return;
     const txt = sinAcentos(plano([l.encabezado, l.texto, l.anotacion].filter(x => typeof x === 'string').join(' / ')));
     const proporcion = (l.punto && Array.isArray(l.destacar) && l.destacar.length) || /\b\d+\s+de\s+(cada\s+)?\d+\b|\d\s*%/.test(txt);
-    if (!proporcion || /[¿?]|\b(imagina|pongamos|supongamos|digamos|si)\b/.test(txt)) return;
+    if (!proporcion || EJEMPLO.test(txt) || EJEMPLO.test(sinAcentos(vozDe(l))) || sigueUnEjemplo(L, i)) return;
     avisos.push(`${nombre(deck, i)}: ¿dato publicado? dale "fuente" (Autor, obra (año)) en la misma lámina; si es un ejemplo, dilo en el encabezado («Imagina 100…», «Pongamos…») (GUION §6.1)`);
   });
   return { errores: [], avisos };

@@ -511,3 +511,17 @@ test('r5: una rejilla que afirma una proporción sin fuente avisa; con fuente, p
   assert.deepEqual(reglasFuente(rj({ texto: '¿El **99%**?' })).avisos, []);
   assert.deepEqual(reglasFuente({ laminas: [{ tipo: 'rejilla', emoji: '📦', total: 300, anotacion: 'Son 300' }] }).avisos, []);
 });
+
+test('r5 fix: la rejilla que sigue un ejemplo («Pongamos: 30 clientes») no es un dato publicado', async () => {
+  const { reglasFuente } = await import('../scripts/lib/reglas-deck.mjs');
+  const escena = { tipo: 'cifra', arriba: 'Con 30 clientes a $1,000 al mes:', lineas: ['30 × $1,000 = **$30,000**'], voz: ['Pongamos: treinta clientes a mil pesos al mes.'] };
+  const rejilla = { tipo: 'rejilla', emoji: '🧑‍💼', total: 30, destacar: [25, 26, 27, 28, 29], texto: 'Se pueden ir **5 de 30**', anotacion: '1 de cada 6', voz: ['Míralo así: tus treinta clientes.'] };
+  const avisa = L => reglasFuente({ laminas: L }).avisos.filter(a => /dato publicado/.test(a)).length;
+  assert.equal(avisa([escena, { tipo: 'idea', texto: 'x' }, rejilla]), 0);
+  // el ejemplo dicho en la voz de la propia rejilla tampoco
+  assert.equal(avisa([{ ...rejilla, voz: ['Imagina treinta clientes.'] }]), 0);
+  // un ejemplo con OTRO total, o uno de hace más de 3 láminas, no la cubre
+  assert.equal(avisa([{ ...escena, arriba: 'Con 40 clientes:', lineas: ['40 × $1,000 = **$40,000**'] }, rejilla]), 1);
+  const lejos = [escena, ...Array.from({ length: 4 }, () => ({ tipo: 'idea', texto: 'x' })), rejilla];
+  assert.equal(avisa(lejos), 1);
+});
