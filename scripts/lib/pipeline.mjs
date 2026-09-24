@@ -46,7 +46,17 @@ export function prepararSalida(entrada, salida) {
   const r = construirHTML({ deck, dirDeck, dirSalida, dirSkill: DIR_SKILL });
   const htmlPath = path.join(dirSalida, 'index.html');
   fs.writeFileSync(htmlPath, r.html);
-  return { ...r, crudo: leido, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, avisoFirma: f.aviso };
+  // `crudo`: el deck.json con los `como` ya resueltos, antes de sustituir `datos` (las reglas leen de ahí los {{MARCADORES}})
+  return { ...r, crudo: { ...leido, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, avisoFirma: f.aviso, avisoReplica: avisoReplica(leido, jsonPath) };
+}
+
+// Un deck cuyas láminas son TODAS «r<seg>», sin `_cuadro` y fuera de pruebas/replica parece la réplica vieja de
+// pizarron-ref: no se bloquea (un deck real puede usar esos ids), solo se avisa por consola.
+function avisoReplica(deck, jsonPath) {
+  const L = Array.isArray(deck.laminas) ? deck.laminas.filter(l => l && l.tipo !== 'camara') : [];
+  if (L.length < 3 || !L.every(l => /^r\d+$/.test(String(l.id || ''))) || L.some(l => l._cuadro)) return null;
+  if (path.resolve(jsonPath) === path.join(DIR_SKILL, 'pruebas', 'replica', 'deck.json')) return null;
+  return 'parece la réplica vieja (láminas r<seg> sin _cuadro): la fidelidad se mide con node scripts/comparar.mjs <carpeta-ref> (compara pruebas/replica)';
 }
 
 export async function abrir(htmlPath, W, H, { escala = 1, modo = 'render' } = {}) {

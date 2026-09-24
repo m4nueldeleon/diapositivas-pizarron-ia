@@ -113,7 +113,8 @@ El emoji no decora: **nombra**. Estilo 3D brillante de Apple. En máquinas sin M
   la frase ~240 px debajo [ref_115]. La ruta solo existe con las teclas; el mapa con íconos
   (🔍 🛠️ 🚀) no lleva ruta [16:40, 28:00]. La imagen vuelve en cada sección con el paso activo
   encendido, los demás al 20% y la ✅ bajo los completados **a todo color**: es la señal de
-  avance. Funciona como mapa del video.
+  avance. Funciona como mapa del video. En el deck, el objeto que vuelve se declara una vez y se reúsa con
+  `como` (LAYOUTS.md): la imagen es la misma porque ES la misma.
 
 Diccionario completo en [EMOJIS.md](EMOJIS.md).
 
@@ -221,6 +222,10 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 | rótulo gris | 56 px | 60 px |
 | margen de arriba y de abajo | 100 px | 320 px |
 | firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara |
+| tabla-marcador | columnas iguales, 50 / 44 px | vacías de 80 px, columnas según su palabra más larga, letra hasta 38 / 34 px |
+| gráfica | 1500×660 con etiqueta lateral | 940×1000, la banda arriba y dentro |
+| línea de tiempo | letra 56 / 84 px | ×1.35 de letra y alturas |
+| botón y opciones | tamaño base | ×1.6 y ×1.45 |
 
 **Zona segura de Reels**: arriba, la barra de Reels (~220 px); los ~320 px de abajo los tapan el caption y los botones, y la columna de
 botones ocupa unos 140 px a la derecha de la franja baja. QA avisa si algo entra ahí, y si una lámina

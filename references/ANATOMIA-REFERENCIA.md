@@ -70,7 +70,7 @@ Colores muestreados:
 | 6:35-6:45 | 500 cajas 📦 + «That's 500» + sello «A LOT OF SKILL» | `rejilla` + `sello` |
 | 7:15 | Medidor + «full-stack entrepreneur» | `medidor` |
 | 7:25 | Curvas escala contra costo de anuncios con «Your Margins» en verde | `grafica` + `banda` |
-| 7:30 | Columna de la tabla con flechas rojas que convergen en una pregunta manuscrita | sin diseño todavía (`tabla` no dibuja flechas convergentes) |
+| 7:30 | Columna de la tabla con flechas rojas que convergen en una pregunta manuscrita | `tabla` + `converger` |
 | 9:50 | Día 1 / 14 / 30 con «Ideal» en verde y «High likelihood of quitting» en rojo | `linea-tiempo` |
 | 10:10 | Seis ✅ + «one single solution» | `idea` |
 | 10:20-10:25 | Cuadrantes rojo y verde a sangre con emojis tachados o palomeados | `cuadrantes` |
@@ -79,9 +79,9 @@ Colores muestreados:
 | 11:00 | Manos ✋ sobre las teclas 1 2 3 (emoji animado) | `pasos` + `sobre` |
 | 11:15 | Línea Now / 12 / 24 meses en verde | `linea-tiempo` |
 | 11:25-11:30 | Artículos de prensa como captura con subrayado | `prueba` |
-| 12:45 | Creador → producto → audiencia → dinero; 70% y 30% | `flujo` |
+| 12:45 | Creador → producto → audiencia → dinero; 70% y 30% | `flujo` + `retornos` + `aparte` |
 | 13:55-14:00 | Teléfonos con perfiles de creadores | `prueba` |
-| 14:25 | Perfil con «Last 24 hours $15,763» encerrado y flecha roja | `prueba` + `circulo` (la flecha que entra desde fuera aún no existe) |
+| 14:25 | Perfil con «Last 24 hours $15,763» encerrado y flecha roja | `prueba` + `circulo` + `anotaciones` (`entra` para la flecha que entra desde fuera) |
 | 14:45 | 99 puntos verdes y 1 rojo | `rejilla` + `punto` |
 | 14:55 | Multitud de siluetas y «You» | `rejilla` + `destacar` |
 | 15:20 | Lámina anterior atenuada + frase manuscrita encima | `foco` |
@@ -96,10 +96,12 @@ Colores muestreados:
 | 20:00-27:40 | Grabación de pantalla con la cara en círculo abajo a la izquierda | fuera del alcance: tu editor |
 | 23:15 | Botón «Generate 🤖» + cursor de mano | `boton` |
 | 28:00 | Step 1 ✅ Step 2 ✅ Step 3 Launch | `pasos` + `hechos` |
+| 28:40 | «Stories» + «Digital product» en tarjetas grises | `flujo` + `signo` + `tarjeta` |
 | 28:45-29:20 | Calendario de 14 días con 3 fases de color y notas manuscritas | `calendario` |
 | 33:45-33:55 | Condición arriba («For a creator with 50K-100K followers») y rangos: «100-250 sales × $100-200 = $10,000-$50,000», «Your 30% cut» en verde | `cifra` con `arriba` |
 | 34:10 | Barras rojas chicas → barras verdes altas: $5K → $30K+ | `grafica` + `barras` |
 | 34:25-35:15 | «Reason #1», «Reason #2» | `idea` |
+| 35:10 | You + Specialised AI = Profitable Product | `flujo` + `signo` |
 | 35:45-35:50 | Foto de laberinto: sentirse perdido | `objeto` |
 | 36:10 | Credibilidad sobre foto real: «since 2016, over 23,000 clients» | `prueba` u `objeto` |
 | 36:15-37:55 | Láminas oscuras de marca: Consulting.com, Monetise, Quantum, Synthesise AI | `oscura` |

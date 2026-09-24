@@ -47,7 +47,7 @@ deducir.
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
    usuario prefiere dejarlos para después, escribe `{{PRECIO}}` en el texto y declara el hueco:
    `"datos": { "PRECIO": { "pendiente": true, "motivo": "lo define dirección" } }`. Sale como hueco amarillo
-   `[PRECIO]`, QA lo cuenta como aviso y el deck queda en borrador. Un `{{CLAVE}}` sin valor ni declaración es
+   `[PRECIO]`, QA lo lista en `datos_por_confirmar` (no resta nota) y el deck queda en borrador. Un `{{CLAVE}}` sin valor ni declaración es
    error («pregúntaselo al usuario»).
    **Si la pieza es `vsl`, `vsl-corto`, `webinar` o `propuesta`, esa misma pregunta única incluye la prueba**:
    ¿qué cifra real te respalda (años, clientes, eventos, alumnos) y tienes 1-3 capturas o fotos con permiso?
@@ -86,7 +86,7 @@ las tipografías.
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
 | **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
-| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: el deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`. También mide la duración y el ritmo de los pasos. | `qa.json` |
+| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: el deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`. También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
 
@@ -108,12 +108,13 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 6. **La capa a mano es la firma**: cada 3 o 4 láminas debe haber una nota, flecha, llave,
    tachón o sello.
 7. **Objetos que vuelven**: la tabla-marcador crece columna por columna y el mapa 1-2-3 abre
-   cada sección.
+   cada sección. El objeto que vuelve se declara una vez y se reúsa con `"como": "<id>"` (LAYOUTS.md).
 8. **Láminas oscuras solo para REVELAR la marca o el producto** (nombre y logo, una frase). El
    precio, lo que incluye, los entregables, la garantía y el llamado van en blanco con el estilo
    normal (✅, cifras, `stack`).
 9. **Prueba real o nada.** Nunca inventes testimonios, capturas ni cifras. Si no hay prueba, la
-   lámina lo dice como hipótesis, usa un `hueco` («La tuya va aquí») o no existe. Un post escrito lleva
+   lámina lo dice como hipótesis, usa un `hueco` o no existe. Un `hueco` sin más es una captura por conseguir y
+   deja el deck en borrador; `"plantilla": true` es el lugar para la del espectador (marco a mano). Un post escrito lleva
    `fuente` (real, con permiso) o `ejemplo: true` (maqueta con sello, sin cifras). Las proyecciones al
    espectador llevan la condición con número y rangos (GUION §3.8).
 10. **Marcas con su logo real**, nunca dibujadas ni hechas con emoji.
@@ -165,8 +166,8 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
 - La ruta del presentador y de TODAS las hojas (`hojas.json`), la nota de QA y la duración estimada de la
   voz contra la de la pieza.
 - Si `qa.json` trae `pendientes` sin declarar, son errores (`estado: "con errores"`): pregunta esos datos. Los
-  huecos declarados (`"pendiente": true`) y los datos propuestos van en `por_confirmar` (`estado: "borrador"`, nota
-  con tope de 90). Lístalos (el dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén
+  huecos declarados (`"pendiente": true`), los datos propuestos y las capturas por conseguir (`CAPTURA_N`) van en
+  `por_confirmar` (`estado: "borrador"`, nota con tope de 90; **no restan nota**, salen en `datos_por_confirmar`). Lístalos (el dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén
   llenos o confirmados en `"datos"` (sin `propuesto` ni `pendiente`).
 - Si QA avisa «sin prueba real» o «credibilidad sin cifra», dilo en una línea («Va sin prueba real: mándame 1-3
   capturas con permiso y reemplazo la lámina N») y no llames «final» al deck. Solo `estado: "listo"` es final;

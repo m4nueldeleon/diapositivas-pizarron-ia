@@ -178,3 +178,33 @@ test('una palabra de más de 24 letras (un link) avisa al sanear', () => {
   const { sugerencias } = sanearDeck({ laminas: [{ tipo: 'idea', texto: 'Entra a https://www.midominiomuylargoparaprobar.com/registro' }, { tipo: 'idea', texto: 'Entra a midominio.com' }] });
   assert.equal(sugerencias.filter(s => /palabra de \d+ letras/.test(s)).length, 1);
 });
+
+// ---------- ronda 4: objetos que vuelven con `como` ----------
+import { resolverComo } from '../scripts/lib/contrato.mjs';
+test('como r4: hereda solo los campos del objeto (no revelar ni voz), la hija gana, cadenas A←B←C; errores de id, adelante, sí misma y tipo; avisa copias a mano', () => {
+  const mapa = { id: 'mapa', tipo: 'pasos', iconos: ['🔍', '🛠️', '🚀'], etiquetas: ['Encontrar', 'Construir', 'Lanzar'], prefijo: 'Paso', revelar: 'pasos', voz: ['a', 'b', 'c'], activo: 1 };
+  const deck = { laminas: [mapa, { id: 'm2', tipo: 'pasos', como: 'mapa', activo: 2, hechos: [1] }, { id: 'm3', tipo: 'pasos', como: 'm2', activo: 3, etiquetas: ['A', 'B', 'C'] }] };
+  const copia = JSON.parse(JSON.stringify(deck));
+  const r = resolverComo(deck);
+  assert.deepEqual(r.errores, []);
+  const [, b, c] = r.deck.laminas;
+  assert.deepEqual(b.iconos, mapa.iconos);
+  assert.equal(b.prefijo, 'Paso');
+  assert.equal(b.revelar, undefined);
+  assert.equal(b.voz, undefined);
+  assert.equal(b.activo, 2);
+  assert.deepEqual(c.etiquetas, ['A', 'B', 'C']);
+  assert.deepEqual(c.iconos, mapa.iconos, 'cadena');
+  assert.deepEqual(deck, copia, 'el deck original no cambia');
+  const e = l => resolverComo({ laminas: [mapa, l, { id: 'cal', tipo: 'calendario', n: 14 }] }).errores.join('\n');
+  assert.match(e({ tipo: 'pasos', como: 'nada' }), /no es el id de ninguna lámina/);
+  assert.match(e({ tipo: 'pasos', como: 'cal' }), /va DESPUÉS/);
+  assert.match(e({ id: 'yo', tipo: 'pasos', como: 'yo' }), /a sí misma/);
+  assert.match(resolverComo({ laminas: [mapa, { id: 'cal', tipo: 'calendario', n: 14 }, { tipo: 'calendario', como: 'mapa' }] }).errores.join(), /una lámina pasos y esta es calendario/);
+  assert.match(resolverComo({ laminas: [{ id: 'i', tipo: 'idea', texto: 'x' }, { tipo: 'idea', como: 'i' }] }).errores.join(), /solo existe en/);
+  // copia a mano: avisa y sugiere el id
+  const av = resolverComo({ laminas: [mapa, { tipo: 'pasos', iconos: mapa.iconos, etiquetas: mapa.etiquetas, activo: 2 }] }).avisos;
+  assert.match(av.join('\n'), /repite a mano el pasos de la lámina 1: .*"como": "mapa"/);
+  // el campo `como` lo conoce el contrato
+  assert.ok(COMUNES.includes('como'));
+});

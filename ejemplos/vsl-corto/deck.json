@@ -50,6 +50,14 @@
   "GARANTIA_CONDICION": {
    "pendiente": true,
    "motivo": "condición medible de la garantía"
+  },
+  "TASA_ABANDONO": {
+   "pendiente": true,
+   "motivo": "qué parte de quienes escriben de noche se va sin respuesta: sale de sus chats, no se inventa"
+  },
+  "CITAS_PERDIDAS": {
+   "pendiente": true,
+   "motivo": "10 × la tasa real de abandono: se calcula cuando esté TASA_ABANDONO"
   }
  },
  "laminas": [
@@ -92,12 +100,12 @@
    "tipo": "cifra",
    "arriba": "Si te escriben 10 personas de noche:",
    "lineas": [
-    "10 × 30-50% se van con otro",
-    "= __3-5 citas perdidas por noche__"
+    "10 × {{TASA_ABANDONO}} se van con otro",
+    "= __{{CITAS_PERDIDAS}} citas perdidas por noche__"
    ],
    "voz": [
-    "Pongamos que te escriben diez de noche: tres a cinco se van.",
-    "Son de tres a cinco citas perdidas cada noche."
+    "Pongamos que te escriben diez de noche: una parte se va con otro.",
+    "Son citas perdidas cada noche."
    ]
   },
   {
@@ -176,16 +184,7 @@
   {
    "id": "mapa-2b",
    "tipo": "pasos",
-   "iconos": [
-    "📲",
-    "🤖",
-    "📅"
-   ],
-   "etiquetas": [
-    "Te escriben",
-    "Contesta",
-    "Agenda"
-   ],
+   "como": "mapa",
    "activo": 2,
    "hechos": [
     1
@@ -241,16 +240,7 @@
   {
    "id": "mapa-2",
    "tipo": "pasos",
-   "iconos": [
-    "📲",
-    "🤖",
-    "📅"
-   ],
-   "etiquetas": [
-    "Te escriben",
-    "Contesta",
-    "Agenda"
-   ],
+   "como": "mapa",
    "activo": 3,
    "hechos": [
     1,
@@ -501,10 +491,10 @@
    "id": "ahora",
    "tipo": "idea",
    "emoji": "📉",
-   "texto": "Cada noche sin contestar:\n**3-5 citas** que se van",
+   "texto": "Si te escriben 10 de noche:\n**{{CITAS_PERDIDAS}} citas** se van",
    "nota": "Esta noche también",
    "voz": [
-    "Cada noche que no contestas se van de tres a cinco citas.",
+    "Si te escriben diez de noche, esas citas se van con otro.",
     "Y esta noche también te van a escribir."
    ]
   },

@@ -197,3 +197,144 @@ test('línea de tiempo: «Semana 2» pegada a «Semana 1» baja a un segundo ren
   assert.deepEqual(filasEtiquetas([90, 282.5, 1437.5], ['Semana 1', 'Semana 2', 'Semana 8'], 56), [0, 1, 0]);
   assert.deepEqual(filasEtiquetas([90, 860, 1630], ['Día 1', 'Día 14', 'Día 30'], 56), [0, 0, 0]);
 });
+
+// ---------- ronda 4: el fondo del foco es el estado final de la lámina anterior ----------
+test('foco r4: el fondo conserva los tachones de la lámina anterior (lista tachada, tachar_despues, ~~idea~~) y la calificación sin su mano', { timeout: 120_000 }, async () => {
+  const items = ['Tomas de stock', 'Párrafos en pantalla', 'Música encima de tu voz'].map(texto => ({ texto, tachado: true }));
+  await conDeck(base([
+    { tipo: 'lista', items },
+    { tipo: 'foco', texto: 'Tus tomas, una frase y música bajita.' },
+    { tipo: 'lista', items, tachar_despues: true },
+    { tipo: 'foco', texto: 'Tus tomas, una frase y música bajita.' },
+    { tipo: 'idea', emoji: '⏰', texto: '~~Más horas = más dinero~~', tachar_paso: 1 },
+    { tipo: 'foco', texto: 'Más alcance = más dinero' },
+    { tipo: 'calificacion', filas: [{ texto: 'A', emoji: '🅰️', estrellas: 2 }, { texto: 'B', emoji: '🅱️', estrellas: 4 }, { texto: 'C', emoji: '🌊', estrellas: 3 }] },
+    { tipo: 'foco', texto: 'La C gana' },
+  ]), async (page, p) => {
+    assert.ok(!/data-tachar-p="[1-9]/.test(p.html.split('class="escena clon"').slice(1).map(x => x.split('</section>')[0]).join('')), 'el clon no trae pasos de tachón');
+    const r = await page.evaluate(() => [1, 3, 5, 7].map(i => {
+      const lam = window.PZ.lams[i];
+      window.PZ.mostrar(lam, 0, Infinity);
+      const clon = lam.querySelector('.escena.clon');
+      const visibles = [...clon.querySelectorAll(':scope > .capa-mano path[data-clase="tachon"]')].filter(q => !q.classList.contains('oculto')).length;
+      const manos = [...clon.querySelectorAll('.cal-cursor')].filter(e => getComputedStyle(e).visibility !== 'hidden' && getComputedStyle(e).display !== 'none' && !e.classList.contains('pasado') && !e.classList.contains('oculto')).length;
+      return { visibles, manos };
+    }));
+    assert.ok(r[0].visibles >= 3, `lista tachada: ${JSON.stringify(r[0])}`);
+    assert.ok(r[1].visibles >= 3, `tachar_despues: ${JSON.stringify(r[1])}`);
+    assert.ok(r[2].visibles >= 1, `~~idea~~: ${JSON.stringify(r[2])}`);
+    assert.equal(r[3].manos, 1, `calificación: solo la mano de la última fila (${JSON.stringify(r[3])})`);
+  });
+});
+
+test('foco r4: detrás de una lista centrada de 3 renglones la frase queda centrada (≤ 120 px) y, si pisa un renglón, el fondo va a ≤ 0.12', { timeout: 120_000 }, async () => {
+  const items = ['Tomas de stock', 'Párrafos en pantalla', 'Música encima de tu voz'].map(texto => ({ texto, tachado: true }));
+  await conDeck(base([{ tipo: 'lista', items }, { tipo: 'foco', texto: 'Tus tomas, una frase y música bajita.' }]), async page => {
+    const m = await page.evaluate(() => {
+      const lam = window.PZ.lams[1], L = lam.getBoundingClientRect(), f = lam.querySelector('.foco-frase .nota').getBoundingClientRect();
+      const fondo = [...lam.querySelectorAll('.escena.clon .item span')].map(e => e.getBoundingClientRect());
+      return { centro: (f.top + f.bottom) / 2 - L.top, choca: fondo.some(q => q.top < f.bottom && q.bottom > f.top), op: +getComputedStyle(lam.querySelector('.escena.clon')).opacity };
+    });
+    assert.ok(Math.abs(m.centro - 540) <= 120, JSON.stringify(m));
+    if (m.choca) assert.ok(m.op <= 0.12, JSON.stringify(m));
+  });
+});
+
+// ---------- ronda 4: el sello esquiva el contenido ----------
+test('sello r4: sin posición no cae sobre el texto; con sello_pos se corre dentro de su lado; lejos del subrayado; sobre su emoji es a propósito', { timeout: 180_000 }, () => {
+  const texto = 'Dices a qué hora cierras\ny ahí se acaba la plática';
+  const r = qa(base([
+    { id: 'sin-pos', tipo: 'idea', emoji: '📅', texto, sello: 'Cerrado' },
+    { id: 'derecha', tipo: 'idea', emoji: '📅', texto, sello: 'Cerrado', sello_pos: 'derecha' },
+    { id: 'cifra', tipo: 'cifra', lineas: ['2 videos × 4 semanas', '=', '__8 videos al mes__'], sello: 'Sin cara' },
+    { id: 'cifra-ab', tipo: 'cifra', lineas: ['2 videos × 4 semanas', '=', '__8 videos al mes__'], sello: 'Sin cara', sello_pos: 'abajo-derecha' },
+    { id: 'sobre-emoji', tipo: 'idea', emoji: '📅', texto: 'Tu agenda', sello: 'Lleno', sello_sobre: 'emoji' },
+  ]));
+  const deSello = r.errores.filter(e => /sello/.test(e));
+  assert.deepEqual(deSello, [], deSello.join('\n'));
+  assert.ok(!r.avisos.some(a => /queda pegado a un subrayado/.test(a)), r.avisos.join('\n'));
+});
+
+test('sello r4: QA marca el sello que corta un subrayado (sello_sobre el texto subrayado)', { timeout: 120_000 }, () => {
+  const r = qa(base([{ id: 'corta', tipo: 'idea', emoji: '💰', texto: 'Esto es __lo importante__ hoy', sello: 'Ojo', sello_sobre: 'texto' }]));
+  assert.ok(r.errores.some(e => /corta .*subrayado/.test(e)), r.errores.join('\n'));
+  assert.ok(r.errores.some(e => /el sello va sobre «texto»: cambia el ancla/.test(e)), r.errores.join('\n'));
+});
+
+// ---------- ronda 4: flujo «A + B = C», tarjeta y retornos [28:40, 35:10, 12:45] ----------
+test('flujo r4: los signos quedan a la mitad entre emojis (±4 px) y a su altura; el arco de retorno y su etiqueta no pisan etiquetas', { timeout: 120_000 }, async () => {
+  await conDeck(base([
+    { tipo: 'flujo', flechas: [{ signo: '+' }, { signo: '=' }], nodos: [{ emoji: '👊', etiqueta: 'Tú' }, { emoji: '🤖', etiqueta: 'IA especializada' }, { emoji: '📦', etiqueta: 'Producto', tarjeta: true }] },
+    { tipo: 'flujo', nodos: [{ emoji: '🤳', etiqueta: 'Creador' }, { emoji: '📦', etiqueta: 'Producto' }, { emoji: '👥', etiqueta: 'Su audiencia' }, { emoji: '💰', etiqueta: 'Dinero' }],
+      aparte: { emoji: '🙋', etiqueta: 'Tú' }, retornos: [{ desde: 3, hasta: 0, tono: 'n', etiqueta: '70%', emoji: '💵' }, { desde: 3, hasta: 'aparte', tono: 'v', etiqueta: '30%', emoji: '💵' }] },
+  ]), async (page, p) => {
+    const m = await page.evaluate(() => {
+      const [a, b] = window.PZ.lams, c = e => { const r = e.getBoundingClientRect(); return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2, r }; };
+      const emo = [0, 1, 2].map(i => c(a.querySelector(`[data-a="n${i}"] .emo`)));
+      const sg = [...a.querySelectorAll('.signo')].map(c);
+      const sinFlechas = a.querySelectorAll('.capa-mano path[data-clase="flecha"]').length;
+      const etq = [...b.querySelectorAll('.etiqueta')].map(e => e.getBoundingClientRect());
+      const rets = [...b.querySelectorAll('.retorno-et')].map(e => e.getBoundingClientRect());
+      const cruza = (u, v) => u.left < v.right && u.right > v.left && u.top < v.bottom && u.bottom > v.top;
+      const arcos = [...b.querySelectorAll('.capa-mano path[data-estilo="retorno"]')];
+      const L = b.getBoundingClientRect();
+      const golpes = arcos.some(pth => { const t = pth.getTotalLength(); for (let s = 0; s <= t; s += 8) { const q = pth.getPointAtLength(s); if (etq.some(r => q.x + L.left > r.left && q.x + L.left < r.right && q.y + L.top > r.top && q.y + L.top < r.bottom)) return true; } return false; });
+      return { dx: sg.map((s, i) => Math.abs(s.x - (emo[i].x + emo[i + 1].x) / 2)), dy: sg.map((s, i) => Math.abs(s.y - (emo[i].y + emo[i + 1].y) / 2)), sinFlechas, arcos: arcos.length,
+        etRet: rets.some(r => etq.some(e => cruza(r, e))), golpes, tarjeta: !!a.querySelector('.nodo-tarjeta') };
+    });
+    assert.ok(m.dx.every(d => d <= 4) && m.dy.every(d => d <= 4), JSON.stringify(m));
+    assert.equal(m.sinFlechas, 0, 'con signo no hay flecha');
+    assert.equal(m.arcos, 2);
+    assert.equal(m.etRet, false, JSON.stringify(m));
+    assert.equal(m.golpes, false, JSON.stringify(m));
+    assert.ok(m.tarjeta);
+  });
+});
+
+// ---------- ronda 4: anotaciones comunes con flecha, flecha que entra desde fuera y flechas convergentes ----------
+test('anotaciones r4: nota con gancho hacia la captura (cap0-circulo), flecha que entra desde el borde, converger en la tabla; un ancla que no existe avisa', { timeout: 120_000 }, async () => {
+  const dir = tmp();
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  fs.writeFileSync(path.join(dir, 'cap.png'), png);
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify(base([
+    { tipo: 'prueba', capturas: [{ src: 'cap.png', alto: 500, circulo: [10, 10, 40, 20] }], anotaciones: [{ texto: '41 millones', a: 'cap0-circulo' }, { a: 'cap0', entra: 'derecha' }] },
+    { tipo: 'tabla', revelar: 'todo', columnas: ['A', 'B'], filas: [{ etiqueta: 'x', celdas: ['1', '2'] }, { etiqueta: 'y', celdas: ['3', '4'] }], converger: { columna: 1, texto: '¿Ves por qué?' } },
+    { tipo: 'idea', emoji: '🚀', texto: 'Hola', anotaciones: [{ texto: 'Nota', a: 'noexiste' }] },
+  ])));
+  const p = prepararSalida(dir, path.join(dir, 'salida'));
+  const { browser, page, avisos } = await abrir(p.htmlPath, p.W, p.H);
+  try {
+    const m = await page.evaluate(() => window.PZ.lams.map(l => ({
+      ganchos: [...l.querySelectorAll(':scope > .capa-mano path[data-estilo="curva-roja"]')].map(q => q.dataset.de),
+      entradas: l.querySelectorAll(':scope > .capa-mano path[data-estilo="entrada"]').length,
+      converge: l.querySelectorAll(':scope > .capa-mano path[data-estilo="converge"]').length,
+      nota: (() => { const n = l.querySelector(':scope > .anotacion'); if (!n) return null; const r = n.getBoundingClientRect(), L = l.getBoundingClientRect(); return [r.left - L.left, r.top - L.top, r.right - L.left, r.bottom - L.top]; })(),
+    })));
+    assert.deepEqual(m[0].ganchos, ['anota0']);
+    assert.equal(m[0].entradas, 1);
+    assert.ok(m[0].nota && m[0].nota[0] >= 0 && m[0].nota[2] <= 1920, JSON.stringify(m[0]));
+    assert.equal(m[1].converge, 2);
+    assert.ok(avisos.some(a => /lámina 3: falta el ancla «noexiste» \(anclas de esta lámina: .*emoji/.test(a)), avisos.join('\n'));
+  } finally { await browser.close(); }
+  // el contrato limpia un ancla con caracteres raros y una posición que no es px ni %
+  const { sanearDeck } = await import('../scripts/lib/contrato.mjs');
+  const r = sanearDeck({ laminas: [{ tipo: 'idea', texto: 'x', anotaciones: [{ texto: 'n', a: 'x"><b', x: 'calc(1px)' }] }] });
+  assert.equal(r.deck.laminas[0].anotaciones[0].a, undefined);
+  assert.equal(r.deck.laminas[0].anotaciones[0].x, undefined);
+});
+
+// ---------- ronda 4: el demo en 9:16 (beta) sin texto encimado en la tabla ni gráficas en una franja chica ----------
+test('9:16 r4: el demo en vertical: la tabla-marcador sin celdas desbordadas ni encimadas; escala, renuncia, elige, barras y botón sin «< 35%» ni reducción', { timeout: 300_000 }, () => {
+  const demo = JSON.parse(fs.readFileSync(path.join(DIR_SKILL, 'ejemplos', 'demo', 'deck.json'), 'utf8'));
+  const ids = ['marcador', 'escala', 'renuncia', 'elige', 'barras', 'boton'];
+  const r = qa({ ...demo, formato: '9:16', laminas: demo.laminas.filter(l => ids.includes(l.id)) });
+  const de = id => [...r.errores, ...r.avisos].filter(m => m.includes(`(${id})`));
+  assert.deepEqual(de('marcador').filter(m => /celda|se enciman/.test(m)), []);
+  for (const id of ids) assert.deepEqual(de(id).filter(m => /del alto|se redujo/.test(m)), [], id);
+});
+
+test('tabla r4: QA da error si el texto de una celda sale de su caja (una palabra larga en una columna angosta)', { timeout: 120_000 }, () => {
+  const cols = Array.from({ length: 8 }, (_, i) => `Col${i}`);
+  const r = qa(base([{ tipo: 'tabla', revelar: 'todo', columnas: cols, filas: [{ etiqueta: 'x', celdas: cols.map(() => 'Anticonstitucionalmente') }] }]));
+  assert.ok(r.errores.some(e => /se sale de su celda/.test(e)), r.errores.join('\n'));
+});

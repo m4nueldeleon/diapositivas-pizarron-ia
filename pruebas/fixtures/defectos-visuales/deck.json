@@ -1,7 +1,7 @@
 { "titulo": "ciego", "emoji": "apple", "marca": { "texto": "pizarron", "sufijo": ".ia" },
   "laminas": [
     { "id": "markup-salto", "tipo": "idea", "emoji": "🏆", "texto": "Si buscas el **mejor modelo\nde negocio** para empezar como **principiante**...", "voz": "Si buscas el mejor modelo de negocio para empezar" },
-    { "id": "sello-texto", "tipo": "idea", "emoji": "💰", "texto": "Esta frase **importante** queda\njusto debajo del sello", "sello": "Ojo aquí", "voz": ["Esta frase importante", "queda debajo del sello"] },
+    { "id": "sello-texto", "tipo": "idea", "emoji": "💰", "texto": "Esta frase **importante** queda\njusto debajo del sello", "sello": "Ojo aquí", "sello_sobre": "texto", "voz": ["Esta frase importante", "queda debajo del sello"] },
     { "id": "cursor-texto", "tipo": "boton", "boton": "Enviar mensaje", "texto": "Solo das **clic**", "voz": "Solo das clic" },
     { "id": "hueco-gris", "tipo": "chat", "mensajes": [ { "de": "yo", "texto": "¿Qué le escribo?" }, { "de": "otro", "texto": "Hola [nombre], vi tu [negocio] en [ciudad]" } ], "voz": ["Qué le escribo", "Hola nombre"] },
     { "id": "tachado-2-renglones", "tipo": "lista", "vineta": "x", "items": [ { "texto": "Mandar el catálogo completo de cuarenta fotos con precios y medidas a cada persona que te escribe", "tachado": true }, "Otra cosa" ], "voz": ["Mandar el catálogo", "otra cosa"] },

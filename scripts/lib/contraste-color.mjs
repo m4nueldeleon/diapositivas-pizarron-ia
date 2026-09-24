@@ -49,7 +49,8 @@ export function puntuarGlifo(datos, [br, bg, bb]) {
   return op ? Math.round((ve / op) * 100) : null;
 }
 
-// porLamina[i].medir: [{ tipo, ch, src, svg, fondos }] → [{ i, ch, pct }] (pct = el peor fondo)
+// porLamina[i].medir: [{ tipo, ch, src, svg, fondos, neutro? }] → [{ i, ch, pct, neutro? }] (pct = el peor fondo). `neutro`:
+// un emoji fuera de la tabla medida sobre blanco, tarjeta u oscura (qa.mjs le aplica el umbral de la tabla, no el de color).
 export async function medirSobreColor(browser, porLamina, dirSalida) {
   const items = [], cache = new Map();
   porLamina.forEach(r => (r.medir || []).forEach(m => {
@@ -61,7 +62,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     const fondos = m.fondos.length > 1 ? [...m.fondos, promedio] : m.fondos;
     const clave = `${m.tipo}|${m.ch}|${url.length}|${url.slice(-64)}|${JSON.stringify(fondos)}`;
     if (!cache.has(clave)) { cache.set(clave, items.length); items.push({ tipo: m.tipo, ch: m.ch, url, fondos }); }
-    m._k = cache.get(clave); m._pastel = esPastel(m.fondos);
+    m._k = cache.get(clave); m._pastel = esPastel(m.fondos); m._neutro = m.neutro === true;
   }));
   if (!items.length) return [];
   const pg = await browser.newPage();
@@ -85,7 +86,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     }, items);
   } finally { await pg.close(); }
   const res = [];
-  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], pastel: m._pastel }); }));
+  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], pastel: m._pastel, ...(m._neutro ? { neutro: true, fondoN: m.fondoN } : {}) }); }));
   // un hallazgo por emoji y lámina
   return [...new Map(res.map(x => [`${x.i}|${x.ch}|${x.pct}`, x])).values()];
 }

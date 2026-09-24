@@ -15,28 +15,9 @@ const seg = new Intl.Segmenter('es', { granularity: 'grapheme' });
 const RGI = /^\p{RGI_Emoji}$/v;
 const emojisDe = t => [...seg.segment(t)].map(x => x.segment).filter(g => RGI.test(g)).map(sinSel);
 
-// Tablas de concepto: todas, salvo las de sets, contraste, texto impreso, parecidos y «Evita»
-const NO_CONCEPTO = /^(Qué set|Emojis dentro|Evita|Ojo|Emojis con texto|Bajo contraste|Parecidos)/;
-const TOKEN = /^((?:no|si):)?(\p{RGI_Emoji})(\+(\p{RGI_Emoji}))?/v;
-// Filas de concepto: [{ seccion, concepto, specs: ['🤝', 'si:🤝', '📱+💬'] }]
-export function filasConcepto(md) {
-  const filas = [];
-  for (const bloque of md.split(/^## /m).slice(1)) {
-    const seccion = bloque.split('\n')[0].trim();
-    if (NO_CONCEPTO.test(seccion)) continue;
-    const compuestos = /^Compuestos/.test(seccion);
-    bloque.split('\n').filter(l => /^\|/.test(l) && !/^\|\s*-/.test(l)).slice(1).forEach(l => {
-      const celdas = l.split('|').slice(1, -1).map(c => c.trim());
-      const [conc, col] = compuestos ? [celdas[1], celdas[0]] : [celdas[0], celdas[1]];
-      if (!col) return;
-      const limpia = col.replace(/\([^)]*\)/g, ' ').replace(/\[[^\]]*\]/g, ' ');
-      const specs = limpia.split(/\s+·\s+|\s+o\s+/).map(p => p.replace(/`/g, '').trim()).map(p => p.match(TOKEN)).filter(Boolean)
-        .map(m => sinSel(`${m[1] || ''}${m[2]}${m[3] || ''}`));
-      if (specs.length) filas.push({ seccion, concepto: conc, specs });
-    });
-  }
-  return filas;
-}
+// El lector del diccionario vive en scripts/lib/emoji-diccionario.mjs (QA lo usa para el inventario de iconos)
+import { filasConcepto, conceptoDe } from '../scripts/lib/emoji-diccionario.mjs';
+export { filasConcepto };
 
 test('EMOJIS.md: ningún emoji o compuesto está en dos filas de concepto distintas', () => {
   const filas = filasConcepto(EMOJIS);

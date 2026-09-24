@@ -101,7 +101,10 @@ test('datos propuestos: se pintan con su valor, se listan en propuestos y QA los
   const r = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/qa.mjs', import.meta.url)), dir, '--salida', path.join(dir, 's'), '--json'], { encoding: 'utf8' });
   const q = JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));
   assert.deepEqual(q.por_confirmar, { TIEMPO_LLAMADA: { valor: '30 minutos', laminas: [1] } });
-  assert.ok(q.avisos.some(a => /dato propuesto TIEMPO_LLAMADA .*el deck no es final/.test(a)));
+  // el dato propuesto va en datos_por_confirmar (no resta nota: el tope de borrador ya lo representa)
+  assert.ok(q.datos_por_confirmar.some(a => /dato propuesto TIEMPO_LLAMADA .*el deck no es final/.test(a)));
+  assert.ok(!q.avisos.some(a => /dato propuesto/.test(a)));
+  assert.equal(q.nota, 90);
 });
 
 // ---------- ronda 3: hueco declarado a propósito ----------

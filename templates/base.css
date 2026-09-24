@@ -167,6 +167,19 @@ s.tachon, .tachon { text-decoration: none; }
 .nodo .etiqueta.normal { font-weight: 500; }
 .nodo .sub-etiqueta { font-size: 52px; color: var(--gris); margin-top: -12px; max-width: 9em; text-align: center; text-wrap-style: balance; }
 .nodo .valor { font-size: 96px; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+/* flujo «A + B = C» [28:40, 35:10]: el signo gris claro y delgado, a la altura del emoji (runtime.js lo centra entre los
+   dos íconos) */
+.fila-flujo > .signo { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); font-family: var(--sans);
+  font-weight: 300; font-size: var(--ts, 80px); line-height: 1; color: #9a9a9a; pointer-events: none; }
+/* nodo en tarjeta gris con degradado [28:40 «Stories», «Digital product»] */
+.nodo.nodo-tarjeta { background: linear-gradient(180deg, #e4e4e4, #fafafa); border-radius: 40px; padding: 44px 56px 40px; }
+/* nodo aparte bajo la primera columna [12:45 «You»] y la etiqueta del arco de retorno (runtime.js la pone en el vértice) */
+.fila-igual > .nodo-aparte { grid-row: 2; grid-column: 1; }
+.fila-igual:has(> .nodo-aparte) > .nodo:not(.nodo-aparte) { grid-row: 1; }
+.fila-flujo > .retorno-et { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 12px;
+  white-space: nowrap; --tn: 60px; color: #7d7d7d; }
+.fila-flujo > .retorno-et.tono-v { color: #22a812; }
+.fila-flujo > .retorno-et.tono-r { color: var(--rojo); }
 
 /* ---------- tarjetas ---------- */
 .tarjetas { display: grid; grid-template-columns: repeat(var(--cols, 3), var(--tw, 420px)); grid-auto-rows: 1fr; gap: 36px; justify-content: center; }
@@ -183,9 +196,11 @@ s.tachon, .tachon { text-decoration: none; }
 .lienzo.lz-tabla { padding: 30px 40px; }   /* la tabla-marcador ocupa la lámina completa, como en la referencia */
 .tabla { border-collapse: collapse; font-family: var(--mano); table-layout: fixed; }
 .tabla td, .tabla th { border: 0; text-align: center; vertical-align: middle; padding: 6px 12px; line-height: 1.02; }
-.tabla th { font-weight: 600; font-size: 50px; color: var(--tinta); }
-.tabla td { font-weight: 600; font-size: 44px; }
-.tabla td.fila-et { color: var(--tinta); font-size: 46px; }
+.tabla th { font-weight: 600; font-size: var(--tt, 50px); color: var(--tinta); }
+.tabla td { font-weight: 600; font-size: var(--td, 44px); }
+.tabla td.fila-et { color: var(--tinta); font-size: var(--tde, 46px); }
+/* 9:16: si ni con la letra en el piso cabe la palabra, se parte (último recurso; QA avisa si algo sale de su celda) */
+.tabla.parte td, .tabla.parte th { overflow-wrap: anywhere; }
 .tabla th.esq { color: var(--gris); font-weight: 500; font-size: 42px; }
 .tabla tr + tr td, .tabla tr + tr th { border-top: 4px solid var(--linea); }
 .tabla td + td, .tabla th + th, .tabla td + th, .tabla th + td { border-left: 4px solid var(--linea); }
@@ -303,6 +318,10 @@ s.tachon, .tachon { text-decoration: none; }
 .captura.hueco-prueba { box-shadow: none; background: transparent; border: 5px dashed #b9b9b9; border-radius: 26px;
   width: 1000px; height: 440px; display: grid; place-items: center; }
 .captura.hueco-prueba .mano { font-size: 84px; color: #8a8a8a; }
+/* plantilla (el lugar para la captura del espectador): marco trazado a mano en tinta, sin punteado gris */
+.captura.hueco-prueba.plantilla { border: none; }
+.captura.hueco-prueba.plantilla .mano { color: var(--tinta); position: relative; }
+.marco-mano { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 /* Fuente de un dato o un estudio («Autor, obra (año)»): sans gris sobria pero legible. A 30 px quedaba en ~5.6 px en un
    celular de 360; 40 px da ~7.5 (QA avisa bajo 36). En la captura va pegada al post, un poco más chica. */
 .fuente { margin-top: 26px; font-family: var(--sans); font-style: normal; font-weight: 400; font-size: 40px; line-height: 1.2; color: #555;
@@ -476,3 +495,10 @@ body.hoja { display: flex; flex-direction: column; gap: 30px; padding: 30px; ali
 .cuadro.g { background: var(--brillo), linear-gradient(160deg, #e0e0e0 0%, #efefef 100%); }
 .cuadro.a { background: var(--brillo), linear-gradient(160deg, #b5dcf9 0%, #d3ebfc 100%); }
 .cuadro.b { background: #fff; }
+/* anotación común (nota a mano con gancho sobre cualquier diseño) [15:00, 28:35]: runtime.js la coloca junto a su ancla */
+.lamina > .anotacion { position: absolute; left: 0; top: 0; --tn: 54px; max-width: 400px; z-index: 3; }
+.lamina > .anotacion.tono-r { color: var(--rojo); }
+.lamina > .anotacion.tono-v { color: #22a812; }
+.lamina > .anotacion.tono-n { color: var(--tinta); }
+.lamina.oscura > .anotacion.tono-r { color: #ff4d57; }
+.lamina.oscura > .anotacion.tono-n { color: #ffffff; }

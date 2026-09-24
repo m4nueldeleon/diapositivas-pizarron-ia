@@ -59,7 +59,8 @@
    "id": "sello-largo",
    "tipo": "idea",
    "texto": "Algo",
-   "sello": "Esto es un sello larguísimo que de verdad no cabe aquí"
+   "sello": "Esto es un sello larguísimo que de verdad no cabe aquí ni con la letra más chica",
+   "sello_sobre": "texto"
   },
   {
    "id": "voz-corta",

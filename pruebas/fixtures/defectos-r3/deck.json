@@ -131,6 +131,7 @@
    ],
    "emoji_destacado": "🧑‍💻",
    "etiqueta_destacado": "Tú",
+   "flecha_etiqueta": true,
    "alto": 520
   },
   {
@@ -150,23 +151,27 @@
    "id": "sello-avatar",
    "tipo": "chat",
    "sello": "Respuesta tardía",
-   "sello_pos": "abajo-derecha",
+   "sello_pos": "derecha",
    "mensajes": [
     {
-     "de": "otro",
-     "texto": "¿Cuánto cuesta?"
+     "de": "yo",
+     "texto": "¡Hola!"
     },
     {
      "de": "yo",
-     "texto": "¡Buen día!"
+     "texto": "¿Sigues ahí?"
     },
     {
-     "de": "otro",
+     "de": "yo",
      "texto": "¿Y el precio?"
     },
     {
      "de": "yo",
      "texto": "Sí, cuesta…"
+    },
+    {
+     "de": "yo",
+     "texto": "¿Te aparto?"
     }
    ]
   },

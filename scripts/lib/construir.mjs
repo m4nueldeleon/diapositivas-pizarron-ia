@@ -6,7 +6,7 @@ import { crearCtx, escapar, CURSOR_MANO, CURSOR_PUNO, CURSOR_FLECHA } from './co
 import { marcar } from './markup.mjs';
 import * as T from './layouts-texto.mjs';
 import * as D from './layouts-datos.mjs';
-import { validarDeck, sanearDeck } from './contrato.mjs';
+import { validarDeck, sanearDeck, resolverComo } from './contrato.mjs';
 import { sustituirDatos } from './datos.mjs';
 import { duracionPaso } from './tiempos.mjs';
 
@@ -65,6 +65,24 @@ function armarLamina(l, i, deck, comun) {
   let interior = fn(l, ctx);
   let pasos = ctx.max + 1;
   let extras = '';
+  // Anotaciones a mano con flecha sobre CUALQUIER diseño [15:00, 28:35, 2:40, 11:20, 36:45]: una nota en Caveat junto al
+  // ancla `a` (del lado `lado`) con su gancho rojo, o, sin texto, con `entra`, una flecha larga que entra desde el borde
+  // del lienzo hasta el ancla [15:00]. runtime.js la coloca (colocarAnotaciones) antes de dibujar la capa a mano. Las del
+  // calendario con `dia` siguen siendo del calendario.
+  const anots = (Array.isArray(l.anotaciones) ? l.anotaciones : []).filter(a => a && typeof a === 'object' && typeof a.a === 'string' && a.a && !(l.tipo === 'calendario' && a.dia != null));
+  if (anots.length) {
+    const k0 = ctx.paso(pasos);
+    anots.forEach((a, i) => {
+      const k = Number.isInteger(a.paso) ? ctx.paso(a.paso) : k0;
+      const tono = ['r', 'v', 'n'].includes(a.tono) ? a.tono : 'r';
+      if (typeof a.texto === 'string' && a.texto.trim()) {
+        const pos = [a.x != null ? `left:${typeof a.x === 'number' ? a.x + 'px' : a.x}` : '', a.y != null ? `top:${typeof a.y === 'number' ? a.y + 'px' : a.y}` : ''].filter(Boolean).join(';');
+        extras += `<div class="nota anotacion tono-${tono}" data-p="${k}" data-a="anota${i}" data-sobre="${escapar(a.a)}" data-lado="${['izquierda', 'derecha', 'arriba', 'abajo'].includes(a.lado) ? a.lado : ''}"${pos ? ` data-fija="1" style="${pos}${a.tam ? `;--tn:${a.tam}` : ''}"` : a.tam ? ` style="--tn:${a.tam}"` : ''}>${marcar(a.texto)}</div>`;
+        ctx.con({ de: 'anota' + i, a: a.a, estilo: 'curva-roja', tono, anot: true, p: k });
+      } else if (a.entra) ctx.con({ a: a.a, estilo: 'entrada', lado: a.entra, tono, anot: true, p: k });
+      pasos = Math.max(pasos, k + 1);
+    });
+  }
   if (l.sello) {
     const k = ctx.paso(l.sello_paso ?? pasos);
     // posición: centrado en un ancla (sello_sobre), en una zona del lienzo (sello_pos) o al centro; el
@@ -108,8 +126,13 @@ function anclaArriba(l) {
   return Array.isArray(l.items) && l.items.length >= 2;
 }
 
-// Quita los pasos de una escena clonada (el fondo atenuado de «foco» se ve completo)
-const sinPasos = html => html.replace(/ data-p="\d+"/g, '');
+// El fondo atenuado de «foco» es el ESTADO FINAL de la lámina anterior [15:20]: sin pasos (se ve completo), los
+// tachones y los atenuados en el paso 0 (siguen tachados y atenuados: una lista de errores tachada no puede leerse
+// como recomendación) y lo que se fue antes del final (`data-hasta`: la mano de una calificación) sigue fuera.
+export const sinPasos = html => html
+  .replace(/ data-p="\d+"/g, '')
+  .replace(/ data-(tachar-p|atenuar)="\d+"/g, ' data-$1="0"')
+  .replace(/ data-hasta="\d+"/g, ' data-hasta="-1"');
 
 const jsonSeguro = x => JSON.stringify(x).replace(/</g, '\\u003c');
 
@@ -142,12 +165,15 @@ function bloqueVivo(l, em) {
 }
 const reloj = s => `${Math.floor(s / 60)}:${String(Math.round(s) % 60).padStart(2, '0')}`;
 
-export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
-  const errores = validarDeck(crudo, Object.keys(LAYOUTS));
+export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) {
+  // `como`: las láminas que reusan un objeto (mapa, calendario, tabla) heredan sus campos antes de validar
+  const { deck: crudo, errores: erroresComo, avisos: avisosComo } = resolverComo(original);
+  const errores = [...erroresComo, ...validarDeck(crudo, Object.keys(LAYOUTS))];
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
   // {{CLAVE}} → valor de «datos» (o «[CLAVE]», que QA cuenta como pendiente). Luego, listas cerradas.
   const { deck: conDatos, faltan, propuestos, declarados } = sustituirDatos(crudo);
-  const { deck, avisos: avisosSaneo, sugerencias } = sanearDeck(conDatos);
+  const { deck, avisos: avisosSaneo, sugerencias: sugSaneo } = sanearDeck(conDatos);
+  const sugerencias = [...avisosComo, ...sugSaneo];
   fs.mkdirSync(dirSalida, { recursive: true });
   const formato = FORMATOS[deck.formato || '16:9'] ? deck.formato || '16:9' : '16:9';
   const F = FORMATOS[formato];
@@ -172,7 +198,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
       const prev = armadas[i - 1];
       const op = Number.isFinite(l.opacidad) ? l.opacidad : 0.2;
       // data-op-fija: el autor puso la opacidad; runtime.js no la baja aunque la frase no encuentre hueco
-      const fondo = prev ? `<div class="escena clon"${Number.isFinite(l.opacidad) ? ' data-op-fija="1"' : ''} style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
+      const fondo = prev ? `<div class="escena clon"${Number.isFinite(l.opacidad) ? ' data-op-fija="1"' : ''} style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.filter(c => !c.anot).map(c => ({ ...c, p: 0 })))}</script></div>` : '';
       // La frase se acomoda en el hueco entre los renglones del fondo más cercano al centro (runtime.js, acomodarFoco);
       // con `anclar` se respeta tal cual (arriba o al centro)
       cuerpo = `${fondo}<div class="lienzo foco-frase${a.arriba ? ' arriba' : ''}"${l.anclar ? ' data-anclar="1"' : ''} style="z-index:3">${a.interior}</div>`;
@@ -192,7 +218,9 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   });
 
   const css = fs.readFileSync(path.join(dirSkill, 'templates', 'base.css'), 'utf8');
-  const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8');
+  // runtime.js lleva adentro la colocación del sello (runtime-sello.js), en el mismo ámbito
+  const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8')
+    .replace('/*@@SELLO@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-sello.js'), 'utf8'));
   const presentador = fs.readFileSync(path.join(dirSkill, 'templates', 'presentador.js'), 'utf8');
   const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO};--grano-suave:${GRANO_SUAVE}}`;
   if (em.faltantes.size) avisos.push(`Emojis sin imagen Fluent (se usará la fuente del sistema): ${[...em.faltantes].join(' ')}`);
@@ -209,5 +237,5 @@ ${secciones.join('\n')}
 <script>${runtime}</script>
 <script>${presentador}</script>
 </body></html>`;
-  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos), faltan, propuestos, declarados };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, crudoResuelto: crudo, pasos: armadas.map(a => a.pasos), faltan, propuestos, declarados };
 }

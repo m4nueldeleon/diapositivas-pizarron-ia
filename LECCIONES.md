@@ -71,3 +71,12 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Porqué**: medido en ref_1760, ref_1040, h18 42:30-42:45, m_256 y 15:20: nuestras versiones usaban el
   degradado de la barra en las celdas, huecos fijos que dejaban los pasos chuecos, casillas grises con
   texto negro, la lista a la izquierda y la frase de foco 1.5 veces más chica.
+
+## 2026-09-24 · La nota no castiga el hueco honesto; el foco centrado y con su tinta (loop, ronda 4)
+- **Regla**: los huecos declarados, los datos propuestos y las capturas por conseguir no restan nota (solo la topan
+  en 90 con `estado: "borrador"`); nunca se quita un beat de venta para subir la nota. El fondo de `foco` es el
+  estado final de la lámina anterior (con sus tachones) y la frase va centrada: solo se mueve a un hueco a ≤ 120 px.
+- **Porqué**: el modelo vsl-corto sacaba 67 y el VSL de la ronda 4 llegó a 90 quitando el caso y su fuente; en
+  sin-mostrar-cara el foco dejaba los 3 errores sin tachar y se leían como la recomendación, con la frase pegada
+  abajo como pie de foto. En el video [15:20-15:23, h_pill] la frase cruza el fondo atenuado al centro.
+- **Cómo se detectó**: auditorías de mercadotecnia, técnica y diseño (r4), reproducidas en /private/tmp/pz-loop/r4.

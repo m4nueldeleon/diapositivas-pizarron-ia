@@ -142,3 +142,16 @@ test('ficha de carruseles: se CONVIERTE (la cuenta y las vetadas), sin reglas de
   assert.deepEqual(leerFicha(nueva), { firma: { texto: '@manueldeleonmjr' }, vetadas: ['gurú', 'experto', 'secreto'] });
   assert.ok(!/nunca en las láminas/.test(nueva));
 });
+
+test('escasez r4: «te quedan 2 semanas» y la voz de un taller no son escasez; «Quedan solo 3 lugares» y «cierra mañana» en un VSL sí', () => {
+  const tutorial = { pieza: 'tutorial', laminas: [
+    idea('Te **quedan 2 semanas** de práctica'),
+    idea('El día 13 subes tu encuesta', { voz: 'El día 13 subes: cierra mañana a las 10 pm' }),
+  ] };
+  assert.deepEqual(reglasOferta(tutorial).errores, []);
+  const vsl = { pieza: 'vsl-corto', laminas: [idea('Tu lugar', { voz: 'Cierra mañana a las 10 pm' })] };
+  assert.equal(reglasOferta(vsl).errores.length, 1);
+  assert.equal(reglasOferta({ laminas: [idea('Quedan **solo 3 lugares**')] }).errores.length, 1);
+  // una clase que revela su oferta en una lámina oscura sí vende
+  assert.equal(reglasOferta({ pieza: 'clase', laminas: [{ tipo: 'oscura', titulo: 'El programa' }, idea('Quedan **5 cupos**')] }).errores.length, 1);
+});

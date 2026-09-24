@@ -9,9 +9,12 @@ import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenc
 import { DATO_DURO } from './layouts-datos.mjs';
 import { analizarCompuesto, PARECIDOS, esCampoEmoji, specsDeCampo } from './emoji.mjs';
 import { RELLENO, buscarMarca } from './marca.mjs';
+import { conceptoDe } from './emoji-diccionario.mjs';
+import { reglasTasa, reglasPromesa, cierreDeClase } from './reglas-venta.mjs';
+export { reglasTasa, reglasPromesa, esPromesa, cierreDeClase, esClase } from './reglas-venta.mjs';
 
-const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-const nombre = (deck, i) => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
+export const sinAcentos = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+export const nombre = (deck, i) => `lámina ${i + 1} (${deck.laminas[i].id || deck.laminas[i].tipo})`;
 
 // Campos que no son texto a la vista: ahí no se buscan frases
 const NO_VISIBLE = new Set(['tipo', 'id', 'voz', 'anclas', 'ancla', 'emoji', 'iconos', 'sobre', 'centro', 'imagen', 'src', 'logo', 'clic',
@@ -212,7 +215,7 @@ const semiPlano = t => sinTildes(String(t || '')
   .replace(/\{[vrngako]:([^{}]+?)\}/g, '$1').replace(/\[\[|\]\]/g, '')
   .replace(/(==|\*\*|__|\^\^)([\s\S]+?)\1/g, '«$2»').replace(/~~/g, '')
   .replace(/\\n|\n/g, ' ').replace(/\s+/g, ' ').trim());
-function textosCrudos(l) {
+export function textosCrudos(l) {
   const out = [];
   const ir = (x, k) => {
     if (k && noVisible(k)) return;
@@ -304,7 +307,7 @@ const esOferta = l => l && (l.tipo === 'oscura' || l.oscura === true || l.tipo =
 // GUION §7 da los sustitutos en orden; si no hay ninguno, el beat se omite. Todo es aviso: un creador nuevo
 // puede no tener pruebas y usar un sustituto legítimo.
 const PIEZAS_VENTA = ['vsl', 'vsl-corto', 'webinar'];
-const conTexto = v => typeof v === 'string' && v.trim() !== '';
+export const conTexto = v => typeof v === 'string' && v.trim() !== '';
 const capturasDe = l => (Array.isArray(l.capturas) ? l.capturas.filter(c => c && typeof c === 'object') : []);
 export function esPruebaReal(l) {
   if (!l || typeof l !== 'object') return false;
@@ -312,6 +315,22 @@ export function esPruebaReal(l) {
   if (l.tipo === 'objeto') return conTexto(l.imagen);
   if (l.tipo === 'cifra') return conTexto(l.fuente);
   return false;
+}
+// Capturas `{ hueco }` sin `plantilla: true`: un recuadro vacío a la vista es una captura POR CONSEGUIR (el deck es
+// borrador hasta tenerla; qa.mjs la pone en por_confirmar como CAPTURA_N). Con `plantilla: true` el hueco es el lugar
+// de la captura del espectador y se dibuja con marco a mano. Basta un hueco suelto junto a una captura real.
+export function huecosDePrueba(deck) {
+  return deck.laminas.map((l, i) => (l && l.tipo === 'prueba' && capturasDe(l).some(c => conTexto(c.hueco) && c.plantilla !== true) ? i + 1 : 0)).filter(Boolean);
+}
+// Tutoriales y clases: cada paso con su demostración (ARCOS §Tutorial, paso 3): una captura real, un objeto con foto o
+// un tramo a cámara. Es aviso: el emoji grande como objeto es del estilo original, pero un tutorial sin NINGUNA
+// demostración enseña de palabra.
+const PIEZAS_ENSENAN = ['tutorial', 'clase', 'clase-corta'];
+export const demuestra = l => l && ((l.tipo === 'prueba' && capturasDe(l).some(c => conTexto(c.src) && !c.hueco && c.ejemplo !== true))
+  || (l.tipo === 'objeto' && conTexto(l.imagen)) || l.tipo === 'camara');
+export function reglasDemostracion(deck) {
+  if (!PIEZAS_ENSENAN.includes(deck.pieza) || deck.laminas.some(demuestra)) return { errores: [], avisos: [] };
+  return { errores: [], avisos: [`sin demostración: el ${deck.pieza} enseña sin mostrar nada real (ARCOS §Tutorial, paso 3 pide captura real o \`camara\` corta): pide 1 captura o foto por paso (\`prueba\` con \`src\`, \`objeto\` con \`imagen\`) o corta a cámara a demostrarlo`] };
 }
 // El número puede ser un hueco declarado («Más de [CLIENTES] clientes»): el lugar de la cifra existe y QA lo cuenta
 // como dato pendiente aparte (borrador hasta llenarlo), no como «sin credibilidad».
@@ -322,6 +341,35 @@ const CIFRA_CREDIBILIDAD = new RegExp(`${NUM_O_HUECO}\\s*\\+?\\s*(anos|clientes|
 const CIFRA_PROVEEDOR = new RegExp(`\\bdesde (19|20)\\d\\d\\b|${NUM_O_HUECO}\\s*\\+?\\s*(anos|clientes|empresas|alumnos|egresados|graduados|eventos|casos|proyectos|generaciones)\\b|${NUM_O_HUECO}\\s*\\+?\\s*(personas|vendedores|equipos|lideres)\\s+(ya\\s+)?(capacitad|formad|entrenad|atendid)`);
 // Predicados que usan los avisos y faltaParaFinal (la misma condición, sin comparar textos de mensajes)
 export const hayPruebaReal = deck => deck.laminas.some(esPruebaReal);
+// Sustitutos de GUION §7 que QA cuenta como prueba para final (una captura real sigue siendo mejor):
+//   c) prueba lógica: `cifra` sin `fuente` con la condición en `arriba` («Si…», «Cuando…», «Con…») y un número, y un
+//      rango en `arriba` o en `lineas` (no un desglose de precio);
+//   d) primeros casos con garantía: `idea` 🛡️ con plazo REAL («30 días»; un {{GARANTIA_DIAS}} sin llenar no cuenta) y
+//      condición («si…»).
+const CONDICION_INICIO = /^\s*(si|cuando|con|pongamos|supongamos)\b/;
+const PLAZO_REAL = /\d+\s*(dias|semanas|meses|anos)\b/;
+export const lineasCifra = l => (l.lineas || (l.valor ? [l.valor] : [])).map(x => (x && typeof x === 'object' ? x.texto : x)).filter(x => typeof x === 'string');
+export function sustitutoPrueba(l) {
+  if (!l || typeof l !== 'object') return null;
+  if (l.tipo === 'cifra' && !conTexto(l.fuente)) {
+    const arriba = sinAcentos(plano(l.arriba || '')), lineas = lineasCifra(l);
+    const total = lineas.find(x => PROMESA.test(sinAcentos(x)));
+    if (total && esDesglose(lineas, total)) return null;
+    if (CONDICION_INICIO.test(arriba) && /\d/.test(arriba) && [arriba, ...lineas.map(plano)].some(x => RANGO.test(x))) return 'logica';
+  }
+  if (l.tipo === 'idea' && [].concat(l.emoji || []).some(e => typeof e === 'string' && e.includes('🛡'))) {
+    const t = todoTexto(l);
+    if (PLAZO_REAL.test(t) && CONDICION.test(t)) return 'garantia';
+  }
+  return null;
+}
+// La prueba del deck: la real primero; si no, el primer sustituto c o d. null si no hay ninguno.
+export function pruebaDelDeck(deck) {
+  const i = deck.laminas.findIndex(esPruebaReal);
+  if (i >= 0) return { tipo: 'real', lamina: i + 1 };
+  const j = deck.laminas.findIndex(l => sustitutoPrueba(l));
+  return j >= 0 ? { tipo: sustitutoPrueba(deck.laminas[j]), lamina: j + 1 } : null;
+}
 const soloMaqueta = l => { const cs = capturasDe(l); return l.tipo === 'prueba' && cs.some(c => c.ejemplo === true) && cs.every(c => c.ejemplo === true || c.hueco); };
 export function hayCifraCredibilidad(deck) {
   const L = deck.laminas, osc = L.findIndex(l => l.tipo === 'oscura' || l.oscura === true);
@@ -344,7 +392,10 @@ export function reglasCredibilidad(deck) {
     return { errores: [], avisos };
   }
   if (!PIEZAS_VENTA.includes(p)) return { errores: [], avisos };
-  if (!hayPruebaReal(deck)) {
+  const pr = pruebaDelDeck(deck);
+  if (pr && pr.tipo !== 'real') {
+    L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; la prueba del deck es el sustituto de la lámina ${pr.lamina} (GUION §7)`); });
+  } else if (!pr) {
     avisos.push(`sin prueba real en el ${p}: pide 1-3 capturas con permiso o usa un sustituto de GUION §7 (demostración con material real, caso con números y «fuente», prueba lógica, primeros casos con garantía medible)`);
     L.forEach((l, i) => { if (soloMaqueta(l)) avisos.push(`${nombre(deck, i)} es una maqueta EJEMPLO en el tramo de prueba: en un ${p} se lee como «no hay pruebas»; cámbiala por una captura real o por un sustituto (GUION §7)`); });
   }
@@ -395,7 +446,12 @@ export function reglasPropuesta(deck, { crudo } = {}) {
 // enseñan lo que NO se hace (neuroventas: «~~Precio especial solo hoy~~»): ahí no se marca.
 // «precio especial» solo cuenta con plazo («precio especial hasta el viernes»): «precio especial por volumen» de una
 // propuesta B2B no es urgencia
-const ESCASEZ = /solo hoy|precio especial (solo )?(hoy|por hoy|esta semana|este mes|hasta|por tiempo)|quedan (solo )?\d+|ultimos? \d+ (lugares|cupos)|cierra (hoy|manana)|oferta termina/;
+// «Te quedan 2 semanas de práctica» no es escasez: «quedan N» cuenta solo con lugares, cupos, boletos…
+const ESCASEZ = /solo hoy|precio especial (solo )?(hoy|por hoy|esta semana|este mes|hasta|por tiempo)|quedan (solo )?\d+ (lugares|cupos|asientos|boletos|espacios|plazas|unidades)|ultimos? \d+ (lugares|cupos)|cierra (hoy|manana)|oferta termina/;
+// La escasez inventada solo se revisa en un deck que VENDE (sin pieza, libre, VSL, webinar, propuesta, o con una
+// lámina de oferta): un tutorial que enseña a anunciar «cierra mañana a las 10 pm» no está vendiendo nada.
+const PIEZAS_QUE_VENDEN = ['vsl', 'vsl-corto', 'webinar', 'propuesta'];
+const vendeElDeck = deck => !deck.pieza || deck.pieza === 'libre' || PIEZAS_QUE_VENDEN.includes(deck.pieza) || deck.laminas.some(esOferta);
 const PLAZO_GARANTIA = /\d+\s*(dias|semanas|meses|anos)\b|\{\{\s*garantia|\[garantia/;
 const CONDICION = /\bsi\b|\bcondicion|\bsiempre que\b|\bcuando\b/;
 const negada = l => [].concat(l.emoji || []).some(e => typeof e === 'string' && /^no:/.test(e.trim()));
@@ -415,12 +471,13 @@ function textosSinTachar(l) {
 export function reglasOferta(deck, { crudo } = {}) {
   const errores = [], avisos = [];
   const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
+  const vende = vendeElDeck(deck);
   C.forEach((l, i) => {
     if (!l || typeof l !== 'object' || l.tipo === 'camara' || negada(l)) return;
     const { textos, tachada } = textosSinTachar(l);
     const vistos = tachada ? textos.filter(t => !vozDe(l).includes(t)) : textos;   // con algo tachado, la voz lo explica
     const txt = sinAcentos(vistos.map(t => plano(t)).join(' / '));
-    const m = txt.match(ESCASEZ);
+    const m = vende && txt.match(ESCASEZ);
     if (m) errores.push(`${nombre(deck, i)}: «${m[0]}» es escasez o urgencia sin dato confirmado: usa {{CUPOS}} o {{FECHA_LIMITE}} con su valor real en "datos", o quítala (GUION §7, beat 8)`);
     const todo = sinAcentos(textos.map(t => plano(t)).join(' / '));
     const escudo = [].concat(l.emoji || []).some(e => typeof e === 'string' && e.includes('🛡'));
@@ -443,7 +500,7 @@ export function reglasOferta(deck, { crudo } = {}) {
 export function faltaParaFinal(deck) {
   const p = deck.pieza, falta = [];
   if (PIEZAS_VENTA.includes(p)) {
-    if (!hayPruebaReal(deck)) falta.push('prueba real');
+    if (!pruebaDelDeck(deck)) falta.push('prueba real');
     if (!hayCifraCredibilidad(deck)) falta.push('cifra de credibilidad');
     if (!hayObjecionAntes(deck)) falta.push('objeción antes del llamado');
     if (llamadosVisibles(deck) < 2) falta.push('2º llamado visible');
@@ -496,16 +553,25 @@ export function emojisDeLamina(l) {
   ir(l, null);
   return out;
 }
-// Inventario para qa.json → iconos: { emoji: ["lámina N · texto", …] }
+// Inventario para qa.json → iconos: { "emoji (concepto de EMOJIS.md)": ["lámina N · texto", …] }. Quien revisa ve
+// «💬 (comentar una palabra): lámina 14 · Te preguntan» y lo cambia por 📲. No hay regla automática que compare el texto
+// con el concepto: se probó y daba ~27 alertas por 2 aciertos (el texto describe la frase, no el ícono).
+export const claveIcono = (x, spec) => `${x} (${conceptoDe(spec || x) || 'fuera del diccionario'})`;
 export function inventarioIconos(deck) {
   const inv = {};
   deck.laminas.forEach((l, i) => emojisDeLamina(l).forEach(e => {
-    for (const x of [e.base, e.insignia].filter(Boolean)) {
-      const r = `lámina ${i + 1}${e.texto ? ` · ${e.texto}` : ''}`;
-      (inv[x] = inv[x] || []).includes(r) || inv[x].push(r);
+    const spec = `${e.prefijo ? e.prefijo + ':' : ''}${e.base}${e.insignia ? '+' + e.insignia : ''}`;
+    for (const [x, sp] of [[e.base, spec], [e.insignia, e.insignia]].filter(([x]) => x)) {
+      const k = claveIcono(x, sp), r = `lámina ${i + 1}${e.texto ? ` · ${e.texto}` : ''}`;
+      (inv[k] = inv[k] || []).includes(r) || inv[k].push(r);
     }
   }));
   return inv;
+}
+// Emojis de base que no están en el diccionario (una sola línea de info, sin restar nota)
+export function infoIconos(deck) {
+  const fuera = [...new Set(deck.laminas.flatMap(emojisDeLamina).filter(e => e.base && !conceptoDe(`${e.prefijo ? e.prefijo + ':' : ''}${e.base}`)).map(e => e.base))];
+  return fuera.length ? `emojis fuera del diccionario (${fuera.join(' ')}): usa uno de EMOJIS.md o agrégalo con su concepto; revisa en qa.json → iconos que cada lámina diga el concepto de su emoji` : null;
 }
 export function reglasIconos(deck) {
   const avisos = [], L = deck.laminas;
@@ -622,7 +688,7 @@ export function reglasFuente(deck) {
 // ---------- claves del deck que nadie lee ----------
 // `_datos`, `_marca`, `_duracion`: un aviso de entrega escondido en el deck no llega al usuario. Lo que el
 // usuario debe saber va en qa.json (datos propuestos, firma, duración) o en el mensaje de entrega.
-const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'datos', 'laminas', 'piel', '_comentario']);
+const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'clase', 'datos', 'laminas', 'piel', '_comentario']);
 export function reglasClaves(deck) {
   const avisos = [];
   Object.keys(deck).filter(k => !CLAVES_DECK.has(k)).forEach(k => avisos.push(k.startsWith('_')
@@ -647,8 +713,9 @@ export function infoFirma(crudo, { aplicada = null, rutaGlobal = '~/.config/diap
   return `va sin firma: llena «Texto» en ${rutaGlobal} (o corre bash scripts/setup.sh) y sale en todos tus decks; pon "marca": false si es a propósito (propuesta con la marca del cliente)`;
 }
 
-// Nota de QA: −12 por error y −3 por aviso. Con datos propuestos sin confirmar, el deck es BORRADOR y la nota
-// no pasa de TOPE_BORRADOR: un VSL con el nombre del programa inventado nunca sale como final.
+// Nota de QA: −12 por error y −3 por aviso. Con datos por confirmar, el deck es BORRADOR y la nota no pasa de
+// TOPE_BORRADOR: un VSL con el nombre del programa inventado nunca sale como final. Los huecos declarados no restan
+// (qa.mjs no los pasa en `avisos`): ya los representa el tope; restarlos premiaba borrar el caso o la prueba.
 export const TOPE_BORRADOR = 90;
 export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
   const n = Math.max(0, 100 - 12 * errores.length - 3 * avisos.length);
@@ -658,17 +725,20 @@ export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
 // Todas juntas
 // `crudo`: el deck antes de sustituir `datos` (qa.mjs lo pasa); dice si un número vino de un {{MARCADOR}}
 export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
-  const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck);
+  const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck), tasa = reglasTasa(deck, { crudo }), promesa = reglasPromesa(deck);
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
-    reglasClaves(deck), reglasFuente(deck), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo })];
+    reglasClaves(deck), reglasFuente(deck), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
+    reglasDemostracion(deck), tasa, promesa, cierreDeClase(deck, { crudo })];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
     duracion: partes[1].estimado,
     iconos: inventarioIconos(deck),
     ritmo: ritmo.ritmo,
-    porConfirmar: propia.porConfirmar,
+    porConfirmar: { ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
+      motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
     faltaParaFinal: faltaParaFinal(deck),
+    prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,
   };
 }

@@ -480,6 +480,7 @@
    ]
   },
   {
+   "_comentario": "Reparto ilustrativo del mecanismo, como en 15:25 del original: no es una promesa al espectador.",
    "id": "reparto",
    "tipo": "reparto",
    "titulo": "Reparto de ingresos",
@@ -515,7 +516,8 @@
    "tipo": "prueba",
    "capturas": [
     {
-     "hueco": "Tu primera captura va aquí"
+     "hueco": "Tu primera captura va aquí",
+     "plantilla": true
     }
    ],
    "encabezado": "Tu prueba real, con permiso:"
@@ -675,6 +677,12 @@
    "id": "transparente",
    "tipo": "idea",
    "texto": "Quiero ser ==100% transparente== aquí."
+  },
+  {
+   "id": "descargo",
+   "tipo": "idea",
+   "texto": "Que yo tenga estos resultados\n==no significa que tú los tengas==",
+   "voz": "Que yo tenga estos resultados no significa que tú los vayas a tener."
   },
   {
    "id": "par",

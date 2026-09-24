@@ -118,7 +118,7 @@
     if (o.relleno) { e.style.fill = o.relleno; e.dataset.relleno = '1'; }
     if (o.textura !== false && !o.relleno) e.setAttribute('filter', `url(#${svg.dataset.filtro})`);
     e.dataset.p = o.p || 0;
-    if (o.clase) e.dataset.clase = o.clase;   // qa.mjs revisa que las flechas no crucen texto
+    if (o.clase) e.dataset.clase = o.clase;   // qa.mjs revisa que las flechas no crucen texto y que el sello no corte subrayados ni tachones
     if (o.estilo) e.dataset.estilo = o.estilo; // y que las anotaciones no se reduzcan a un garabato
     if (o.cabeza) { e.dataset.cabeza = '1'; }
     else if (o.dash) {
@@ -154,12 +154,32 @@
   function dentro(esc, sel) { return [...esc.querySelectorAll(sel)].filter(e => e.closest('.escena') === esc); }
   function ancla(esc, id) { return dentro(esc, `[data-a="${CSS.escape(id)}"]`)[0]; }
 
+  const TONO = { r: C.rojo, v: '#22a812', n: C.negro };
   function conexion(c, esc, lam, svg, r) {
-    const ea = ancla(esc, c.de), eb = ancla(esc, c.a);
-    if (!ea || !eb) { avisos.push(`lámina ${+lam.dataset.i + 1}: falta el ancla «${!ea ? c.de : c.a}»`); return; }
-    const A = caja(ea, lam), B = caja(eb, lam), p = c.p || 0;
+    const ea = c.de ? ancla(esc, c.de) : null, eb = ancla(esc, c.a);
+    if ((!ea && c.estilo !== 'entrada') || !eb) {
+      const hay = [...new Set(dentro(esc, '[data-a]').map(e => e.dataset.a))].slice(0, 14).join(', ');
+      avisos.push(`lámina ${+lam.dataset.i + 1}: falta el ancla «${!eb ? c.a : c.de}» (anclas de esta lámina: ${hay})`); return;
+    }
+    const A = ea ? caja(ea, lam) : null, B = caja(eb, lam), p = c.p || 0;
     let pts, color = C.rojo, ancho = 7, len = 30, abre = 0.5;
     switch (c.estilo) {
+      case 'converge': {
+        // Flechas que salen de las celdas de una columna y convergen en la pregunta [7:30, f_flechas]: salen casi
+        // horizontales por la derecha de la celda y se abren en abanico hasta el borde izquierdo de la nota.
+        const P = [A.x + A.w + 18, A.cy], n = Math.max(1, c.n || 1), off = ((c.i || 0) - (n - 1) / 2) * Math.min(22, B.h / (n + 1));
+        const Q = [B.x - 16, B.cy + off];
+        pts = cubica(P, [P[0] + (Q[0] - P[0]) * 0.45, P[1]], [Q[0] - (Q[0] - P[0]) * 0.25, Q[1]], Q);
+        ancho = 3.6; len = 18; break;
+      }
+      case 'entrada': {
+        // Flecha larga que entra desde el borde del lienzo hasta el ancla [15:00]: plumón rojo casi recto
+        const W = lam.offsetWidth, H = lam.offsetHeight, lado = c.lado || 'derecha';
+        const P = lado === 'izquierda' ? [24, B.cy] : lado === 'arriba' ? [B.cx, 24] : lado === 'abajo' ? [B.cx, H - 24] : [W - 24, B.cy];
+        const Q = borde(B, P, 14);
+        pts = linea(P, Q, r, 2.4); color = TONO[c.tono] || C.rojo; ancho = 7; len = 30;
+        break;
+      }
       case 'arco': case 'arco-negro': {
         const P = [A.cx + A.w * 0.22, A.y - 16], Q = [B.cx - B.w * 0.22, B.y - 16];
         const d = Math.hypot(Q[0] - P[0], Q[1] - P[1]);
@@ -213,7 +233,36 @@
         }
         const P = borde(A, [B.cx, B.cy], 16), Q = borde(B, [A.cx, A.cy], 12);
         const dx = Q[0] - P[0], dy = Q[1] - P[1], s = c.curva || (Q[0] < P[0] ? 1 : -1);
-        pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2 + dy * 0.35 * s, (P[1] + Q[1]) / 2 - dx * 0.35 * s]); ancho = 5; len = 24; break;
+        pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2 + dy * 0.35 * s, (P[1] + Q[1]) / 2 - dx * 0.35 * s]); ancho = c.fina ? 3.6 : 5; len = c.fina ? 18 : 24;
+        if (c.tono) color = TONO[c.tono] || C.rojo;
+        break;
+      }
+      case 'retorno': {
+        // Arco de retorno [12:45]: arriba, de la punta de un emoji a la de otro anterior, pasando por encima de la fila
+        // (negro, «70% 💵»); abajo, del pie del nodo al nodo aparte bajo la primera columna (verde, «30% 💵»). La etiqueta
+        // manuscrita (HTML, con su emoji) se pone en el vértice, del lado de afuera.
+        const col = c.tono === 'v' ? '#22a812' : c.tono === 'r' ? C.rojo : C.negro;
+        let M;
+        if (c.lado === 'abajo') {
+          const P = [A.cx, A.y + A.h + 14];
+          const Q = c.a === 'aparte' ? [B.x + B.w + 22, B.cy] : [B.cx, B.y + B.h + 14];
+          pts = c.a === 'aparte' ? cuadratica(P, Q, [P[0], Q[1]]) : cuadratica(P, Q, [(P[0] + Q[0]) / 2, Math.max(P[1], Q[1]) + Math.min(220, Math.abs(Q[0] - P[0]) * 0.3)]);
+          M = pts[Math.floor(pts.length / 2)]; M = [M[0], M[1] + 46];
+        } else {
+          const P = [A.cx, A.y - 14], Q = [B.cx, B.y - 14];
+          pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2, Math.min(P[1], Q[1]) - Math.min(220, Math.abs(Q[0] - P[0]) * 0.3)]);
+          M = pts[Math.floor(pts.length / 2)]; M = [M[0], M[1] - 46];
+        }
+        color = col; ancho = c.tono === 'n' || !c.tono ? 8 : 6; len = 30; abre = 0.55;
+        const et = esc.querySelector(`.retorno-et[data-retorno="${c.ret}"]`), fila = et && et.parentElement;
+        if (et && fila) {
+          const F = caja(fila, lam), z = F.w / (fila.offsetWidth || 1) || 1;
+          et.style.left = (M[0] - F.x) / z + 'px'; et.style.top = (M[1] - F.y) / z + 'px';
+        }
+        const fl = trazo(svg, suave(pts), { color, ancho, p, dur: 420, clase: 'flecha', estilo: 'retorno' });
+        Object.assign(fl.dataset, { de: c.de, a: c.a });
+        trazo(svg, cabezaV(pts[pts.length - 1], angulo(pts), len, abre, r), { color, ancho, p, cabeza: true, clase: 'punta' });
+        return;
       }
       case 'punteada': {
         const o = c.onda || 1, arriba = o < 0;
@@ -276,10 +325,10 @@
       const esCaja = el.dataset.tachar === 'caja';
       rs.forEach(b => {
         const y = b.y + b.h * 0.54;
-        if (!esCaja) { trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240, no: true }); return; }
+        if (!esCaja) { trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240, no: true, clase: 'tachon' }); return; }
         // Descarte de lista [m_256 4:16]: plumón grueso (~10 px de núcleo) que arranca antes de la viñeta y sale por la
         // derecha, casi horizontal, con un segundo pase más claro que le da el borde áspero
-        trazo(svg, suave(linea([b.x - 20, y + 2], [b.x + b.w + 24, y - 2], r, 1.6, 4)), { color: C.rojo, ancho: 10.5, p, dur: 240, no: true });
+        trazo(svg, suave(linea([b.x - 20, y + 2], [b.x + b.w + 24, y - 2], r, 1.6, 4)), { color: C.rojo, ancho: 10.5, p, dur: 240, no: true, clase: 'tachon' });
         const e2 = trazo(svg, suave(linea([b.x - 16, y + 4], [b.x + b.w + 20, y], r, 1.6, 4)), { color: C.rojo, ancho: 6, p, dur: 240, no: true });
         e2.setAttribute('stroke-opacity', '.6'); e2.dataset.pase = '2';   // pase de textura: no cuenta como otro trazo
       });
@@ -366,7 +415,7 @@
   // 60 px con ≤ 3 nodos o la base con más); si ni así cabe, TODAS se parten balanceadas con la misma letra.
   function igualarFilas(lam) {
     lam.querySelectorAll('.fila-igual').forEach(fila => {
-      const nodos = [...fila.children], n = nodos.length; if (n < 2) return;
+      const nodos = [...fila.children].filter(c => c.classList.contains('nodo') && !c.classList.contains('nodo-aparte')), n = nodos.length; if (n < 2) return;
       const etqs = nodos.map(nd => nd.querySelector(':scope > .etiqueta')).filter(Boolean); if (!etqs.length) return;
       const lz = fila.closest('.lienzo'); if (!lz) return;
       const cs = getComputedStyle(lz), util = lz.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
@@ -381,6 +430,41 @@
       while (!cabe() && te - 4 >= piso) { te -= 4; nodos.forEach(nd => nd.style.setProperty('--te', te + 'px')); }
       if (!cabe()) etqs.forEach(e => e.classList.remove('corta'));
       fila.dataset.igualada = te + '';
+    });
+  }
+
+  // ---------- flujo: el signo («+», «=») a la mitad entre los dos emojis, a su altura [28:40, 35:10] ----------
+  function colocarSignos(lam) {
+    lam.querySelectorAll('.fila-flujo').forEach(fila => {
+      const F = fila.getBoundingClientRect(), z = F.width / (fila.offsetWidth || 1) || 1;
+      fila.querySelectorAll(':scope > .signo').forEach(sg => {
+        const i = +sg.dataset.signo;
+        const a = fila.querySelector(`[data-a="n${i - 1}"]`), b = fila.querySelector(`[data-a="n${i}"]`);
+        const ea = a && (a.querySelector('.emo, img') || a), eb = b && (b.querySelector('.emo, img') || b);
+        if (!ea || !eb) return;
+        const A = ea.getBoundingClientRect(), B = eb.getBoundingClientRect();
+        sg.style.left = (((A.left + A.right) / 2 + (B.left + B.right) / 2) / 2 - F.left) / z + 'px';
+        sg.style.top = (((A.top + A.bottom) / 2 + (B.top + B.bottom) / 2) / 2 - F.top) / z + 'px';
+      });
+    });
+  }
+
+  // ---------- anotaciones comunes: la nota junto a su ancla, del lado pedido, con aire para el gancho ----------
+  // Sin `lado`, a la derecha si cabe y si no a la izquierda. `x`/`y` del autor la fijan. Se acota al lienzo.
+  function colocarAnotaciones(lam) {
+    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, aire = 130;
+    lam.querySelectorAll(':scope > .anotacion[data-sobre]').forEach(n => {
+      if (n.dataset.fija) return;
+      const el = ancla(lam, n.dataset.sobre); if (!el) return;   // la conexión avisa que falta el ancla
+      // sobre una captura, la nota va FUERA de ella (al lado del ancla, a la altura de lo que señala) [28:35]
+      const A0 = caja(el, lam), cap = el.closest('.captura'), R = cap && cap !== el ? caja(cap, lam) : A0;
+      const B = { x: R.x, w: R.w, y: A0.y, h: A0.h, cx: A0.cx, cy: A0.cy }, w = n.offsetWidth, h = n.offsetHeight;
+      const lado = n.dataset.lado || (B.x + B.w + aire + w <= W - m ? 'derecha' : 'izquierda');
+      const Yv = lado === 'arriba' ? Math.min(A0.y, R.y) : Math.max(A0.y + A0.h, R.y + (cap ? R.h : 0));
+      let x = lado === 'derecha' ? B.x + B.w + aire : lado === 'izquierda' ? B.x - aire - w : B.cx - w / 2;
+      let y = lado === 'arriba' ? Yv - aire * 0.8 - h : lado === 'abajo' ? Yv + aire * 0.8 : B.cy - h / 2 - 60;
+      x = clamp(x, m, W - m - w); y = clamp(y, m, H - m - h);
+      Object.assign(n.style, { left: x + 'px', top: y + 'px' });
     });
   }
 
@@ -419,11 +503,12 @@
     }));
   }
 
-  // ---------- foco: la frase no se escribe sobre el texto del fondo ----------
-  // En la referencia [15:20] la frase va centrada sobre el fondo atenuado y puede pasar sobre ÍCONOS (las bolsas), pero
-  // nunca sobre renglones de texto. Si la frase choca con un renglón del fondo, se busca el hueco entre renglones que la
-  // alcance MÁS CERCA DEL CENTRO vertical y se mueve ahí. Si no hay hueco, se queda centrada y el fondo baja a 0.1
-  // (salvo que el autor fijara `opacidad`). Con `anclar` no se toca.
+  // ---------- foco: dónde va la frase sobre el fondo atenuado ----------
+  // En la referencia [15:20–15:23, h_pill] la frase va CENTRADA y puede cruzar texto del fondo atenuado a ~10–15%
+  // («Your bank account.» queda debajo). Solo se mueve a un hueco entre renglones si ese hueco queda cerca del centro
+  // (≤ 120 px); un hueco lejano la convertía en pie de foto del último renglón [r4, sin-mostrar-cara 20]. Si no hay
+  // hueco cercano, se queda centrada y el fondo baja a 0.1 (salvo que el autor fijara `opacidad`). Con `anclar` no se toca.
+  const FOCO_DESVIO = 120, FOCO_AIRE = 48;
   function acomodarFoco(lam) {
     const lz = lam.querySelector(':scope > .lienzo.foco-frase'), clon = lam.querySelector(':scope > .escena.clon');
     if (!lz || !clon || lz.dataset.anclar) return;
@@ -435,135 +520,25 @@
       .filter(r => r.h >= 30 && r.x < P.x + P.w && r.x + r.w > P.x);
     const choca = y0 => rs.some(r => r.y < y0 + P.h + pad && r.y + r.h > y0 - pad);
     if (!rs.length || !choca(P.y)) return;
-    // huecos verticales libres (dentro de los márgenes) donde cabe la frase
+    // huecos verticales libres (dentro de los márgenes) donde cabe la frase con aire arriba y abajo
     const mv = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--margen-v')) || 60;
-    const ocup = rs.map(r => [r.y - pad, r.y + r.h + pad]).sort((a, b) => a[0] - b[0]);
+    const ocup = rs.map(r => [r.y - FOCO_AIRE, r.y + r.h + FOCO_AIRE]).sort((a, b) => a[0] - b[0]);
     const libres = []; let y = mv * 0.6;
     ocup.forEach(([a, b]) => { if (a - y >= P.h) libres.push([y, a]); y = Math.max(y, b); });
     if (H - mv * 0.6 - y >= P.h) libres.push([y, H - mv * 0.6]);
     const centro = H / 2;
-    const cands = libres.map(([a, b]) => clamp(centro, a + P.h / 2, b - P.h / 2)).sort((p, q) => Math.abs(p - centro) - Math.abs(q - centro));
+    const cands = libres.map(([a, b]) => clamp(centro, a + P.h / 2, b - P.h / 2))
+      .filter(c => Math.abs(c - centro) <= FOCO_DESVIO).sort((p, q) => Math.abs(p - centro) - Math.abs(q - centro));
     if (cands.length) {
       Object.assign(pila.style, { position: 'relative', top: (cands[0] - (P.y + P.h / 2)).toFixed(1) + 'px' });
       lam.dataset.focoMovido = '1';
-    } else if (!clon.dataset.opFija) clon.style.opacity = '0.1';
+    } else {
+      lam.dataset.focoSobreFondo = '1';
+      if (!clon.dataset.opFija) clon.style.opacity = '0.1';
+    }
   }
 
-  // ---------- sello: tamaño y posición ----------
-  // Se mide sin escala; k lo reduce si, girado −5°, no cabe en el lienzo (sellos largos, 9:16). Se centra
-  // en un ancla (sello_sobre), en una zona (sello_pos) o en el lienzo, y se acota a los bordes.
-  const ZONAS = { centro: [0.5, 0.5], arriba: [0.5, 0.27], abajo: [0.5, 0.73], izquierda: [0.28, 0.5], derecha: [0.72, 0.5],
-    'arriba-izquierda': [0.28, 0.27], 'arriba-derecha': [0.72, 0.27], 'abajo-izquierda': [0.28, 0.73], 'abajo-derecha': [0.72, 0.73] };
-  // Sobre un ancla, el sello mide ~100% de su ancho [6:45: «A LOT OF SKILL» mide 1210 px sobre una rejilla de 1210,
-  // con letras de ~100 px]: el cuerpo de la tinta se ajusta en dos pasadas (el relleno y el borde no escalan
-  // lineal) entre 72 y 170 px; si girado no cabe en el lienzo, k lo reduce.
-  function colocarSello(lam) {
-    const s = lam.querySelector(':scope > .sello'); if (!s) return;
-    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
-    let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
-    let rejilla = null, burbuja = null;
-    if (s.dataset.sobre) {
-      const el = ancla(lam, s.dataset.sobre);
-      if (el && (el.classList.contains('burbuja') || el.closest('.chat'))) {
-        // Chat: el sello NO mide el ancho de la burbuja (la tapaba entera): tinta fija y se pega junto a ella
-        burbuja = el;
-        const tinta = s.querySelector('.sello-tinta');
-        if (tinta) tinta.style.fontSize = (H > W ? 72 : 84) + 'px';
-      } else if (el) {
-        const b = caja(el, lam), tinta = s.querySelector('.sello-tinta');
-        cx = b.cx; cy = b.cy;
-        if (tinta) for (let i = 0; i < 2; i++) {
-          const fs = parseFloat(getComputedStyle(tinta).fontSize) || 104;
-          tinta.style.fontSize = clamp(fs * (b.w * 0.97) / (s.offsetWidth || 1), 72, 170).toFixed(1) + 'px';
-        }
-        if (s.dataset.auto && el.classList.contains('rejilla')) rejilla = el;
-      } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
-    }
-    const w = s.offsetWidth, h = s.offsetHeight;
-    let k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
-    let bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2, bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
-    if (rejilla) [cx, cy] = selloEnRejilla(lam, rejilla, [cx, cy], w * k, h * k, a, bw, bh, m);
-    if (burbuja) {
-      const r = selloEnChat(lam, burbuja, w, h, a, k, m);
-      [cx, cy] = r.p; k = r.k; bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2; bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
-    }
-    cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, m + bh, H - m - bh);
-    Object.assign(s.style, { left: cx + 'px', top: cy + 'px' });
-    s.dataset.k = k.toFixed(3);
-  }
-
-  // Sello sobre una rejilla con celdas DESTACADAS: esas celdas son el dato que se cuenta. Se prueba
-  // el centro de cada banda entre renglones (y el centro) y gana la que tapa menos destacadas; si aun la mejor
-  // tapa más del 25% (y más de 2), el sello sale a una franja libre (abajo, arriba, derecha o izquierda de la rejilla) que no
-  // pise texto. Sin destacadas se queda centrado sobre las cajas, como en la referencia [6:45].
-  function selloEnRejilla(lam, rej, centro, w, h, a, bw, bh, m) {
-    const dest = [...rej.querySelectorAll('[data-a^="d"]')].map(e => caja(e, lam));
-    if (!dest.length) return centro;
-    const W = lam.offsetWidth, H = lam.offsetHeight, c = Math.cos(-a), sn = Math.sin(-a);
-    const tapa = ([cx, cy]) => dest.filter(d => {
-      const x = d.cx - cx, y = d.cy - cy, u = x * c - y * sn, v = x * sn + y * c;   // al marco del sello (girado −5°)
-      return Math.abs(u) <= w / 2 && Math.abs(v) <= h / 2;
-    }).length;
-    const R = caja(rej, lam);
-    const filas = [...new Set([...rej.children].map(e => Math.round(caja(e, lam).cy)))].sort((p, q) => p - q);
-    const cands = [centro, ...filas.slice(1).map((y, i) => [R.cx, (y + filas[i]) / 2])]
-      .map(p => [p[0], clamp(p[1], m + bh, H - m - bh)])
-      .map(p => ({ p, n: tapa(p), d: Math.abs(p[1] - centro[1]) }))
-      .sort((p, q) => p.n - q.n || p.d - q.d);
-    // el sello es el remate y la cifra ya se dijo: puede tapar hasta ~25% de las destacadas (a todo el ancho cubre
-    // 2-3 renglones, así que un tope de 2 lo sacaba de la rejilla casi siempre)
-    if (cands[0].n <= Math.max(2, Math.floor(dest.length * 0.25))) return cands[0].p;
-    const textos = [...lam.querySelectorAll('.t, .nota, .encabezado, .etiqueta')].filter(e => e.getClientRects().length).map(e => caja(e, lam));
-    // pegado al borde de la rejilla y acotado al lienzo: puede pisar celdas NO destacadas, nunca una destacada
-    const acota = ([cx, cy]) => [clamp(cx, m + bw, W - m - bw), clamp(cy, m + bh, H - m - bh)];
-    const libre = ([cx, cy]) => !textos.some(t => t.x < cx + bw && t.x + t.w > cx - bw && t.y < cy + bh && t.y + t.h > cy - bh) && !tapa([cx, cy]);
-    const fuera = [[R.cx, R.y + R.h + bh + 16], [R.cx, R.y - bh - 16], [R.x + R.w + bw + 16, R.cy], [R.x - bw - 16, R.cy]].map(acota).find(libre);
-    return fuera || cands[0].p;
-  }
-
-  // Sello en un chat [gancho sin sonido]: califica la burbuja culpable SIN taparla. Se prueban, en orden: montado sobre el
-  // borde de abajo de la burbuja (del lado contrario al avatar, pisando el relleno y no las letras), a la derecha, a la
-  // izquierda y debajo del mensaje. Cada posición se mide con el sello girado −5° contra los renglones (burbujas, horas,
-  // textos), los avatares y emojis y el lienzo: gana la que no toca nada (QA tolera hasta 12% de un renglón). Gana la primera limpia; si ninguna, la que menos tapa, con el sello reducido
-  // hasta 0.7 (dataset.k: QA avisa si se redujo de más).
-  function selloEnChat(lam, burbuja, w, h, a, k0, m) {
-    // del lienzo al marco del sello: el sello va girado −a, así que se deshace con +a
-    const W = lam.offsetWidth, H = lam.offsetHeight, c = Math.cos(a), sn = Math.sin(a);
-    const b = caja(burbuja, lam), yo = !!burbuja.closest('.msj.yo');
-    const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
-      .flatMap(e => rectsTexto(e, lam));
-    const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo')].filter(e => e.getClientRects().length && !e.closest('.escena.clon') && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
-    // fracción de una caja bajo el sello (muestreo 10×5, más fino que el de QA: aquí se busca NO tocar las letras)
-    const frac = (r, cx, cy, sw, sh) => {
-      let n = 0;
-      for (let i = 0; i <= 9; i++) for (let j = 0; j <= 4; j++) {
-        const x = r.x + (i / 9) * r.w - cx, y = r.y + (j / 4) * r.h - cy, u = x * c - y * sn, v = x * sn + y * c;
-        if (Math.abs(u) <= sw / 2 && Math.abs(v) <= sh / 2) n++;
-      }
-      return n / 50;
-    };
-    const costo = (cx, cy, kk) => {
-      const sw = w * kk, sh = h * kk, bw = (sw * Math.cos(a) + sh * Math.sin(a)) / 2, bh = (sw * Math.sin(a) + sh * Math.cos(a)) / 2;
-      let t = 0;
-      if (cx - bw < m || cx + bw > W - m || cy - bh < m || cy + bh > H - m) t += 100;
-      renglones.forEach(r => { t += frac(r, cx, cy, sw, sh); });
-      iconos.forEach(r => { t += 4 * frac(r, cx, cy, sw, sh); });
-      return t;
-    };
-    for (const kk of [k0, k0 * 0.85, Math.max(0.7, k0 * 0.7)]) {
-      const sw = w * kk, sh = h * kk, bw = (sw * Math.cos(a) + sh * Math.sin(a)) / 2, bh = (sw * Math.sin(a) + sh * Math.cos(a)) / 2;
-      const lado = yo ? b.x + bw * 0.9 : b.x + b.w - bw * 0.9;   // del lado contrario al avatar
-      // montado sobre el borde de abajo: pisa el relleno de la burbuja, nunca sus letras
-      const pie = Math.max(b.y + b.h + bh * 0.35, Math.max(b.y, ...rectsTexto(burbuja, lam).map(r => r.y + r.h)) + 8 + bh);
-      const cands = [[lado, pie], [b.cx, pie], [b.x + b.w + bw + 16, b.cy], [b.x - bw - 16, b.cy], [b.cx, b.y + b.h + bh + 12]]
-        .map(([x, y]) => [clamp(x, m + bw, W - m - bw), clamp(y, m + bh, H - m - bh)]);
-      const medidos = cands.map(p => ({ p, t: costo(p[0], p[1], kk) }));
-      const limpio = medidos.find(q => q.t === 0);
-      if (limpio) return { p: limpio.p, k: kk };
-      if (kk === Math.max(0.7, k0 * 0.7)) return { p: medidos.sort((p, q) => p.t - q.t)[0].p, k: kk };
-    }
-    return { p: [b.cx, b.y + b.h], k: k0 };
-  }
+  /*@@SELLO@@*/  // templates/runtime-sello.js (construir.mjs lo inserta aquí, dentro de este mismo ámbito)
 
   function dibujar(lam) {
     const escenas = [lam, ...lam.querySelectorAll('.escena')].filter((e, i, a) => a.indexOf(e) === i);
@@ -577,8 +552,9 @@
       lista.forEach(c => { try { conexion(c, esc, lam, svg, r); } catch (e) { avisos.push(`lámina ${+lam.dataset.i + 1}: flecha ${c.de}→${c.a} no se dibujó (${e.message})`); } });
       [subrayados, circulos].forEach(f => { try { f(esc, lam, svg, r); } catch (e) { avisos.push(`lámina ${+lam.dataset.i + 1}: ${e.message}`); } });
       try { cursor(esc, lam, r); } catch (e) { avisos.push(`lámina ${+lam.dataset.i + 1}: cursor (${e.message})`); }
-      // El fondo atenuado de «foco» es un estado final: sus trazos no se vuelven a animar
-      if (esc !== lam) svg.querySelectorAll('path').forEach(p => (p.dataset.fijo = '1'));
+      // El fondo atenuado de «foco» es un estado final: sus trazos no se vuelven a animar y todos van en el paso 0 (el
+      // foco solo tiene ese paso; un trazo con otro paso se ocultaba y el fondo perdía tinta)
+      if (esc !== lam) svg.querySelectorAll('path, text').forEach(p => { p.dataset.fijo = '1'; if (p.dataset.p != null) p.dataset.p = '0'; });
     });
   }
 
@@ -690,9 +666,11 @@
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
+    lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     lams.forEach(l => { try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); } });
+    lams.forEach(l => { try { colocarAnotaciones(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: anotaciones (${e.message})`); } });
     lams.forEach(l => { try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); } });
     lams.forEach(l => { try { colocarSello(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sello (${e.message})`); } });
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));

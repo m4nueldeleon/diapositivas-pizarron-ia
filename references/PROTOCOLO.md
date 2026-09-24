@@ -102,7 +102,13 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
   - ¿Se entiende la lámina en 1 segundo sin audio?
   - ¿Hay un solo punto focal?
   - ¿El emoji dice el concepto?
-- Corrige y vuelve a renderizar hasta que el QA dé **90 o más, sin errores**.
+- Corrige y vuelve a renderizar hasta que `estado` sea **`listo`**, o `borrador` cuando lo único que queda son huecos
+  declarados, datos propuestos o capturas por conseguir (entonces la nota es 90: esos datos no restan). **Nunca
+  quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o
+  salir de borrador**: decláralo con `pendiente: true` y lístalo. Un loop juzga por `estado` y `falta_para_final`.
+- Lee `qa.json → iconos`: cada emoji trae entre paréntesis su concepto de EMOJIS.md («💬 (comentar una palabra)»).
+  Confirma que cada lámina donde aparece dice ESE concepto; si no, cámbialo por el emoji del suyo (💬 «Te preguntan»
+  → 📲; 🤳 «Su audiencia» → 👥). «(fuera del diccionario)» pide uno del diccionario o agregarlo con su concepto.
 - Lo que el QA mide y tus ojos no siempre ven: marcas `**`/`~~` sin cerrar a la vista, sello o cursor
   encima del texto, flechas que tachan una frase, letra reducida por el encaje, contraste bajo,
   elementos vacíos, `voz` que no cuadra con los pasos y **datos pendientes** en MAYÚSCULAS entre
@@ -118,7 +124,8 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
 ## 4b. Calibrar contra la referencia (solo quien mantiene la skill)
 
 ```bash
-node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /private/tmp/pz-loop/r<N>/comparar
+node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /private/tmp/pz-loop/r<N>/comparar
+# igual a: node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> …  (npm run replica -- <carpeta>)
 ```
 
 - La réplica vive versionada en `pruebas/replica/deck.json` (solo texto); los cuadros `ref_*.jpg` siguen
@@ -131,12 +138,16 @@ node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /pr
   —r255 del deck viejo contra otra escena—). Un par por debajo es «no parece la misma lámina» (id desfasado
   o cuadro de otro momento): no cuenta en el encuadre y hace salir con código 1. Límite: dos frases
   centradas se parecen de verdad; ahí manda el ojo.
-- **La comparación del loop se hace SOLO con `node scripts/comparar.mjs pruebas/replica <carpeta-ref> --salida …`.**
-  La única evidencia válida de fidelidad de una ronda son los `comp_N.jpg` y el `comparar.json` que deja ese
-  comando, con su cabecera de métricas (r, x, y, w, h). Una hoja armada a mano, sin métrica, o hecha con otro
-  deck no vale. Dos guardas: si la carpeta de referencias trae su propio `deck.json` distinto del que se
-  compara, sale con código 2 («deck desfasado»: bórralo o renómbralo, p. ej. `deck.VIEJO-no-usar.json`); si
-  ninguna lámina `r<seg>` trae `_cuadro`, sale con código 1 (no es la réplica versionada).
+- **La comparación del loop se hace SOLO con `node scripts/comparar.mjs <carpeta-ref> --salida …`** (con un solo
+  argumento, el deck es `pruebas/replica`). La única evidencia válida de fidelidad de una ronda son los `comp_N.jpg`
+  y el `comparar.json` que deja ese comando: cada hoja lleva la cabecera «comparar.mjs · pruebas/replica/deck.json ·
+  sha … · umbral · pasan/total» y la métrica de cada par (r, x, y, w, h), y `comparar.json` trae `deck` y `deck_sha`.
+  **Una evidencia vale solo si su `deck_sha` coincide con `shasum -a 256 pruebas/replica/deck.json` (los 12 primeros)
+  en el commit de la ronda.** Una hoja sin `deck_sha`, sin métrica, armada a mano o hecha copiando el deck de
+  `pizarron-ref` no es evidencia y el juez la rechaza. Prohibido armar `comp_*.jpg` a mano.
+- Guardas: de la carpeta de referencias solo se leen los `ref_*.jpg`; un `deck.json` que esté ahí (el deck viejo de
+  `pizarron-ref/replica`) se ignora con un aviso y nunca se compara. Si ninguna lámina `r<seg>` trae `_cuadro`, sale
+  con código 1 (no es la réplica versionada).
 - Deja `comp_N.jpg` (5 pares por hoja, referencia a la izquierda) y `comparar.json`.
 - La métrica es la **caja de tinta** de cada lado: lo oscuro (luminancia < 150), lo saturado que no es
   pastel (el 🏆 dorado) y la tinta roja, sin fondos pálidos y sin la esquina de la marca de agua. Un par falla si x, y, ancho o alto difieren más
@@ -148,7 +159,10 @@ node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /pr
   de verdad r115 —título en 2 renglones—, r255 —lista más arriba y más chica—, r260, r1040 y r1760).
   Ronda 3: **8/10** (fallan r260 —alto +8.9— y r1760 —ancho +9.4, alto −12.2—). Las hojas de la ronda 3
   que emparejaban ref_255, ref_628, ref_1040 y ref_1760 con otras escenas salieron del deck viejo de
-  `pizarron-ref/replica/deck.json`: no cuentan.
+  `pizarron-ref/replica/deck.json`: no cuentan. Ronda 4: **9/10** con el comparador (falla r260 —alto +8.9, el 💰
+  1.5× más grande que en el cuadro—); las hojas de `/private/tmp/pz-loop/r4/replica` salieron otra vez del deck viejo
+  y no cuentan (por eso la guarda ya no aborta: ignora ese deck y sella la hoja con el sha). Con `emoji_tam: 150` en
+  r260: **10/10**.
 
 ## 5. Entrega
 

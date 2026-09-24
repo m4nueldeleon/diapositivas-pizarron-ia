@@ -103,7 +103,7 @@ test('render: calendario pastel, flujo y mapa de columnas iguales, tarjetas con 
       const cx = e => { const b = e.getBoundingClientRect(); return b.left + b.width / 2; };
       const dias = [...L[0].querySelectorAll('.dia')];
       const bar = L[0].querySelector('.barra span');
-      const nodos = [...L[1].querySelectorAll('[data-a^="n"]')].map(cx);
+      const nodos = [...L[1].querySelectorAll('[data-a^="n"]:not([data-a^="nodo"])')].map(cx);   // n0… (emoji), no nodo0… (el nodo)
       const pasos = [...L[2].querySelectorAll('[data-a^="k"]')].map(cx);
       const aire = [...L[3].querySelectorAll('.tarjeta')].map(t => {
         const rg = document.createRange(); rg.selectNodeContents(t.querySelector('.rotulo'));

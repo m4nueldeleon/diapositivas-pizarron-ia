@@ -34,6 +34,7 @@ avisosBuild.forEach(a => console.warn('⚠ ' + a));
 if (prep.firmaDe) console.log(`Firma tomada de ${prep.firmaDe}`);
 else if (prep.crudo.marca === undefined) console.log(`ℹ Va sin firma: llena «Texto» en ${rutaGlobal()} (o bash scripts/setup.sh); "marca": false la apaga a propósito`);
 if (prep.avisoFirma) console.warn('⚠ ' + prep.avisoFirma);
+if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 if (flag('--solo-html')) process.exit(0);
 
 const escala = Number(opt('--escala', 1));

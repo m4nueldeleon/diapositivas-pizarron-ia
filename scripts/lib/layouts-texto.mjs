@@ -83,36 +83,64 @@ export function lista(l, ctx) {
 }
 
 // FLUJO — nodos (emoji + etiqueta) unidos por flechas rojas a mano. A → B → C.
+// Variantes del original:
+//   · `flechas[i].signo` ("+", "=", "−", "×"): un signo gris claro y delgado en vez de la flecha, a la altura del EMOJI
+//     y a la mitad entre los dos íconos [28:40 «Stories + Digital product», 35:10 «You + Specialised AI = Product»];
+//   · `nodos[i].tarjeta: true`: el emoji y la etiqueta dentro de una tarjeta gris con degradado [28:40];
+//   · `retornos` + `aparte`: arcos que regresan a un nodo anterior (arriba) o bajan a un nodo aparte bajo la primera
+//     columna, con su etiqueta manuscrita y su emoji [12:45 «70% 💵» en negro arriba, «30% 💵» en verde hacia «You»].
+export const SIGNOS = ['+', '=', '−', '×'];
 export function flujo(l, ctx) {
   const nodos = l.nodos || [];
   const n = nodos.length;
   // `flecha: "ninguna"`: una fila de conceptos numerados sin causa→efecto [19:10-19:15]; nodos más chicos y
   // etiqueta regular, cada uno en su paso.
   const sinFlecha = l.flecha === 'ninguna';
+  const flechas = Array.isArray(l.flechas) ? l.flechas : [];
+  const signoDe = i => { const f = flechas[i - 1]; return f && SIGNOS.includes(f.signo) ? f.signo : ''; };
+  const todoSignos = n > 1 && Array.from({ length: n - 1 }, (_, i) => signoDe(i + 1)).every(Boolean);
   const tamE = l.emoji_tam || (sinFlecha ? 120 : n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
   // con columnas iguales (todas del ancho del nodo más ancho) el hueco baja un poco para que 3 nodos con sub quepan
   const gap = l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 210 : n === 4 ? 130 : 80);
   const te = n >= 5 ? '40px' : n === 4 ? '54px' : sinFlecha ? '60px' : '76px';
   const estilo = sinFlecha ? 'ninguna' : ctx.vertical ? 'recta' : (l.flecha || 'recta');
+  const signos = [];
   const html = nodos.map((nd, i) => {
     const k = i === 0 ? 0 : i;
     const vis = nd.imagen ? `<img src="${ctx.img(nd.imagen)}" style="height:${nd.alto || 300}px;width:auto;display:block" alt="">` : ctx.emoji(nd.emoji, tamE);
-    if (i > 0 && !sinFlecha) {
-      const fl = Array.isArray(l.flechas) ? (l.flechas[i - 1] || {}) : {};
+    const sg = i > 0 ? signoDe(i) : '';
+    if (sg) signos.push(`<div class="signo" data-signo="${i}"${ctx.P(k)} style="--ts:${Math.round(tamE * 0.45)}px">${escapar(sg)}</div>`);
+    else if (i > 0 && !sinFlecha) {
+      const fl = flechas[i - 1] || {};
       ctx.con({ de: 'n' + (i - 1), a: 'n' + i, estilo: fl.estilo || estilo, tachada: !!fl.tachada, etiqueta: fl.etiqueta, p: k });
     }
-    const aNodo = ctx.vertical ? ctx.A('n' + i) : '', aVis = ctx.vertical ? '' : ctx.A('n' + i);
-    return `<div class="nodo" style="--te:${te}"${ctx.P(k)}${aNodo}>
+    const aNodo = ctx.vertical ? ctx.A('n' + i) : ctx.A('nodo' + i), aVis = ctx.vertical ? '' : ctx.A('n' + i);
+    const normal = nd.normal || sinFlecha || (todoSignos && nd.normal !== false);
+    return `<div class="nodo${nd.tarjeta === true ? ' nodo-tarjeta' : ''}" style="--te:${te}"${ctx.P(k)}${aNodo}>
       <div${aVis}>${vis}</div>
-      ${nd.etiqueta ? `<div class="etiqueta ${nd.normal || sinFlecha ? 'normal' : ''}${corta(nd.etiqueta)}">${marcar(nd.etiqueta)}</div>` : ''}
+      ${nd.etiqueta ? `<div class="etiqueta ${normal ? 'normal' : ''}${corta(nd.etiqueta)}">${marcar(nd.etiqueta)}</div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;
   }).join('');
+  // Retornos y nodo aparte (solo en horizontal; en 9:16 se ignoran y QA avisa desde contrato.mjs)
+  const ap = !ctx.vertical && l.aparte && typeof l.aparte === 'object' ? l.aparte : null;
+  const rets = ctx.vertical ? [] : (Array.isArray(l.retornos) ? l.retornos : []).filter(r => r && typeof r === 'object');
+  const kUlt = Math.max(0, n - 1);
+  const etqs = rets.map((r, j) => {
+    const kr = pasoDe(r, 'paso', kUlt + j + 1);
+    const lado = r.hasta === 'aparte' ? 'abajo' : r.lado === 'abajo' ? 'abajo' : 'arriba';
+    ctx.con({ de: lado === 'abajo' ? 'nodo' + r.desde : 'n' + r.desde, a: r.hasta === 'aparte' ? 'aparte' : (lado === 'abajo' ? 'nodo' : 'n') + r.hasta, estilo: 'retorno', lado, tono: ['n', 'v', 'r'].includes(r.tono) ? r.tono : 'n', ret: j, p: kr });
+    const cont = `${r.etiqueta ? `<span>${marcar(r.etiqueta)}</span>` : ''}${r.emoji ? ctx.emoji(r.emoji, 70) : ''}`;
+    return cont ? `<div class="nota retorno-et tono-${['n', 'v', 'r'].includes(r.tono) ? r.tono : 'n'}" data-retorno="${j}"${ctx.P(kr)}>${cont}</div>` : '';
+  }).join('');
+  const kAp = (() => { const j = rets.findIndex(r => r.hasta === 'aparte'); return j >= 0 ? pasoDe(rets[j], 'paso', kUlt + j + 1) : kUlt; })();
+  const aparte = ap ? `<div class="nodo nodo-aparte" style="--te:${te}"${ctx.P(kAp)}><div${ctx.A('aparte')}>${ctx.emoji(ap.emoji || '🙋', Math.round(tamE * 0.85))}</div>${ap.etiqueta ? `<div class="etiqueta${corta(ap.etiqueta)}">${marcar(ap.etiqueta)}</div>` : ''}</div>` : '';
+  const arriba = rets.some(r => r.hasta !== 'aparte' && r.lado !== 'abajo');
   // En horizontal, columnas IGUALES (todas del ancho del nodo más ancho): los emojis quedan equidistantes y las
   // flechas, que van de emoji a emoji, miden lo mismo aunque un nodo lleve un sub largo [17:00, 17:20].
-  const fila = ctx.vertical ? `<div class="pila" style="gap:${gap}px;align-items:flex-start">`
-    : `<div class="fila fila-igual"${l.separacion ? ' data-sep-fija="1"' : ''} style="gap:${gap}px">`;
+  const fila = ctx.vertical ? `<div class="pila fila-flujo" style="gap:${gap}px;align-items:flex-start;position:relative">`
+    : `<div class="fila fila-igual fila-flujo"${l.separacion ? ' data-sep-fija="1"' : ''} style="gap:${gap}px;position:relative${arriba ? ';margin-top:190px' : ''}${ap ? ';row-gap:120px' : ''}">`;
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    ${fila}${html}</div>
+    ${fila}${html}${aparte}${signos.join('')}${etqs}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto || 'medio') + ' mt-l', pasoDe(l, 'texto_paso', Math.max(0, n - 1)))}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', Math.max(0, n - 1)) + 1), 'mt-m')}
     ${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, n - 1)))}</div>`;

@@ -11,6 +11,8 @@ SKILL.md.
 - `templates/runtime.js` corre en el navegador: `encajar`, luego `dibujar` la capa a mano, y
   `mostrar(lámina, paso, t)`. Esa última función es la única fuente de verdad del revelado para
   el presentador, los PNG y el video.
+- `templates/runtime-sello.js` (dónde cae el sello) no es un script suelto: construir.mjs lo inserta DENTRO de runtime.js
+  (marca `SELLO`) y usa sus utilidades.
 - `templates/base.css` guarda los tokens medidos en la referencia. Si cambias un tamaño,
   justifícalo contra ella.
 - `scripts/lib/tiempos.mjs` da el ritmo y la alineación global con la transcripción.
@@ -21,10 +23,14 @@ SKILL.md.
 - `scripts/lib/reglas-deck.mjs`: reglas de QA que se leen en el deck.json sin navegador (firma de
   relleno, duración de la pieza y peso de los tramos en vivo, apertura, voz humana, proyecciones, posts de
   maqueta, llamado, prueba real y credibilidad, objeciones, descargos en pantalla, coherencia emoji↔concepto,
-  claves que nadie lee, los 9 bloques de la propuesta, escasez/garantía/bonos de la oferta, desglose de un precio)
-  y la nota (`notaQA`, con tope de BORRADOR). `infoEmoji`/`infoFirma` van a `qa.json → info` y NO restan. Son
+  claves que nadie lee, los 9 bloques de la propuesta, escasez/garantía/bonos de la oferta, desglose de un precio,
+  promesas de ingreso sin descargo visible, tasas sin origen, sustitutos de prueba c/d de GUION §7, capturas `hueco`
+  por conseguir, tutoriales sin demostración y el cierre de una clase: tarea + puente)
+  y la nota (`notaQA`, con tope de BORRADOR: los datos por confirmar NO restan; qa.mjs los pone en `datos_por_confirmar`). `infoEmoji`/`infoFirma` van a `qa.json → info` y NO restan. Son
   funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs` u `oferta-propuesta.test.mjs`. `revisarDeck`
   recibe `crudo` (el deck antes de sustituir `datos`) para saber si un número vino de un `{{MARCADOR}}`.
+- `scripts/lib/reglas-venta.mjs`: tasas sin origen, promesas sin descargo visible y el cierre de una clase (tarea +
+  puente); reglas-deck.mjs las re-exporta y las suma en `revisarDeck`.
 - `scripts/lib/marca.mjs`: la ficha MI-MARCA.md (firma y palabras vetadas) con UNA cadena de búsqueda (carpeta del
   deck → arriba → `$PIZARRON_MARCA` → `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`). `pipeline.mjs` aplica la
   firma a un deck sin `marca`; el logo solo se copia si la ficha está en la carpeta del deck.
@@ -41,12 +47,17 @@ SKILL.md.
   Safari) y la `camara` con `vivo: true` lleva su bloque `.vivo-pres` con cuenta regresiva.
 - `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica versionada (`pruebas/replica/deck.json`) contra
   los cuadros del video, que viven fuera del repo: ver PROTOCOLO §4b. Es la única evidencia de fidelidad de una
-  ronda (`comp_N.jpg` con métrica + `comparar.json`); se niega a comparar si junto a los cuadros hay otro deck.json.
+  ronda (`comp_N.jpg` con métrica y el sha256 del deck + `comparar.json` con `deck_sha`); un deck.json junto a los cuadros
+  se ignora con aviso. Con un solo argumento (la carpeta de cuadros) compara `pruebas/replica`.
 - `scripts/lib/medidas-dom.mjs`: medidas que QA hace dentro de Chromium (palabras por renglón, recortes, flex
   con texto y negrita). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
 - `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
   sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md. Sobre un fondo de COLOR (pieza del stack, cuadro,
   botón) QA rasteriza el glifo en cada corrida contra el color real (`scripts/lib/contraste-color.mjs`).
+- `scripts/lib/emoji-diccionario.mjs` lee EMOJIS.md y da el concepto de cada emoji (`conceptoDe`): qa.json → iconos
+  sale como «💬 (comentar una palabra)».
+- `contrato.mjs → resolverComo`: `"como": "<id>"` (pasos, calendario, tabla) hereda los campos del objeto que vuelve
+  antes de validar; construir.mjs lo corre primero y pipeline.mjs entrega el `crudo` ya resuelto.
 - `references/EMOJIS.md` es la única fuente de verdad de los emojis. `pruebas/emojis-coherencia.test.mjs` falla
   si un emoji queda en dos filas de concepto, si otro documento cita un emoji que no está en el diccionario o
   si un sustituto de `BAJO_CONTRASTE` cambia de concepto. Los grupos de `PARECIDOS` (emoji.mjs) van en su tabla.

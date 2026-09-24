@@ -223,6 +223,8 @@ test('iconos: 🏦 y 🏛️ en fluent avisan (en apple no); 🧑‍💼 y 👨�
   assert.equal(reglasIconos({ emoji: 'apple', laminas: [idea('Cliente', { emoji: '🧑‍💼' }), { tipo: 'flujo', nodos: [{ emoji: '👨‍💼', etiqueta: 'Experto' }] }] }).avisos.length, 1);
 });
 
+// La clave del inventario es «emoji (concepto)»: se busca por el emoji
+const de = (inv, e) => inv[Object.keys(inv).find(k => k.split(' (')[0] === e)];
 test('iconos: la base de una rejilla que sale como si:🪑 en otra lámina avisa (rol contrario)', () => {
   const sala = { tipo: 'rejilla', id: 'sala', total: 100, emoji: '🪑', emoji_destacado: '👤', destacar: [1, 2, 3] };
   const r = reglasIconos({ emoji: 'apple', laminas: [sala, idea('Que **sí lleguen**', { emoji: 'si:🪑' }), idea('Los que faltan', { emoji: 'no:👤' })] });
@@ -231,8 +233,8 @@ test('iconos: la base de una rejilla que sale como si:🪑 en otra lámina avisa
   assert.deepEqual(reglasIconos({ emoji: 'apple', laminas: [sala, idea('Que **sí lleguen**', { emoji: 'si:👤' })] }).avisos, []);
   // inventario para qa.json → iconos
   const inv = inventarioIconos({ laminas: [sala, { tipo: 'flujo', nodos: [{ emoji: '✍️', etiqueta: 'Registro' }, { emoji: '👤', etiqueta: 'Llegó' }] }] });
-  assert.deepEqual(inv['👤'], ['lámina 1', 'lámina 2 · Llegó']);
-  assert.deepEqual(inv['✍'], ['lámina 2 · Registro']);
+  assert.deepEqual(de(inv, '👤'), ['lámina 1', 'lámina 2 · Llegó']);
+  assert.deepEqual(de(inv, '✍'), ['lámina 2 · Registro']);
 });
 
 test('iconos y reglas nuevas: el demo sale limpio', () => {
@@ -354,8 +356,85 @@ test('ritmo: un paso de 16 palabras avisa (uno por deck), uno de 13 solo no, uno
 test('iconos: la viñeta y los avatares entran al inventario', () => {
   const deck = { laminas: [{ tipo: 'chat', avatar_otro: '🤖', mensajes: [{ texto: 'hola 🤔' }] }, { tipo: 'lista', vineta: '🤔', items: ['a', 'b'] }, { tipo: 'lista', vineta: 'x', items: ['c'] }] };
   const inv = inventarioIconos(deck);
-  assert.ok(inv['🤖'] && inv['🤖'][0].startsWith('lámina 1'));
-  assert.ok(inv['🤔'] && inv['🤔'].some(x => x.startsWith('lámina 2')));
-  assert.ok(inv['❌'], 'el alias x de la viñeta cuenta como ❌');
+  assert.ok(de(inv, '🤖') && de(inv, '🤖')[0].startsWith('lámina 1'));
+  assert.ok(de(inv, '🤔') && de(inv, '🤔').some(x => x.startsWith('lámina 2')));
+  assert.ok(de(inv, '❌'), 'el alias x de la viñeta cuenta como ❌');
   assert.equal(emojisDeLamina(deck.laminas[0])[0].campo, 'avatar_otro');
+});
+
+// ---------- ronda 4 ----------
+import { reglasPromesa, reglasTasa, sustitutoPrueba, pruebaDelDeck, huecosDePrueba, reglasDemostracion, cierreDeClase, infoIconos }
+  from '../scripts/lib/reglas-deck.mjs';
+
+test('promesa r4: idea, cita o cifra que promete ingresos sin descargo visible avisa y deja borrador; con la idea del descargo no', () => {
+  const promete = [idea('En 90 días vas a ganar **$10k al mes**'), { tipo: 'cita', texto: '«Puedes ganar $10k-50k»' }, idea('Hay gente usando la IA para\n__ganar lo mismo que un médico__')];
+  const r = reglasPromesa({ laminas: promete });
+  assert.equal(r.avisos.length, 1);
+  assert.match(r.avisos[0], /láminas 1, 2, 3\) sin descargo visible/);
+  assert.deepEqual(r.porConfirmar.DESCARGO.laminas, [1, 2, 3]);
+  const conDescargo = reglasPromesa({ laminas: [...promete, idea('Que yo tenga estos resultados\n==no significa que tú los tengas==')] });
+  assert.deepEqual([conDescargo.avisos, conDescargo.porConfirmar], [[], {}]);
+  // una frase descriptiva sin verbo de promesa no cuenta; el descargo solo en la voz no basta
+  assert.deepEqual(reglasPromesa({ laminas: [idea('El **99%** no vende nada')] }).avisos, []);
+  assert.equal(reglasPromesa({ laminas: [promete[0], idea('Ojo', { voz: 'Esto no significa que tú lo logres' })] }).avisos.length, 1);
+});
+
+test('tasa r4: una tasa en la cuenta sin fuente ni {{TASA_*}} es «tasa sin origen»; la hipótesis en «arriba», la fuente o el dato no', () => {
+  const c = (arriba, lineas, extra = {}) => ({ tipo: 'cifra', arriba, lineas, ...extra });
+  const mal = c('Si hablas con 20 personas:', ['20 × 40-60% que compran', '= __8-12 clientes__']);
+  const r = reglasTasa({ laminas: [mal] });
+  assert.match(r.avisos[0], /tasa sin origen \(40-60%\)/);
+  assert.ok(r.porConfirmar.TASA_1);
+  assert.deepEqual(reglasTasa({ laminas: [c('Si te contrata el 0.1-0.3%:', ['1 millón × **0.1-0.3%** = 1-3 mil', '× $25,000 = __$25-75 millones__'])] }).avisos, []);
+  assert.deepEqual(reglasTasa({ laminas: [{ ...mal, fuente: 'Estudio X (2024)' }] }).avisos, []);
+  const crudo = { laminas: [c('Si hablas con 20 personas:', ['20 × {{TASA_CIERRE}} que compran', '= __8-12 clientes__'])] };
+  assert.deepEqual(reglasTasa({ laminas: [mal] }, { crudo }).avisos, []);
+});
+
+test('prueba r4: la cuenta con condición y rango (c) y el 🛡️ con plazo y condición (d) cuentan para final; sin nada, falta «prueba real»', () => {
+  const logica = { tipo: 'cifra', arriba: 'Si hablas con 20 personas en el mes:', lineas: ['20 × 10-20% = 2-4 pláticas', '= __1-2 clientes__'] };
+  const garantia = idea('Primeros 5 casos', { emoji: '🛡️', nota: 'Si en 30 días no tienes 3 clientes, te devuelvo tu dinero' });
+  assert.equal(sustitutoPrueba(logica), 'logica');
+  assert.equal(sustitutoPrueba(garantia), 'garantia');
+  assert.equal(sustitutoPrueba(idea('Garantía total', { emoji: '🛡️' })), null);
+  assert.equal(sustitutoPrueba(idea('Garantía de [GARANTIA_DIAS] días', { emoji: '🛡️', nota: 'Si no funciona' })), null, 'un plazo en hueco no cuenta');
+  assert.equal(sustitutoPrueba({ tipo: 'cifra', lineas: ['= __8 clientes__'] }), null);
+  const vsl = { pieza: 'vsl-corto', laminas: [idea('Hola'), logica, garantia] };
+  assert.deepEqual(pruebaDelDeck(vsl), { tipo: 'logica', lamina: 2 });
+  assert.ok(!faltaParaFinal(vsl).includes('prueba real'));
+  assert.ok(faltaParaFinal({ pieza: 'vsl-corto', laminas: [idea('Hola')] }).includes('prueba real'));
+  assert.deepEqual(pruebaDelDeck({ laminas: [{ tipo: 'cifra', lineas: ['x'], fuente: 'Y (2020)' }] }), { tipo: 'real', lamina: 1 });
+});
+
+test('huecos r4: una captura { hueco } es CAPTURA_N por confirmar; con plantilla: true no; tutorial sin demostración avisa', () => {
+  const p = capturas => ({ tipo: 'prueba', capturas });
+  assert.deepEqual(huecosDePrueba({ laminas: [idea('x'), p([{ hueco: 'Tu captura va aquí' }]), p([{ hueco: 'La tuya', plantilla: true }])] }), [2]);
+  const r = revisarDeck({ laminas: [idea('x'), p([{ src: 'a.png' }, { hueco: 'Y otra aquí' }])] }, [1, 2]);
+  assert.ok(r.porConfirmar.CAPTURA_2);
+  assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'objeto', emoji: '📱', texto: 'El celular' }] }).avisos[0], /sin demostración/);
+  assert.deepEqual(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Lo hago' }] }).avisos, []);
+  assert.deepEqual(reglasDemostracion({ pieza: 'vsl', laminas: [idea('x')] }).avisos, []);
+});
+
+test('clase r4: un tutorial con "clase": true exige tarea Y puente a la vista; llamado: true en una tarea avisa', () => {
+  const tarea = idea('Tu tarea: **sube tu encuesta**', { emoji: '✍️' });
+  const listo = idea('Comenta ==LISTO== cuando lo subas', { emoji: '💬' });
+  const sin = cierreDeClase({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), tarea, listo] });
+  assert.ok(sin.avisos.some(a => /^tarea sin puente/.test(a)), sin.avisos.join('\n'));
+  // sin `clase` no cambia nada
+  assert.deepEqual(cierreDeClase({ pieza: 'tutorial', laminas: [idea('Paso'), tarea, listo] }).avisos, []);
+  const puente = idea('Próxima clase: {{PROXIMA_CLASE}}', { emoji: '📅' });
+  const crudo = { laminas: [idea('Paso'), tarea, puente] };
+  assert.deepEqual(cierreDeClase({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), tarea, idea('Próxima clase: [PROXIMA_CLASE]', { emoji: '📅' })] }, { crudo }).avisos, []);
+  assert.ok(cierreDeClase({ pieza: 'clase-corta', laminas: [idea('Paso'), puente] }, { crudo: { laminas: [idea('Paso'), puente] } }).avisos.some(a => /cierre sin tarea/.test(a)));
+  const mal = cierreDeClase({ pieza: 'tutorial', laminas: [idea('Mañana subes **tu encuesta**', { llamado: true })] });
+  assert.ok(mal.avisos.some(a => /llamado: true` en una tarea/.test(a)), mal.avisos.join('\n'));
+  assert.deepEqual(cierreDeClase({ pieza: 'tutorial', laminas: [idea('Escríbeme **CITA** por WhatsApp', { llamado: true })] }).avisos, []);
+});
+
+test('iconos r4: la clave del inventario trae el concepto de EMOJIS.md; un emoji fuera del diccionario sale marcado', () => {
+  const inv = inventarioIconos({ laminas: [idea('Comenta LISTO', { emoji: '💬' }), idea('x', { emoji: '🦩' })] });
+  assert.ok(Object.keys(inv).some(k => /^💬 \(.*coment/.test(k)), Object.keys(inv).join(' | '));
+  assert.ok(Object.keys(inv).includes('🦩 (fuera del diccionario)'), Object.keys(inv).join(' | '));
+  assert.match(infoIconos({ laminas: [idea('x', { emoji: '🦩' })] }), /fuera del diccionario \(🦩\)/);
 });

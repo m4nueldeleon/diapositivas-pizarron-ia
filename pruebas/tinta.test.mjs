@@ -58,6 +58,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import os from 'node:os';
+import crypto from 'node:crypto';
 import path from 'node:path';
 
 test('otra escena: 0.605 (r255 del deck viejo contra otra escena) es distinta; 0.856 (el par correcto más bajo) no', () => {
@@ -68,14 +69,23 @@ test('otra escena: 0.605 (r255 del deck viejo contra otra escena) es distinta; 0
   assert.equal(esOtraEscena(0.5, 0.3), false);
 });
 
-test('comparar: un deck.json distinto junto a los cuadros sale con código 2; un deck sin _cuadro, con código 1', { timeout: 60_000 }, () => {
+test('comparar r4: un deck.json ajeno junto a los cuadros se ignora con aviso (no sale con 2); un solo argumento compara pruebas/replica con su sha; un deck sin _cuadro sale con 1', { timeout: 180_000 }, () => {
   const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const ref = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-ref-'));
+  // un cuadro blanco por cada lámina de la réplica: basta para correr el comando (los pares no se parecen: código 1)
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
+  const replica = JSON.parse(fs.readFileSync(path.join(raiz, 'pruebas', 'replica', 'deck.json'), 'utf8'));
+  replica.laminas.filter(l => /^r\d+$/.test(l.id)).forEach(l => fs.writeFileSync(path.join(ref, `ref_${l.id.slice(1)}.png`), png));
   fs.writeFileSync(path.join(ref, 'deck.json'), JSON.stringify({ laminas: [{ tipo: 'idea', id: 'r10', texto: 'viejo' }] }));
-  const r = spawnSync(process.execPath, [path.join(raiz, 'scripts', 'comparar.mjs'), path.join(raiz, 'pruebas', 'replica'), ref], { encoding: 'utf8' });
-  assert.equal(r.status, 2, r.stderr);
-  assert.match(r.stderr, /deck desfasado/);
-  // sin deck.json junto a los cuadros, pero con un deck sin `_cuadro`: no es la réplica versionada
+  const sal = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-comp-'));
+  const r = spawnSync(process.execPath, [path.join(raiz, 'scripts', 'comparar.mjs'), ref, '--salida', sal], { encoding: 'utf8' });
+  assert.notEqual(r.status, 2, r.stderr);
+  assert.match(r.stderr, /ignoro .*deck\.json/);
+  const inf = JSON.parse(fs.readFileSync(path.join(sal, 'comparar.json'), 'utf8'));
+  const sha = crypto.createHash('sha256').update(fs.readFileSync(path.join(raiz, 'pruebas', 'replica', 'deck.json'))).digest('hex').slice(0, 12);
+  assert.equal(inf.deck_sha, sha);
+  assert.equal(inf.deck, path.join('pruebas', 'replica', 'deck.json'));
+  // un deck sin `_cuadro`: no es la réplica versionada
   fs.rmSync(path.join(ref, 'deck.json'));
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-deck-'));
   fs.writeFileSync(path.join(d, 'deck.json'), JSON.stringify({ emoji: 'apple', laminas: [{ tipo: 'idea', id: 'r10', texto: 'Hola' }] }));

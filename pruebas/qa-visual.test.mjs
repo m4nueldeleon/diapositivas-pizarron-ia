@@ -207,21 +207,23 @@ test('QA r3: un hueco declarado a propósito es aviso y borrador, no error', { t
     laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }, { tipo: 'idea', emoji: '💡', texto: 'Otra' }] }));
   const r = qa(dir);
   assert.ok(!r.errores.some(e => /dato pendiente/.test(e)), r.errores.join('\n'));
-  assert.ok(r.avisos.some(a => /pendiente a propósito \[PRECIO\] \(lo define dirección\)/.test(a)));
+  assert.ok(r.datos_por_confirmar.some(a => /pendiente a propósito \[PRECIO\] \(lo define dirección\)/.test(a)));
   assert.equal(r.estado, 'borrador');
   assert.ok(r.por_confirmar.PRECIO && r.nota <= 90);
 });
 
-test('foco: con anclar:"arriba" la frase queda en la mitad superior; sin anclar busca el hueco del fondo', { timeout: 120_000 }, async () => {
+test('foco: con anclar:"arriba" la frase queda en la mitad superior; sin anclar se queda centrada y, si pisa el fondo, lo baja a 0.1 [15:22]', { timeout: 120_000 }, async () => {
   const fondo = { tipo: 'idea', texto: 'Tres renglones de texto grande\nque llenan el centro\nde la lámina de arriba abajo', tam_texto: 'grande' };
   await conDeck({ emoji: 'apple', marca: false, laminas: [fondo, { tipo: 'foco', anclar: 'arriba', texto: 'Arriba' }, fondo, { tipo: 'foco', texto: 'La frase del foco' }] }, async page => {
     const m = await page.evaluate(() => [1, 3].map(i => {
       const lam = window.PZ.lams[i], f = lam.querySelector('.foco-frase .nota').getBoundingClientRect(), L = lam.getBoundingClientRect();
       const fondo = [...lam.querySelectorAll('.escena.clon .t')].map(e => e.getBoundingClientRect());
-      return { centro: (f.top + f.bottom) / 2 - L.top, choca: fondo.some(r => r.top < f.bottom && r.bottom > f.top) };
+      return { centro: (f.top + f.bottom) / 2 - L.top, choca: fondo.some(r => r.top < f.bottom && r.bottom > f.top), op: +getComputedStyle(lam.querySelector('.escena.clon')).opacity };
     }));
     assert.ok(m[0].centro < 540, JSON.stringify(m));
-    assert.equal(m[1].choca, false, JSON.stringify(m));
+    // sin un hueco a ≤ 120 px del centro, la frase no se va al pie: se queda centrada sobre el fondo a 0.1
+    assert.ok(Math.abs(m[1].centro - 540) <= 120, JSON.stringify(m));
+    assert.ok(!m[1].choca || m[1].op <= 0.12, JSON.stringify(m));
   });
 });
 
@@ -246,4 +248,46 @@ test('cuadrantes: en una fila los emojis quedan a la misma altura aunque un text
     }));
     assert.ok(Math.abs(m[0].emoji - m[1].emoji) <= 2, JSON.stringify(m));
   });
+});
+
+test('QA r4: el remate del stack tapa el bento: los emojis que quedan debajo no cuentan como «un emoji tapa…»; el error «un emoji tapa» se sigue probando en el fixture defectos-r3', { timeout: 120_000 }, () => {
+  const dir = tmp();
+  const items = [{ emoji: '📖', texto: 'Los 3 módulos', doble: true }, { emoji: '🔴', texto: '12 sesiones' }, { emoji: '📄', texto: 'Plantillas' }, { emoji: '📊', texto: 'Tu tablero' }, { emoji: '👥', texto: 'Grupo' }, { emoji: '🧑‍🏫', texto: 'Revisión' }];
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: false, pieza: 'libre', laminas: [{ id: 'stack6', tipo: 'stack', items, remate: 'Hecho **contigo**' }] }));
+  const r = qa(dir);
+  assert.ok(!r.errores.some(e => /un emoji tapa/.test(e)), r.errores.join('\n'));
+  // los emojis del bento siguen midiéndose en los pasos anteriores: las piezas no se enciman entre sí
+  assert.ok(!r.errores.some(e => /emojis se enciman/.test(e)), r.errores.join('\n'));
+});
+
+test('rejilla r4: «Tú» va sin flecha [14:55]; con flecha_etiqueta la flecha mide ≥ 60 px', { timeout: 120_000 }, async () => {
+  const rj = extra => ({ tipo: 'rejilla', emoji: '👤', total: 40, columnas: 10, destacar: [14], emoji_destacado: '🧑‍💻', etiqueta_destacado: 'Tú', ...extra });
+  await conDeck({ emoji: 'apple', marca: false, laminas: [rj({}), rj({ flecha_etiqueta: true })] }, async page => {
+    const m = await page.evaluate(() => window.PZ.lams.map(l => [...l.querySelectorAll('.capa-mano path[data-estilo="fina-abajo"]')].map(p => p.getTotalLength())));
+    assert.deepEqual(m[0], [], JSON.stringify(m));
+    assert.ok(m[1].length === 1 && m[1][0] >= 60, JSON.stringify(m));
+  });
+});
+
+test('QA r4: un emoji fuera de la tabla medida sobre fondo neutro se mide en vivo (🔈 💿 en tarjetas, fluent) y avisa', { timeout: 120_000 }, () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'fluent', marca: false, laminas: [
+    { tipo: 'tarjetas', encabezado: 'Tu estudio en casa:', items: [{ emoji: '🔈', texto: 'Bocina' }, { emoji: '💿', texto: 'Tu música' }, { emoji: '🗑️', texto: 'Lo que borras' }] }] }));
+  const r = qa(dir);
+  assert.ok(r.avisos.some(a => /fuera de la tabla medida que casi no se ve en fluent sobre la tarjeta: .*🔈/.test(a)), r.avisos.join('\n'));
+  assert.ok(r.nota < 100);
+  assert.ok(r.info.some(i => /medido en vivo .*🔈/.test(i)), r.info.join('\n'));
+});
+
+test('QA r4: el modelo vsl-corto (huecos declarados) da 90, borrador, sin errores ni falta_para_final; los huecos no restan; uno sin declarar sigue siendo error', { timeout: 180_000 }, () => {
+  const r = qa(path.join(DIR_SKILL, 'ejemplos', 'vsl-corto'));
+  assert.equal(r.nota, 90, JSON.stringify(r.avisos));
+  assert.equal(r.estado, 'borrador');
+  assert.deepEqual(r.errores, []);
+  assert.deepEqual(r.falta_para_final, []);
+  assert.ok(!r.avisos.some(a => /^dato pendiente a propósito|^dato propuesto/.test(a)), r.avisos.join('\n'));
+  assert.ok(r.datos_por_confirmar.length >= 10);
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: false, laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }] }));
+  assert.equal(qa(dir).estado, 'con errores');
 });

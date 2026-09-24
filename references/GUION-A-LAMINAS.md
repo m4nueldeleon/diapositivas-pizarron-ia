@@ -92,16 +92,23 @@ la lámina nueva o un elemento más sobre la actual.
      mensajes diarios:». Nunca un «Supuesto:» vacío.
    - b) Las tasas y los resultados van en rango y en la unidad que se dice, como en la referencia
      [33:45-33:55]: arriba «For a creator with 50K-100K followers», abajo «100-250 sales × $100-200 =
-     $10,000-$50,000». Si hay que dar un solo número, sale de la tasa baja.
-   - c) Si el total subrayado sostiene la promesa del título, la voz dice el descargo en esa lámina o en el
-     gancho, como la referencia [0:38]: «que yo tenga estos resultados no quiere decir que tú los tengas».
-     QA avisa cuando el arranque afirma un resultado propio («me hizo cobrar el doble») y ninguna voz trae el
-     descargo, y deja el deck en borrador hasta confirmar ese resultado en `datos.CASO_PROPIO`.
+     $10,000-$50,000». Si hay que dar un solo número, sale de la tasa baja. **Las tasas no se inventan**: salen
+     de `datos` (`{{TASA_…}}` con su origen real, o pendiente), de una `fuente`, o van como hipótesis en la
+     condición de `arriba` («Si te contrata el 0.1-0.3%:»). QA avisa «tasa sin origen» y deja el deck en borrador.
+   - c) **El descargo va en pantalla una vez, cerca del gancho**, cuando el deck le promete resultados al
+     espectador («puedes ganar $10k-50k», «ganar lo mismo que un médico», «vas a vender 8 clientes»), como la
+     referencia [0:38-0:42]: después de «100% transparent» sale la `idea` «Just because I got these results,
+     doesn't mean you will» con su subrayado. En español: una `idea` «Que yo tenga estos resultados ==no
+     significa que tú los tengas==». QA avisa si hay promesa y ninguna lámina visible trae el descargo, y deja el
+     deck en borrador. No hace falta en cada lámina de promesa ni una condición con número en cada gancho `idea`
+     (la referencia no la trae en 0:10); la condición se sigue pidiendo en la `cifra` de la proyección. La voz
+     también lo dice. QA avisa además cuando el arranque afirma un resultado propio («me hizo cobrar el doble») y
+     ninguna voz trae el descargo, y deja el deck en borrador hasta confirmar ese resultado en `datos.CASO_PROPIO`.
    - d) **Escena o cifra ilustrativa**: una situación inventada para explicar, que no le promete nada al
      espectador («entran $50,000 este mes»). La voz la presenta **una sola vez** y con naturalidad, al abrir
      la escena: «Pongamos que este mes vendiste 50 mil…», como la referencia [22:28, «in this example», sobre
      la lámina «Revenue Split» de 22:15, que no lleva ninguna etiqueta]. **En pantalla no va ningún
-     descargo**: ni `nota`, ni `titulo`, ni `subtitulo`, ni `encabezado`, ni `arriba` dicen «ejemplo»,
+     descargo de ejemplo** (esto aplica a las escenas ilustrativas; el descargo de resultados de c) sí va): ni `nota`, ni `titulo`, ni `subtitulo`, ni `encabezado`, ni `arriba` dicen «ejemplo»,
      «hipotético» o «ilustrativo». La nota a mano lleva la consecuencia («Y el 17 pides prestado»), como pide
      el punto 9. El carácter ilustrativo queda en `_comentario` para quien edite el deck. Si la cifra es un
      dato real publicado, lleva `fuente`; si es una proyección al espectador, siguen a) a c). Las maquetas
@@ -241,13 +248,17 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   |---|---|---|
   | a | Demostración del mecanismo con material real del creador: su calendario, su cuenta, su chat | `prueba` con `src`, o `objeto` con `imagen` |
   | b | Caso propio con números y su `fuente` | `cifra` con `fuente` o `prueba` con `fuente` |
-  | c | Prueba lógica: la cuenta con la condición en `arriba` (§3.8) | `cifra` |
-  | d | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ |
+  | c | Prueba lógica: la cuenta con la condición en `arriba` (§3.8) | `cifra` sin `fuente`, con `arriba` que empieza con la condición («Si…», «Cuando…», «Con…») y un número, y un rango en `arriba` o en `lineas` |
+  | d | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ con plazo real («30 días»; un `{{GARANTIA_DIAS}}` sin llenar no cuenta) y condición («si…») |
+
+  QA cuenta c y d como prueba para final (qa.json → `prueba`: `real`, `logica` o `garantia`); una captura real
+  sigue siendo mejor. La `a` es `prueba` con `src` u `objeto` con `imagen`; la `b`, `cifra` o `prueba` con
+  `fuente` (si la fuente es un `{{HUECO}}`, queda como dato pendiente y el deck es borrador hasta llenarla).
 
   Si no hay ninguno, el beat se omite. **Un `prueba` hecho solo de capturas `ejemplo: true` nunca ocupa el
   beat 6 ni el tramo de prueba**: la maqueta enseña un formato («así se ve el mensaje») dentro del contenido,
-  pero no respalda la oferta. Si el usuario deja la prueba para después, va un `{ "hueco": "La tuya va
-  aquí" }` o `{{PRUEBA}}` y se lista al entregar. QA avisa si un vsl o webinar no trae ninguna prueba real
+  pero no respalda la oferta. Si el usuario deja la prueba para después, va un `{ "hueco": "Tu captura va
+  aquí" }` o `{{PRUEBA}}`: QA los lista en `por_confirmar` (el hueco como `CAPTURA_N`) y el deck queda en borrador. QA avisa si un vsl o webinar no trae ninguna prueba real
   (`prueba` con `src` o `fuente`, `objeto` con `imagen`, `cifra` con `fuente`), si la única es una maqueta, y
   si antes de la revelación no hay una cifra de credibilidad (años, clientes, eventos, alumnos) a la vista ni
   en la voz.

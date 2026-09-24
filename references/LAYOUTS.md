@@ -30,18 +30,27 @@ ese diseño.
 - `dur`: segundos por paso, como número o como lista.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
 - `sello`: texto de sello de goma que cae en un paso extra. Es una etiqueta blanca OPACA con doble
-  borde rojo: tapa lo que queda debajo, como en [6:45]. Por omisión va al centro del lienzo (en
+  borde rojo: tapa lo que queda debajo, como en [6:45]. **Sin posición se acomoda solo en un hueco libre**: prueba
+  el centro, debajo del contenido (a la derecha y centrado), a su derecha, arriba y las 9 zonas, y se queda en el
+  primero que no pisa renglones, emojis ni la tinta a mano (subrayados, llaves, tachones, flechas, con 24 px de aire);
+  cada lugar se prueba a su tamaño, a 0.85 y a 0.7 (en
   `rejilla`, centrado sobre las cajas, como en [6:45]; si la rejilla tiene celdas en `destacar`, esas celdas
   son el dato que se cuenta: el sello se acomoda solo en la banda entre renglones que menos destacadas tapa
   o, si todas tapan más del 25%, en una franja libre junto a la rejilla. El sello es el remate y la cifra ya se
   dijo: tapar parte de la rejilla es fiel a [6:45]; QA solo avisa si tapa más del 25% de las destacadas). Se
   mueve con:
   - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
-    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). Eso vale para rejillas y cajas; sobre una
+    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). Eso vale para rejillas y cajas, y también sobre el
+    `emoji` de una `idea`: tapa el ícono a propósito y QA no lo cuenta como error (sí cuenta cualquier otro emoji
+    y todo renglón que quede debajo). Sobre una
   burbuja de `chat` el sello va con tinta fija y se pega junto a ella sin taparla (ver `chat`). No lo pongas
   sobre notas ni flechas: QA lo avisa;
   - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,
-    `arriba-derecha`, `abajo-izquierda` o `abajo-derecha`.
+    `arriba-derecha`, `abajo-izquierda` o `abajo-derecha`. Es un punto de partida: si esa zona pisa texto, un
+    emoji o la tinta a mano, el motor lo corre lo mínimo **sin salir de ese lado del lienzo** (y lo reduce hasta
+    0.7 si hace falta); si ni así queda limpio, se queda en la zona y QA lo marca.
+  QA da error si el sello tapa un renglón o un emoji, o si **corta un subrayado o un tachón**; avisa si queda a
+  menos de 20 px de uno, o si tapa una flecha, una llave o un círculo a mano.
   Siempre queda dentro del lienzo y, si es muy largo para el formato, se reduce (QA avisa bajo 70%:
   un sello lleva 1 o 2 palabras).
 - `clic`: el ancla que el cursor va a presionar; `cursor` elige entre `mano` y `flecha`.
@@ -159,8 +168,11 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
   «Supuesto:» vacío; QA lo avisa, y también una cuenta que no trae NINGÚN rango (GUION §3.8 b):
   ```json
   { "tipo": "cifra", "arriba": "Si mandas 10 mensajes al día por 10 días:", "lineas": [
-    "100 × 10-20% = 10-20 pláticas", "× 30-50% = __3-10 clientes__"] }
+    "100 × {{TASA_RESPUESTA}} = {{PLATICAS}} pláticas", "× {{TASA_CIERRE}} = __{{CLIENTES}} clientes__"] }
   ```
+  Las tasas NO se inventan: salen de `datos` con su origen real (`"TASA_RESPUESTA": "10-20%"` medido en tus
+  últimos 100 mensajes) o se declaran pendientes; con eso, el total sale en rango. Una tasa escrita a mano en la
+  cuenta, sin `fuente` ni `{{TASA_…}}`, es «tasa sin origen» (aviso y borrador).
 - `fuente`: de dónde sale un dato publicado (el tamaño de un mercado); sale en sans gris de 40 px al pie y exime
   la cuenta del aviso de proyección. Es la misma `fuente` de `idea`, `flujo`, `grafica` y `cita` (ver «Fuente de
   un dato o un estudio»).
@@ -222,6 +234,28 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
 - En 16:9 las columnas son iguales (todas del ancho del nodo más ancho): los emojis quedan a la misma
   distancia y las flechas miden lo mismo aunque un nodo lleve un `sub` largo [17:00, 17:20]. El `sub` va a
   52 px y se parte en dos renglones balanceados pasando de ~9 em.
+- **Suma de conceptos** [28:40, 35:10]: `flechas: [{ "signo": "+" }, { "signo": "=" }]` pone un signo gris claro y
+  delgado (`+`, `=`, `−` o `×`) en vez de la flecha, a la altura del emoji y a la mitad entre los dos íconos; entra
+  con el nodo que le sigue. Si todas las flechas son signos, las etiquetas van en regular.
+  ```json
+  { "tipo": "flujo", "flechas": [{ "signo": "+" }, { "signo": "=" }], "nodos": [{ "emoji": "👊", "etiqueta": "Tú" },
+    { "emoji": "🤖", "etiqueta": "IA especializada" }, { "emoji": "📦+💰", "etiqueta": "Producto rentable" }] }
+  ```
+- `"tarjeta": true` en un nodo mete el emoji y la etiqueta en una tarjeta gris con degradado [28:40 «Stories» +
+  «Digital product»].
+- **Retornos** [12:45]: `retornos: [{ "desde", "hasta", "lado", "tono", "etiqueta", "emoji", "paso" }]` dibuja un arco
+  que regresa: `lado: "arriba"` (por omisión) va de la punta del emoji `desde` a la del nodo `hasta`, por encima de
+  la fila; `hasta: "aparte"` baja del pie del nodo al nodo `aparte` (`{ "emoji", "etiqueta" }`), que va bajo la
+  primera columna. `tono`: `n` negro (por omisión), `v` verde, `r` rojo; la `etiqueta` va manuscrita con su `emoji`
+  en el vértice, del lado de afuera. Cada retorno entra en su propio paso después del último nodo. En 9:16 se
+  ignoran (aviso).
+  ```json
+  { "tipo": "flujo", "nodos": [{ "emoji": "🤳", "etiqueta": "Creador" }, { "emoji": "📦", "etiqueta": "Producto" },
+    { "emoji": "👥", "etiqueta": "Su audiencia" }, { "emoji": "💰", "etiqueta": "Dinero" }],
+    "aparte": { "emoji": "🙋", "etiqueta": "Tú" },
+    "retornos": [{ "desde": 3, "hasta": 0, "tono": "n", "etiqueta": "70%", "emoji": "💵" },
+                 { "desde": 3, "hasta": "aparte", "tono": "v", "etiqueta": "30%", "emoji": "💵" }] }
+  ```
 
 ### `pasos` — el sistema de N pasos (teclas 1 2 3 + ruta punteada)  ·  [1:55, 11:00, 16:35, 28:00]
 ```json
@@ -286,8 +320,28 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
 
 ## Datos
 
+#### El objeto que vuelve: `como`  ·  [16:40, 28:00, 29:25]
+El mapa 1-2-3, el calendario y la tabla vuelven varias veces con otro paso activo. Se declaran UNA vez (con `id`) y las
+láminas siguientes los reusan con `"como": "<id>"`: heredan solo los campos del objeto y cambian lo suyo.
+```json
+[ { "id": "mapa", "tipo": "pasos", "iconos": ["🔍", "🛠️", "🚀"], "etiquetas": ["Encontrar", "Construir", "Lanzar"], "activo": 1 },
+  { "tipo": "pasos", "como": "mapa", "activo": 2, "hechos": [1], "voz": "Formato dos: tu pantalla." } ]
+```
+- Se heredan: `pasos` → `n`, `iconos`, `etiquetas`, `prefijo`, `sobre`, `ruta`, `separacion`, `tam_etiqueta`; `calendario` →
+  `titulo`, `dias`, `fases`, `n`, `columnas`, `palabra_dia`, `color`, `rango`; `tabla` → `esquina`, `columnas`, `filas`,
+  `ancho_etiqueta`, `vacias`. Nunca `id`, `voz`, `revelar`, `activo`, `hechos`, `fase_activa`, `texto`, notas ni sello.
+- Lo que trae la lámina gana (`{ "tipo": "calendario", "como": "plan", "fase_activa": 2 }`). La madre va antes; se
+  permiten cadenas. Es error un `como` a un id que no existe, que va después, a sí misma o de otro diseño; `como` solo
+  existe en `pasos`, `calendario` y `tabla`. QA avisa cuando una lámina repite a mano el objeto de otra.
+
 ### `tabla` — la tabla-marcador escrita a mano  ·  [5:25 → 10:05]
-El recurso estrella: se llena columna por columna a lo largo de varias láminas.
+El recurso estrella: se llena columna por columna a lo largo de varias láminas. `converger: { "columna", "texto",
+"emoji", "paso" }` [7:30]: la pregunta manuscrita va a la derecha de la tabla (que se angosta) y una flecha roja fina
+sale de cada celda de esa columna y converge en ella, todas en el mismo paso. Usa la última columna con datos (la que
+queda junto a la pregunta): desde otra, las flechas cruzan las celdas y QA lo marca. En 9:16 las columnas vacías quedan
+angostas (80 px), el ancho se reparte según la palabra más larga de cada columna y la letra baja por tabla hasta 34 px
+(td) / 38 (th); si una tabla de más de 3 columnas de datos ni así cabe, avisa: pártela con `fijas`. QA da error si el
+texto de una celda sale de su caja (se monta en la vecina).
 ```json
 { "tipo": "tabla", "esquina": "Métrica", "vacias": 1,
   "columnas": ["Ventas high ticket", "Dropshipping"],
@@ -383,6 +437,9 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 - Con `apagar_resto: true` todo lo que no está destacado queda gris. `tono` y `tono_destacado` (`v`, `r`,
   `g`) pintan los puntos; `emoji_etiqueta` pone un emoji sobre la `etiqueta_destacado`; `aspecto` (ancho/alto,
   1.55 por omisión) decide las columnas si no das `columnas`.
+- La `etiqueta_destacado` («Tú») es un rótulo directo sobre la rejilla, **sin flecha**: el original no la lleva
+  [14:55, 15:05]. `flecha_etiqueta: true` agrega una flecha gris fina de ≥ 90 px hasta el destacado; QA avisa si
+  una flecha de etiqueta o de anotación mide menos de 60 px.
 - **Sello y destacadas**: sobre cajas iguales el sello cae encima [6:45]; con `destacar`, el sello NUNCA tapa
   las destacadas (se acomoda solo, ver `sello` arriba). Agrupa las destacadas (las llenas primero, en orden)
   para que «41 de 100» se lea de un vistazo.
@@ -485,7 +542,13 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 - `circulo` y `tachar` van en porcentaje de la imagen: x, y, ancho, alto.
 - **Regla 9: nunca inventes testimonios, capturas ni cifras.** Usa solo resultados reales, con permiso,
   y tacha los datos personales. Si todavía no tienes la prueba, no la finjas:
-  - `{ "hueco": "La tuya va aquí" }`: tarjeta punteada y vacía, con la frase a mano.
+  - `{ "hueco": "Tu captura va aquí" }`: tarjeta punteada y vacía = una captura **por conseguir**. QA la pone en
+    `por_confirmar` como `CAPTURA_N` y el deck queda en borrador hasta cambiarla por la real: un recuadro gris
+    nunca va en un entregable.
+  - `{ "hueco": "La tuya va aquí", "plantilla": true }`: el lugar para la captura **del espectador** (un tutorial
+    que le dice «así se ve la tuya»). Sale con un marco trazado a mano en tinta, sin punteado, y el deck puede
+    ser final. `plantilla` sin `hueco` es error de contrato. Para ENSEÑAR un formato con contenido, usa la maqueta
+    `post` con `ejemplo: true`.
   - `{ "post": { "nombre", "usuario", "fecha", "texto": [...], "clave" }, "fuente": "real, con permiso" }`:
     un post que transcribes de uno real. Se pinta como post y la `fuente` va abajo, tal cual.
   - `{ "post": { "texto": [...] }, "ejemplo": true }`: una **maqueta visible**, nunca un testimonio. Sale
@@ -546,11 +609,16 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 - La frase de foco es la PROTAGONISTA, no una nota al margen: Caveat a 88 px en 16:9 (84 si pasa de 14
   palabras; 96 / 88 en 9:16) y hasta ~1560 px de ancho, como en el cuadro 15:20. `tam` la cambia.
 - `opacidad`: por omisión 0.2.
-- La frase va centrada y puede pasar sobre los ÍCONOS atenuados del fondo (las bolsas de [15:20]), pero no sobre
-  sus renglones de texto: si choca con uno, busca el hueco entre renglones que la alcance más cercano al centro y
-  se mueve ahí. Si no hay hueco, se queda centrada y el fondo baja a 0.1 (salvo que pongas `opacidad`).
-  `anclar` (`"arriba"` o `"centro"`) la fija y apaga ese reacomodo. QA avisa si la frase pisa un renglón del
-  fondo y da error si lo tapa casi entero con el fondo a más de 0.12.
+- La frase va **centrada** y es la protagonista: en la referencia [15:20–15:23, h_pill] cruza el fondo atenuado a
+  ~10–15%, incluso encima de texto («Your bank account.» queda debajo). Si choca con un renglón del fondo, solo se
+  mueve a un hueco entre renglones que quede a **≤ 120 px del centro** (con 48 px de aire); si no lo hay, se queda
+  centrada y el fondo baja a 0.1 (salvo que pongas `opacidad`). Nunca se va al pie como subtítulo del último
+  renglón. `anclar` (`"arriba"` o `"centro"`) la fija y apaga ese reacomodo. Con el fondo a ≤ 0.12 QA no cuenta el
+  cruce; por encima avisa si la frase pisa un renglón y da error si lo tapa casi entero. QA avisa si la frase queda
+  a más de 120 px del centro sin `anclar`.
+- El fondo es el **estado final** de la lámina anterior: con sus tachones, subrayados y atenuados (una lista de
+  errores tachada sigue tachada detrás de la frase) y sin lo que ya se fue (la mano de una `calificacion`). QA da
+  error si el fondo tiene menos tinta que la lámina anterior.
 - No se permite foco tras foco (el fondo sería la frase del foco anterior): pon una lámina normal entre los dos.
 - `nota`: con `texto`, va debajo, más chica y a mano, en el mismo corte (`nota_paso` la mueve). Sin
   `texto`, la `nota` es la frase principal.
@@ -611,6 +679,26 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 | `ancla` | cualquiera | Frase que dispara el paso 0 en el montaje (atajo de `anclas[0]`). |
 | `oscura: true` | cualquiera | Pinta esa lámina con el fondo oscuro de la oferta. |
 | `sello_sobre`, `sello_pos`, `clic_pos` | cualquiera | Mueven el sello y la punta del cursor (ver arriba). |
+| `anotaciones` | cualquiera | Notas a mano con gancho hacia un ancla, o una flecha que entra desde el borde (ver «Anotaciones con flecha»). |
+| `como` | pasos, calendario, tabla | Reusa el objeto de otra lámina (ver «El objeto que vuelve»). |
+
+### Anotaciones con flecha (cualquier diseño)  ·  [15:00, 28:35, 2:40, 11:20, 36:45]
+El video pone notas rojas a mano con su gancho sobre casi cualquier recurso: una captura con su dato encerrado, un
+cohete, una tarjeta. `anotaciones` vale en cualquier lámina:
+```json
+{ "tipo": "prueba", "capturas": [{ "src": "assets/perfil.png", "circulo": [62, 40, 30, 12] }],
+  "anotaciones": [{ "texto": "21.9K en 24 horas", "a": "cap0-circulo", "lado": "derecha" },
+                  { "a": "cap0", "entra": "izquierda", "paso": 2 }] }
+```
+- Cada anotación: `texto` (Caveat de 54 px, máx. 400 px de ancho), `a` (el [ancla](#anclas)), `lado` (`derecha`,
+  `izquierda`, `arriba`, `abajo`; sin él, a la derecha si cabe), `tono` (`r` rojo por omisión, `v` verde, `n`
+  tinta; en lámina oscura el rojo sale claro), `paso` (por omisión, un paso extra al final), `tam` (px) y `x`/`y`
+  (px o `%` del lienzo) para fijarla a mano. Sobre una captura la nota va FUERA de ella, a la altura del ancla.
+- Sin `texto` y con `entra` (`derecha`, `izquierda`, `arriba`, `abajo`): una flecha roja larga que entra desde ese
+  borde del lienzo hasta el ancla [15:00].
+- En `calendario`, las anotaciones con `dia` siguen siendo las del calendario (nota al margen del día).
+- Un ancla que no existe es error de QA y el mensaje lista las anclas de la lámina; la nota fuera del lienzo o
+  encimada con otro texto también. QA avisa si el gancho mide menos de 60 px.
 
 Un valor con tipo equivocado se descarta con aviso y uno fuera de rango se recorta con aviso (`n: 99 → 42`), y la revisión de calidad lo
 cuenta como error. Un campo que el diseño no usa se ignora con aviso (−3), con sugerencia si parece
@@ -621,10 +709,12 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 
 ## Anclas
 
-`sello_sobre`, `clic` y las flechas apuntan a anclas. Las que existen por diseño:
-`texto` y `emoji` (idea), `s0`, `s1`… (stack), `m0`, `m1`… (chat), `e0`, `e1`… (calificacion), `i0`, `i1`… (lista), `n0`… (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
+`sello_sobre`, `clic`, las `anotaciones` y las flechas apuntan a anclas. Las que existen por diseño:
+`texto` y `emoji` (idea), `s0`, `s1`… (stack), `m0`, `m1`… (chat), `e0`, `e1`… (calificacion), `i0`, `i1`… (lista),
+`n0`… (el emoji del nodo), `nodo0`… (el nodo completo) y `aparte` (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
 `l0`… (cifra), `icono` y `cita` (cita), `objeto`, `medidor`, `op0`… (opciones), `rejilla`, `anot` y
-`d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`.
+`d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`, `cap0`… (la captura) y `cap0-circulo`…
+(la elipse de su `circulo`) (prueba), `f0`… (la etiqueta de la fila) y `c0-1`… (la celda fila-columna, desde 0) (tabla).
 
 ## Datos que se llenan una vez
 
@@ -649,7 +739,15 @@ texto y se llena UNA vez en `datos`, arriba del deck:
   Precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios y resultados **nunca** se
   proponen (es error de contrato): van como hueco `{{CLAVE}}`. Un comentario `_datos` no cuenta.
 - **Hueco a propósito**: `"PRECIO": { "pendiente": true, "motivo": "lo define dirección el lunes" }` se pinta como
-  `[PRECIO]`, pero QA lo cuenta como aviso y deja el deck en borrador (no como error de olvido).
+  `[PRECIO]`, QA lo lista en `qa.json → datos_por_confirmar` y deja el deck en borrador (no como error de olvido).
+  Los huecos declarados y los datos propuestos **no restan nota**: solo la topan en 90 con `estado: "borrador"`.
+  Nunca quites un hueco (el caso, la prueba, el precio) para subir la nota: decláralo.
+- **Tasas de resultado** (% que compra, que responde, que se va): nunca se proponen. Van como `{{TASA_…}}` en `datos`
+  (real o pendiente), con `fuente`, o como hipótesis en la condición de `arriba` («Si te contrata el 0.1-0.3%:»). QA
+  avisa «tasa sin origen» si una `cifra` escribe una tasa en la cuenta sin nada de eso, y deja el deck en borrador.
+- **Claves de la clase** (`"clase": true`, clase corta): `PROXIMA_CLASE` (fecha y hora) y `COMUNIDAD` (nombre, palabra
+  clave o link), con un dato real o pendiente, nunca inventado. Receta del cierre: una `idea` 📅 «Próxima clase:
+  {{PROXIMA_CLASE}}» o un `boton` «Únete a {{COMUNIDAD}}» justo después de la lámina de la tarea.
 - **Claves de la oferta** (MI-MARCA, «Oferta»): `PRECIO`, `GARANTIA_DIAS`, `GARANTIA_CONDICION`, `BONO_1`, `BONO_2`…,
   `CUPOS`, `FECHA_LIMITE`, `FECHA`, `VIGENCIA`. «Quedan {{CUPOS}} lugares» con su dato es escasez real; «Quedan solo 3
   lugares» o «solo hoy» escritos a mano son error de QA (GUION §7, beat 8).

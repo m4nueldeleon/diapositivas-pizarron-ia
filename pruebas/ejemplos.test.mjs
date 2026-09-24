@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { revisarDeck, esLlamadoVisible } from '../scripts/lib/reglas-deck.mjs';
 import { sustituirDatos, validarDatos } from '../scripts/lib/datos.mjs';
+import { resolverComo } from '../scripts/lib/contrato.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const leer = n => JSON.parse(fs.readFileSync(path.join(RAIZ, 'ejemplos', n, 'deck.json'), 'utf8'));
@@ -19,7 +20,7 @@ test('ejemplos: existe el modelo de venta y ningún deck usa "emoji": "auto"', (
 });
 
 test('vsl-corto: cero avisos de arco, objeción, llamado, prueba, credibilidad, voz, proyección u oferta; lo que queda son datos', () => {
-  const crudo = leer('vsl-corto');
+  const crudo = resolverComo(leer('vsl-corto')).deck;
   assert.equal(crudo.pieza, 'vsl-corto');
   assert.deepEqual(validarDatos(crudo.datos), []);
   const { deck } = sustituirDatos(crudo);

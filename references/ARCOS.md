@@ -146,13 +146,20 @@ El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
    veces o más.
 
 ### Tutorial (3-8 min)
-También es la pieza de una **clase de menos de 15 min** («clase express»): en vez del siguiente paso suelto, cierra
-con una tarea con objeto y el puente a la comunidad o la próxima clase (QA revisa el cierre). No hay pieza aparte.
+También es la pieza de una **clase de menos de 15 min** («clase express» o taller): se marca con `"clase": true`
+en el deck (no se deduce de `en_vivo`). Entonces el cierre son **dos beats obligatorios**: la tarea con objeto y el
+puente a la próxima clase o la comunidad, con un dato real (`{{PROXIMA_CLASE}}`, `{{COMUNIDAD}}`) a la vista. QA avisa
+«tarea sin puente» o «cierre sin tarea». No hay pieza aparte.
 1. El resultado a la vista en los primeros 10 s, o el error en vivo.
 2. El mapa 1-2-3 si son 3 pasos o más.
-3. Los pasos, uno por bloque, cada uno con su demostración (captura real o `camara` corta).
+3. Los pasos, uno por bloque, cada uno con su demostración (captura real, `objeto` con foto o `camara` corta). QA
+   avisa «sin demostración» si el tutorial entero enseña solo con emojis y texto. Sin captura, una imagen generada
+   con IA sin cifras vale para una escena de cómo se hace (el celular en cenital sobre la mesa), como `objeto` con
+   `imagen`; nunca para un resultado ni como prueba.
 4. Los errores comunes (una `lista` con tachones o una `idea` por error).
-5. Un siguiente paso concreto, con objeto (1 llamado).
+5. Un siguiente paso concreto, con objeto (1 llamado). Con `"clase": true`: la tarea («Tu tarea: sube tu
+   encuesta») y, en la lámina siguiente, el puente (`idea` 📅 «Próxima clase: {{PROXIMA_CLASE}}» o un `boton`
+   «Únete a {{COMUNIDAD}}»). `llamado: true` es para la flecha al link o la palabra clave, no para la tarea.
 
 ### VSL corto (3-6 min)
 1. Gancho con el resultado o el conflicto (0:00-0:20).
@@ -167,7 +174,8 @@ con una tarea con objeto y el puente a la comunidad o la próxima clase (QA revi
 1. Gancho (≤ 1 min), contrato de tiempo y mapa 1-2-3.
 2. **Dos bloques** en vez de tres, cada uno en beats con su demostración o actividad en vivo (`camara` con
    `vivo: true`).
-3. Tarea con objeto y puente al siguiente paso. Sin láminas oscuras.
+3. Tarea con objeto y puente a la vista (la próxima clase con `{{PROXIMA_CLASE}}`, la comunidad o el programa): los
+   dos, no uno u otro. QA los revisa en las 3 últimas láminas. Sin láminas oscuras.
 
 ### Propuesta (3-20 min; la corta, 3-8 min y 20-60 láminas, se presenta en vivo con conversación)
 Nueve bloques. Se reenvía a directores que no estuvieron en la junta: el porqué va en la `voz` y se manda con

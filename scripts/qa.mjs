@@ -28,7 +28,8 @@
 //   · campo que ese diseño no usa (¿error de dedo?), emoji dudoso o aproximado en Fluent;
 //   · `voz` de un solo texto en una lámina de varios pasos;
 //   · 9:16: contenido en menos del 35% del alto, o dentro de la zona que tapa la interfaz de Reels;
-//   · sello que tapa más del 25% de las celdas DESTACADAS de una rejilla; sello que tapa una flecha; flecha de anotación o de nota al margen de menos de 60 px (un garabato);
+//   · sello que tapa más del 25% de las celdas DESTACADAS de una rejilla; sello que tapa una flecha, llave o círculo, o
+//     que queda a < 20 px de un subrayado (cortarlo es error); flecha de anotación o de nota al margen de menos de 60 px;
 //   · emoji de bajo contraste para su set y su fondo (tabla revisada + medida de medir-emojis.mjs); con
 //     emoji "auto", también el del OTRO set; emoji dentro de un texto SVG en fluent (sale con la fuente del sistema);
 //   · etiqueta corta (≤ 3 palabras) partida, renglón huérfano («La / detecta»); ~~tachado~~ en el mismo paso que su texto;
@@ -43,7 +44,8 @@
 //   · vsl/webinar sin prueba real, con la maqueta EJEMPLO como prueba o sin cifra de credibilidad; sin objeción
 //     antes del llamado; descargo «de ejemplo» en pantalla; emojis parecidos o con rol contrario en el deck;
 //     claves del deck que nadie lee (`_marca`, `_datos`); más de 40% a cámara; oferta tardía en un VSL corto.
-// Nota: 100 − 12 × errores − 3 × avisos; con datos propuestos sin confirmar, BORRADOR y tope de 90.
+// Nota: 100 − 12 × errores − 3 × avisos; con datos por confirmar (huecos declarados, propuestos, capturas por
+// conseguir), BORRADOR y tope de 90: esos datos NO restan, van en qa.json → datos_por_confirmar (consola: «◌»).
 // qa.json trae además `estado` (borrador · con errores · bajo-90 · falta-venta · listo), `falta_para_final` (lo que le
 // falta a una pieza de venta), `ritmo` (mediana y p90 de los pasos), `por_confirmar` e `iconos` (emoji → láminas).
 import fs from 'node:fs';
@@ -53,7 +55,7 @@ import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck, notaQA, TOPE_BORRADOR, infoEmoji, infoFirma } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos } from './lib/reglas-deck.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
@@ -64,6 +66,7 @@ const { flag, pos, opt } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato, firmaDe, avisoFirma } = prep;
+if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
@@ -90,15 +93,23 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const FUENTE = '.fuente';
   const MINIMO = '.calendario .dia span, .calendario .dia b, .calendario .barra b, .calendario .barra span, .bento-lleno span';
   const fueraClon = e => !e.closest('.escena.clon');
+  // Capas OPACAS que reemplazan la escena en su paso (el remate del stack [42:50] es un lienzo limpio sobre el bento):
+  // lo que queda debajo no se ve aunque siga con visibility visible y opacidad 1. El sello y la frase del foco NO van
+  // aquí: que tapen texto es justo lo que QA tiene que ver.
+  const TAPAS = '.stack-remate';
+  const tapas = raiz => [...raiz.querySelectorAll(TAPAS)].filter(c => visible(c) && fueraClon(c) && opac(c) > 0.5);
+  const tapado = (e, T, lam) => T.some(c => !c.contains(e) && !e.contains(c) && (() => {
+    const b = caja(e, lam), k = caja(c, lam), A = b.w * b.h; return A > 0 && cruza(b, k) / A > 0.9;
+  })());
 
   // Renglones reales de texto: un rect por nodo de texto y renglón (no las cajas de los elementos)
   function renglones(raiz, L) {
-    const r = [];
+    const r = [], T = raiz.classList && raiz.classList.contains('lamina') ? tapas(raiz) : [];
     const tw = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
     for (let n; (n = tw.nextNode());) {
       const el = n.parentElement;
       if (!el || !/\S/.test(n.nodeValue) || el.closest('script, style, .emo, .sello, .cursor, .firma, .capa-mano') || !fueraClon(el)) continue;
-      if (!visible(el) || opac(el) < 0.5) continue;
+      if (!visible(el) || opac(el) < 0.5 || (T.length && tapado(el, T, raiz))) continue;
       const rg = document.createRange(); rg.selectNodeContents(n);
       [...rg.getClientRects()].filter(q => q.width > 3 && q.height > 3).forEach(q => r.push({ el, n, b: rel(q, L) }));
     }
@@ -164,6 +175,20 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         if (q.b.x < B.x - 2 || q.b.x + q.b.w > B.x + B.w + 2) desbordan.add(corto(q.n.nodeValue, 30));
       });
       desbordan.forEach(t => A(`«${t}» se sale de su caja: acorta la palabra`));
+      // Tabla: el texto de una celda que sale de su caja de contenido (> 4 px) se monta en la vecina [r4, 9:16 marcador]
+      const fueraCelda = new Set();
+      lam.querySelectorAll('.tabla td, .tabla th').forEach(cel => {
+        if (!fueraClon(cel) || !visible(cel) || !cel.textContent.trim()) return;
+        const R = cel.getBoundingClientRect(), cs = getComputedStyle(cel), z = R.width / (cel.offsetWidth || 1) || 1;
+        const x0 = R.left + parseFloat(cs.paddingLeft) * z, x1 = R.right - parseFloat(cs.paddingRight) * z;
+        const tw = document.createTreeWalker(cel, NodeFilter.SHOW_TEXT);
+        for (let nd; (nd = tw.nextNode());) {
+          if (!/\S/.test(nd.nodeValue) || !visible(nd.parentElement)) continue;
+          const rg = document.createRange(); rg.selectNodeContents(nd);
+          if ([...rg.getClientRects()].some(q => q.width > 3 && (q.left < x0 - 4 || q.right > x1 + 4))) fueraCelda.add(corto(nd.nodeValue, 24));
+        }
+      });
+      fueraCelda.forEach(t => E(`«${t}» se sale de su celda de la tabla y se monta en la vecina: acorta el texto, quita columnas o parte la tabla en dos láminas con "fijas"`));
       // Textos SVG (marcas y tramos de la línea de tiempo, ejes, series): encimados entre sí o fuera del lienzo
       const tSvg = [...lam.querySelectorAll('svg text')].filter(t => fueraClon(t) && visible(t) && opac(t) >= 0.5 && t.textContent.trim() && !t.closest('.escena:not(.lamina)'));
       tSvg.forEach(t => { const b = caja(t, lam); if (b.x < -2 || b.y < -2 || b.x + b.w > W + 2 || b.y + b.h > H + 2) E(`«${corto(t.textContent, 30)}» se sale del lienzo`); });
@@ -188,9 +213,14 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         const pol = poligonoSello(sello, L);
         if (pol.some(([x, y]) => x < -1 || y < -1 || x > W + 1 || y > H + 1)) E(`el sello «${corto(sello.textContent, 20)}» se sale del lienzo`);
         const tolerado = e => e.closest('.rejilla, .cuadrantes, .captura, .pruebas');
+        // El ÍCONO que es el ancla de sello_sobre se sella A PROPÓSITO (LAYOUTS §Anclas; el mismo mecanismo que sobre las
+        // cajas de 6:45): no cuenta como tapado. Cualquier otro emoji, y todo renglón (un texto sellado no se lee), sí.
+        const destino = sello.dataset.sobre ? [...lam.querySelectorAll(`[data-a="${CSS.escape(sello.dataset.sobre)}"]`)].find(fueraClon) : null;
+        const esDestino = e => destino && (destino === e || destino.contains(e));
+        const mover = destino ? `el sello va sobre «${sello.dataset.sobre}»: cambia el ancla o quita sello_sobre para que se acomode solo` : 'muévelo con sello_pos o quítalo para que se acomode solo';
         const tapados = new Set();
         lineas.filter(q => !tolerado(q.el)).forEach(q => { if (fraccionEn(q.b, pol) > 0.12) tapados.add(corto(q.n.nodeValue, 24)); });
-        tapados.forEach(t => E(`el sello tapa «${t}»: muévelo con sello_sobre o sello_pos`));
+        tapados.forEach(t => E(`el sello tapa «${t}»: ${mover}`));
         // Rejilla con destacadas: esas celdas son el dato que se cuenta (la rejilla homogénea sí se tapa [6:45])
         lam.querySelectorAll('.rejilla').forEach(rj => {
           const dest = [...rj.querySelectorAll('[data-a^="d"]')];
@@ -200,15 +230,34 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         });
         // los avatares del chat (.yo-av/.otro-av, silueta o emoji) cuentan como emoji: el gancho se lee por quién habla
         const iconos = [...lam.querySelectorAll('.emo, .yo-av, .otro-av')].filter(e => e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'));
-        const tapaIcono = iconos.filter(e => visible(e) && fueraClon(e) && !tolerado(e) && opac(e) > 0.5).some(e => fraccionEn(caja(e, lam), pol) > 0.2);
-        if (tapaIcono) E('el sello tapa un emoji o un avatar: muévelo con sello_sobre o sello_pos');
-        const tapaFlecha = [...lam.querySelectorAll(':scope > .capa-mano path[data-clase="flecha"]')].some(pth => {
-          if (+pth.dataset.p > p) return false;
-          const tot = pth.getTotalLength(); let k = 0;
-          for (let t = 0; t <= tot; t += 6) { const q = pth.getPointAtLength(t); if (dentroPoligono([q.x, q.y], pol)) k++; }
-          return k >= 3;
+        const Ts = tapas(lam);
+        const tapaIcono = iconos.filter(e => visible(e) && fueraClon(e) && !tolerado(e) && !esDestino(e) && opac(e) > 0.5 && !tapado(e, Ts, lam)).some(e => fraccionEn(caja(e, lam), pol) > 0.2);
+        if (tapaIcono) E(`el sello tapa un emoji o un avatar: ${mover}`);
+        // Tinta a mano: el sello no corta un subrayado ni un tachón (error) ni queda pegado a él (< 20 px, aviso); sobre
+        // una flecha, una llave o un círculo, aviso
+        const distPol = ([x, y]) => {
+          if (dentroPoligono([x, y], pol)) return 0;
+          let d = Infinity;
+          for (let i2 = 0, j2 = pol.length - 1; i2 < pol.length; j2 = i2++) {
+            const [ax, ay] = pol[j2], [bx, by] = pol[i2], dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
+            const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2));
+            d = Math.min(d, Math.hypot(x - (ax + t * dx), y - (ay + t * dy)));
+          }
+          return d;
+        };
+        const trazosSello = [...lam.querySelectorAll(':scope > .capa-mano path')].filter(pth => !pth.closest('defs') && pth.dataset.pase !== '2' && !pth.classList.contains('oculto') && +(pth.dataset.p || 0) <= p);
+        const muestras = pth => { const tot = pth.getTotalLength(), pts = []; for (let t = 0; t <= tot; t += 6) { const q = pth.getPointAtLength(t); pts.push([q.x, q.y]); } return pts; };
+        let corta = '', pegado = 0, otra = false;
+        trazosSello.forEach(pth => {
+          const cl = pth.dataset.clase, pts = muestras(pth), dentro = pts.filter(q => dentroPoligono(q, pol)).length;
+          if (cl === 'subrayado' || cl === 'tachon') {
+            if (dentro >= 2) corta = corta || (cl === 'tachon' ? 'un tachón' : 'un subrayado');
+            else { const d = Math.min(...pts.map(distPol)); if (d < 20) pegado = Math.max(pegado, 20 - d); }
+          } else if (dentro >= 3) otra = true;
         });
-        if (tapaFlecha) A(`el sello «${corto(sello.textContent, 20)}» tapa una flecha: muévelo con sello_sobre o sello_pos`);
+        if (corta) E(`el sello «${corto(sello.textContent, 20)}» corta ${corta}: ${mover}`);
+        else if (pegado) A(`el sello «${corto(sello.textContent, 20)}» queda pegado a un subrayado o un tachón (a menos de 20 px): sepáralo con sello_pos`);
+        if (otra) A(`el sello «${corto(sello.textContent, 20)}» tapa una flecha, una llave o un círculo a mano: ${mover}`);
         if ((+sello.dataset.k || 1) < 0.7) A(`el sello «${corto(sello.textContent, 20)}» se redujo al ${Math.round(+sello.dataset.k * 100)}% para caber: un sello lleva 1 o 2 palabras`);
       }
       // Cursor: la mano (sin el margen transparente del SVG) contra letras y emojis
@@ -252,7 +301,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         golpes.forEach((g, nodo) => { if (g >= 3) E(`una flecha atraviesa «${corto(nodo.nodeValue, 24)}» y se lee como tachón`); });
       });
       // Flecha de anotación o de nota al margen reducida a un garabato
-      lam.querySelectorAll(':scope > .capa-mano path[data-estilo="fina"], :scope > .capa-mano path[data-estilo="curva-roja"]').forEach(pth => {
+      lam.querySelectorAll(':scope > .capa-mano path[data-estilo="fina"], :scope > .capa-mano path[data-estilo="curva-roja"], :scope > .capa-mano path[data-estilo="fina-abajo"]').forEach(pth => {
         if (+pth.dataset.p > p) return;
         const largo = pth.getTotalLength();
         if (largo < 60) A(`una flecha de anotación mide ${Math.round(largo)} px: se ve como un garabato; separa la nota (≥ 60)`);
@@ -330,7 +379,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
           if (t.some(q => q.y + q.h > H - 320 || (q.y + q.h > H - 700 && q.x + q.w > W - 140))) zona = corto(e.textContent || e.className, 24);
         });
         const ocupa = (y1 - y0) / H;
-        if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)`);
+        // idea, cita, cifra, objeto y botón son un solo punto focal: centrados y grandes, no llenan el alto a propósito
+        if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara', 'boton'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)`);
         if (zona) AF(`«${zona}» entra en la zona que tapan el caption y los botones de Reels (abajo 320 px, derecha 140 px)`);
       }
     }
@@ -348,7 +398,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     };
     const sets = CT.pedido === 'auto' ? [modoEmoji, modoEmoji === 'apple' ? 'fluent' : 'apple'] : [modoEmoji];
     const flojos = Object.fromEntries(sets.map(x => [x, new Set()])), cambia = new Set(), impresos = new Set();
-    [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e)).forEach(e => {
+    const Tc = tapas(lam);
+    [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && !tapado(e, Tc, lam)).forEach(e => {
       // emoji que imprime texto (🏪 «24», 🪪 «Jo Appleseed»): a tamaño de ícono se lee
       const base = e.querySelector(':scope > .emo-txt, :scope > img');
       if (base && caja(e, lam).w >= 80 * (W / 1920)) {
@@ -377,9 +428,21 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       }
       return [oscura ? [11, 11, 14] : [255, 255, 255]];
     };
-    [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5 && !e.closest('.en-texto, .en-linea')).forEach(e => {
+    [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5 && !e.closest('.en-texto, .en-linea') && !tapado(e, Tc, lam)).forEach(e => {
       const fondos = fondoReal(e);
-      if (fondos.every(neutro)) return;
+      if (fondos.every(neutro)) {
+        // Fondo neutro: la tabla medida (contraste-emojis.json) solo trae ~170 emojis. Uno que NO está en ella (🔈 💿 🔉)
+        // se rasteriza en vivo contra su fondo real, base e insignias; los glifos SVG de la skill no se miden.
+        const fondoN = oscura ? 'oscura' : e.closest('.tarjeta, .cuadro, .bento-lleno, .calendario') ? 'tarjeta' : 'claro';
+        e.querySelectorAll(':scope > .emo-txt, :scope > img, :scope > .insignia > img, :scope > .insignia > .emo-txt').forEach(g => {
+          const tipo = g.tagName === 'IMG' ? 'img' : 'txt';
+          const ch = String(tipo === 'img' ? g.getAttribute('alt') : g.textContent).replace(/\uFE0F/g, '');
+          const enTabla = ((CT.BAJO[modoEmoji] || {})[fondoN === 'oscura' ? 'oscura' : 'claro'] || {})[ch] || (((CT.MEDIDO[modoEmoji] || {})[fondoN]) || {})[ch] != null || (CT.OK[modoEmoji] || []).includes(ch);
+          if (!ch || enTabla) return;
+          r.medir.push({ tipo, ch, src: tipo === 'img' ? g.getAttribute('src') : '', svg: '', fondos, neutro: true, fondoN });
+        });
+        return;
+      }
       const g = e.querySelector(':scope > .emo-txt, :scope > img, :scope > svg');
       if (!g) return;
       const tipo = g.tagName === 'IMG' ? 'img' : g.tagName.toLowerCase() === 'svg' ? 'svg' : 'txt';
@@ -405,7 +468,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     // Etiquetas hermanas de una fila de flujo con distinto número de renglones («Le dan / la otra» entre dos de uno), o
     // encimadas con la vecina (con columnas minmax(0, 1fr) el desborde ya no agranda la columna)
     visibles('.fila-igual').forEach(f => {
-      const et = [...f.children].map(nd => nd.querySelector(':scope > .etiqueta')).filter(e => e && visible(e));
+      const et = [...f.children].filter(nd => nd.classList.contains('nodo') && !nd.classList.contains('nodo-aparte')).map(nd => nd.querySelector(':scope > .etiqueta')).filter(e => e && visible(e));
       if (et.length < 2) return;
       const ls = et.map(e => window.lineasPalabras(e));
       if (new Set(ls.map(l => l.length)).size > 1) AF(`etiquetas hermanas con distinto número de renglones (${ls.map(l => `«${l.map(x => x.join(' ')).join(' / ')}»`).join(', ')}): acórtalas o baja «separacion»`);
@@ -457,7 +520,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     });
     // Emoji que tapa un renglón (la cifra de una barra, el título) y, en una gráfica, pegado al borde de arriba
     const lineasF = renglones(lam, L);
-    const emos = [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5 && !e.matches('.en-linea, .en-texto') && !e.closest('.en-linea, .en-texto, .escena:not(.lamina)'));
+    const Tf = tapas(lam);
+    const emos = [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5 && !e.matches('.en-linea, .en-texto') && !e.closest('.en-linea, .en-texto, .escena:not(.lamina)') && !tapado(e, Tf, lam));
     const tapadosE = new Set();
     emos.forEach(e => {
       const b0 = caja(e, lam), g = { x: b0.x + b0.w * 0.08, y: b0.y + b0.h * 0.08, w: b0.w * 0.84, h: b0.h * 0.84 };
@@ -483,10 +547,25 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
           if (cub > 0.3 && !(pisados.get(k) && pisados.get(k).cub >= cub)) pisados.set(k, { cub, o });
         });
       }
+      // Sobre un fondo a ≤ 12% la frase puede cruzar renglones: así va en la referencia [15:22, h_pill]
+      const anclada = !!lam.querySelector(':scope > .lienzo.foco-frase[data-anclar]');
+      const salida = anclada ? 'acorta la frase o baja "opacidad"' : 'acorta la frase, usa "anclar" o baja "opacidad"';
       pisados.forEach(({ cub, o }, t) => {
-        if (cub > 0.6 && o > 0.12) EF(`la frase del foco se escribe sobre «${t}» del fondo (se lee texto sobre texto): acorta la frase, usa "anclar" o baja "opacidad"`);
-        else AF(`la frase del foco pisa «${t}» del fondo: acórtala o usa "anclar"`);
+        if (o <= 0.12) return;
+        if (cub > 0.6) EF(`la frase del foco se escribe sobre «${t}» del fondo (se lee texto sobre texto): ${salida}`);
+        else AF(`la frase del foco pisa «${t}» del fondo: ${salida}`);
       });
+      // La frase es la protagonista: centrada (≤ 120 px del centro), no pegada debajo del fondo como pie de foto
+      const pilaF = lam.querySelector(':scope > .lienzo.foco-frase > *');
+      if (pilaF && !anclada) {
+        const b = caja(pilaF, lam), d = Math.abs(b.y + b.h / 2 - H / 2);
+        if (d > 120) AF(`la frase del foco quedó ${Math.round(d)} px fuera del centro: se lee como pie de foto del fondo; acórtala o usa "anclar"`);
+      }
+      // El fondo es el ESTADO FINAL de la lámina anterior: la misma tinta (tachones, subrayados, flechas)
+      const prev = i > 0 ? window.PZ.lams[i - 1] : null;
+      const tinta = svg => (svg ? [...svg.querySelectorAll('path')].filter(q => !q.closest('defs') && !q.classList.contains('oculto') && q.dataset.pase !== '2').length : 0);
+      const enClon = tinta(clon.querySelector(':scope > .capa-mano')), antes = prev ? tinta(prev.querySelector(':scope > .capa-mano')) : 0;
+      if (enClon < antes) EF(`el fondo del foco perdió tinta de la lámina anterior (${enClon} de ${antes} trazos): no es su estado final (un tachón perdido invierte el mensaje)`);
     }
     // Emoji sobre emoji (dos personas encimadas en un anillo): cajas recortadas al 84%, sin compuestos ni insignias
     // (una caja dentro de la otra) y sin las celdas de la rejilla, que se miden aparte
@@ -504,7 +583,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       if (!visible(pth) || opac(pth) < 0.5) return;
       const extremos = [pth.dataset.de, pth.dataset.a].filter(Boolean).map(id => [...lam.querySelectorAll(`[data-a="${CSS.escape(id)}"]`)].find(fueraClon)).filter(Boolean);
       const libres = [...emos, ...[...lam.querySelectorAll('img')].filter(e => visible(e) && fueraClon(e) && !e.closest('.emo'))]
-        .filter(e => !extremos.some(x => x.contains(e) || e.contains(x)));
+        .filter(e => !extremos.some(x => x.contains(e) || e.contains(x) || (e.closest('.captura') && e.closest('.captura').contains(x))));
       const tot = pth.getTotalLength(), golpes = new Map();
       for (let t = tot * 0.1; t <= tot * 0.9; t += 5) {
         const q = pth.getPointAtLength(t);
@@ -545,9 +624,16 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
 }, [W, H, MARCA_LITERAL, CONTRASTE]);
 // Emojis sobre un fondo de color: se rasterizan en una página aparte (data URL: sin el bloqueo de file://)
 const contrasteColor = await medirSobreColor(browser, porLamina, dirSalida);
+const modoRender = await page.evaluate(() => document.body.dataset.emoji || 'apple');
+// Qué emojis se midieron en vivo por estar fuera de la tabla y cuáles no se pudieron revisar (Apple fuera de macOS)
+const enVivo = [...new Set(porLamina.flatMap(r => (r.medir || []).filter(m => m.neutro).map(m => m.ch)))];
+const sinRevisar = process.platform === 'darwin' ? [] : [...new Set(porLamina.flatMap(r => (r.medir || []).filter(m => m.neutro && m.tipo === 'txt').map(m => m.ch)))];
 await browser.close();
 
-const errores = [], avis = [];
+// `avisDatos`: los datos por confirmar (huecos declarados, datos propuestos, resultado propio o entregable sin
+// confirmar, capturas por conseguir). Se imprimen y van a qa.json → datos_por_confirmar, pero NO restan nota: ya los
+// representa el tope de BORRADOR (restarlos castigaba dos veces el hueco honesto y empujaba a borrar la prueba).
+const errores = [], avis = [], avisDatos = [];
 avisos.forEach(a => errores.push(a));
 avisosBuild.forEach(a => errores.push('construcción: ' + a));
 sugerencias.forEach(a => avis.push(a));
@@ -561,7 +647,10 @@ porLamina.forEach(r => {
   if (r.palabras > 35) errores.push(`${n}: ${r.palabras} palabras a la vista; el estilo pide una idea por lámina (≤ 22)`);
   else if (r.palabras > 22) avis.push(`${n}: ${r.palabras} palabras a la vista (ideal ≤ 22)`);
   if (r.enfasis > 2) avis.push(`${n}: ${r.enfasis} énfasis (subrayado/resaltador); uno por lámina, dos como máximo`);
-  const flojos = contrasteColor.filter(m => m.i === r.i && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : UMBRAL_COLOR));
+  const flojos = contrasteColor.filter(m => m.i === r.i && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : UMBRAL_COLOR));
+  // fuera de la tabla medida, sobre blanco, tarjeta u oscura: el umbral de la tabla neutra
+  const flojosN = contrasteColor.filter(m => m.i === r.i && m.neutro && m.pct != null && m.pct < CONTRASTE.U);
+  if (flojosN.length) avis.push(`${n}: emoji fuera de la tabla medida que casi no se ve en ${modoRender} sobre ${flojosN[0].fondoN === 'oscura' ? 'la lámina oscura' : flojosN[0].fondoN === 'tarjeta' ? 'la tarjeta' : 'blanco'}: ${flojosN.map(m => `${m.ch} (${m.pct}%)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cámbialo (EMOJIS.md)`);
   if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });
 // Datos pendientes: UN error por dato distinto, con las láminas donde aparece. Un hueco DECLARADO a propósito
@@ -574,7 +663,7 @@ Object.entries(pendientes).forEach(([t, ls]) => {
   const k = t.replace(/^\[|\]$/g, '');
   if (Object.hasOwn(declarados, k)) {
     porConfirmar[k] = { valor: '', laminas: ls, motivo: declarados[k].motivo, pendiente: true };
-    avis.push(`dato pendiente a propósito ${t} (${declarados[k].motivo}) en ${enLaminas(ls)}: el deck es borrador hasta llenarlo`);
+    avisDatos.push(`dato pendiente a propósito ${t} (${declarados[k].motivo}) en ${enLaminas(ls)}: el deck es borrador hasta llenarlo`);
   } else {
     // El texto puede traer ya {{CLAVE}} (el deck la escribió bien y falta el valor) o un [CLAVE] a mano
     const yaMarcada = JSON.stringify(crudo.laminas || []).includes(`{{${k}}}`);
@@ -585,7 +674,7 @@ Object.entries(pendientes).forEach(([t, ls]) => {
 Object.entries(propuestos).forEach(([k, ls]) => {
   const v = crudo.datos && crudo.datos[k] && typeof crudo.datos[k] === 'object' ? crudo.datos[k].valor : '';
   porConfirmar[k] = { valor: v, laminas: ls };
-  avis.push(`dato propuesto ${k} («${v}») en ${enLaminas(ls)}: confírmalo y quita "propuesto"; mientras tanto el deck no es final`);
+  avisDatos.push(`dato propuesto ${k} («${v}») en ${enLaminas(ls)}: confírmalo y quita "propuesto"; mientras tanto el deck no es final`);
 });
 // Voz y anclas contra los pasos (una frase por paso; si no cuadran, los cortes del montaje se desalinean)
 deck.laminas.forEach((l, i) => {
@@ -606,7 +695,7 @@ avis.push(...delDeck.avisos);
 // Resultado propio o entregable prometido sin confirmar: BORRADOR, igual que un dato propuesto
 Object.entries(delDeck.porConfirmar || {}).forEach(([k, v]) => {
   porConfirmar[k] = v;
-  avis.push(`${k} por confirmar en ${enLaminas(v.laminas)}: ${v.motivo}${v.valor ? ` («${v.valor}»)` : ''}`);
+  avisDatos.push(`${k} por confirmar en ${enLaminas(v.laminas)}: ${v.motivo}${v.valor ? ` («${v.valor}»)` : ''}`);
 });
 // Reglas del deck completo
 const tipos = deck.laminas.map(l => l.tipo).filter(t => t !== 'camara');
@@ -644,9 +733,15 @@ const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDec
 const falta = delDeck.faltaParaFinal || [];
 const estado = borrador ? 'borrador' : errores.length ? 'con errores' : nota < NOTA_FINAL ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
 // Información que NO resta nota: el set de emojis sin fijar y la firma (de dónde salió o dónde se llena)
-const info = [infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal() }), avisoFirma].filter(Boolean);
+const pruebaInfo = delDeck.prueba && delDeck.prueba.tipo !== 'real'
+  ? `va con prueba por sustituto ${delDeck.prueba.tipo === 'logica' ? 'c (prueba lógica)' : 'd (primeros casos con garantía)'} en la lámina ${delDeck.prueba.lamina}; una captura real con permiso la refuerza (GUION §7)` : null;
+const infoContraste = [
+  enVivo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
+  sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
+];
+const info = [...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal() }), avisoFirma, pruebaInfo, infoIconos(deck)].filter(Boolean);
 const informe = { nota, estado, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
-  avisos: avis, info, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
+  avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
@@ -655,7 +750,8 @@ else {
   console.log(`QA ${nota}/100 · ${informe.laminas} láminas · ${informe.pasos} pasos · voz ~${duracion.estimada}${partes}${duracion.objetivo ? ` (objetivo ${duracion.objetivo})` : ''}`);
   errores.forEach(e => console.log('  ✗ ' + e));
   avis.forEach(e => console.log('  ⚠ ' + e));
-  if (!errores.length && !avis.length) console.log('  ✓ sin hallazgos');
+  avisDatos.forEach(e => console.log('  ◌ ' + e));
+  if (!errores.length && !avis.length && !avisDatos.length) console.log('  ✓ sin hallazgos');
   info.forEach(e => console.log('  ℹ ' + e));
   if (estado !== 'listo') console.log(`ESTADO: ${estado}${falta.length ? ` / falta-venta: ${falta.join(', ')}` : ''}`);
 }
