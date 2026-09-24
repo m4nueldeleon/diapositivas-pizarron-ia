@@ -224,3 +224,26 @@ test('foco: con anclar:"arriba" la frase queda en la mitad superior; sin anclar 
     assert.equal(m[1].choca, false, JSON.stringify(m));
   });
 });
+
+test('foco: el hueco que busca la frase respeta la «fuente» del fondo (neuroventas r3, lámina 6)', { timeout: 120_000 }, async () => {
+  const fondo = { tipo: 'cifra', arriba: 'Un paciente sin señales de emoción:', lineas: [{ texto: 'Elegir entre 2 fechas le tomó…', tam: '76px', peso: 500 }, { texto: 'Casi __30 minutos__', tam: '140px', peso: 800 }], fuente: 'Antonio Damasio, «El error de Descartes» (1994)' };
+  await conDeck({ emoji: 'apple', marca: false, laminas: [fondo, { tipo: 'foco', texto: 'Sin emoción, tu cliente compara y compara… y no decide.', opacidad: 0.1 }] }, async page => {
+    const m = await page.evaluate(() => {
+      const lam = window.PZ.lams[1], fr = [...lam.querySelectorAll('.foco-frase .nota, .foco-frase .t')].map(e => e.getBoundingClientRect());
+      const fu = lam.querySelector('.escena.clon .fuente').getBoundingClientRect();
+      return { choca: fr.some(f => f.top < fu.bottom && f.bottom > fu.top), fr: fr.map(f => [f.top, f.bottom]), fu: [fu.top, fu.bottom] };
+    });
+    assert.equal(m.choca, false, JSON.stringify(m));
+  });
+});
+
+test('cuadrantes: en una fila los emojis quedan a la misma altura aunque un texto tenga más renglones (neuroventas r3, lámina 14)', { timeout: 120_000 }, async () => {
+  const lam = { tipo: 'cuadrantes', items: [{ emoji: '😩', emoji_tam: 200, texto: 'Hoy: publicas diario y **nadie compra**', tono: 'r' }, { emoji: '😌', emoji_tam: 200, texto: 'Después: tus posts traen **mensajes de compra**', tono: 'v' }] };
+  await conDeck({ emoji: 'apple', marca: false, laminas: [lam] }, async page => {
+    const m = await page.evaluate(() => [...window.PZ.lams[0].querySelectorAll('.cuadro')].map(c => {
+      const e = c.firstElementChild.getBoundingClientRect(), t = c.lastElementChild;
+      return { emoji: Math.round(e.top), renglones: Math.round(t.scrollHeight / parseFloat(getComputedStyle(t).lineHeight)) };
+    }));
+    assert.ok(Math.abs(m[0].emoji - m[1].emoji) <= 2, JSON.stringify(m));
+  });
+});

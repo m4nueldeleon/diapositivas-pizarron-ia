@@ -476,7 +476,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         const el = nd.parentElement;
         if (!el || !/\S/.test(nd.nodeValue) || el.closest('script, style, .emo') || !visible(el)) continue;
         const rg = document.createRange(); rg.selectNodeContents(nd);
-        [...rg.getClientRects()].map(q => rel(q, L)).filter(b => b.h >= 60 * (W / 1920) && b.w > 3).forEach(b => {
+        [...rg.getClientRects()].map(q => rel(q, L)).filter(b => b.h >= (el.closest('.fuente') ? 36 : 60) * (W / 1920) && b.w > 3).forEach(b => {
           const cub = Math.max(0, ...frase.filter(f => f.b.x < b.x + b.w && f.b.x + f.b.w > b.x)
             .map(f => Math.max(0, Math.min(b.y + b.h, f.b.y + f.b.h) - Math.max(b.y, f.b.y)) / b.h));
           const k = corto(nd.nodeValue, 24), o = opac(el);

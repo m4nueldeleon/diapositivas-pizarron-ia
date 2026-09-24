@@ -384,6 +384,23 @@
     });
   }
 
+  // ---------- cuadrantes: emoji y primer renglón a la misma altura en los bloques de una fila ----------
+  // Con la letra a 84 px [ref_628] un texto se parte en 3 renglones y su vecino en 2; centrado cada uno por su cuenta,
+  // los emojis quedaban a ~50 px de distinta altura [r3, neuroventas 14]. El texto de cada bloque toma el alto del más
+  // alto de su fila, así los dos centran el mismo bloque y el emoji cae en la misma línea.
+  function igualarCuadros(lam) {
+    lam.querySelectorAll('.cuadrantes').forEach(g => {
+      const filas = new Map();
+      [...g.children].forEach(c => { const k = Math.round(c.offsetTop); if (!filas.has(k)) filas.set(k, []); filas.get(k).push(c); });
+      filas.forEach(cs => {
+        const txt = cs.map(c => c.lastElementChild).filter(Boolean); if (txt.length < 2) return;
+        txt.forEach(t => { t.style.minHeight = ''; });
+        const alto = Math.max(...txt.map(t => t.offsetHeight));
+        txt.forEach(t => { t.style.minHeight = alto + 'px'; });
+      });
+    });
+  }
+
   function encajar(lam) {
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
       const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes') || h.classList.contains('sangre')) return;
@@ -412,7 +429,7 @@
     if (!lz || !clon || lz.dataset.anclar) return;
     const pila = lz.firstElementChild; if (!pila) return;
     const H = lam.offsetHeight, P = caja(pila, lam), pad = 18;
-    const TXT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca';
+    const TXT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente';
     const rs = [...clon.querySelectorAll(TXT)].filter(e => !e.querySelector(TXT)).flatMap(e => rectsTexto(e, lam))
       .concat([...clon.querySelectorAll('svg text')].filter(t => t.textContent.trim()).map(t => caja(t, lam)))
       .filter(r => r.h >= 30 && r.x < P.x + P.w && r.x + r.w > P.x);
@@ -673,6 +690,7 @@
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
+    lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     lams.forEach(l => { try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); } });
     lams.forEach(l => { try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); } });
