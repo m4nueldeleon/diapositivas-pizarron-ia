@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Emojis, DEFS_GLOBALES } from './emoji.mjs';
 import { crearCtx, escapar, CURSOR_MANO, CURSOR_PUNO, CURSOR_FLECHA } from './comun.mjs';
+import { marcar } from './markup.mjs';
 import * as T from './layouts-texto.mjs';
 import * as D from './layouts-datos.mjs';
 import { validarDeck, sanearDeck } from './contrato.mjs';
@@ -122,6 +123,25 @@ function guion(l, pasos) {
   return `<script type="application/json" class="guion">${jsonSeguro({ voz, dur })}</script>`;
 }
 
+// Tramo en vivo (`camara` con `vivo: true`): la actividad, la demostración o las preguntas de una clase. En el
+// presentador el público ve la consigna en blanco, con su emoji y una cuenta regresiva desde `dur`; los PNG, la
+// hoja y el montaje no cambian (siguen como tramo a cámara). Todo texto pasa por marcar().
+const MAX_ITEMS_VIVO = 5;
+export function duracionVivo(l) {
+  const d = Array.isArray(l.dur) ? l.dur.reduce((a, b) => a + (Number(b) || 0), 0) : Number(l.dur) || 0;
+  return Math.max(0, Math.round(d));
+}
+function bloqueVivo(l, em) {
+  const consigna = typeof l.texto === 'string' && l.texto.trim() ? l.texto : typeof l.nota === 'string' ? l.nota : '';
+  const preguntas = /pregunt|dudas/i.test(`${consigna} ${l.id || ''}`);
+  const emoji = typeof l.emoji === 'string' && l.emoji.trim() ? l.emoji : preguntas ? '🙋' : '⏱️';
+  const items = (Array.isArray(l.items) ? l.items : []).map(x => (typeof x === 'string' ? x : x && typeof x === 'object' && typeof x.texto === 'string' ? x.texto : ''))
+    .filter(x => x.trim()).slice(0, MAX_ITEMS_VIVO);
+  const lista = items.length ? `<ol class="vivo-items">${items.map(t => `<li>${marcar(t)}</li>`).join('')}</ol>` : '';
+  return `<div class="vivo-pres">${em.html(emoji, 190)}<div class="vivo-consigna">${marcar(consigna)}</div>${lista}<div class="vivo-reloj">${reloj(duracionVivo(l))}</div></div>`;
+}
+const reloj = s => `${Math.floor(s / 60)}:${String(Math.round(s) % 60).padStart(2, '0')}`;
+
 export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   const errores = validarDeck(crudo, Object.keys(LAYOUTS));
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
@@ -156,10 +176,12 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
     }
     const tipo = escapar(l.tipo);
     const claseFondo = a.oscura && ['azul', 'negro'].includes(l.fondo) ? ` fondo-${l.fondo}` : '';
-    return `<section class="lamina escena${a.oscura ? ' oscura' + claseFondo : ''}" data-i="${i}" data-tipo="${tipo}" data-id="${escapar(l.id || tipo)}" data-pasos="${pasos}"${a.clic ? ` data-clic='${escapar(a.clic)}'` : ''}>
+    const vivo = l.tipo === 'camara' && l.vivo === true;
+    return `<section class="lamina escena${a.oscura ? ' oscura' + claseFondo : ''}" data-i="${i}" data-tipo="${tipo}" data-id="${escapar(l.id || tipo)}" data-pasos="${pasos}"${a.clic ? ` data-clic='${escapar(a.clic)}'` : ''}${vivo ? ` data-vivo="1" data-dur="${duracionVivo(l)}"` : ''}>
   ${em.enTexto(cuerpo)}
   <svg class="capa-mano"></svg>${em.enTexto(a.extras)}
-  ${l.tipo === 'camara' ? `<div class="lienzo"><div class="nota" style="color:#999">🎥 ${escapar(l.nota || 'A cámara')}</div></div>` : ''}
+  ${l.tipo === 'camara' ? `<div class="lienzo"><div class="nota" style="color:#999">🎥 ${escapar(l.nota || l.texto || 'A cámara')}</div></div>` : ''}
+  ${vivo ? em.enTexto(bloqueVivo(l, em)) : ''}
   ${marca && l.firma !== false && l.tipo !== 'camara' ? marca : ''}
   <script type="application/json" class="con">${jsonSeguro(a.conexiones)}</script>
   ${guion(l, pasos)}

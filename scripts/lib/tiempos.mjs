@@ -54,6 +54,7 @@ export const PIEZAS = {
   // piezas cortas con arco propio (ARCOS.md): no son el arco largo comprimido
   tutorial: { min: 3, max: 8, nombre: 'tutorial' },
   'vsl-corto': { min: 3, max: 6, nombre: 'VSL corto' },
+  'clase-corta': { min: 15, max: 30, nombre: 'clase corta o taller' },
   libre: null,
 };
 

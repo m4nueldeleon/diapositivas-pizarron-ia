@@ -8,7 +8,7 @@ import { cargarPlaywright } from './playwright.mjs';
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros']);
+const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);

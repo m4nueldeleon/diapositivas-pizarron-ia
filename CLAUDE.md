@@ -19,19 +19,27 @@ SKILL.md.
 - `scripts/lib/contrato.mjs` guarda en `CAMPOS` lo que lee cada diseño. Si un layout lee un campo
   nuevo, agrégalo ahí: la prueba lo exige, y un campo fuera de la tabla sale como aviso en QA.
 - `scripts/lib/reglas-deck.mjs`: reglas de QA que se leen en el deck.json sin navegador (firma de
-  relleno, duración de la pieza, apertura, voz humana, proyecciones, posts de maqueta, llamado). Son
-  funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs`.
+  relleno, duración de la pieza y peso de los tramos en vivo, apertura, voz humana, proyecciones, posts de
+  maqueta, llamado, prueba real y credibilidad, objeciones, descargos en pantalla, coherencia emoji↔concepto,
+  claves que nadie lee) y la nota (`notaQA`, con tope de BORRADOR). Son funciones puras: su prueba va en
+  `pruebas/reglas-deck.test.mjs`.
 - `scripts/lib/datos.mjs` sustituye `{{CLAVE}}` con `datos` antes de sanear; lo que falta queda como
   `[CLAVE]`, que `marcar()` pinta como hueco y QA cuenta como pendiente.
-- `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA.
+- `scripts/lib/hoja.mjs` arma `hoja.jpg` y `hoja-pasos.jpg` con la misma numeración que los PNG y el QA; con más
+  de 20 láminas las pagina (`hoja-01.jpg`…, `hojas.json`). `render.mjs --pdf` arma `laminas.pdf`.
 - `templates/presentador.js` es el presentador en vivo y la vista de ensayo (`?modo=orador`), sobre
-  `window.PZ`. Lee la voz del `<script class="guion">` que `construir.mjs` mete en cada lámina.
+  `window.PZ`. Lee la voz del `<script class="guion">` que `construir.mjs` mete en cada lámina. Las dos
+  ventanas se siguen por `postMessage` (ventana ↔ opener; BroadcastChannel no cruza documentos `file://` en
+  Safari) y la `camara` con `vivo: true` lleva su bloque `.vivo-pres` con cuenta regresiva.
 - `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica versionada (`pruebas/replica/deck.json`) contra
   los cuadros del video, que viven fuera del repo: ver PROTOCOLO §4b.
 - `scripts/lib/medidas-dom.mjs`: medidas que QA hace dentro de Chromium (palabras por renglón, recortes, flex
   con texto y negrita). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
 - `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
   sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md.
+- `references/EMOJIS.md` es la única fuente de verdad de los emojis. `pruebas/emojis-coherencia.test.mjs` falla
+  si un emoji queda en dos filas de concepto, si otro documento cita un emoji que no está en el diccionario o
+  si un sustituto de `BAJO_CONTRASTE` cambia de concepto. Los grupos de `PARECIDOS` (emoji.mjs) van en su tabla.
 
 ## Reglas de mantenimiento
 1. **Un diseño nuevo exige cinco cosas**:

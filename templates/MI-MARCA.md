@@ -23,7 +23,8 @@ Déjala vacía si no tienes marca: las láminas saldrán sin firma. **Nunca pong
 | Concepto | Emoji |
 |---|---|
 | tu producto | 📦 |
-| tu alumno o cliente | 🧑‍💻 |
+| tú, quien mira | 🧑‍💻 |
+| tu cliente | 🧑‍💼 |
 | tu método | 🗺️ |
 
 ## Oferta (solo si el deck vende)

@@ -5,6 +5,14 @@ un concepto** dentro del deck: no uses dos emojis que se ven casi iguales (🧑�
 conceptos distintos, ni el mismo emoji para dos cosas. Cada emoji de este diccionario tiene un solo
 concepto. El contraste de cada uno está **medido** en los dos sets y tres fondos con
 `scripts/medir-emojis.mjs` (`scripts/lib/contraste-emojis.json`), y QA lo revisa (ver «Bajo contraste»).
+Este archivo es la **única fuente de verdad**: los demás documentos remiten aquí, y
+`pruebas/emojis-coherencia.test.mjs` falla si un emoji queda en dos filas de concepto distintas o si otro
+documento cita un emoji que no está aquí.
+
+**Fija el diccionario del deck antes de escribir las láminas**: qué emoji es cada concepto, y que ninguno diga
+lo contrario en otra lámina. QA lista en `qa.json → iconos` dónde sale cada emoji y avisa dos cosas: dos emojis
+que se ven casi iguales en el mismo deck («Parecidos», abajo) y un rol contrario (la base de una `rejilla` de
+asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron»).
 
 ## Qué set usar
 - **`"emoji": "apple"`** cuando los PNG o el video se exportan en una Mac (la laptop o el mini, que también
@@ -21,20 +29,21 @@ concepto. El contraste de cada uno está **medido** en los dos sets y tres fondo
 |---|---|---|
 | dinero, ganancia | 💰 | bolsa: el más usado |
 | dinero que se va, gasto | 💸 | billetes con alas |
-| efectivo, pago | 💵 | |
 | ingresos recurrentes | `flujo` 🔁 → 💰 | dos nodos, no insignia |
 | crecimiento | 📈 | |
 | caída o pérdida | 📉 | |
 | métricas, datos | 📊 | |
 | banco, tu cuenta | 🏦 | |
-| precio, oferta | 💵 · 🏷️ solo en Fluent | el 🏷️ de Apple es beige pálido y se pierde |
+| precio, pago, efectivo, oferta | 💵 · 🏷️ solo en Fluent | el 🏷️ de Apple es beige pálido y se pierde |
 | producto | 📦 | |
 | producto digital (ebook, plantilla) | 💻 · 📘 | el curso o programa es 🎓 |
-| venta o cierre | 🤝 | solo venta; la alianza firmada es ✍️ |
+| alianza, trato, socio | 🤝 | como en la referencia: «1 Partnership» [10:30], «Partner» (ref_1040). La venta cerrada es `si:🤝` o 💵: 🤝 solo, sin marca, no es venta |
 | cliente | 🧑‍💼 | |
 | empresa | 🏢 | |
 | empleo o sueldo fijo | 👔 | |
 | apostar | 🎰 | |
+| dropshipping, envío de producto | 🚚 | |
+| venta de alto ticket, servicio caro | 💼 | |
 | ahorros | 🐷 | alcancía |
 | el mejor | 🏆 | |
 | meta, foco | 🎯 | |
@@ -44,28 +53,32 @@ concepto. El contraste de cada uno está **medido** en los dos sets y tres fondo
 | Concepto | Emoji |
 |---|---|
 | tú, el alumno | 🧑‍💻 (resaltado en la multitud) |
-| audiencia, comunidad | 👥 · muchos 👤 |
+| audiencia, comunidad | 👥 · una `rejilla` de 👤 |
 | creador de contenido | 🤳 |
 | experto, consultor o maestro | 🧑‍🏫 |
 | médico o profesionista | 🧑‍⚕️ |
 | principiante | 🐣 |
 | equipo | 🧑‍🤝‍🧑 |
-| perdido, confundido | 😵‍💫 · 🤯 |
-| sin mostrar la cara | `no:🙋` · `no:🎥` |
+| perdido, confundido | 😵‍💫 |
+| sin mostrar la cara | `no:🙅‍♂️` (ref_628: 🙅🏻‍♂️ con ❌ para «Showing your face online»; `no:🎥` es «sin grabar video») |
+| levanta la mano: pide algo, «te avisa», pasa a un humano | 🙋 |
 
 ## Acciones y proceso
 | Concepto | Emoji |
 |---|---|
-| encontrar, investigar | 🔍 |
+| encontrar, buscar | 🔍 [16:40, «Find»] |
+| identificar, detectar a alguien | 🕵️ (ref_1040, «Identify») |
 | construir | 🛠️ |
 | lanzar | 🚀 |
 | automatizar, IA | 🤖 |
 | pocos clics | 👆 (el 🖱️ de Apple es un mouse blanco sobre blanco) |
 | escribir, plan | 📝 |
+| tu método, el mapa del sistema | 🗺️ |
 | enviar mensaje, «te escriben» | 📲 (se lee «celular que recibe un mensaje»; se dibuja en SVG) · 📩 en Apple (el 💬 de Fluent es lila casi blanco) |
-| llamada | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro) |
+| llamada, videollamada, llamada de diagnóstico | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro) |
 | fecha, agenda, reunión agendada | 📅 (se dibuja en SVG, un calendario SIN fecha: el de Apple imprimía «JUL 17») |
-| reunión en vivo, videollamada | 💻 (📹 es una videocámara de mano: se lee «grabar») |
+| grabar video, hacer contenido | 🎥 [ref_628, «Creating Content»] · 📹 en lámina oscura con Apple (el 🎥 de Apple se hunde en el negro) |
+| orientación, rumbo: «te orientamos», tu plan | 🧭 |
 | aprender | 🧠 |
 | rápido | ⚡ |
 | tiempo, espera | ⏳ · ⏱️ |
@@ -78,22 +91,22 @@ concepto. El contraste de cada uno está **medido** en los dos sets y tres fondo
 | Concepto | Emoji | Notas |
 |---|---|---|
 | celular, WhatsApp sin logo | 📱 | se dibuja igual en los dos modos (el de Fluent era una tableta morada) |
-| varias conversaciones a la vez | `rejilla` de 📲 o 📲 con nota «×10»; «conversación» en sí: `📱+💬` si la insignia se ve (si no, 📲) | nunca 👥: se lee «personas» |
+| varias conversaciones a la vez | una `rejilla` de 📲, o el mismo 📲 con nota «×10»; «conversación» en sí: `📱+💬` si la insignia se ve (si no, 📲) | nunca 👥: se lee «personas» |
 | notificación | 🔔 | |
 | correo | 📧 | |
 | anuncio, publicidad | 📣 | |
-| un prospecto, un lead | 👤 | una persona; la audiencia son 👥 o muchos 👤; el cliente ya es 🧑‍💼 |
+| una persona: un prospecto, un lead, alguien que asiste | 👤 | la audiencia son 👥 o una `rejilla` de 👤; el cliente ya es 🧑‍💼 |
 | atraer prospectos | 🧲 | |
 | seguimiento, recordatorio | ⏰ | |
-| objeción | 🙅 | la lámina de objeción sigue la receta de GUION §2 |
+| objeción | el emoji de lo que dice que le falta, negado: «No tengo dinero» → `no:💰` | la receta de GUION §2; 🙅‍♂️ es «sin mostrar la cara» |
 | garantía | 🛡️ | con plazo y condición medible (GUION §7) |
 | testimonio | sin emoji | es una `prueba` con captura real |
-| cupos limitados | 🎟️ | se dibuja liso (el de Apple dice «ADMIT ONE»); solo si son reales, con `rejilla` (GUION §7) |
+| boleto, lugar apartado, cupos | 🎟️ | se dibuja liso (el de Apple dice «ADMIT ONE»); cupos solo si son reales, con `rejilla` (GUION §7). 🎫 sale igual: usa 🎟️ |
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
 | compra en línea, carrito | 🛒 | |
 | tienda o negocio local | 🏠 o 🏬 | 🏪 trae «24» (Apple) o «24 H» (Fluent) impreso: QA lo avisa |
 | pago con tarjeta | 💳 | |
-| contrato, firma, alianza firmada | ✍️ | |
+| firmar o inscribirse: contrato, registro, inscripción | ✍️ | el registro no es 📝 («escribir, plan») ni 🧲 («atraer prospectos») |
 
 El embudo no tiene emoji: usa el diseño `flujo`.
 
@@ -101,7 +114,6 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 | Concepto | Emoji | Notas |
 |---|---|---|
 | curso, programa, certificación | 🎓 | |
-| maestro | 🧑‍🏫 | el mismo que experto |
 | alumno | 🧑‍🎓 | 🧑‍💻 es «tú» |
 | tarea, ejercicio | 📋 | |
 | examen, evaluación | 💯 | 📝 ya es «escribir, plan» |
@@ -110,12 +122,39 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 | progreso, niveles | 🪜 | |
 | ejemplo, «mira esto» | 👀 | |
 
+## Finanzas
+| Concepto | Emoji | Notas |
+|---|---|---|
+| impuestos, SAT, gobierno | 🏛️ | en `fluent` es el mismo edificio gris de columnas que 🏦: en un deck con los dos, el banco va con su logo real o con 💳 (QA avisa el par) |
+| repartir, calcular | 🧮 | |
+| operación del negocio (lo que cuesta operar) | 🧰 | rojo y saturado en los dos sets; el gasto suelto sigue siendo 💸 |
+
+Separar en cuentas: una `rejilla` de 🐷 o de 💰 con etiquetas, no 🗂️ (beige y pálido en Apple).
+
+## Tutorial e IA
+| Concepto | Emoji | Notas |
+|---|---|---|
+| probar, experimentar | 🧪 | |
+| queja, cliente molesto | 😠 | |
+| pregunta difícil | 🌶️ | |
+| sin programar, sin código | `no:⌨️` | 💻 es «producto digital» y 🧑‍💻 es «tú» |
+| rol, perfil, personaje | 🎭 | 🪪 imprime «Jo Appleseed» en Apple |
+| documento, base de conocimiento, instrucciones | 📄 | se dibuja en SVG igual en los dos sets (hoja blanca, renglones oscuros, esquina azul): la hoja de los dos sets sale pálida. 📋 es «tarea» |
+
+## Eventos
+| Concepto | Emoji | Notas |
+|---|---|---|
+| lugar vacío, silla | 🪑 | en una `rejilla` de asistencia es la BASE (lo que no llegó): nunca se reusa como «llegó» (`si:🪑`); el que llegó es 👤 |
+
+Lo demás de un evento ya tiene emoji: quien asiste es 👤, el registro o la inscripción ✍️, el recordatorio ⏰,
+el boleto o el apartado 🎟️ y «tu plan» 🧭.
+
 ## Llamados en reels
 | Llamado | Emoji | Notas |
 |---|---|---|
 | guardar | 📌 | 🔖 se lee distinto en cada modo |
 | compartir | 📤 | |
-| comentar una palabra | 📲 | el 💬 de Fluent casi desaparece sobre blanco |
+| comentar una palabra | el mismo 📲 de «enviar mensaje» | el 💬 de Fluent casi desaparece sobre blanco |
 | seguir la cuenta | ➕ | 🔔 ya es notificación |
 | me gusta | ❤️ | |
 
@@ -128,7 +167,7 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 | celebración | 🎉 |
 | «¿qué pasa?», duda | 🤷 |
 | fuego, tendencia | 🔥 |
-| saludo o levantar la mano | ✋ |
+| saludo, alto | ✋ |
 
 ## Sí / no
 - ✅ lo que sí, lo que ya está hecho.
@@ -149,8 +188,8 @@ para una secuencia usa un `flujo`.
 | `📱+🔥` | contenido viral |
 | `no:🎥` | sin grabar video |
 | `no:💸` | sin invertir |
-| `si:🤝` | venta cerrada |
-| `si:✍️` | alianza o contrato firmado |
+| `si:🤝` | trato o venta cerrada |
+| `si:✍️` | contrato firmado, inscripción hecha |
 | `📱+👥` | los contactos de tu teléfono |
 | `🌙+☀️` | disponible 24/7 (🌙 sola es «de noche») |
 | `no:⏳` | sin perder tiempo |
@@ -179,6 +218,21 @@ para una secuencia usa un `flujo`.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.
 - 👥 para «conversaciones»: se lee «personas».
+- 🎫: sale igual que 🎟️ (los dos se dibujan como el mismo boleto). Usa 🎟️.
+- 🪪: en Apple imprime «Jo Appleseed». Para «rol» o «perfil», 🎭; para una persona, 👤.
+- 🗂️: beige y pálido en Apple. Para «separar», una `rejilla` con etiquetas.
+- 🗓️ y 📆: salen igual que 📅 (el mismo calendario en SVG). Usa 📅.
+
+## Parecidos: no los mezcles en un deck
+
+Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si el deck usa dos del mismo grupo
+(`PARECIDOS` en `scripts/lib/emoji.mjs`; con `auto`, en cualquiera de los dos sets):
+
+| Set | Grupo | Qué hacer |
+|---|---|---|
+| los dos | 🧑‍💼 👨‍💼 | cliente es 🧑‍💼; experto, 🧑‍🏫 |
+| los dos | 📅 🗓️ 📆 · 🎟️ 🎫 · 📄 📃 | se dibujan con el mismo SVG: usa el primero |
+| Fluent | 🏦 🏛️ | el mismo edificio gris: impuestos 🏛️ y el banco con su logo o 💳 |
 
 ## Ojo: se ven distinto según el modo
 | Emoji | Apple | Fluent | Qué hacer |
@@ -189,6 +243,7 @@ para una secuencia usa un `flujo`.
 | 🗣️ | perfil que habla | silueta negra | sirve en lámina clara, pero no junto a 👤 o 👥 grises |
 | 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | la misma rejilla lila | se dibujan en SVG, un calendario sin fecha, igual en los dos modos (también dentro del texto); usa 📅 |
 | 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos lisos | se dibujan en SVG, un boleto rojo liso, igual en los dos modos |
+| 📄 📃 | hoja pálida | hoja pálida | se dibujan en SVG, una hoja con renglones y la esquina azul, igual en los dos modos |
 
 ## Emojis con texto impreso
 
@@ -203,6 +258,8 @@ Algunos emojis traen letras: a tamaño de ícono se leen, en inglés o con una f
 | 🎫 | «LIVE CONCERT TICKET / ZONE A / JAN 09» | liso | se dibuja en SVG liso |
 | 🏪 | «24» | «24 H» | QA avisa (`TEXTO_IMPRESO`): usa 🏠 o 🏬 |
 | 🪪 | «Jo Appleseed» | tarjeta azul lisa | QA avisa en Apple: usa 👤 |
+| 🧾 | «RECEIPT» | recibo pálido | QA avisa en Apple: para «comprobante», 💵 o ✍️ |
+| 💳 | «John Appleseed» | tarjeta lisa | se tolera a tamaño de ícono; nunca en primer plano gigante |
 | 💵 | billete de EE. UU. | billete | se tolera: casi no se lee |
 
 QA avisa desde ~80 px de caja (`TEXTO_IMPRESO` en `scripts/lib/emoji.mjs`). Si agregas uno a esta tabla,
@@ -219,13 +276,13 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 
 | Set | Fondo | Se pierden | Usa en su lugar |
 |---|---|---|---|
-| Fluent | blanco, tarjeta, cuadrantes | 💬 🗨️ 💭 ✉️ 📩 📨 (lila casi blanco) | mensaje → 📲 · correo → 📧 · pensamiento → 💡 |
-| Fluent | blanco, tarjeta | ⚙️ 🔧 (lila lavado) · 📃 🗒️ | 🛠️ · 📋 |
+| Fluent | blanco, tarjeta, cuadrantes | 💬 🗨️ 💭 ✉️ 📩 📨 (lila casi blanco) | mensaje (💬 🗨️ 📩) → 📲 · correo (✉️ 📨) → 📧 · pensamiento → 💡 |
+| Fluent | blanco, tarjeta | ⚙️ 🔧 (lila lavado) · 🗒️ | 🛠️ · 📄 |
 | Apple | blanco, tarjeta, rosa | 🏷️ (beige pálido), ✉️, 🖱️ (mouse blanco) | precio → 💵 · correo → 📧 · clic → 👆 |
 | Apple | tarjeta gris | 💬 (burbuja blanca) | 📲 |
 | los dos | claro | ☁️ | «en la nube» → 🌐 |
-| los dos | claro | 🤍 🏳️ 📄 🧾 | ❤️ · 🚩 · 📋 |
-| Apple | oscura | 🗨️ 📞 💲 🎥 | 💬 · ☎️ · 💵 · 📹 (grabar) o 💻 (videollamada) |
+| los dos | claro | 🤍 🏳️ 🧾 | ❤️ · 🚩 · 💵 |
+| Apple | oscura | 🗨️ 📞 💲 🎥 | 💬 · ☎️ · 💵 · 📹 (el mismo «grabar video») |
 | Fluent | oscura | 🗣️ | 🎤 |
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se

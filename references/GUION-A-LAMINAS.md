@@ -92,8 +92,19 @@ la lámina nueva o un elemento más sobre la actual.
      $10,000-$50,000». Si hay que dar un solo número, sale de la tasa baja.
    - c) Si el total subrayado sostiene la promesa del título, la voz dice el descargo en esa lámina o en el
      gancho, como la referencia [0:38]: «que yo tenga estos resultados no quiere decir que tú los tengas».
+   - d) **Escena o cifra ilustrativa**: una situación inventada para explicar, que no le promete nada al
+     espectador («entran $50,000 este mes»). La voz la presenta **una sola vez** y con naturalidad, al abrir
+     la escena: «Pongamos que este mes vendiste 50 mil…», como la referencia [22:28, «in this example», sobre
+     la lámina «Revenue Split» de 22:15, que no lleva ninguna etiqueta]. **En pantalla no va ningún
+     descargo**: ni `nota`, ni `titulo`, ni `subtitulo`, ni `encabezado`, ni `arriba` dicen «ejemplo»,
+     «hipotético» o «ilustrativo». La nota a mano lleva la consecuencia («Y el 17 pides prestado»), como pide
+     el punto 9. El carácter ilustrativo queda en `_comentario` para quien edite el deck. Si la cifra es un
+     dato real publicado, lleva `fuente`; si es una proyección al espectador, siguen a) a c). Las maquetas
+     de `prueba` (`ejemplo: true`) sí llevan su sello EJEMPLO: son otra cosa.
    QA avisa cuando una `cifra` subraya un total de dinero, % o clientes y `arriba` no trae número, y
-   también cuando la cuenta no trae NINGÚN rango (§3.8 b).
+   también cuando la cuenta no trae NINGÚN rango (§3.8 b); cuando un descargo («de ejemplo», «Ejemplo:»,
+   «hipotético») va en pantalla fuera de una `prueba`, y cuando la voz repite que es un ejemplo en más de dos
+   láminas (§3.8 d).
 9. **La nota de remate y el `foco` llevan un dato, una consecuencia concreta o una acción con objeto**
    (qué mandar, a quién, cuándo). Máximo una antítesis «No X, Y» por deck, y nada de cierre motivacional
    genérico («Todo empieza con…», «Mándalo hoy», «Esperar no es una estrategia»). Si la frase viene del
@@ -190,22 +201,44 @@ La regla de fondo: **oscura SOLO en la revelación de la marca o el producto** (
 Todo lo demás va en lámina **blanca con emoji**, con la capa a mano de siempre: la lista «They will:»,
 las preguntas 🤔, los «#4» y «#5», la lista de espera y el «2 minutes» son blancos. La oferta escala con
 la pieza (ARCOS.md): un reel no lleva oferta y una clase solo un puente al siguiente paso. **Todo dato es
-real**: si no hay cifra de credibilidad, prueba o escasez real, el beat se omite; nunca se inventa.
+real**: si no hay cifra de credibilidad, prueba o escasez real, el beat se omite o se cambia por un sustituto
+honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 
 | # | Beat | Minuto | Diseño |
 |---|---|---|---|
+| 0 | **Objeciones o razones** antes de la oferta: «a quick word of warning… two reasons. Reason number one…». Cada una con la receta de §2: emoji negado, «Objeción #N» o «Razón #N» entre el emoji y la frase, la objeción en negrita; la respuesta en la lámina siguiente, con un dato real o un paso concreto. Nunca pegada al botón | 34:17-36:00 | `idea` + `encabezado_pos: "entre"` |
 | 1 | Puente del dolor a la solución («te sientes perdido») | 35:45-36:05 | `objeto` (foto real) o `idea` |
-| 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes») | 36:10 | `prueba` u `objeto` con foto real |
+| 2 | Credibilidad con cifra y años («desde 2016, más de 23,000 clientes»). Si no hay cifra real, sale la `camara` de quién habla sin inventar número (QA lo avisa) | 36:10 | `prueba` u `objeto` con foto real |
 | 3 | Ancla con tu nivel caro real («Quantum… desde $25,000»), opcional | 36:30-36:40 | `cifra` |
 | 4 | Revelación del producto, en 1 paso | 36:15-37:55, 43:00 | `oscura` |
 | 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` |
-| 6 | Prueba real: el muro de capturas | 42:00 | `prueba` |
+| 6 | Prueba real: el muro de capturas (con `src` o `fuente`). Sin prueba real, un sustituto de la tabla de abajo; nunca una maqueta `ejemplo: true` | 42:00 | `prueba` |
 | 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el «✓ Hecho contigo» es el remate, en su propio corte [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
 | 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera | 43:00-43:30 | `rejilla` + `destacado_paso` |
-| 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🤝 |
+| 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🧭 |
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |
 | 11 | Por qué ahora y cierre de identidad, luego a cámara | 44:35-44:45 | `idea`, después `camara` |
 
+- **VSL y webinar: al menos 1 objeción antes del llamado de la oferta** (beat 0): 1 en un `vsl-corto`, 2 en un
+  VSL de 8 min o más, 2-3 en un webinar. No se inventan objeciones ni respuestas: salen del público real (en un
+  VSL de eventos, «mi público no paga apartado» o «ya mando recordatorios y aun así no llegan»). QA avisa si no
+  hay ninguna `idea` «Objeción #N» o «Razón #N» antes del llamado.
+- **Sin prueba real, en este orden** (el beat 6 y el tramo de prueba de un vsl o webinar):
+
+  | # | Sustituto | Diseño |
+  |---|---|---|
+  | a | Demostración del mecanismo con material real del creador: su calendario, su cuenta, su chat | `prueba` con `src`, o `objeto` con `imagen` |
+  | b | Caso propio con números y su `fuente` | `cifra` con `fuente` o `prueba` con `fuente` |
+  | c | Prueba lógica: la cuenta con la condición en `arriba` (§3.8) | `cifra` |
+  | d | Oferta de «primeros casos» con garantía de condición medible | `idea` 🛡️ |
+
+  Si no hay ninguno, el beat se omite. **Un `prueba` hecho solo de capturas `ejemplo: true` nunca ocupa el
+  beat 6 ni el tramo de prueba**: la maqueta enseña un formato («así se ve el mensaje») dentro del contenido,
+  pero no respalda la oferta. Si el usuario deja la prueba para después, va un `{ "hueco": "La tuya va
+  aquí" }` o `{{PRUEBA}}` y se lista al entregar. QA avisa si un vsl o webinar no trae ninguna prueba real
+  (`prueba` con `src` o `fuente`, `objeto` con `imagen`, `cifra` con `fuente`), si la única es una maqueta, y
+  si antes de la revelación no hay una cifra de credibilidad (años, clientes, eventos, alumnos) a la vista ni
+  en la voz.
 - **El llamado aparece al menos 2 veces** (beats 9 y 10), **a la vista**: un `boton`, la palabra clave o
   la flecha al link (`llamado: true` marca esa lámina). Que la voz diga «WhatsApp» o «aparta» no es un
   llamado, y el que va solo en la voz de la cámara final tampoco cuenta. En un webinar, 3 si hay un llamado

@@ -134,3 +134,15 @@ test('references/LAYOUTS.md documenta todo campo que leen los diseños (y los de
   const faltan = [...todos].filter(k => !new RegExp('[`"]' + k + '\\b').test(md));
   assert.deepEqual(faltan, [], `sin documentar en LAYOUTS.md: ${faltan.join(', ')}`);
 });
+
+test('camara en vivo: vivo es booleano, items es lista de textos; sin dur ni consigna avisa', () => {
+  const tipos = ['idea', 'camara'];
+  assert.match(validarDeck({ laminas: [{ tipo: 'camara', vivo: 'sí' }] }, tipos).join(' '), /«vivo» es true o false/);
+  assert.match(validarDeck({ laminas: [{ tipo: 'camara', vivo: true, items: [3] }] }, tipos).join(' '), /«items» es una lista de textos/);
+  const { sugerencias } = sanearDeck({ laminas: [{ tipo: 'camara', vivo: true }] });
+  assert.ok(sugerencias.some(s => /sin "dur" o de menos de 30 s/.test(s)), sugerencias.join('\n'));
+  assert.ok(sugerencias.some(s => /sin consigna/.test(s)));
+  const bien = sanearDeck({ laminas: [{ tipo: 'camara', vivo: true, dur: 300, texto: 'Ahora tú', items: ['Uno'], emoji: '🙋' }] });
+  assert.deepEqual(bien.sugerencias, []);
+  assert.equal(bien.deck.laminas[0].vivo, true);
+});

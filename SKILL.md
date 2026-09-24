@@ -40,17 +40,24 @@ deducir.
    precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
    usuario prefiere dejarlos para después, escribe `{{PRECIO}}` en el texto y deja `"datos"` sin esa
    clave: sale como hueco amarillo `[PRECIO]` y QA lo marca como error hasta que se llene.
+   **Si la pieza es `vsl`, `vsl-corto`, `webinar` o `propuesta`, esa misma pregunta única incluye la prueba**:
+   ¿qué cifra real te respalda (años, clientes, eventos, alumnos) y tienes 1-3 capturas o fotos con permiso?
+   Llénalo en «Credenciales o pruebas con permiso» de MI-MARCA. Nunca se inventan: sin prueba real se usa un
+   sustituto de GUION §7 («Sin prueba real, en este orden») y una maqueta `ejemplo: true` nunca ocupa el tramo
+   de prueba.
    **Si no puedes preguntar** (agente de fondo, el mini, un loop), un dato que no es sensible (el nombre
    del programa, cuánto tarda la llamada) se PROPONE como `{ "valor": "30 minutos", "propuesto": true }`,
    nunca como valor liso: un comentario `_datos` no cuenta. Precio, garantía, cupos, fechas límite,
    descuentos, bonos, testimonios y cifras de resultados o credibilidad **nunca** se proponen: van como
    hueco `{{CLAVE}}`.
 5. **Decide la pieza y su duración** antes de escribir (ARCOS.md): reel, tutorial, VSL corto, video, VSL,
-   clase, webinar o propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si
+   clase corta o taller, clase, webinar o propuesta. Un VSL de anuncio de 3-6 min es `vsl-corto`, no `vsl` con
+   objetivo; una clase de 15-30 min es `clase-corta`. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si
    no, es la única pregunta. Van en el deck como `pieza`, `duracion_objetivo` y `en_vivo`. **Si el encargo
    fija el número de láminas**, la duración sale de ahí (≈ láminas × 2.2 pasos × 3 s): escoge la pieza cuyo
-   rango la contiene (`tutorial` 3-8 min, `vsl-corto` 3-6 o `libre`); no fuerces `duracion_objetivo` sobre
-   una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas cosas).
+   rango la contiene (`tutorial` 3-8 min, `vsl-corto` 3-6, `clase-corta` 15-30 o `libre`); no fuerces
+   `duracion_objetivo` sobre una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas
+   cosas; más de 60% en tramos es error aunque sea en vivo).
 6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 27 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
@@ -62,10 +69,10 @@ las tipografías.
 | Fase | Qué haces | Sale |
 |---|---|---|
 | **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). | beats |
-| **2. Beats → diseños** | Cada beat de 2 a 3 s es un paso. Mismo tema, mismo paso de la misma lámina; tema nuevo, lámina nueva. Elige el diseño con la tabla de GUION-A-LAMINAS §2. | lista de láminas |
+| **2. Beats → diseños** | Cada beat de 2 a 3 s es un paso. Mismo tema, mismo paso de la misma lámina; tema nuevo, lámina nueva. Elige el diseño con la tabla de GUION-A-LAMINAS §2. **Fija el diccionario del deck antes de escribir**: un emoji por concepto (EMOJIS.md), y que ninguno diga lo contrario en otra lámina (la silla vacía de una rejilla no es «llegó» después). | lista de láminas |
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
-| **5. Revisión visual** | **Mira `hoja.jpg` y los PNG dudosos con tus propios ojos**, y `hoja-pasos.jpg` para el orden del revelado. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
+| **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
 | **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: 90 o más y cero errores. También mide la duración contra la pieza. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
@@ -104,6 +111,7 @@ Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
 S=~/.claude/skills/diapositivas-pizarron-ia
 node $S/scripts/render.mjs mi-video             # PNG por paso + presentador + hoja
 node $S/scripts/render.mjs mi-video --finales   # solo el último paso de cada lámina (revisión rápida)
+node $S/scripts/render.mjs mi-video --finales --pdf   # + salida/laminas.pdf (una página por lámina)
 node $S/scripts/qa.mjs mi-video                 # nota 0-100
 node $S/scripts/video.mjs mi-video              # salida/laminas.mp4 con animaciones
 node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json   # montaje sincronizado
@@ -113,7 +121,9 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   completa y un clic avanza. **N** muestra las notas del orador (la `voz`), **O** abre la vista de
   ensayo sincronizada (`?modo=orador`: paso actual, el siguiente, la voz y el cronómetro contra lo
   planeado), **B** o **.** pone negro y **W** blanco, **5 G** salta a la lámina 5, **G** abre el índice
-  y **?** la ayuda. La lámina `camara` se proyecta en negro limpio.
+  y **?** la ayuda. Las dos ventanas se siguen también en Safari. La lámina `camara` se proyecta en negro
+  limpio; con `"vivo": true` (actividad, demostración o preguntas de una clase) el público ve la consigna en
+  blanco con una cuenta regresiva desde `dur` (LAYOUTS.md, `camara`).
 - `deck.json` acepta:
   - `formato`: `16:9` por omisión, o `9:16`, `1:1` y `4:5`, que están en beta;
   - `emoji`: en un deck nuevo pon SIEMPRE `"apple"` (PNG o video exportados en una Mac, la laptop o el
@@ -134,10 +144,17 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
 
 ## 4. Qué entregar al usuario
 
-- La ruta del presentador, de `hoja.jpg` y de `hoja-pasos.jpg`, la nota de QA y la duración estimada de
-  la voz contra la de la pieza.
-- Si `qa.json` trae `pendientes` o `por_confirmar`, lístalos (el dato, su valor propuesto y sus láminas)
-  y no llames «final» al deck hasta que estén llenos o confirmados en `"datos"` (sin `propuesto`).
+- La ruta del presentador y de TODAS las hojas (`hojas.json`), la nota de QA y la duración estimada de la
+  voz contra la de la pieza.
+- Si `qa.json` trae `pendientes` o `por_confirmar` (`estado: "borrador"`, nota con tope de 90), lístalos (el
+  dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén llenos o confirmados en
+  `"datos"` (sin `propuesto`).
+- Si QA avisa «sin prueba real» o «credibilidad sin cifra», dilo en una línea («Va sin prueba real: mándame 1-3
+  capturas con permiso y reemplazo la lámina N») y no llames «final» al deck.
+- En una `propuesta` o un `vsl`, o cuando el deck se va a mandar, entrega también `laminas.pdf` (`--pdf`). Si el
+  presentador se va a abrir en una PC que no es Mac, renderiza con `"emoji": "fluent"` y dilo.
+- Lo que el usuario debe saber va en tu mensaje o en `qa.json`, nunca en una clave `_marca` o `_datos` del deck
+  (nadie la lee; QA la avisa).
 - Si va sin firma, dilo en una línea y pide la @, el dominio o el logo.
 - Si hubo montaje, cuántas anclas se ubicaron y la ruta de `cortes.csv`.
 - Lo que quedó fuera o dudoso: fotos que faltan, pruebas que hay que conseguir o un corte que

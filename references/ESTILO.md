@@ -95,14 +95,14 @@ El emoji no decora: **nombra**. Estilo 3D brillante de Apple. En máquinas sin M
 - **Fila de conceptos numerados sin flechas** [19:10-19:15]: 📦 💵 📈, cada uno en su paso
   (`flujo` con `flecha: "ninguna"`).
 - **Literal y universal**:
-  - 💰 dinero, 🤝 alianza, 🤔 pregunta, 🏆 lo mejor.
+  - 💰 dinero, 🤝 alianza, 🤔 pregunta, 🏆 lo mejor (diccionario completo y único en EMOJIS.md).
   - ⏳ tiempo, 🔍 encontrar, 🚀 lanzar, 🤖 IA, 📦 producto.
   - ✅ sí, ❌ no.
 - **Emoji compuesto**: dos emojis cuentan una historia completa. Es la firma del estilo. La ✕ de
   «no:» mide ~55% del emoji y le CRUZA el cuarto inferior izquierdo [ref_628, 12:15].
   - 🧑‍⚕️ con 💰 encima: «gana como médico».
   - 🎥 con ❌: «sin hacer contenido».
-  - 🙋 con ❌: «sin mostrar tu cara».
+  - 🙅‍♂️ con ❌: «sin mostrar tu cara» (ref_628).
   - 💸 con ✅: «$0 de capital».
 - **Emoji como viñeta**: ❌ para lo que NO necesitas y ✅ para lo que sí. Del mismo tamaño que el
   texto.

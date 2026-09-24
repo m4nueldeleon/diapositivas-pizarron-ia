@@ -33,6 +33,9 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { background: #e9e9e9; }
+/* En vivo y en ensayo todo es fixed/absolute y el body mide 0 px de alto: el fondo que se ve es el del html. Sin
+   esto, las bandas de un proyector 4:3 o una pantalla 16:10 salían grises y la voz del orador (#eee) no se leía. */
+html.pz-oscuro, html:has(body.presentador), html:has(body.orador) { background: #111; }
 body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: antialiased; }
 
 /* ---------- lámina ---------- */
@@ -388,8 +391,21 @@ body.presentador .lamina.activa { display: block; }
 body.presentador .barra-pres { position: fixed; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,.08); z-index: 20; }
 body.presentador .barra-pres i { display: block; height: 100%; background: var(--rojo); width: 0; }
 /* la lámina `camara` se proyecta en negro limpio: el letrero «A cámara» es solo para PNG y hoja */
-body.presentador .lamina[data-tipo="camara"] { background: #000; }
-body.presentador .lamina[data-tipo="camara"] > * { visibility: hidden; }
+body.presentador .lamina[data-tipo="camara"]:not([data-vivo]) { background: #000; }
+body.presentador .lamina[data-tipo="camara"]:not([data-vivo]) > * { visibility: hidden; }
+/* Tramo en vivo (`camara` + `vivo: true`): el público ve la consigna en blanco, con emoji y cuenta regresiva. Fuera
+   del presentador (PNG, hoja, video) no existe. El reloj va en la tinta de la capa a mano y pasa a rojo en los
+   últimos 30 s; en 0:00 parpadea. */
+.vivo-pres { display: none; }
+body.presentador .lamina[data-vivo] > :not(.vivo-pres) { display: none; }
+body.presentador .lamina[data-vivo] > .vivo-pres { display: flex; position: absolute; inset: 0; flex-direction: column; align-items: center;
+  justify-content: center; gap: 28px; padding: var(--margen-v) var(--margen-h); text-align: center; background: var(--blanco); }
+.vivo-consigna { font: 500 84px/1.15 var(--sans); color: var(--tinta); max-width: var(--ancho-texto); text-wrap: balance; }
+.vivo-items { font: 500 56px/1.3 var(--sans); color: var(--tinta); text-align: left; padding-left: 1.2em; max-width: var(--ancho-texto); }
+.vivo-reloj { font: 700 150px/1 var(--mano); color: var(--tinta); font-variant-numeric: tabular-nums; }
+.vivo-reloj.final { color: var(--rojo); }
+.vivo-reloj.cero { color: var(--rojo); animation: pz-parpadeo 1s steps(2, start) infinite; }
+@keyframes pz-parpadeo { to { visibility: hidden; } }
 body.presentador .velo-pres { position: fixed; inset: 0; z-index: 30; display: none; }
 body.presentador .velo-pres.negro { display: block; background: #000; }
 body.presentador .velo-pres.blanco { display: block; background: #fff; }
@@ -414,7 +430,9 @@ body.orador .o-sig { min-height: 0; opacity: .9; }
 body.orador .o-pos { font-size: 20px; color: #aaa; }
 body.orador .o-reloj { font-size: 26px; } body.orador .o-reloj .tarde { color: #ff6b6b; }
 body.orador .o-voz { grid-column: 1 / -1; grid-row: 2; font-size: 38px; line-height: 1.3; font-weight: 600; }
-body.orador .o-voz-sig { grid-column: 1 / -1; grid-row: 3; font-size: 26px; color: #777; }
+body.orador .o-voz-sig { grid-column: 1 / -1; grid-row: 3; font-size: 26px; color: #999; }
+body.orador .o-cuenta { font-variant-numeric: tabular-nums; color: #fff; margin-right: .5em; }
+body.orador .o-cuenta.final { color: #ff6b6b; }
 body.render { background: #fff; }
 body.render .lamina { margin: 0; }
 body.hoja { display: flex; flex-direction: column; gap: 30px; padding: 30px; align-items: center; }

@@ -2,19 +2,26 @@
 // render.mjs — deck.json → salida/index.html (presentador) + salida/laminas/NN-id-P.png (un PNG por paso)
 //              + salida/hoja.jpg (hoja de contacto: el último paso de cada lámina, «N · id» igual que el PNG y el QA)
 //              + salida/hoja-pasos.jpg (todos los pasos, una fila por lámina: el orden del revelado)
-//              + salida/pasos.json (manifiesto para video y QA)
+//              + salida/pasos.json (manifiesto para video y QA) + salida/hojas.json (qué hojas hay y qué láminas cubren)
 //
-//   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales]
+//   node scripts/render.mjs <carpeta|deck.json> [--salida dir] [--escala 1|2] [--solo-html] [--sin-hoja] [--finales] [--pdf]
 //
 //   --finales   solo el último paso de cada lámina (para revisar rápido; no genera hoja-pasos.jpg)
+//   --pdf       además, salida/laminas.pdf: una página por lámina (su último paso), del tamaño del formato. Para
+//               mandar una propuesta o un VSL como documento, o llevarlo a Keynote o Google Slides. Las `camara` no
+//               tienen página.
+// Con más de 20 láminas la hoja se pagina: hoja-01.jpg, hoja-02.jpg… (20 láminas cada una) y hoja-pasos-01.jpg…
+// (10 filas cada una). hoja.jpg y hoja-pasos.jpg quedan como copia de la PRIMERA página, con el encabezado
+// «hoja 1/N — revisa TODAS»: la revisión visual recorre todas.
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
-import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos } from './lib/hoja.mjs';
+import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina, archivoPagina, POR_HOJA, FILAS_POR_HOJA } from './lib/hoja.mjs';
 import { duracionTotal, mmss } from './lib/tiempos.mjs';
 
 const { opt, flag, pos } = argumentos(process.argv);
+const escapeAttr = t => String(t).replace(/[&"<>]/g, c => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[c]));
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const { deck, dirSalida, htmlPath, W, H, avisos: avisosBuild, modoEmoji, pasos } = prep;
@@ -60,11 +67,49 @@ async function capturar(html, ancho, destino) {
 }
 const cuadros = cuadrosHoja(manifiesto);
 if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
-  const h = htmlHoja(cuadros, { W, H });
-  await capturar(h.html, h.cols * (h.ancho + 18) + 18, path.join(dirSalida, 'hoja.jpg'));
+  // las páginas de un render anterior más largo no se quedan
+  fs.readdirSync(dirSalida).filter(f => /^hoja(-pasos)?(-\d+)?\.jpg$/.test(f)).forEach(f => fs.rmSync(path.join(dirSalida, f), { force: true }));
+  const hojas = { hojas: [], pasos: [] };
+  const total = deck.laminas.length;
+  const paginas = paginar(cuadros, POR_HOJA);
+  for (let k = 0; k < paginas.length; k++) {
+    const h = htmlHoja(paginas[k], { W, H, titulo: tituloPagina(paginas[k], k, paginas.length, total) });
+    const archivo = archivoPagina('hoja', k, paginas.length);
+    await capturar(h.html, h.cols * (h.ancho + 18) + 18, path.join(dirSalida, archivo));
+    hojas.hojas.push({ archivo, desde: paginas[k][0].n, hasta: paginas[k][paginas[k].length - 1].n });
+  }
+  if (paginas.length > 1) fs.copyFileSync(path.join(dirSalida, archivoPagina('hoja', 0, paginas.length)), path.join(dirSalida, 'hoja.jpg'));
   const filas = filasPasos(manifiesto);
-  fs.rmSync(path.join(dirSalida, 'hoja-pasos.jpg'), { force: true });
-  if (!soloFinales && filas.length) { const hp = htmlHojaPasos(filas, { W, H }); await capturar(hp.html, hp.anchoTotal, path.join(dirSalida, 'hoja-pasos.jpg')); }
+  if (!soloFinales && filas.length) {
+    const pp = paginar(filas, FILAS_POR_HOJA);
+    for (let k = 0; k < pp.length; k++) {
+      const hp = htmlHojaPasos(pp[k], { W, H, titulo: tituloPagina(pp[k], k, pp.length, total) });
+      const archivo = archivoPagina('hoja-pasos', k, pp.length);
+      await capturar(hp.html, hp.anchoTotal, path.join(dirSalida, archivo));
+      hojas.pasos.push({ archivo, desde: pp[k][0].n, hasta: pp[k][pp[k].length - 1].n });
+    }
+    if (pp.length > 1) fs.copyFileSync(path.join(dirSalida, archivoPagina('hoja-pasos', 0, pp.length)), path.join(dirSalida, 'hoja-pasos.jpg'));
+  }
+  fs.writeFileSync(path.join(dirSalida, 'hojas.json'), JSON.stringify(hojas, null, 2));
+  if (paginas.length > 1) console.log(`⚠ ${paginas.length} hojas de finales (${hojas.hojas.map(x => `${x.archivo}: ${x.desde}-${x.hasta}`).join(' · ')}): la revisión visual recorre TODAS, no solo hoja.jpg`);
+}
+
+// PDF: una página por lámina con su último paso (las `camara` no tienen página)
+if (flag('--pdf')) {
+  const finales = cuadros.filter(c => c.archivo);
+  if (!finales.length) console.warn('⚠ --pdf: no hay láminas con imagen');
+  else {
+    const hp = path.join(dirSalida, '.pdf.html');
+    fs.writeFileSync(hp, `<!doctype html><meta charset="utf-8"><style>@page{size:${W}px ${H}px;margin:0}html,body{margin:0;padding:0}
+img{display:block;width:${W}px;height:${H}px;break-after:page}img:last-child{break-after:auto}</style>${finales.map(c => `<img src="${escapeAttr(c.archivo)}">`).join('')}`);
+    const p3 = await browser.newPage();
+    await p3.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
+    const destino = path.join(dirSalida, 'laminas.pdf');
+    await p3.pdf({ path: destino, width: `${W}px`, height: `${H}px`, printBackground: true, preferCSSPageSize: true });
+    await p3.close();
+    fs.unlinkSync(hp);
+    console.log(`PDF → ${destino} (${finales.length} páginas)`);
+  }
 }
 if (errores.length) console.error('✗ errores de la página:\n  ' + errores.join('\n  '));
 await browser.close();

@@ -117,6 +117,6 @@ Colores muestreados:
 | 43:35 · 44:30 | Flecha roja al link (sobre una captura real, no sobre fondo oscuro de plantilla); el link sale dos veces | `prueba` + flecha, o `boton` |
 | 43:40 | «2 minutes»: cuánto tarda aplicar | `idea` ⏱️ |
 | 43:50 | La invitación de calendario: qué pasa después del clic | `calendario` o `prueba` |
-| 44:05 | «If it's not, we'll point you in the right direction»: la salida honesta | `idea` 🤝 |
+| 44:05 | «If it's not, we'll point you in the right direction»: la salida honesta (la referencia no muestra emoji propio aquí; la skill usa 🧭, «orientación», EMOJIS.md) | `idea` 🧭 |
 | 44:20-44:25 | Resumen del stack | `lista` |
 | 44:35-44:40 | Por qué ahora y cierre de identidad; 44:45 a cámara | `idea`, luego `camara` |

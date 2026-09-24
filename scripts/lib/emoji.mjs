@@ -7,7 +7,7 @@
 // Sintaxis de emoji compuesto (la firma del estilo: un ícono que cuenta una idea entera):
 //   "💰"            simple
 //   "🧑‍⚕️+💰"        base + insignia abajo a la derecha (médico que gana dinero)
-//   "no:🎥"          base + ❌ abajo a la izquierda (sin mostrar la cara)
+//   "no:🎥"          base + ❌ abajo a la izquierda (sin grabar video)
 //   "si:🤖"          base + ✅ abajo a la izquierda
 //   "no:🧑‍⚕️+💰"      las dos cosas: ❌ a la izquierda y 💰 a la derecha
 // Un solo «+». Para contar una secuencia (🔁 → 💰) se usa un «flujo», no una insignia.
@@ -138,8 +138,16 @@ const BOLETO = '<svg viewBox="0 0 24 24" width="100%" height="100%">'
   + '<g transform="rotate(-14 12 12)"><path d="M3.2 6.4h17.6a1.2 1.2 0 0 1 1.2 1.2v2.6a2 2 0 0 0 0 3.8v2.6a1.2 1.2 0 0 1-1.2 1.2H3.2A1.2 1.2 0 0 1 2 16.6V14a2 2 0 0 0 0-3.8V7.6a1.2 1.2 0 0 1 1.2-1.2z" fill="url(#pz-boleto)"/>'
   + '<path d="M16.4 7.6v8.8" stroke="#fff" stroke-width=".9" stroke-dasharray="1.1 1.1" stroke-linecap="round"/>'
   + '<path d="M9.2 9.2l.85 1.75 1.9.27-1.38 1.34.33 1.9-1.7-.9-1.7.9.33-1.9-1.38-1.34 1.9-.27z" fill="#fff" fill-opacity=".92"/></g></svg>';
+// 📄 📃 documento, base de conocimiento: en los dos sets la hoja sale pálida (8-21% medido) y su sustituto era 📋,
+// que ya es «tarea». Hoja blanca con borde oscuro, renglones oscuros y la esquina doblada azul; se lee sobre
+// blanco, tarjeta y lámina oscura.
+const DOCUMENTO = '<svg viewBox="0 0 24 24" width="100%" height="100%">'
+  + '<path d="M5.4 1.6h9.3l4.9 4.9v15.1a.9.9 0 0 1-.9.9H5.4a.9.9 0 0 1-.9-.9V2.5a.9.9 0 0 1 .9-.9z" fill="#fff" stroke="#39414f" stroke-width="1.2" stroke-linejoin="round"/>'
+  + '<path d="M14.7 1.6v4a.9.9 0 0 0 .9.9h4z" fill="#3e7bfa" stroke="#39414f" stroke-width="1.2" stroke-linejoin="round"/>'
+  + [9.6, 12.3, 15, 17.7].map((y, k) => `<path d="M7.4 ${y}H${k === 3 ? 13.2 : 16.8}" stroke="#39414f" stroke-width="1.3" stroke-linecap="round"/>`).join('')
+  + '</svg>';
 const GLIFOS_SVG = {
-  '📱': CELULAR, '📲': CELULAR_ENTRA,
+  '📱': CELULAR, '📲': CELULAR_ENTRA, '📄': DOCUMENTO, '📃': DOCUMENTO,
   '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO,
   '🎟': BOLETO, '🎫': BOLETO,
   '❌': EQUIS, '✖': EQUIS, '✅': PALOMITA, '☑': PALOMITA, '✔': PALOMITA,
@@ -261,26 +269,33 @@ export function tamEmoji(v, porOmision = 'medio') {
 //     Bajo UMBRAL_CONTRASTE QA avisa, salvo los de VISTOS_OK (medida baja pero se leen: la línea roja de 📈).
 export const BAJO_CONTRASTE = {
   apple: {
-    claro: { '🏷': '💵', '✉': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩', '🖱': '👆', '☁': '🌐' },
+    claro: { '🏷': '💵', '✉': '📧', '🤍': '❤', '🧾': '💵', '🏳': '🚩', '🖱': '👆', '☁': '🌐' },
     oscura: { '🗨': '💬', '📞': '☎', '💲': '💵', '🎥': '📹', '🤍': '❤' },
   },
   fluent: {
-    claro: { '💬': '📲', '🗨': '📲', '💭': '💡', '✉': '📧', '📩': '📧', '🤍': '❤', '🧾': '📋', '📄': '📋', '🏳': '🚩',
-      '🔧': '🛠', '📨': '📧', '📃': '📋', '🗒': '📋', '☁': '🌐', '🖱': '👆', '⚙': '🛠' },
+    claro: { '💬': '📲', '🗨': '📲', '💭': '💡', '✉': '📧', '📩': '📲', '🤍': '❤', '🧾': '💵', '🏳': '🚩',
+      '🔧': '🛠', '📨': '📧', '🗒': '📄', '☁': '🌐', '🖱': '👆', '⚙': '🛠' },
     oscura: { '🗣': '🎤', '🤍': '❤' },
   },
 };
 export const UMBRAL_CONTRASTE = 15;
 // Sustituto para un emoji que solo la MEDIDA marca (p. ej. 💬 de Apple sobre tarjeta gris)
-export const SUGERIDO = { '💬': '📲', '🗨': '📲', '💭': '💡', '📑': '📋', '📃': '📋', '🗒': '📋', '🔖': '📌', '☁': '🌐', '🖱': '👆', '🔧': '🛠', '📨': '📧', '📩': '📧', '🧾': '📋', '📄': '📋', '✉': '📧', '🏷': '💵', '🤍': '❤', '🏳': '🚩' };
+// (📄 y 📃 ya se dibujan en SVG: son el sustituto de toda «hoja»; 📋 es «tarea», no «documento»)
+export const SUGERIDO = { '💬': '📲', '🗨': '📲', '💭': '💡', '📑': '📄', '🗒': '📄', '🔖': '📌', '☁': '🌐', '🖱': '👆', '🔧': '🛠', '📨': '📧', '📩': '📲', '🧾': '💵', '✉': '📧', '🏷': '💵', '🤍': '❤', '🏳': '🚩' };
 export const VISTOS_OK = { apple: ['📈', '📉', '💡', '📩'], fluent: [] };
 // Emojis que cambian de SENTIDO entre sets (no de contraste): EMOJIS.md, «Se ven distinto según el modo»
 export const DIVERGE = { fluent: { '🤔': '❓' }, apple: {} };
 // Emojis que IMPRIMEN texto en su set (un número, un nombre, inglés): a tamaño de ícono se lee y confunde. Los
 // calendarios y boletos ya se dibujan en SVG (GLIFOS_SVG); estos siguen saliendo del set. QA avisa desde ~80 px.
 export const TEXTO_IMPRESO = {
-  apple: { '🏪': ['«24»', '🏬 o 🏠'], '🪪': ['«Jo Appleseed»', '👤'] },
+  apple: { '🏪': ['«24»', '🏬 o 🏠'], '🪪': ['«Jo Appleseed»', '🎭 (rol) o 👤 (persona)'], '🧾': ['«RECEIPT»', '💵 o ✍️'] },
   fluent: { '🏪': ['«24 H»', '🏬 o 🏠'] },
+};
+// Emojis que se ven casi iguales en un set (EMOJIS.md, «Evita» y «Parecidos»): en un mismo deck se confunden. Sin
+// selector FE0F. Los calendarios 📅 🗓 📆 se dibujan con el MISMO SVG en los dos sets.
+export const PARECIDOS = {
+  apple: [['🧑‍💼', '👨‍💼'], ['📅', '🗓', '📆'], ['🎟', '🎫'], ['📄', '📃']],
+  fluent: [['🏦', '🏛'], ['🧑‍💼', '👨‍💼'], ['📅', '🗓', '📆'], ['🎟', '🎫'], ['📄', '📃']],
 };
 let medidas = null;
 export function contrasteMedido() {
@@ -292,6 +307,7 @@ export function contrasteMedido() {
 // si se ve bien. Un emoji medido bajo el umbral sin sustituto en la tabla devuelve '?' (elige otro).
 export function bajoContraste(ch, modo, fondo) {
   const k = String(ch || '').replace(/\uFE0F/g, '');
+  if (GLIFOS_SVG[k]) return '';   // se dibuja en SVG: no sale del set
   const t = (BAJO_CONTRASTE[modo] || {})[fondo === 'oscura' ? 'oscura' : 'claro'] || {};
   if (t[k]) return t[k];
   const m = ((contrasteMedido()[modo] || {})[fondo === 'oscura' ? 'oscura' : fondo === 'tarjeta' ? 'tarjeta' : 'claro'] || {})[k];

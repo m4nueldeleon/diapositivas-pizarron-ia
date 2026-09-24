@@ -58,7 +58,8 @@ export const CAMPOS = {
   boton: ['boton', 'emoji', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   circulos: ['radio', 'radio_interior', 'tono', 'tono_interior', 'personas', 'emoji', 'centro', 'centro_paso', 'interior_paso', 'texto',
     'texto_paso', 'nota', 'nota_paso'],
-  camara: ['nota'],
+  // `vivo: true`: tramo en vivo de una clase (actividad, demostración, preguntas) con su consigna para el público
+  camara: ['nota', 'vivo', 'texto', 'items', 'emoji'],
   foco: ['texto', 'nota', 'nota_paso', 'tam', 'opacidad'],
   calificacion: ['filas', 'max', 'emoji', 'acumular', 'encabezado', 'nota', 'nota_paso'],
   stack: ['items', 'columnas', 'sangre', 'encabezado', 'remate', 'remate_paso', 'total', 'nota', 'nota_paso'],
@@ -204,6 +205,8 @@ export function validarDeck(deck, tipos) {
     });
     if (l.tipo === 'bifurcacion' && l.origen != null && (typeof l.origen !== 'object' || Array.isArray(l.origen))) e.push(`${n}: «origen» debe ser un objeto { emoji, texto }`);
     if (l.tipo === 'calendario') revisarCalendario(l, n, e);
+    if (l.tipo === 'camara' && l.vivo != null && typeof l.vivo !== 'boolean') e.push(`${n} (camara): «vivo» es true o false`);
+    if (l.tipo === 'camara' && l.items != null && !(Array.isArray(l.items) && l.items.every(x => typeof x === 'string' || (x && typeof x === 'object' && typeof x.texto === 'string')))) e.push(`${n} (camara): «items» es una lista de textos (los pasos de la consigna)`);
     revisarEmojis(l, n, e, []);
   });
   return e;
@@ -272,6 +275,7 @@ function sanearObjeto(o, ruta, avisos, tipo) {
     if (rango && !(k === 'hasta' && v === 'fin') && (v === null || typeof v !== 'object')) { const x = num(v, rango, recorte(rango)); if (x === undefined) aviso(); else r[k] = x; continue; }
     if (k === 'clic_pos') { const c = Array.isArray(v) && v.length === 2 && v.every(x => Number.isFinite(Number(x))) ? v.map(x => Math.min(1, Math.max(0, Number(x)))) : null; if (c) r[k] = c; else aviso(); continue; }
     // hora de un mensaje de chat: texto corto (se escapa al pintarlo)
+    if (k === 'vivo') { if (typeof v === 'boolean') r[k] = v; else aviso(); continue; }
     if (k === 'hora') { if (typeof v === 'string' && v.trim() && v.length <= 24) r[k] = v; else aviso(); continue; }
     if (k === 'sello_sobre') { if (typeof v === 'string' && /^[\p{L}\p{N}_-]{1,40}$/u.test(v)) r[k] = v; else aviso(); continue; }
     if (k === 'circulo' && !(typeof v === 'boolean')) { const c = cuadro(v); if (c) r[k] = c; else aviso(); continue; }
@@ -311,6 +315,12 @@ export function sugerenciasDiseno(l, i, formato = '16:9') {
     if (sangre && l.encabezado) out.push(`${n}: el stack va a sangre y no dibuja «encabezado»; ponlo en la lámina anterior o usa "sangre": false`);
     l.items.forEach((it, j) => { const t = typeof it === 'string' ? it : it && it.texto; if (palabras(t) > 5) out.push(`${n}: items[${j}] «${String(t).slice(0, 30)}» tiene ${palabras(t)} palabras: es una tarjeta de producto, no un renglón (≤ 5, un sustantivo corto)`); });
     if (l.items.length > 8) out.push(`${n}: ${l.items.length} piezas en el stack; más de 8 ya no se leen como «mira todo lo que te llevas»: agrupa`);
+  }
+  if (l.tipo === 'camara' && l.vivo === true) {
+    const d = Array.isArray(l.dur) ? l.dur.reduce((a, b) => a + (Number(b) || 0), 0) : Number(l.dur) || 0;
+    if (d < 30) out.push(`${n}: tramo en vivo sin "dur" o de menos de 30 s: pon los segundos de la actividad ("dur": 300 = 5 min); la cuenta regresiva sale de ahí`);
+    if (!(typeof l.texto === 'string' && l.texto.trim()) && !(typeof l.nota === 'string' && l.nota.trim())) out.push(`${n}: tramo en vivo sin consigna: pon en "texto" qué hace el público («Ahora tú: tu reparto con lo que entró el mes pasado»)`);
+    if (Array.isArray(l.items) && l.items.length > 5) out.push(`${n}: ${l.items.length} pasos en la consigna; se muestran 5 como máximo`);
   }
   if (l.tipo === 'chat' && l.sello && !l.sello_sobre) out.push(`${n}: el sello del chat queda suelto; pégalo a la burbuja culpable con "sello_sobre": "m0"…"mN" (se cuentan desde 0)`);
   return out;

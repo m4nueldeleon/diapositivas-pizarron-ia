@@ -12,11 +12,14 @@ ese diseño.
 - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
   **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
   «@tuusuario», «<…>») es error de QA.
-- `pieza`: `reel`, `tutorial` (3-8 min), `vsl-corto` (3-6 min), `video`, `vsl`, `clase`, `webinar`,
-  `propuesta` o `libre`; `duracion_objetivo`: minutos (`45`) o `"mm:ss"`; `en_vivo: true` si se presenta en
-  vivo. QA mide la voz contra eso ([ARCOS.md](ARCOS.md)): un objetivo fuera del rango de su pieza avisa (usa
-  la pieza corta que le toca), «menos de la mitad» se mide con el tiempo de LÁMINAS (la cámara no rellena) y
-  en clase o webinar más de la mitad a cámara avisa. `qa.json → duracion` separa `laminas` y `camara`.
+- `pieza`: `reel`, `tutorial` (3-8 min), `vsl-corto` (3-6 min), `clase-corta` (15-30 min), `video`, `vsl`,
+  `clase`, `webinar`, `propuesta` o `libre`; `duracion_objetivo`: minutos (`45`) o `"mm:ss"`; `en_vivo: true`
+  si se presenta en vivo. QA mide la voz contra eso ([ARCOS.md](ARCOS.md)): un objetivo fuera del rango de su
+  pieza avisa (usa la pieza corta que le toca), «menos de la mitad» se mide con el tiempo de LÁMINAS (la
+  cámara no rellena), más de 40% a cámara avisa y más de 60% con las láminas bajo la mitad es error aunque
+  sea en vivo. `qa.json → duracion` separa `laminas` y `camara`.
+- Cualquier otra clave de primer nivel se ignora y QA la avisa, también las que empiezan con `_` (`_marca`,
+  `_datos`): un aviso de entrega escondido en el deck no lo lee nadie. Solo `_comentario` queda libre.
 - `datos`: ver [Datos que se llenan una vez](#datos-que-se-llenan-una-vez).
 
 **Campos que acepta cualquier lámina**
@@ -444,6 +447,10 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
     dinero, porcentajes ni números de clientes o ventas. QA avisa si una maqueta trae cifras o
     resultados («cerré», «cliente», «venta»).
   - Un `post` sin `fuente` ni `ejemplo`, o con los dos, es error de contrato.
+- **En un vsl o webinar, la maqueta no es prueba**: enseña un formato («así se ve el mensaje») dentro del
+  contenido, pero no ocupa el tramo de prueba de la oferta. Cuenta como prueba real una captura con `src` o
+  `fuente`, un `objeto` con `imagen` o una `cifra` con `fuente`; sin ninguna, QA avisa y GUION §7 da los
+  sustitutos en orden.
 
 ### `boton` — botón de interfaz y cursor que lo aprieta  ·  [23:15, 38:15]
 ```json
@@ -496,9 +503,25 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 { "tipo": "camara", "voz": "Déjame contarte cómo empecé", "dur": 4 }
 ```
 - En el presentador se proyecta en **negro limpio**; la `nota` («🎥 A cámara») solo sale en los PNG, la
-  hoja y la vista de ensayo.
-- Un tramo en vivo sin láminas (demostración, actividad, preguntas) es una `camara` con su `nota` y
-  `dur` en segundos (`"dur": 300`): cuenta en la duración de la pieza (ARCOS.md).
+  hoja y la vista de ensayo. En el montaje (`video.mjs --sobre`) ahí se ve tu grabación.
+- **Tramo en vivo de una clase** (actividad, demostración, preguntas): una `camara` con `"vivo": true`.
+  ```json
+  { "tipo": "camara", "id": "actividad", "vivo": true, "dur": 300,
+    "texto": "Ahora tú: **tu reparto** con lo que entró el mes pasado",
+    "items": ["Anota lo que entró", "Sepáralo en 4 cuentas", "Mándame tu porcentaje por el chat"],
+    "voz": "Tienes cinco minutos. Te leo." }
+  ```
+  - `texto`: la consigna para el público, a tamaño de frase (si falta, se usa `nota`). Acepta las marcas de
+    texto.
+  - `items`: hasta 5 pasos de la consigna, en lista numerada.
+  - `emoji`: por omisión ⏱️, y 🙋 si la consigna habla de preguntas.
+  - `dur`: los segundos del tramo; de ahí sale la cuenta regresiva, que se reinicia al entrar a la lámina, pasa
+    a rojo en los últimos 30 s y parpadea en 0:00. Sin `dur`, o con menos de 30 s, QA avisa.
+  - En el presentador el público ve la consigna en **blanco** con su emoji y la cuenta regresiva; la vista de
+    ensayo muestra la misma cuenta y la consigna. Los PNG, la hoja y el video no cambian: sigue siendo un
+    tramo a cámara.
+  - Cuenta en la duración de la pieza, pero **no sustituye beats** (ARCOS.md).
+- `camara` sin `vivo` queda para los tramos del montaje y los respiros a cámara (~4 s).
 
 ---
 

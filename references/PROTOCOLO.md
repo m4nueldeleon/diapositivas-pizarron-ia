@@ -13,12 +13,13 @@ en orden y cada paso tiene su criterio de salida.
 | Una **presentación vieja** | Extraes su texto y la rehaces con este estilo, un beat por idea. |
 | Un **link** de YouTube | Bajas los subtítulos o transcribes el audio. |
 
-**Antes de escribir, fija la pieza y su duración** ([ARCOS.md](ARCOS.md)): reel, video, VSL, clase,
-webinar o propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si no se
+**Antes de escribir, fija la pieza y su duración** ([ARCOS.md](ARCOS.md)): reel, tutorial, VSL corto,
+video, VSL, clase corta, clase, webinar o propuesta. Se deducen del pedido («la clase del lunes» = clase en vivo de 40-60 min); si no se
 pueden deducir, es la única pregunta. Van en el deck como `"pieza"`, `"duracion_objetivo"` y, si se
 presenta en vivo, `"en_vivo": true`. Un deck para presentar en vivo lleva en `voz` el guion completo en
 beats (cada paso sigue siendo un beat de 2-3 s); los tramos en vivo sin láminas (demostración,
-actividad, preguntas) van como `camara` con `dur` en segundos.
+actividad, preguntas) van como `camara` con `"vivo": true`, la consigna en `texto` y `dur` en segundos. No
+sustituyen beats.
 
 ## 1. Ficha de marca
 
@@ -27,6 +28,17 @@ ahí salen la firma o logo, el formato por omisión, la paleta de emojis, el idi
 nunca usas» (QA las lee). **Sin ficha, o con la firma vacía, omite `marca` en el deck**: las láminas
 salen sin firma. Nunca copies un valor de ejemplo («tumarca.com»): QA lo marca como error. Al entregar,
 avisa en una línea: «Va sin firma: dame tu @, tu dominio o tu logo (PNG sin fondo) y la agrego».
+
+**Si no puedes preguntar** (agente de fondo, el mini, un loop, «hazlo»): los nombres y los tiempos del proceso
+(el nombre del programa, cuánto tarda la llamada) se proponen como `{ "valor": …, "propuesto": true }` en
+`"datos"` y se listan al entregar; QA los deja en `qa.json → por_confirmar`, marca el deck como BORRADOR y
+topa la nota en 90. Precio, garantía, cupos, fechas límite, descuentos, bonos, testimonios y cifras de
+resultado o de credibilidad **nunca** se proponen: van como hueco `{{CLAVE}}`. Un comentario `_datos` en el
+deck no cuenta (QA lo avisa). Un relleno del pedido («tumarca.com») ya está cubierto arriba: se omite `marca`.
+
+**En un vsl, webinar o propuesta, la pregunta única incluye la prueba**: la cifra real que respalda a quien
+vende (años, clientes, eventos) y 1-3 capturas o fotos con permiso. Van en «Credenciales o pruebas con
+permiso» de MI-MARCA. Sin ellas, un sustituto de GUION §7; nunca una maqueta como prueba.
 
 ## 2. Beats
 
@@ -54,9 +66,12 @@ Criterio de salida: una lista de láminas con su diseño y la voz de cada paso.
   - [ ] Los primeros 10 s muestran el resultado o el conflicto; nada de saludo ni título antes
         (GUION §6.1).
   - [ ] La voz dura lo que pide su pieza (ARCOS.md) y cierra con un llamado o siguiente paso.
-  - [ ] La oferta tiene credibilidad, componentes numerados con su pregunta de sí, prueba real o
-        demostración, qué pasa después del clic y cuánto tarda; el llamado aparece al menos 2 veces;
-        oscura solo en la revelación; si hay garantía, su condición es medible (GUION §7).
+  - [ ] La oferta tiene credibilidad con cifra real, 1-2 objeciones antes del llamado, componentes
+        numerados con su pregunta de sí, prueba real o un sustituto de GUION §7 (nunca la maqueta), qué
+        pasa después del clic y cuánto tarda; el llamado aparece al menos 2 veces; oscura solo en la
+        revelación; si hay garantía, su condición es medible (GUION §7).
+  - [ ] Una escena ilustrativa se dice una vez en la voz; en pantalla no va «de ejemplo» (GUION §3.8 d).
+  - [ ] Un emoji por concepto en todo el deck, y ninguno con el rol contrario en otra lámina (EMOJIS.md).
   - [ ] Cada proyección de dinero o clientes lleva la condición con número en `arriba` y rangos
         (GUION §3.8).
   - [ ] Las notas de remate llevan un dato, una consecuencia o una acción con objeto; máximo una
@@ -72,11 +87,15 @@ node scripts/render.mjs mi-video          # PNG por paso + presentador + hoja de
 node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que corregir
 ```
 
-- **Mira `salida/hoja.jpg`**, y cuando algo dude, el PNG individual. La revisión visual no se
-  delega al QA: el QA cuenta, tus ojos juzgan. Cada cuadro dice «N · id», con el mismo N del PNG
+- **Mira la hoja de contacto**, y cuando algo dude, el PNG individual. La revisión visual no se
+  delega al QA: el QA cuenta, tus ojos juzgan. Con más de 20 láminas la hoja se pagina en
+  `hoja-01.jpg`, `hoja-02.jpg`… (con su encabezado «láminas 21-40 de 240 · hoja 2/12», listadas en
+  `hojas.json`); **recórrelas TODAS**: `hoja.jpg` es solo la primera. En clases y webinars, revisa por bloque
+  del mapa. Cada cuadro dice «N · id», con el mismo N del PNG
   (`NN-id-P.png`) y del QA («lámina N»); las cámaras ocupan su lugar como cuadro gris.
-- **Mira `salida/hoja-pasos.jpg`** para el orden del revelado: una fila por lámina con todos sus pasos,
-  rotulados «N.P». Un elemento que aparece antes de su frase se ve ahí sin abrir 80 PNG.
+- **Mira la hoja de pasos** (`hoja-pasos.jpg`, o `hoja-pasos-01.jpg`… de 10 filas cada una) para el orden
+  del revelado: una fila por lámina con todos sus pasos, rotulados «N.P». Un elemento que aparece antes de su
+  frase se ve ahí sin abrir 80 PNG.
 - Compara contra ESTILO.md:
   - ¿Se entiende la lámina en 1 segundo sin audio?
   - ¿Hay un solo punto focal?
@@ -87,8 +106,10 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
   elementos vacíos, `voz` que no cuadra con los pasos y **datos pendientes** en MAYÚSCULAS entre
   corchetes (`[PRECIO]`, `[WHATSAPP]`), que salen como hueco amarillo. Estos últimos son un error por
   dato, con sus láminas, y quedan en `qa.json` → `pendientes`: se llenan en `"datos"` antes de entregar.
-- QA también lee el deck.json: firma de relleno (error), duración contra la pieza, apertura, fórmulas de
-  IA, proyecciones sin condición, posts de maqueta con cifras y el llamado final
+- QA también lee el deck.json: firma de relleno (error), duración contra la pieza y peso de los tramos en
+  vivo, apertura, fórmulas de IA, proyecciones sin condición, posts de maqueta con cifras, el llamado final,
+  prueba real y credibilidad en piezas de venta, objeciones antes del llamado, descargos «de ejemplo» en
+  pantalla, emojis parecidos o con rol contrario (`qa.json → iconos`) y claves `_…` que nadie lee
   (`scripts/lib/reglas-deck.mjs`). La duración estimada sale en la primera línea y en `qa.json` →
   `duracion`.
 
@@ -125,6 +146,7 @@ node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /pr
 | Ensayar o presentar con notas | `salida/index.html?modo=orador`, o la tecla O desde el presentador | vista de ensayo sincronizada |
 | Insertar en su editor | `render.mjs` | `salida/laminas/NN-id-P.png`, un PNG por paso |
 | Las láminas como video | `node scripts/video.mjs mi-video` | `salida/laminas.mp4` con micro-animaciones |
+| Mandarlo como documento (propuesta, VSL) o llevarlo a Keynote o Slides | `render.mjs --finales --pdf` | `salida/laminas.pdf`, una página por lámina |
 | Video montado sobre su grabación | ver §6 | `salida/montaje.mp4` + `cortes.csv` |
 
 Teclas del presentador:
@@ -136,14 +158,17 @@ Teclas del presentador:
 | Inicio / Fin | primera o última |
 | F | pantalla completa |
 | N | banda de notas del orador (la `voz` del paso), para quien presenta con una sola pantalla |
-| O | abre la vista de ensayo en otra ventana: paso actual, el siguiente en miniatura, la voz grande, cronómetro total y de la lámina contra lo planeado. Las dos ventanas se siguen |
+| O | abre la vista de ensayo en otra ventana: paso actual, el siguiente en miniatura, la voz grande, cronómetro total y de la lámina contra lo planeado. Las dos ventanas se siguen (también en Safari y desde `file://`) |
 | B o . / W | pantalla en negro / en blanco; cualquier avance la quita |
 | 5 G (o 5 Intro) | salta a la lámina 5 |
 | G | índice de láminas |
 | ? | ayuda |
 
 La lámina `camara` se proyecta en negro limpio: el público no ve el letrero «A cámara», que solo sale
-en los PNG y la hoja. La `voz` viaja dentro del HTML y no se dibuja: los PNG y el video no cambian.
+en los PNG y la hoja. Una `camara` con `"vivo": true` (actividad, demostración, preguntas) se proyecta en
+blanco con su emoji, la consigna, sus pasos y una cuenta regresiva desde `dur` (roja en los últimos 30 s); la
+vista de ensayo muestra la misma cuenta y la consigna. Fuera de un proyector 16:9 (4:3, 16:10) las bandas
+salen negras. La `voz` viaja dentro del HTML y no se dibuja: los PNG y el video no cambian.
 
 ## 6. Montaje sobre una grabación a cámara
 

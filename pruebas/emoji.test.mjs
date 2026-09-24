@@ -126,3 +126,13 @@ test('QA: con emoji "auto" revisa también el otro set; en fluent avisa el emoji
   const fl = correr({ emoji: 'fluent', marca: false, laminas: [{ tipo: 'grafica', grafica: 'barras', barras: [{ etiqueta: 'Operación ⚙️', valor: 50 }, { etiqueta: 'Sueldo', valor: 30 }] }] });
   assert.ok(fl.avisos.some(a => /emoji dentro de un texto de gráfica.*⚙️/.test(a)), fl.avisos.join('\n'));
 });
+
+test('📄 y 📃 se dibujan en SVG (hoja con renglones): ya no se sustituyen por 📋, que es «tarea»', async () => {
+  const { esGlifoDibujado, bajoContraste, SUGERIDO, BAJO_CONTRASTE, Emojis } = await import('../scripts/lib/emoji.mjs');
+  assert.ok(esGlifoDibujado('📄') && esGlifoDibujado('📃'));
+  for (const set of ['apple', 'fluent']) for (const f of ['claro', 'tarjeta', 'oscura']) assert.equal(bajoContraste('📄', set, f), '');
+  assert.ok(!Object.values(SUGERIDO).includes('📋'), 'ningún sustituto propone 📋 («tarea») como hoja');
+  for (const set of Object.values(BAJO_CONTRASTE)) for (const t of Object.values(set)) assert.ok(!Object.values(t).includes('📋'));
+  const html = new Emojis({ modo: 'fluent', dirSalida: '/tmp' }).html('📄', 200);
+  assert.match(html, /<svg[^>]*>.*#3e7bfa/);
+});

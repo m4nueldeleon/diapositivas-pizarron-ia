@@ -37,7 +37,12 @@
 //     fórmulas de IA y más de una antítesis, palabras vetadas de MI-MARCA, proyección sin condición,
 //     post de maqueta con cifras, clase/webinar sin llamado final, oscuras en clase o reel;
 //   · un mismo diseño 4 veces seguidas o en más del 45% del deck, 4 láminas seguidas sin capa a mano,
-//     más de 15% de láminas oscuras.
+//     más de 15% de láminas oscuras;
+//   · vsl/webinar sin prueba real, con la maqueta EJEMPLO como prueba o sin cifra de credibilidad; sin objeción
+//     antes del llamado; descargo «de ejemplo» en pantalla; emojis parecidos o con rol contrario en el deck;
+//     claves del deck que nadie lee (`_marca`, `_datos`); más de 40% a cámara; oferta tardía en un VSL corto.
+// Nota: 100 − 12 × errores − 3 × avisos; con datos propuestos sin confirmar, BORRADOR y tope de 90.
+// qa.json trae además `estado`, `por_confirmar` e `iconos` (emoji → láminas donde sale, para revisar coherencia).
 import fs from 'node:fs';
 import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
@@ -45,7 +50,7 @@ import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
 import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, TOPE_BORRADOR } from './lib/reglas-deck.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 
 const { flag, pos, opt } = argumentos(process.argv);
@@ -475,15 +480,19 @@ deck.laminas.forEach((l, i) => {
 });
 if (tipos.length >= 8 && oscuras / tipos.length > 0.15) avis.push(`${oscuras} láminas oscuras: resérvalas para revelar el producto o la oferta (≤ 15%)`);
 
-const nota = Math.max(0, 100 - 12 * errores.length - 3 * avis.length);
+// Con datos propuestos sin confirmar el deck es BORRADOR: la nota no pasa de TOPE_BORRADOR
+const nota = notaQA({ errores, avisos: avis, porConfirmar });
+const borrador = Object.keys(porConfirmar).length > 0;
 const objetivo = minutosObjetivo(deck.duracion_objetivo);
 const porTipo = duracionPorTipo(deck, pasos);
 const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDeck.duracion), laminas: mmss(porTipo.laminas), camara: mmss(porTipo.camara),
   ...(objetivo ? { objetivo: mmss(objetivo * 60) } : {}), ...(deck.pieza ? { pieza: deck.pieza } : {}) };
-const informe = { nota, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, errores, avisos: avis, pendientes, por_confirmar: porConfirmar, fecha: new Date().toISOString() };
+const informe = { nota, estado: borrador ? 'borrador' : errores.length ? 'con errores' : 'listo', laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, errores,
+  avisos: avis, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
+  if (borrador) console.log(`BORRADOR: ${Object.keys(porConfirmar).length} dato(s) por confirmar (${Object.keys(porConfirmar).join(', ')}); la nota no pasa de ${TOPE_BORRADOR} hasta confirmarlos`);
   const partes = porTipo.camara ? ` (láminas ~${duracion.laminas} · cámara ~${duracion.camara})` : '';
   console.log(`QA ${nota}/100 · ${informe.laminas} láminas · ${informe.pasos} pasos · voz ~${duracion.estimada}${partes}${duracion.objetivo ? ` (objetivo ${duracion.objetivo})` : ''}`);
   errores.forEach(e => console.log('  ✗ ' + e));
