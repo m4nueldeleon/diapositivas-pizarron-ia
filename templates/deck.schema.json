@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/m4nueldeleon/diapositivas-pizarron-ia/templates/deck.schema.json",
+  "title": "deck.json — Diapositivas Pizarrón IA",
+  "description": "Contrato de un deck. Detalle de cada diseño en references/LAYOUTS.md.",
+  "type": "object",
+  "required": ["laminas"],
+  "properties": {
+    "titulo": { "type": "string" },
+    "formato": { "enum": ["16:9", "9:16", "1:1", "4:5"], "default": "16:9" },
+    "emoji": { "enum": ["auto", "apple", "fluent"], "default": "auto", "description": "auto = Apple en macOS, Fluent 3D (MIT) en lo demás" },
+    "animacion": { "enum": ["seco", "suave"], "default": "seco" },
+    "idioma": { "type": "string", "default": "es" },
+    "marca": {
+      "oneOf": [
+        { "const": false },
+        { "type": "object", "properties": { "texto": { "type": "string" }, "sufijo": { "type": "string" }, "logo": { "type": "string" } }, "additionalProperties": false }
+      ]
+    },
+    "laminas": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/lamina" } }
+  },
+  "$defs": {
+    "texto": { "type": "string", "description": "Acepta **negrita**, __subrayado__, ==resaltado==, ~~tachado~~, {v:color}, [[mano]] y \\n" },
+    "emoji": { "type": "string", "description": "Emoji simple o compuesto: \"🧑‍⚕️+💰\", \"no:🎥\", \"si:💸\"" },
+    "voz": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+    "lamina": {
+      "type": "object",
+      "required": ["tipo"],
+      "properties": {
+        "tipo": { "enum": ["idea", "lista", "cuadrantes", "cita", "cifra", "objeto", "oscura", "flujo", "pasos", "bifurcacion", "circulos", "tabla", "tarjetas", "grafica", "linea-tiempo", "medidor", "opciones", "rejilla", "reparto", "calendario", "chat", "prueba", "boton", "foco", "camara"] },
+        "id": { "type": "string" },
+        "voz": { "$ref": "#/$defs/voz" },
+        "anclas": { "type": "array", "items": { "type": "string" } },
+        "ancla": { "type": "string" },
+        "dur": { "oneOf": [{ "type": "number", "minimum": 0.3 }, { "type": "array", "items": { "type": "number", "minimum": 0.3 } }] },
+        "revelar": { "type": "string" },
+        "sello": { "type": "string" },
+        "sello_paso": { "type": "integer", "minimum": 0 },
+        "clic": { "type": "string" },
+        "clic_paso": { "type": "integer", "minimum": 0 },
+        "cursor": { "enum": ["mano", "flecha"] },
+        "firma": { "type": "boolean" },
+        "texto": { "$ref": "#/$defs/texto" },
+        "nota": { "$ref": "#/$defs/texto" },
+        "emoji": { "$ref": "#/$defs/emoji" },
+        "encabezado": { "$ref": "#/$defs/texto" }
+      }
+    }
+  }
+}

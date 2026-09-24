@@ -1,0 +1,16 @@
+{
+  "name": "diapositivas-pizarron-ia",
+  "version": "1.0.0",
+  "description": "Skill de Claude Code: diapositivas estilo pizarrón (emoji + capa manuscrita) reveladas frase por frase, con presentador, video y montaje sincronizado.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "demo": "node scripts/render.mjs ejemplos/demo",
+    "qa": "node scripts/qa.mjs ejemplos/demo",
+    "video": "node scripts/video.mjs ejemplos/demo",
+    "test": "node --test pruebas/*.test.mjs"
+  },
+  "optionalDependencies": { "playwright": "^1.49.0" },
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,641 @@
+{
+ "titulo": "Demo — Diapositivas Pizarrón IA",
+ "formato": "16:9",
+ "emoji": "auto",
+ "animacion": "seco",
+ "marca": {
+  "texto": "tumarca",
+  "sufijo": ".com"
+ },
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "idea",
+   "emoji": "🧑‍⚕️+💰",
+   "emoji_tam": "heroe",
+   "texto": "Hay gente usando la IA para\n__ganar lo mismo que un médico__",
+   "nota": "Sin experiencia previa en negocios.",
+   "voz": [
+    "Hay gente usando la IA para ganar lo mismo que un médico",
+    "sin experiencia previa en negocios"
+   ]
+  },
+  {
+   "id": "sin",
+   "tipo": "lista",
+   "encabezado": "Sin:",
+   "vineta": "x",
+   "items": [
+    "Pasar años trabajando **12 horas al día**",
+    "**Construir** una audiencia",
+    "**Mostrar** tu cara en redes"
+   ],
+   "voz": [
+    "sin pasar años trabajando doce horas al día",
+    "sin construir una audiencia",
+    "y sin mostrar tu cara"
+   ]
+  },
+  {
+   "id": "apuesta",
+   "tipo": "flujo",
+   "flecha": "arco-negro",
+   "flechas": [
+    {
+     "tachada": true
+    }
+   ],
+   "nodos": [
+    {
+     "emoji": "🐷",
+     "etiqueta": "Tus ahorros",
+     "normal": true
+    },
+    {
+     "emoji": "🎰",
+     "etiqueta": "Apostarlos",
+     "normal": true
+    }
+   ],
+   "voz": [
+    "Y no, no se trata de agarrar tus ahorros",
+    "y apostarlos"
+   ]
+  },
+  {
+   "id": "sistema",
+   "tipo": "pasos",
+   "n": 3,
+   "clic": 1,
+   "texto": "El sistema de 3 pasos **«solo dar clic»**",
+   "nota": "Lo usan principiantes para cobrar como profesionistas",
+   "voz": [
+    "Te voy a enseñar el sistema de tres pasos",
+    "que empieza con un clic"
+   ]
+  },
+  {
+   "id": "audiencias",
+   "tipo": "idea",
+   "emoji": "👥",
+   "emoji_lado": true,
+   "texto": "Aprovecha la **audiencia de otros**",
+   "voz": "Aprovechas la audiencia de otros"
+  },
+  {
+   "id": "sin-nada",
+   "tipo": "cuadrantes",
+   "items": [
+    {
+     "emoji": "no:🎥",
+     "texto": "Crear contenido",
+     "tono": "r"
+    },
+    {
+     "emoji": "no:🙋",
+     "texto": "Mostrar tu cara",
+     "tono": "r"
+    },
+    {
+     "emoji": "si:💸",
+     "texto": "**$0** de capital inicial",
+     "tono": "v"
+    },
+    {
+     "emoji": "si:📧",
+     "texto": "Solo un **correo**",
+     "tono": "v"
+    }
+   ]
+  },
+  {
+   "id": "metricas",
+   "tipo": "tarjetas",
+   "encabezado": "Las 6 métricas para evaluar un negocio:",
+   "items": [
+    {
+     "emoji": "💵",
+     "texto": "Ganancia por venta"
+    },
+    {
+     "emoji": "💰",
+     "texto": "Capital inicial"
+    },
+    {
+     "emoji": "⚡",
+     "texto": "Tiempo al primer peso"
+    },
+    {
+     "emoji": "🧠",
+     "texto": "Habilidad requerida"
+    },
+    {
+     "emoji": "📦",
+     "texto": "Complejidad de entrega"
+    },
+    {
+     "emoji": "📊",
+     "texto": "Escalabilidad"
+    }
+   ]
+  },
+  {
+   "id": "descartados",
+   "tipo": "lista",
+   "tachar_despues": true,
+   "items": [
+    {
+     "emoji": "🚚",
+     "texto": "Dropshipping",
+     "tachado": true
+    },
+    {
+     "emoji": "💼",
+     "texto": "Ventas high ticket",
+     "tachado": true
+    },
+    {
+     "emoji": "📈",
+     "texto": "Trading",
+     "tachado": true
+    }
+   ]
+  },
+  {
+   "id": "marcador",
+   "tipo": "tabla",
+   "esquina": "Métrica",
+   "vacias": 1,
+   "columnas": [
+    "Ventas high ticket",
+    "Dropshipping",
+    "Afiliados"
+   ],
+   "filas": [
+    {
+     "etiqueta": "Ganancia por venta",
+     "celdas": [
+      {
+       "texto": "$1,000-3,000\n(10% comisión)",
+       "tono": "v"
+      },
+      {
+       "texto": "$20-50",
+       "tono": "r"
+      },
+      {
+       "texto": "$50-250",
+       "tono": "n"
+      }
+     ]
+    },
+    {
+     "etiqueta": "Capital inicial",
+     "celdas": [
+      {
+       "texto": "$0-500",
+       "tono": "v"
+      },
+      {
+       "texto": "$1,000-5,000",
+       "tono": "r"
+      },
+      {
+       "texto": "$1,000-5,000",
+       "tono": "r"
+      }
+     ]
+    },
+    {
+     "etiqueta": "Tiempo al primer peso",
+     "celdas": [
+      {
+       "texto": "2-6 meses",
+       "tono": "n"
+      },
+      {
+       "texto": "3-6 meses",
+       "tono": "n"
+      },
+      {
+       "texto": "2-4 meses",
+       "tono": "n"
+      }
+     ]
+    },
+    {
+     "etiqueta": "Habilidad requerida",
+     "celdas": [
+      {
+       "texto": "Dominar ventas\n(1-2 años)",
+       "tono": "r"
+      },
+      {
+       "texto": "Marketing +\npruebas",
+       "tono": "r"
+      },
+      {
+       "texto": "Marketing +\nanuncios",
+       "tono": "r"
+      }
+     ]
+    },
+    {
+     "etiqueta": "Entrega",
+     "celdas": [
+      {
+       "texto": "Cero",
+       "tono": "v"
+      },
+      {
+       "texto": "Media\n(proveedores)",
+       "tono": "n"
+      },
+      {
+       "texto": "Baja",
+       "tono": "v"
+      }
+     ]
+    },
+    {
+     "etiqueta": "Escalabilidad",
+     "celdas": [
+      {
+       "texto": "Baja (tiempo\npor dinero)",
+       "tono": "r"
+      },
+      {
+       "texto": "Media (más\nanuncios)",
+       "tono": "n"
+      },
+      {
+       "texto": "Media (más\ntráfico)",
+       "tono": "n"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "alianza",
+   "tipo": "bifurcacion",
+   "origen": {
+    "emoji": "🤝",
+    "texto": "**1** alianza"
+   },
+   "ramas": [
+    {
+     "emoji": "💸",
+     "valor": "$2,000"
+    },
+    {
+     "emoji": "💰",
+     "valor": "$50,000"
+    }
+   ],
+   "llave": "Mismo trabajo"
+  },
+  {
+   "id": "mapa",
+   "tipo": "pasos",
+   "iconos": [
+    "🔍",
+    "🛠️",
+    "🚀"
+   ],
+   "etiquetas": [
+    "Encontrar",
+    "Construir",
+    "Lanzar"
+   ],
+   "activo": 1,
+   "voz": "Paso uno: encontrar"
+  },
+  {
+   "id": "identificar",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "🕵️",
+     "etiqueta": "Identificar"
+    },
+    {
+     "emoji": "🤝",
+     "etiqueta": "Aliarte"
+    }
+   ]
+  },
+  {
+   "id": "cuentas",
+   "tipo": "cifra",
+   "lineas": [
+    "1,000,000 × **0.1%** = 1,000",
+    "1,000 × $25,000 = __$25,000,000__"
+   ]
+  },
+  {
+   "id": "volumen",
+   "tipo": "rejilla",
+   "encabezado": "Para ganar **$10k al mes** tendrías que vender…",
+   "emoji": "📦",
+   "total": 300,
+   "anotacion": "Son 300",
+   "sello": "Mucha habilidad"
+  },
+  {
+   "id": "escala",
+   "tipo": "grafica",
+   "titulo": "Dropshipping",
+   "subtitulo": "Escalabilidad",
+   "series": [
+    {
+     "nombre": "Escala",
+     "forma": "recta",
+     "tono": "a"
+    },
+    {
+     "nombre": "Costo de anuncios",
+     "forma": "exponencial",
+     "tono": "r"
+    }
+   ],
+   "banda": "Tu margen"
+  },
+  {
+   "id": "renuncia",
+   "tipo": "linea-tiempo",
+   "marcas": [
+    {
+     "texto": "Día 1"
+    },
+    {
+     "texto": "Día 14",
+     "tono": "v",
+     "pos": 0.42
+    },
+    {
+     "texto": "Día 30",
+     "tono": "v",
+     "pos": 0.7
+    }
+   ],
+   "tramos": [
+    {
+     "desde": 1,
+     "hasta": 2,
+     "tono": "v",
+     "etiqueta": "Ideal"
+    },
+    {
+     "desde": 2,
+     "hasta": "fin",
+     "tono": "r",
+     "etiqueta": "Aquí renuncian"
+    }
+   ]
+  },
+  {
+   "id": "dificultad",
+   "tipo": "medidor",
+   "valor": 90,
+   "texto": "Algunos modelos dejan ganar millones,\npero son **muy difíciles para empezar**."
+  },
+  {
+   "id": "elige",
+   "tipo": "opciones",
+   "elegida": 2
+  },
+  {
+   "id": "mensaje",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "¿Quieres trabajar conmigo?"
+    },
+    {
+     "de": "otro",
+     "texto": "¡Sí, me interesa!"
+    },
+    {
+     "de": "otro",
+     "texto": "Va, ¿qué sigue? 👀"
+    }
+   ]
+  },
+  {
+   "id": "reparto",
+   "tipo": "reparto",
+   "titulo": "Reparto de ingresos",
+   "total": {
+    "datos": [
+     {
+      "valor": "5k",
+      "etiqueta": "Audiencia"
+     },
+     {
+      "valor": "$30,000",
+      "etiqueta": "Ingresos"
+     }
+    ]
+   },
+   "partes": [
+    {
+     "etiqueta": "Parte del creador",
+     "valor": "$21,000",
+     "pct": "70%",
+     "tono": "gris"
+    },
+    {
+     "etiqueta": "Tu parte",
+     "valor": "$9,000",
+     "pct": "30%",
+     "tono": "verde"
+    }
+   ]
+  },
+  {
+   "id": "prueba",
+   "tipo": "prueba",
+   "capturas": [
+    {
+     "post": {
+      "nombre": "Ana (ejemplo)",
+      "usuario": "@cuenta_de_ejemplo",
+      "fecha": "24 ene",
+      "texto": [
+       "Hoy tuve mi primera llamada de alianza. Duró una hora y me dijeron que SÍ.",
+       "$3,000 por adelantado + 20% de las ventas.",
+       "Los pasos chiquitos sí funcionan."
+      ],
+      "clave": "$3,000 por adelantado + 20% de las ventas."
+     }
+    }
+   ]
+  },
+  {
+   "id": "plan14",
+   "tipo": "calendario",
+   "titulo": "Calendario de 14 días",
+   "fase_activa": 2,
+   "dias": [
+    {
+     "sub": "Inversión"
+    },
+    {
+     "sub": "Identificación"
+    },
+    {
+     "sub": "Comunidad"
+    },
+    {
+     "sub": "Autoridad"
+    },
+    {
+     "sub": "Confianza"
+    },
+    {
+     "sub": "Reciprocidad"
+    },
+    {
+     "sub": "Prueba social"
+    },
+    {
+     "sub": "Historia"
+    },
+    {
+     "sub": "Anticipación"
+    },
+    {
+     "sub": "Urgencia"
+    },
+    {
+     "sub": "Escasez"
+    },
+    {
+     "sub": "Escasez"
+    },
+    {
+     "sub": "Urgencia"
+    },
+    {
+     "sub": "Cierre"
+    }
+   ],
+   "fases": [
+    {
+     "nombre": "Fase 1 · Calentamiento",
+     "desde": 1,
+     "hasta": 3,
+     "color": "amarillo"
+    },
+    {
+     "nombre": "Fase 2 · Entregar valor",
+     "desde": 4,
+     "hasta": 9,
+     "color": "azul"
+    },
+    {
+     "nombre": "Fase 3 · Carrito abierto",
+     "desde": 10,
+     "hasta": 14,
+     "color": "verde"
+    }
+   ]
+  },
+  {
+   "id": "boton",
+   "tipo": "boton",
+   "boton": "Generar",
+   "emoji": "🤖",
+   "texto": "Solo das clic en el **agente correcto**…"
+  },
+  {
+   "id": "reservada",
+   "tipo": "circulos",
+   "texto": "Por eso esta industria estaba reservada para **unos pocos**",
+   "tono": "r",
+   "tono_interior": "v",
+   "personas": 12,
+   "emoji": "🧑‍💼"
+  },
+  {
+   "id": "promesa",
+   "tipo": "cita",
+   "emoji": "📝",
+   "texto": "«Así es **EXACTAMENTE** como puedes ganar $10k–50k con un producto hecho para tu audiencia»"
+  },
+  {
+   "id": "noventa",
+   "tipo": "rejilla",
+   "punto": true,
+   "total": 100,
+   "columnas": 20,
+   "destacar": [
+    99
+   ],
+   "texto": "¿El **99%** de los micro-creadores? Podrían ganar lo mismo…"
+  },
+  {
+   "id": "tu",
+   "tipo": "rejilla",
+   "emoji": "👤",
+   "total": 40,
+   "columnas": 10,
+   "destacar": [
+    14
+   ],
+   "emoji_destacado": "🧑‍💻",
+   "etiqueta_destacado": "Tú",
+   "alto": 520
+  },
+  {
+   "id": "foco",
+   "tipo": "foco",
+   "texto": "Sigues cobrando mientras el creador siga promoviendo el producto."
+  },
+  {
+   "id": "barras",
+   "tipo": "grafica",
+   "grafica": "barras",
+   "barras": [
+    {
+     "etiqueta": "Sueldo fijo",
+     "valor": 45,
+     "tono": "a"
+    },
+    {
+     "etiqueta": "Un producto digital",
+     "valor": 100,
+     "tono": "v",
+     "emoji": "💰"
+    }
+   ],
+   "nota": "Mismo esfuerzo, otro techo."
+  },
+  {
+   "id": "transparente",
+   "tipo": "idea",
+   "texto": "Quiero ser ==100% transparente== aquí."
+  },
+  {
+   "id": "camara",
+   "tipo": "camara",
+   "nota": "A cámara: la historia personal"
+  },
+  {
+   "id": "foco-uno",
+   "tipo": "objeto",
+   "emoji": "🎯",
+   "texto": "Enfócate en __un solo__ resultado.",
+   "nota": "Lo demás es ruido."
+  },
+  {
+   "id": "oferta",
+   "tipo": "oscura",
+   "emoji": "🚀",
+   "titulo": "Tu Programa",
+   "texto": "Lo que hay dentro del programa insignia"
+  }
+ ]
+}
