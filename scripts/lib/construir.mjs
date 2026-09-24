@@ -14,7 +14,7 @@ export const LAYOUTS = {
   cita: T.cita, objeto: T.objeto, tarjetas: T.tarjetas, oscura: T.oscura, cuadrantes: T.cuadrantes,
   tabla: D.tabla, grafica: D.grafica, 'linea-tiempo': D.lineaTiempo, medidor: D.medidor, opciones: D.opciones,
   rejilla: D.rejilla, prueba: D.prueba, chat: D.chat, reparto: D.reparto, calendario: D.calendario,
-  boton: D.boton, circulos: D.circulos, stack: D.stack,
+  boton: D.boton, circulos: D.circulos, stack: D.stack, calificacion: D.calificacion,
   camara: () => '', foco: T.foco,
 };
 
@@ -101,6 +101,9 @@ function anclaArriba(l) {
   if (l.anclar === 'centro') return false;
   if (l.anclar === 'arriba') return true;
   if (!['lista', 'tarjetas'].includes(l.tipo) || l.revelar === 'todo') return false;
+  // la lista de descartes va centrada: sus pasos ocultos ya reservan el hueco, así que el primer renglón aparece desde
+  // el inicio en su lugar final (~28%), como en 4:05
+  if (l.tipo === 'lista' && T.listaCentrada(l)) return false;
   return Array.isArray(l.items) && l.items.length >= 2;
 }
 

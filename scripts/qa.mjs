@@ -13,7 +13,6 @@
 //   · burbuja, tarjeta, ítem, cuadro, etiqueta u opción vacíos;
 //   · contraste menor a 2:1 entre el texto y su fondo (en degradados, contra su color medio);
 //   · dato pendiente a la vista: [PRECIO], [WHATSAPP], [DÍAS]… (un error por dato, con sus láminas);
-//   · el sello tapa más de 2 (o más del 10%) de las celdas DESTACADAS de una rejilla;
 //   · un emoji tapa un renglón (la cifra de una barra, un título); una línea de gráfica atraviesa un texto;
 //   · contenido recortado por su contenedor (overflow); texto suelto y negritas en un flex (se pierde el espacio);
 //   · «Paso 2» o una etiqueta del mapa partida en dos renglones; ~~tachado~~ con el tachón negro del navegador;
@@ -27,7 +26,7 @@
 //   · campo que ese diseño no usa (¿error de dedo?), emoji dudoso o aproximado en Fluent;
 //   · `voz` de un solo texto en una lámina de varios pasos;
 //   · 9:16: contenido en menos del 35% del alto, o dentro de la zona que tapa la interfaz de Reels;
-//   · sello que tapa una flecha; flecha de anotación o de nota al margen de menos de 60 px (un garabato);
+//   · sello que tapa más del 25% de las celdas DESTACADAS de una rejilla; sello que tapa una flecha; flecha de anotación o de nota al margen de menos de 60 px (un garabato);
 //   · emoji de bajo contraste para su set y su fondo (tabla revisada + medida de medir-emojis.mjs); con
 //     emoji "auto", también el del OTRO set; emoji dentro de un texto SVG en fluent (sale con la fuente del sistema);
 //   · etiqueta corta (≤ 3 palabras) partida, renglón huérfano («La / detecta»); ~~tachado~~ en el mismo paso que su texto;
@@ -43,7 +42,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
-import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, DIVERGE, SUGERIDO } from './lib/emoji.mjs';
+import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
 import { revisarDeck } from './lib/reglas-deck.mjs';
@@ -55,7 +54,7 @@ try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.erro
 const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, formato } = prep;
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
-const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
+const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
 
 const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const out = [];
@@ -72,6 +71,10 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const TEXTO = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca';
   const CAJAS = TEXTO + ', .emo, img, table, .captura, .pastilla, .calendario, .rejilla, .medidor, .boton-ui';
   const PRINCIPAL = '.t, .item, .etiqueta, .burbuja, .tarjeta';
+  // Texto secundario que se tiene que LEER (≥ 48 px a 1920, ≈ 9 px en un celular de 360). Los rótulos decorativos
+  // del calendario («DÍA»), la fuente y la firma quedan fuera: en el original también van a ~28-30 px [ref_1760].
+  const SECUNDARIO = '.sub-etiqueta, .pastilla .dato span, .pct, .post, .etiqueta-chica, .chat-hora';
+  const MINIMO = '.calendario .dia span, .calendario .dia b, .calendario .barra b, .calendario .barra span, .bento-lleno span';
   const fueraClon = e => !e.closest('.escena.clon');
 
   // Renglones reales de texto: un rect por nodo de texto y renglón (no las cajas de los elementos)
@@ -136,10 +139,11 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       // Marcas sin convertir
       lineas.forEach(({ n: nodo }) => { if (reMarca.test(nodo.nodeValue)) E(`marca sin cerrar o partida a la vista: «${corto(nodo.nodeValue, 40)}»`); });
       // Letra efectiva (el encaje reduce con zoom y getComputedStyle no lo descuenta)
-      for (const t of textos) {
+      const extra = [...lam.querySelectorAll(SECUNDARIO + ', ' + MINIMO)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && e.textContent.trim());
+      for (const t of [...textos, ...extra]) {
         const ef = parseFloat(getComputedStyle(t).fontSize) * zoom(t);
-        if (t.closest('.post, .calendario')) continue;
         if (ef < 27.5) E(`letra de ${Math.round(ef)}px reales en «${corto(t.innerText, 24)}» (mínimo 28)`);
+        else if (t.matches(SECUNDARIO) && ef < 48 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» (texto secundario) se ve a ${Math.round(ef)}px reales: en un celular no se lee (ideal ≥ ${Math.round(48 * W / 1920)})`);
         else if (t.matches(PRINCIPAL) && !t.closest('.tabla, .grafica') && ef < 40 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» se ve a ${Math.round(ef)}px reales (ideal ≥ ${Math.round(40 * W / 1920)})`);
       }
       // Sello: polígono girado contra renglones y emojis; fuera del lienzo
@@ -156,7 +160,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
           const dest = [...rj.querySelectorAll('[data-a^="d"]')];
           if (!dest.length) return;
           const n = dest.filter(d => { const b = caja(d, lam); return dentroPoligono([b.x + b.w / 2, b.y + b.h / 2], pol); }).length;
-          if (n > 2 || n > 0.1 * dest.length) E(`el sello tapa ${n} de las ${dest.length} celdas destacadas de la rejilla: quita sello_sobre para que se acomode solo, o usa sello_pos`);
+          if (n > 2 && n > 0.25 * dest.length) A(`el sello tapa ${n} de las ${dest.length} celdas destacadas de la rejilla: asegúrate de que la cifra ya se dijo o está en una nota; o quita sello_sobre para que se acomode solo`);
         });
         [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && !tolerado(e) && opac(e) > 0.5).forEach(e => {
           if (fraccionEn(caja(e, lam), pol) > 0.2) E('el sello tapa un emoji: muévelo con sello_sobre o sello_pos');
@@ -229,7 +233,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     window.PZ.mostrar(lam, n - 1, Infinity);
     const EF = m => r.errores.push(`paso ${n}: ${m}`), AF = m => r.avisos.push(`paso ${n}: ${m}`);
     const enc = lam.dataset.encaje ? +lam.dataset.encaje : 1;
-    if (enc < 0.7) EF(`el contenido se redujo al ${Math.round(enc * 100)}% para caber: parte la lámina o acorta el texto`);
+    const salida = lam.dataset.tipo === 'pasos' ? 'acorta las etiquetas, baja separacion o quita el prefijo (prefijo: false); un mapa no se parte' : 'parte la lámina o acorta el texto';
+    if (enc < 0.7) EF(`el contenido se redujo al ${Math.round(enc * 100)}% para caber: ${salida}`);
     else if (enc <= 0.85) AF(`el contenido se redujo al ${Math.round(enc * 100)}% para caber; conviene partir la lámina o acortar el texto`);
     const lineas = renglones(lam, L);
     // Datos pendientes ([PRECIO], [WHATSAPP]…): solo MAYÚSCULAS; «[nombre]» es plantilla a propósito
@@ -248,6 +253,16 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     });
     if (bajos.e.size) EF(`casi no se lee (contraste ${peor.toFixed(1)}:1, mínimo 2): «${[...bajos.e].join('», «')}»`);
     else if (bajos.a.size) AF(`contraste bajo (${peor.toFixed(1)}:1, ideal ≥ 3) en «${[...bajos.a].join('», «')}»`);
+    // Pastilla del rango del calendario: translúcida sobre la barra de color; se compone contra el color medio de la barra
+    lam.querySelectorAll('.calendario .barra span').forEach(sp => {
+      if (!visible(sp)) return;
+      const cs = getComputedStyle(sp), fondoB = colores(getComputedStyle(sp.parentElement).backgroundImage), tx = colores(cs.color)[0];
+      if (!fondoB.length || !tx) return;
+      const bg = (cs.backgroundColor.match(/[\d.]+/g) || []).map(Number), al = bg.length === 4 ? bg[3] : bg.length === 3 ? 1 : 0;
+      const media = [0, 1, 2].map(j => fondoB.reduce((s, c) => s + c[j], 0) / fondoB.length);
+      const c = razon(lum(tx), lum(media.map((m, j) => al * (bg[j] || 0) + (1 - al) * m)));
+      if (c < 3) AF(`la pastilla «${corto(sp.textContent, 20)}» del calendario tiene contraste ${c.toFixed(1)}:1 contra su barra (ideal ≥ 3)`);
+    });
     // 9:16: que el contenido ocupe el alto y respete la zona que tapa la interfaz de Reels
     if (vertical) {
       const lz = lam.querySelector(':scope > .lienzo'), h = lz && lz.firstElementChild;
@@ -283,8 +298,15 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       return '';
     };
     const sets = CT.pedido === 'auto' ? [modoEmoji, modoEmoji === 'apple' ? 'fluent' : 'apple'] : [modoEmoji];
-    const flojos = Object.fromEntries(sets.map(x => [x, new Set()])), cambia = new Set();
+    const flojos = Object.fromEntries(sets.map(x => [x, new Set()])), cambia = new Set(), impresos = new Set();
     [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e)).forEach(e => {
+      // emoji que imprime texto (🏪 «24», 🪪 «Jo Appleseed»): a tamaño de ícono se lee
+      const base = e.querySelector(':scope > .emo-txt, :scope > img');
+      if (base && caja(e, lam).w >= 80 * (W / 1920)) {
+        const ch = String(base.tagName === 'IMG' ? base.getAttribute('alt') : base.textContent).replace(/\uFE0F/g, '');
+        const t = (CT.IMPRESO[modoEmoji] || {})[ch];
+        if (t) impresos.add(`${ch} dice ${t[0]}; usa ${t[1]}`);
+      }
       const fondo = oscura ? 'oscura' : e.closest('.tarjeta, .cuadro, .bento-lleno, .calendario') ? 'tarjeta' : 'claro';
       e.querySelectorAll(':scope > .emo-txt, :scope > img, :scope > .insignia > img, :scope > .insignia > .emo-txt').forEach(g => {
         const ch = String(g.tagName === 'IMG' ? g.getAttribute('alt') : g.textContent).replace(/\uFE0F/g, '');
@@ -294,6 +316,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     const fondoTxt = oscura ? 'fondo oscuro' : 'fondo claro';
     if (flojos[modoEmoji].size) AF(`emoji de bajo contraste en ${modoEmoji} sobre ${fondoTxt}; cámbialo: ${[...flojos[modoEmoji]].join(', ')}`);
     sets.slice(1).forEach(x => { if (flojos[x].size) AF(`deck en emoji "auto": en ${x} (${x === 'fluent' ? 'Linux, VPS, la nube' : 'una Mac'}) se pierde ${[...flojos[x]].join(', ')}; fija "emoji": "apple" o "fluent" (EMOJIS.md, «Qué set usar»)`); });
+    if (impresos.size) AF(`emoji con texto impreso en ${modoEmoji}: ${[...impresos].join(' · ')} (EMOJIS.md, «Emojis con texto impreso»)`);
     if (cambia.size) AF(`emoji que cambia de sentido según el set: ${[...cambia].join(', ')} (EMOJIS.md)`);
     // ---- reglas de maquetación (estado final) ----
     const visibles = sel => [...lam.querySelectorAll(sel)].filter(e => visible(e) && fueraClon(e) && !e.closest('.escena:not(.lamina)'));
@@ -306,6 +329,15 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       const ls = window.lineasPalabras(e);
       if (ls.length > 1 && ls.some(l => l.length === 1)) EF(`«${ls.map(l => l.join(' ')).join(' / ')}» se parte en dos renglones: acorta la etiqueta (≤ 10 letras con 5 pasos), o ajusta tam_etiqueta o separacion`);
     });
+    // Mapa de pasos: una etiqueta más ancha que su columna se encima con la de al lado
+    visibles('.fila-pasos').forEach(f => {
+      const colW = parseFloat(getComputedStyle(f).gridTemplateColumns) || 0, z = zoom(f);
+      if (!colW) return;
+      f.querySelectorAll('.rotulo-paso').forEach(e => {
+        const w = e.getBoundingClientRect().width / z;
+        if (w > colW + 8) EF(`la etiqueta «${corto(e.innerText, 20)}» mide ${Math.round(w)} px y su columna ${Math.round(colW)}: se encima con la de al lado; acórtala, baja tam_etiqueta o sube separacion`);
+      });
+    });
     // Etiquetas cortas partidas y renglones huérfanos
     const cortas = new Set(), huerfanos = new Set();
     visibles('.nodo .etiqueta, .calendario .dia span, .sub-etiqueta').forEach(e => {
@@ -317,6 +349,16 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       if (ls.length < 2 || (ls.flat().length <= 3 && e.matches('.etiqueta'))) return;
       const h = ls.find(l => l.join('').replace(/[^\p{L}\p{N}]/gu, '').length <= 2);
       if (h) huerfanos.add(`${h.join(' ')}» en «${corto(e.innerText, 28)}`);
+    });
+    // Rótulo de tarjeta o de pieza del stack: dos renglones como máximo y con aire abajo (≥ 24 px del borde)
+    visibles('.tarjeta .rotulo, .bento-lleno .b-texto').forEach(e => {
+      const ls = window.lineasPalabras(e), caj = e.closest('.tarjeta, .bento-lleno');
+      if (ls.length > 2) AF(`«${corto(e.innerText, 28)}» ocupa ${ls.length} renglones en su tarjeta: acórtalo a 2 (es un rótulo, no una frase)`);
+      const rg = document.createRange(); rg.selectNodeContents(e);
+      const rs = [...rg.getClientRects()].filter(q => q.width > 3 && q.height > 3);
+      if (!rs.length || !caj) return;
+      const aire = (caj.getBoundingClientRect().bottom - Math.max(...rs.map(q => q.bottom))) / zoom(caj);
+      if (aire < 24) AF(`«${corto(e.innerText, 28)}» queda a ${Math.round(aire)} px del borde de abajo de su tarjeta (ideal ≥ 24)`);
     });
     if (cortas.size) AF(`etiqueta corta partida en dos renglones: «${[...cortas].join('», «')}»; acórtala o dale más espacio (separacion)`);
     if (huerfanos.size) AF(`renglón huérfano «${[...huerfanos].join('», «')}»: reparte la frase o acórtala`);

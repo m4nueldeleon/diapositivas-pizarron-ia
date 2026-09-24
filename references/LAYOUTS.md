@@ -30,10 +30,11 @@ ese diseño.
   borde rojo: tapa lo que queda debajo, como en [6:45]. Por omisión va al centro del lienzo (en
   `rejilla`, centrado sobre las cajas, como en [6:45]; si la rejilla tiene celdas en `destacar`, esas celdas
   son el dato que se cuenta: el sello se acomoda solo en la banda entre renglones que menos destacadas tapa
-  o, si todas tapan más de 2, en una franja libre junto a la rejilla. QA da error si un sello tapa más de 2
-  destacadas o más del 10%). Se mueve con:
+  o, si todas tapan más del 25%, en una franja libre junto a la rejilla. El sello es el remate y la cifra ya se
+  dijo: tapar parte de la rejilla es fiel a [6:45]; QA solo avisa si tapa más del 25% de las destacadas). Se
+  mueve con:
   - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
-    ~60% de su ancho (letra de 72 a 140 px). No lo pongas sobre notas ni flechas: QA lo avisa;
+    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). No lo pongas sobre notas ni flechas: QA lo avisa;
   - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,
     `arriba-derecha`, `abajo-izquierda` o `abajo-derecha`.
   Siempre queda dentro del lienzo y, si es muy largo para el formato, se reduce (QA avisa bajo 70%:
@@ -90,6 +91,8 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - `nota_paso`: por omisión la nota aparece en el paso 1.
 - `tachar_paso: 1`: el `~~tachado~~` del texto cae un paso DESPUÉS del texto (ver [Marcas](#marcas-de-texto)).
 - Sin emoji es una **frase sola** [3:20 «So let's get started.»].
+- `estrellas: { "valor": 1, "max": 5 }` en lugar del emoji pone una fila suelta de estrellas sobre la
+  frase, sin tarjeta [4:10]. Para calificar varias opciones usa [`calificacion`](#calificacion).
 
 ### `lista` — encabezado gris + viñetas, una por paso  ·  [1:35, 13:35, 40:15]
 ```json
@@ -100,6 +103,11 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - Un ítem con `"tachado": true` recibe un tachón rojo. Con `"tachar_despues": true` en la lista,
   los tachones llegan después de que aparece todo [4:05].
 - Arranca arriba y crece hacia abajo (`anclar`); con `revelar: "todo"` se centra.
+- **Descartes** [m_256 4:16, 4:05]: si TODOS los ítems van tachados, cada renglón va centrado, en
+  seminegrita, y la lista se queda centrada en la lámina con su hueco reservado (el primer renglón aparece
+  ya en su lugar final). El tachón es un plumón grueso (~10 px) que arranca antes de la viñeta y sale por
+  la derecha. `alinear: "centro"` lo fuerza en cualquier lista; `alinear: "izquierda"` lo quita. Las listas
+  con encabezado («Sin:», razones) siguen a la izquierda y arriba [1:35, 3:30].
 
 ### `cuadrantes` — bloques de color a sangre  ·  [10:20]
 Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un bloque por paso.
@@ -175,6 +183,9 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
 - Un nodo acepta `imagen` (foto recortada), `sub` (texto gris) y `normal: true`, que quita la
   negrita de la etiqueta.
 - Cada nodo aparece en su propio paso junto con la flecha que llega a él.
+- En 16:9 las columnas son iguales (todas del ancho del nodo más ancho): los emojis quedan a la misma
+  distancia y las flechas miden lo mismo aunque un nodo lleve un `sub` largo [17:00, 17:20]. El `sub` va a
+  52 px y se parte en dos renglones balanceados pasando de ~9 em.
 
 ### `pasos` — el sistema de N pasos (teclas 1 2 3 + ruta punteada)  ·  [1:55, 11:00, 16:35, 28:00]
 ```json
@@ -190,13 +201,18 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   columna esté atenuada por `activo`: es la señal de avance [28:00-28:05].
 - Con `iconos`, «Paso N» va gris a 62 px y la etiqueta a 86 px en negrita, y NO hay ruta punteada
   (la referencia no la dibuja en el mapa); `ruta: true` la fuerza.
-- **Mapa de 4 o 5 pasos**: en 16:9 las medidas bajan con `n` para que los nombres quepan en UN renglón
-  cada uno (el mapa los necesita juntos, como en [16:40]): hueco 230 / 150 / 80 px (3 / 4 / 5+ pasos),
-  ícono 180 (150 con 5+), etiqueta 86 / 74 / 64 px y «Paso N» al 72% de la etiqueta. Ni «Paso N» ni la
-  etiqueta se parten; si aun así la fila no cabe, se reduce entera y QA lo cuenta. **Con 5 o más pasos,
-  etiquetas de 1 palabra, ≤ 10 letras.** A mano: `separacion` (px entre columnas) y `tam_etiqueta` (px).
-  QA da error si un rótulo del mapa se parte en dos renglones («Paso / 2»).
-- Con teclas, la frase va ~240 px debajo [ref_115] y la ruta punteada se dibuja por omisión.
+- **Columnas iguales** [ref_1040]: en 16:9 cada paso ocupa una columna del mismo ancho, así los centros
+  quedan a la misma distancia (Find/Build/Launch van a ~627 px uno de otro en el video). El ancho es el
+  útil entre `n` (540 px con 3 pasos, 405 con 4, 324 con 5), hasta 630 con íconos y 461 con teclas.
+  `separacion` fija la distancia entre centros en px (en 9:16 es el hueco entre columnas).
+- **Mapa de 4 o 5 pasos**: caben hasta 5 pasos con nombre en 16:9 (3 en 9:16; con 6 o más usa `lista` o
+  dos láminas de mapa). El ícono baja a 150 con 5+, la etiqueta va a 86 / 74 / 64 px (3 / 4 / 5+) y además
+  se ajusta a su palabra más larga para no salirse de su columna (una palabra sola no se parte: con 5
+  pasos, «Recordatorios» baja a ~44 px). «Paso N» va al 72% del tamaño base. Ni «Paso N» ni la etiqueta
+  se parten. A mano: `separacion` y `tam_etiqueta` (px). QA da error si un rótulo del mapa se parte en dos
+  renglones («Paso / 2») o si una etiqueta es más ancha que su columna (se encima con la vecina).
+- Con teclas, la frase va ~240 px debajo [ref_115], a 84 px (`medio`): «3-step "Just-Click-The-Buttons"
+  business» cabe en UN renglón, como en el video. La ruta punteada se dibuja por omisión.
 - `sobre: "✋"` pone un emoji arriba de cada tecla. `clic: 2` hace que el cursor presione la
   tecla 2. `ruta: false` quita la ruta punteada.
 - **Arrastre** [1:55]: con `clic` y ruta, la mano presiona la tecla y ARRASTRA la ruta punteada hasta la
@@ -343,6 +359,23 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
              { "etiqueta": "Tu parte", "valor": "$9,000", "pct": "30%", "tono": "verde" }] }
 ```
 
+### `calificacion` — opciones calificadas con estrellas y cursor  ·  [4:10, 4:45, 4:50]
+Antes de la tabla-marcador, la referencia califica cada opción: un 🤔 arriba y una tarjeta gris con una
+fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las estrellas de una fila por paso.
+```json
+{ "tipo": "calificacion", "emoji": "🤔", "max": 5,
+  "filas": [{ "emoji": "🚚", "texto": "Dropshipping", "estrellas": 4 }, { "emoji": "💼", "texto": "Ventas high ticket" },
+            { "emoji": "📈", "texto": "Trading", "estrellas": 1 }] }
+```
+- Paso 0: la tarjeta con todas las estrellas pálidas. Luego un paso por cada fila que trae `estrellas`,
+  con la mano sobre la última estrella encendida.
+- Por omisión solo se ve encendida la fila activa y las anteriores vuelven a pálido, como en 4:50;
+  `acumular: true` las deja encendidas.
+- `max`: cuántas estrellas por fila (5 por omisión, hasta 10). `emoji` va arriba (tamaño `chico`).
+  `encabezado`, `nota` y `nota_paso` como en los demás diseños.
+- Anclas `e0`, `e1`… (las estrellas de cada fila). Para una fila suelta de estrellas sobre una frase
+  [4:10], usa `idea` con `estrellas`.
+
 ### `calendario` — días en tarjetas con fases de color  ·  [28:45 → 29:20]
 ```json
 { "tipo": "calendario", "titulo": "Calendario de 14 días", "fase_activa": 2,
@@ -359,9 +392,15 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   «DÍA 10». Es error de contrato una fase que llega más allá de los días, `fase_activa` mayor que las
   fases, una anotación a un día que no existe o un `titulo`/`rango` que dice «N días» con otros N.
 - `fase_activa` cuenta desde 1, igual que `activo` en `pasos` y `dia` en `anotaciones`. Sin
-  `fase_activa` los días van en gris (la lámina que presenta el calendario, [28:45]); con ella, la
-  fase activa va saturada y las demás con su tinte apagado al 30% [29:05-29:25].
-- `sub` de cada fase: subtítulo regular junto al nombre en la barra («PHASE 2 · Value Delivery»).
+  `fase_activa` los días van en gris (la lámina que presenta el calendario, [28:45]); con ella, las
+  celdas de la fase activa van en PASTEL con borde de su color y número casi negro, y las demás fases en
+  un tinte plano casi blanco con el texto gris [ref_1760, 29:25]. La barra sí lleva el degradado
+  saturado, con el nombre en blanco (~60 px); la pastilla del rango es blanca translúcida con la letra en
+  el tono oscuro de la fase (QA avisa si baja de 3:1).
+- El título de la fase va en `nombre` («Fase 2») y el subtítulo en `sub` («Entregar valor»), que se pinta
+  aparte en regular. Nunca los unas con «·» dentro de `nombre`.
+- El `sub` de cada día va a 32 px (28 en un calendario angosto); «DÍA» es un rótulo decorativo (~28 px,
+  como en el video).
 - Anotaciones: `tam` en px (56 por omisión, medido en m_1740) y `arriba` en px o en porcentaje
   (`"12%"`). Con anotaciones el calendario se angosta para que la nota quede fuera.
 - Repite la lámina cambiando `fase_activa` para recorrer las fases.
@@ -379,6 +418,15 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 - Avatar: silueta por omisión. `avatar_yo` / `avatar_otro` (o `avatar` en un mensaje) con un emoji la
   cambian, por ejemplo `"avatar_otro": "🤖"` para la IA; `false` la quita.
 - `tam_texto` (px) cambia la letra de las burbujas (54 en 16:9, 58 en 9:16).
+- `hora` por mensaje: un separador gris centrado sobre la burbuja, en el mismo paso. Un gancho en chat
+  tiene que entenderse sin sonido: muestra la hora de los dos extremos y pega el sello a la burbuja culpable.
+  Cada burbuja es un ancla `m0`, `m1`… (se cuentan desde 0):
+  ```json
+  { "tipo": "chat", "sello": "Tarde", "sello_sobre": "m1",
+    "mensajes": [{ "de": "otro", "hora": "11:40 pm", "texto": "¿Cuánto cuesta?" },
+                 { "de": "yo", "hora": "9:05 am", "texto": "¡Buen día! Sí, cuesta…" }] }
+  ```
+  QA avisa si un chat lleva `sello` sin `sello_sobre`.
 
 ### `prueba` — capturas reales, con el dato encerrado  ·  [0:35, 15:45, 19:30]
 ```json
@@ -403,19 +451,29 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 ```
 `cursor` acepta `mano` (por omisión) o `flecha`.
 
-### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:45]
-Un bento de tarjetas gris claro de tamaño desigual: todas las casillas se ven vacías al cortar y cada
-pieza se llena en su propio paso. `remate` (con ✅) cierra en el paso siguiente y `total` va debajo,
-chico. Va en blanco, no en lámina oscura.
+### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:50]
+En 16:9 va **a sangre**: el bento llena la lámina de borde a borde (18 px de margen), las casillas vacías
+se ven en gris al cortar y cada pieza se llena en su paso como una **tarjeta de producto a color** con la
+letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como una lista. El `remate`
+(con ✅) es una lámina aparte en la referencia [42:50]: entra en su paso sobre un lienzo limpio, con
+`total` y `nota` debajo. Va en blanco, no en lámina oscura.
 ```json
-{ "tipo": "stack", "encabezado": "Lo que incluye:",
+{ "tipo": "stack",
   "items": [{ "emoji": "🤖", "texto": "Tu agente de ventas", "doble": true }, { "emoji": "📚", "texto": "Las 12 clases" },
+            { "emoji": "🧑‍🏫", "texto": "Un mentor", "alto": 2, "sub": "Por 6 meses" },
             { "emoji": "🗓️", "texto": "4 llamadas en vivo" }, { "imagen": "assets/logo.png", "texto": "Grupo privado" }],
   "remate": "Hecho **contigo**" }
 ```
-- Un ítem lleva `emoji` o `imagen` (un logo real), `texto`, `doble: true` (ocupa dos columnas) y
-  `tono` (`v`, `r`, `n`).
-- `columnas`: 3 en 16:9 y 2 en 9:16 por omisión. `remate_paso`, `nota_paso` mueven el cierre.
+- Cada pieza se nombra como producto: un sustantivo corto, **2 a 4 palabras** (QA avisa desde 6). Más de
+  8 piezas ya no se leen: agrupa.
+- Un ítem lleva `emoji` o `imagen` (un logo real), `texto`, `sub` (subrenglón en píldora, «Por 6 meses»),
+  `doble: true` (dos columnas), `alto: 2` (dos filas) y `color`: `morado`, `marino`, `naranja`, `verde`,
+  `azul` o `negro`. Sin `color`, cada pieza toma uno por turno en ese orden. `tono` (`v`, `r`, `n`) da
+  la tarjeta pastel con letra negra.
+- `columnas`: 3 (4 con 7 piezas o más); las filas se calculan. Sin rótulo: el `encabezado` no se dibuja a
+  sangre (QA avisa); si hace falta, va en la lámina anterior.
+- `sangre: false` (y el 9:16) usa la pila de casillas grises con el rótulo, el remate y el `total` debajo.
+- `remate_paso` y `nota_paso` mueven el cierre.
 
 ## Especiales
 
@@ -423,6 +481,8 @@ chico. Va en blanco, no en lámina oscura.
 ```json
 { "tipo": "foco", "texto": "Sigues cobrando mientras el creador siga promoviendo el producto." }
 ```
+- La frase de foco es la PROTAGONISTA, no una nota al margen: Caveat a 88 px en 16:9 (84 si pasa de 14
+  palabras; 96 / 88 en 9:16) y hasta ~1560 px de ancho, como en el cuadro 15:20. `tam` la cambia.
 - `opacidad`: por omisión 0.2.
 - `nota`: con `texto`, va debajo, más chica y a mano, en el mismo corte (`nota_paso` la mueve). Sin
   `texto`, la `nota` es la frase principal.
@@ -478,7 +538,7 @@ pasos de la lámina, QA da error: los cortes del montaje se desalinean y las fra
 ## Anclas
 
 `sello_sobre`, `clic` y las flechas apuntan a anclas. Las que existen por diseño:
-`texto` y `emoji` (idea), `s0`, `s1`… (stack), `i0`, `i1`… (lista), `n0`… (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
+`texto` y `emoji` (idea), `s0`, `s1`… (stack), `m0`, `m1`… (chat), `e0`, `e1`… (calificacion), `i0`, `i1`… (lista), `n0`… (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
 `l0`… (cifra), `icono` y `cita` (cita), `objeto`, `medidor`, `op0`… (opciones), `rejilla`, `anot` y
 `d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`.
 

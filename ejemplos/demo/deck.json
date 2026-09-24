@@ -158,6 +158,32 @@
    ]
   },
   {
+   "id": "calificar",
+   "tipo": "calificacion",
+   "emoji": "🧐",
+   "filas": [
+    {
+     "emoji": "🚚",
+     "texto": "Dropshipping",
+     "estrellas": 4
+    },
+    {
+     "emoji": "💼",
+     "texto": "Ventas high ticket"
+    },
+    {
+     "emoji": "📈",
+     "texto": "Trading",
+     "estrellas": 1
+    }
+   ],
+   "voz": [
+    "Si los calificas de entrada",
+    "dropshipping parece buena idea",
+    "y el trading, casi nada"
+   ]
+  },
+  {
    "id": "marcador",
    "tipo": "tabla",
    "esquina": "Métrica",
@@ -424,11 +450,13 @@
    "mensajes": [
     {
      "de": "yo",
-     "texto": "¿Quieres trabajar conmigo?"
+     "texto": "¿Quieres trabajar conmigo?",
+     "hora": "7:12 pm"
     },
     {
      "de": "otro",
-     "texto": "¡Sí, me interesa!"
+     "texto": "¡Sí, me interesa!",
+     "hora": "7:15 pm"
     },
     {
      "de": "otro",
@@ -713,7 +741,6 @@
   {
    "id": "incluye",
    "tipo": "stack",
-   "encabezado": "Lo que incluye:",
    "items": [
     {
      "emoji": "🤖",

@@ -267,9 +267,15 @@
       if (el.dataset.tachar === 'caja' && rs.length) {          // ítem de lista: cada renglón, y el primero desde la viñeta
         const B = caja(el, lam); rs = rs.map((b, i) => (i ? b : { ...b, w: b.w + (b.x - B.x), x: B.x }));
       }
+      const esCaja = el.dataset.tachar === 'caja';
       rs.forEach(b => {
         const y = b.y + b.h * 0.54;
-        trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240, no: true });
+        if (!esCaja) { trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240, no: true }); return; }
+        // Descarte de lista [m_256 4:16]: plumón grueso (~10 px de núcleo) que arranca antes de la viñeta y sale por la
+        // derecha, casi horizontal, con un segundo pase más claro que le da el borde áspero
+        trazo(svg, suave(linea([b.x - 20, y + 2], [b.x + b.w + 24, y - 2], r, 1.6, 4)), { color: C.rojo, ancho: 10.5, p, dur: 240, no: true });
+        const e2 = trazo(svg, suave(linea([b.x - 16, y + 4], [b.x + b.w + 20, y], r, 1.6, 4)), { color: C.rojo, ancho: 6, p, dur: 240, no: true });
+        e2.setAttribute('stroke-opacity', '.6'); e2.dataset.pase = '2';   // pase de textura: no cuenta como otro trazo
       });
     });
   }
@@ -340,7 +346,7 @@
   // real para que la capa a mano se dibuje sobre las posiciones finales. QA avisa desde 85% y da error bajo 70%.
   function encajar(lam) {
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
-      const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes')) return;
+      const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes') || h.classList.contains('sangre')) return;
       const cs = getComputedStyle(lz), s = escala(lam);
       const aw = lz.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const ah = lz.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
@@ -361,8 +367,9 @@
   // en un ancla (sello_sobre), en una zona (sello_pos) o en el lienzo, y se acota a los bordes.
   const ZONAS = { centro: [0.5, 0.5], arriba: [0.5, 0.27], abajo: [0.5, 0.73], izquierda: [0.28, 0.5], derecha: [0.72, 0.5],
     'arriba-izquierda': [0.28, 0.27], 'arriba-derecha': [0.72, 0.27], 'abajo-izquierda': [0.28, 0.73], 'abajo-derecha': [0.72, 0.73] };
-  // Sobre un ancla, el sello mide ~60% de su ancho [6:45 «A LOT OF SKILL» sobre la rejilla]: se ajusta
-  // el cuerpo de la tinta entre 72 y 140 px antes de medir.
+  // Sobre un ancla, el sello mide ~100% de su ancho [6:45: «A LOT OF SKILL» mide 1210 px sobre una rejilla de 1210,
+  // con letras de ~100 px]: el cuerpo de la tinta se ajusta en dos pasadas (el relleno y el borde no escalan
+  // lineal) entre 72 y 170 px; si girado no cabe en el lienzo, k lo reduce.
   function colocarSello(lam) {
     const s = lam.querySelector(':scope > .sello'); if (!s) return;
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
@@ -373,9 +380,9 @@
       if (el) {
         const b = caja(el, lam), tinta = s.querySelector('.sello-tinta');
         cx = b.cx; cy = b.cy;
-        if (tinta) {
+        if (tinta) for (let i = 0; i < 2; i++) {
           const fs = parseFloat(getComputedStyle(tinta).fontSize) || 104;
-          tinta.style.fontSize = clamp(fs * (b.w * 0.6) / (s.offsetWidth || 1), 72, 140).toFixed(1) + 'px';
+          tinta.style.fontSize = clamp(fs * (b.w * 0.97) / (s.offsetWidth || 1), 72, 170).toFixed(1) + 'px';
         }
         if (s.dataset.auto && el.classList.contains('rejilla')) rejilla = el;
       } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
@@ -389,9 +396,9 @@
     s.dataset.k = k.toFixed(3);
   }
 
-  // Sello sobre una rejilla con celdas DESTACADAS: esas celdas son el dato que se cuenta y no se tapan. Se prueba
+  // Sello sobre una rejilla con celdas DESTACADAS: esas celdas son el dato que se cuenta. Se prueba
   // el centro de cada banda entre renglones (y el centro) y gana la que tapa menos destacadas; si aun la mejor
-  // tapa más de 2, el sello sale a una franja libre (abajo, arriba, derecha o izquierda de la rejilla) que no
+  // tapa más del 25% (y más de 2), el sello sale a una franja libre (abajo, arriba, derecha o izquierda de la rejilla) que no
   // pise texto. Sin destacadas se queda centrado sobre las cajas, como en la referencia [6:45].
   function selloEnRejilla(lam, rej, centro, w, h, a, bw, bh, m) {
     const dest = [...rej.querySelectorAll('[data-a^="d"]')].map(e => caja(e, lam));
@@ -407,7 +414,9 @@
       .map(p => [p[0], clamp(p[1], m + bh, H - m - bh)])
       .map(p => ({ p, n: tapa(p), d: Math.abs(p[1] - centro[1]) }))
       .sort((p, q) => p.n - q.n || p.d - q.d);
-    if (cands[0].n <= 2) return cands[0].p;
+    // el sello es el remate y la cifra ya se dijo: puede tapar hasta ~25% de las destacadas (a todo el ancho cubre
+    // 2-3 renglones, así que un tope de 2 lo sacaba de la rejilla casi siempre)
+    if (cands[0].n <= Math.max(2, Math.floor(dest.length * 0.25))) return cands[0].p;
     const textos = [...lam.querySelectorAll('.t, .nota, .encabezado, .etiqueta')].filter(e => e.getClientRects().length).map(e => caja(e, lam));
     // pegado al borde de la rejilla y acotado al lienzo: puede pisar celdas NO destacadas, nunca una destacada
     const acota = ([cx, cy]) => [clamp(cx, m + bw, W - m - bw), clamp(cy, m + bh, H - m - bh)];
@@ -440,6 +449,8 @@
       if (e.closest('defs')) return;
       e.classList.toggle('oculto', +e.dataset.p > paso);
     });
+    // data-hasta: el elemento se va DESPUÉS de su paso (la mano y las estrellas de una calificación que no acumula)
+    lam.querySelectorAll('[data-hasta]').forEach(e => e.classList.toggle('pasado', paso > +e.dataset.hasta));
     lam.querySelectorAll('[data-atenuar]').forEach(e => e.classList.toggle('atenuado-paso', paso >= +e.dataset.atenuar));
     lam.querySelectorAll('[data-trazo]').forEach(e => {
       const p = +e.dataset.p, dur = +e.dataset.dur || 300, ret = +e.dataset.retraso || 0;

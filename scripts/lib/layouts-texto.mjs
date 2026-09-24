@@ -1,8 +1,8 @@
 // layouts-texto.mjs — diseños de idea, lista, flujo, pasos, bifurcación, cifra, cita, objeto, tarjetas.
 // Cada diseño devuelve el HTML interior del lienzo. Los pasos de revelado se asignan con ctx.P(k):
 // el paso 0 es lo que se ve al cortar a la lámina; cada paso siguiente suma UN elemento.
-import { marcar, escapar, texto, nota, bloque, pasoDe } from './comun.mjs';
-import { tamTexto, palabras } from './markup.mjs';
+import { marcar, escapar, texto, nota, bloque, pasoDe, estrellas } from './comun.mjs';
+import { tamTexto, palabras, plano } from './markup.mjs';
 
 // Etiqueta corta (≤ 3 palabras): no se parte en dos renglones («La / detecta», «Paso / 2»). Si con eso la fila
 // no cabe, encajar() la reduce y QA lo cuenta.
@@ -42,7 +42,13 @@ export function idea(l, ctx) {
       <div class="fila gap-s t ${tam}"${ctx.P(kTexto)}${ctx.A('texto')}><span${ctx.A('emoji')}>${emo.replace('class="emo ', 'class="emo en-linea ')}</span><span>${tacharDespues(marcar(l.texto), ctx, kTexto, l.tachar_paso)}</span></div>
       ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
   }
-  const vis = par ? parEmoji(l, ctx) : emo ? `<div${ctx.P(0)}${ctx.A('emoji')}>${emo}</div>` : '';
+  // `estrellas: { valor, max }` en lugar del emoji: una fila suelta de estrellas sobre la frase [4:10]
+  const est = !emo && !par && l.estrellas && typeof l.estrellas === 'object' ? (() => {
+    const mx = Math.max(1, Math.min(10, Math.round(Number(l.estrellas.max) || 5)));
+    const v = Math.max(0, Math.min(mx, Math.round(Number(l.estrellas.valor) || 0)));
+    return `<div class="estrellas suelta"${ctx.P(0)}${ctx.A('emoji')}>${estrellas(v, mx)}</div>`;
+  })() : '';
+  const vis = par ? parEmoji(l, ctx) : emo ? `<div${ctx.P(0)}${ctx.A('emoji')}>${emo}</div>` : est;
   const hayEmo = Boolean(vis);
   return `<div class="pila">
     ${entre ? '' : rotulo('')}
@@ -52,13 +58,19 @@ export function idea(l, ctx) {
     ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
 }
 
+export const listaCentrada = l => l.alinear === 'centro' || (l.alinear !== 'izquierda' && Array.isArray(l.items) && l.items.length > 0
+  && l.items.every(it => it && typeof it === 'object' && it.tachado));
+
 // LISTA — encabezado gris chico + viñetas (❌ ✅ o emoji). Una viñeta por paso.
 export function lista(l, ctx) {
   const items = l.items || [];
   const largo = Math.max(0, ...items.map(i => palabras(typeof i === 'string' ? i : i.texto)));
   const px = largo <= 6 ? 72 : largo <= 10 ? 66 : 58;
   const t = l.tam_texto || `${ctx.vertical ? Math.round(px * 1.2) : px}px`;   // en 9:16 el texto crece (hay alto de sobra)
-  const gapL = l.separacion || (items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
+  // Descartes [m_256 4:16]: si TODOS los ítems van tachados (o `alinear: "centro"`), cada renglón va centrado, en
+  // seminegrita, y la lista se queda centrada en la lámina con su hueco reservado (construir.mjs, anclaArriba).
+  const centrada = listaCentrada(l);
+  const gapL = l.separacion || (centrada && items.length <= 3 ? 130 : items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
   const vin = { x: '❌', no: '❌', check: '✅', si: '✅' };
   const filas = items.map((it, i) => {
     const o = typeof it === 'string' ? { texto: it } : it;
@@ -67,7 +79,7 @@ export function lista(l, ctx) {
     return `<div class="item"${ctx.P(i)}${ctx.A('i' + i)}${kT}>${e ? ctx.em.html(vin[e] || e, '1.12em') : ''}<span>${marcar(o.texto)}</span></div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    <div class="lista" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}</div>`;
+    <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}</div>`;
 }
 
 // FLUJO — nodos (emoji + etiqueta) unidos por flechas rojas a mano. A → B → C.
@@ -78,7 +90,8 @@ export function flujo(l, ctx) {
   // etiqueta regular, cada uno en su paso.
   const sinFlecha = l.flecha === 'ninguna';
   const tamE = l.emoji_tam || (sinFlecha ? 120 : n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
-  const gap = l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 260 : n === 4 ? 170 : 96);
+  // con columnas iguales (todas del ancho del nodo más ancho) el hueco baja un poco para que 3 nodos con sub quepan
+  const gap = l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 210 : n === 4 ? 130 : 80);
   const te = n >= 5 ? '40px' : n === 4 ? '54px' : sinFlecha ? '60px' : '76px';
   const estilo = sinFlecha ? 'ninguna' : ctx.vertical ? 'recta' : (l.flecha || 'recta');
   const html = nodos.map((nd, i) => {
@@ -94,9 +107,12 @@ export function flujo(l, ctx) {
       ${nd.etiqueta ? `<div class="etiqueta ${nd.normal || sinFlecha ? 'normal' : ''}${corta(nd.etiqueta)}">${marcar(nd.etiqueta)}</div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;
   }).join('');
-  const dir = ctx.vertical ? 'pila' : 'fila';
+  // En horizontal, columnas IGUALES (todas del ancho del nodo más ancho): los emojis quedan equidistantes y las
+  // flechas, que van de emoji a emoji, miden lo mismo aunque un nodo lleve un sub largo [17:00, 17:20].
+  const fila = ctx.vertical ? `<div class="pila" style="gap:${gap}px;align-items:flex-start">`
+    : `<div class="fila fila-igual" style="gap:${gap}px">`;
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    <div class="${dir}" style="gap:${gap}px;align-items:flex-start">${html}</div>
+    ${fila}${html}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto || 'medio') + ' mt-l', pasoDe(l, 'texto_paso', Math.max(0, n - 1)))}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', Math.max(0, n - 1)) + 1), 'mt-m')}</div>`;
 }
@@ -113,11 +129,18 @@ export function pasos(l, ctx) {
   const hechos = new Set(l.hechos || []);
   const rev = l.revelar === 'pasos' && !activo && !l.hechos;
   const horizontal = !ctx.vertical;
-  // Medidas del mapa con íconos según cuántos pasos hay: con 3 queda el aire de la referencia [16:40]; con 4
-  // o 5 el hueco, el ícono y la etiqueta bajan para que los nombres quepan en UN renglón cada uno.
+  // En horizontal las columnas son IGUALES y reparten el ancho útil: los pasos quedan a la misma distancia, como
+  // en ref_1040 (Find/Build/Launch a ~627 px uno de otro). `separacion` fija la distancia entre centros.
+  // Con 4 o 5 pasos el ícono y la etiqueta bajan, y la etiqueta se ajusta a su palabra más larga para no salirse
+  // de su columna («Recordatorios» con 5 pasos): una palabra sola no se puede partir.
+  const colW = l.separacion ?? Math.min(l.iconos ? 630 : 461, Math.floor(ctx.util / Math.max(1, n)));
+  const letras = Math.max(0, ...(l.etiquetas || []).map(x => Math.max(0, ...plano(x).split(/\s+/).map(w => [...w].length))));
+  const ajusta = (base, piso) => (letras ? Math.max(piso, Math.min(base, Math.floor((colW - 20) / (0.56 * letras)))) : base);
   const tamIcono = horizontal && n >= 5 ? 150 : 180;
-  const tamEtq = l.tam_etiqueta || (horizontal ? (n <= 3 ? 86 : n === 4 ? 74 : 64) : 86);
-  const tamPref = horizontal ? Math.round(tamEtq * 0.72) : 62;
+  const baseEtq = horizontal ? (n <= 3 ? 86 : n === 4 ? 74 : 64) : 86;
+  const tamEtq = l.tam_etiqueta || (horizontal ? ajusta(baseEtq, 44) : 86);
+  const tamPref = horizontal ? Math.round(baseEtq * 0.72) : 62;
+  const tamEtqTecla = l.tam_etiqueta || (horizontal ? ajusta(56, 40) : 56);
   const kt = pasoDe(l, 'texto_paso', rev ? n : 0);
   const kClic = l.clic ? pasoDe(l, 'clic_paso', kt + 1) : -1;
   const ruta = l.ruta ?? !l.iconos;
@@ -136,7 +159,7 @@ export function pasos(l, ctx) {
         ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
       cab = `<div class="tecla" style="--s:${ctx.vertical ? 150 : 170}px"${ctx.A('k' + i)}>${i + 1}</div>
-        ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${l.tam_etiqueta || 56}px;font-weight:700;margin-top:28px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
+        ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${tamEtqTecla}px;font-weight:700;margin-top:28px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
     const ok = hechos.has(i + 1) ? `<div style="margin-top:26px">${ctx.emoji('✅', 90)}</div>` : '';
     // flex:0 0 auto: la columna nunca se encoge (encogida partía «Paso / 2»); si la fila no cabe, encaja con zoom
@@ -149,10 +172,13 @@ export function pasos(l, ctx) {
   }
   // con etiquetas bajo la tecla, la mano aprieta la parte de arriba para no taparlas
   if (l.clic) ctx.clic = { a: 'k' + (l.clic - 1), p: kClic, ...(l.etiquetas && !l.iconos ? { pos: [0.6, 0.4] } : {}), ...(arrastra ? { fin: 'k' + (n - 1) } : {}) };
-  const gapP = l.separacion ?? (ctx.vertical ? (l.iconos ? 70 : 110)
-    : l.iconos ? ({ 1: 230, 2: 230, 3: 230, 4: 150 }[n] ?? 80) : ({ 1: 330, 2: 330, 3: 330, 4: 230 }[n] ?? 150));
-  return `<div class="pila"><div class="fila"${rev ? '' : ctx.P(0)} style="gap:${gapP}px;align-items:flex-start">${cols.join('')}</div>
-    ${texto(ctx, l.texto, (l.tam_texto || 'grande') + (l.iconos ? ' mt-e' : ' mt-t'), kt)}
+  // 9:16: una fila con hueco fijo (`separacion` es el hueco)
+  const fila = horizontal
+    ? `<div class="fila-pasos"${rev ? '' : ctx.P(0)} style="display:grid;grid-template-columns:repeat(${n},${colW}px);justify-items:center;align-items:start">`
+    : `<div class="fila"${rev ? '' : ctx.P(0)} style="gap:${l.separacion ?? (l.iconos ? 70 : 110)}px;align-items:flex-start">`;
+  // bajo las teclas la frase va a 84 px (ref_115: «3-step "Just-Click-The-Buttons" business» en UN renglón)
+  return `<div class="pila">${fila}${cols.join('')}</div>
+    ${texto(ctx, l.texto, (l.tam_texto || (l.iconos ? 'grande' : 'medio')) + (l.iconos ? ' mt-e' : ' mt-t'), kt)}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt), 'mt-s')}</div>`;
 }
 
@@ -255,6 +281,9 @@ export function cuadrantes(l, ctx) {
 // `nota` va debajo, más chica, en el mismo corte (o en `nota_paso`): nunca se descarta en silencio.
 export function foco(l, ctx) {
   const principal = l.texto || l.nota || '';
-  const debajo = l.texto && l.nota ? `<div class="nota"${ctx.P(pasoDe(l, 'nota_paso', 0))} style="--tn:46px;margin-top:28px;max-width:1300px">${marcar(l.nota)}</div>` : '';
-  return `<div class="pila"><div class="nota"${ctx.P(0)} style="--tn:${l.tam || '60px'};color:var(--tinta);font-weight:600;max-width:1300px">${marcar(principal)}</div>${debajo}</div>`;
+  const debajo = l.texto && l.nota ? `<div class="nota"${ctx.P(pasoDe(l, 'nota_paso', 0))} style="--tn:56px;margin-top:28px;max-width:min(1640px, var(--ancho-texto))">${marcar(l.nota)}</div>` : '';
+  // La frase de foco es la PROTAGONISTA, no una nota al margen: Caveat a ~88 px y casi de lado a lado (~1560 px) [15:20]
+  const largo = palabras(principal) > 14, horizontal = ctx.F.W > ctx.F.H;
+  const tam = l.tam || (horizontal ? (largo ? '84px' : '88px') : (largo ? '88px' : '96px'));
+  return `<div class="pila"><div class="nota"${ctx.P(0)} style="--tn:${tam};color:var(--tinta);font-weight:600;max-width:min(1640px, var(--ancho-texto))">${marcar(principal)}</div>${debajo}</div>`;
 }

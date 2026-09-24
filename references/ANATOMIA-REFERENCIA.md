@@ -57,10 +57,10 @@ Colores muestreados:
 | 2:40 | Billete con anotaciones manuscritas y flechas | `objeto` + notas |
 | 3:10-3:15 | 1,000,000 × 0.1% = 1,000, luego × $25,000 = $25,000,000 subrayado | `cifra` |
 | 3:50 | Meme de película («That is an excellent question») | imagen |
-| 4:05-4:15 | Lista de modelos tachados → «Todos son viables» | `lista` tachada → `idea` |
+| 4:05-4:15 | Lista de modelos tachados (centrada, plumón grueso) → «Todos son viables»; en 4:10 una fila de estrellas sobre la frase | `lista` tachada → `idea` (con `estrellas` en 4:10) |
 | 4:20-4:25 | Medidor verde→rojo con pin | `medidor` |
 | 4:30 | EASY / MEDIUM / DIFFICULT con cursor | `opciones` |
-| 4:45 | Tarjeta con 3 modelos y estrellas ⭐ calificadas con cursor | `tarjetas` |
+| 4:45 | Tarjeta con 3 modelos y estrellas ⭐ calificadas con cursor (4:50: solo la fila activa encendida) | `calificacion` |
 | 5:00-5:15 | 6 tarjetas de métricas que aparecen una por una | `tarjetas` |
 | 5:25-10:05 | **Tabla-marcador** manuscrita: se llena celda por celda y columna por columna | `tabla` |
 | 5:35 | Tarjetas de citas de ventas (azul, verde, naranja, rojo) | maqueta |

@@ -82,7 +82,8 @@ test('render: sello opaco y centrado en la rejilla; mapa con ✅ a color y sin r
     assert.notEqual(r.maskTinta, 'none', 'la tinta sí lleva grano');
     assert.equal(r.fondo, 'rgb(255, 255, 255)');
     assert.ok(r.dx <= 10 && r.dy <= 10, `sello descentrado ${r.dx},${r.dy}`);
-    assert.ok(r.prop > 0.45 && r.prop < 0.8, `el sello mide ${r.prop.toFixed(2)} de la rejilla (≈0.6)`);
+    // [6:45] el sello mide el 100% del ancho de la rejilla (1210 sobre 1210); el bounding box girado mide un poco más
+    assert.ok(r.prop > 0.93 && r.prop < 1.06, `el sello mide ${r.prop.toFixed(2)} de la rejilla (≈1.0)`);
     assert.ok(r.fina >= 100, `la flecha de la anotación mide ${r.fina} px`);
     assert.equal(r.oks.length, 2);
     assert.ok(r.oks.every(o => o === 1), `la ✅ de los hechos hereda la opacidad: ${r.oks}`);

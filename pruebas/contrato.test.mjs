@@ -7,10 +7,10 @@ import fs from 'node:fs';
 
 const tipos = Object.keys(LAYOUTS);
 
-test('el demo es válido y usa los 26 diseños', () => {
+test('el demo es válido y usa los 27 diseños', () => {
   const deck = JSON.parse(fs.readFileSync(new URL('../ejemplos/demo/deck.json', import.meta.url)));
   assert.deepEqual(validarDeck(deck, tipos), []);
-  assert.equal(tipos.length, 26);
+  assert.equal(tipos.length, 27);
   const usados = new Set(deck.laminas.map(l => l.tipo));
   assert.deepEqual(tipos.filter(t => !usados.has(t)), []);
 });

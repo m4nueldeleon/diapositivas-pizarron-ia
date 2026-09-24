@@ -45,7 +45,15 @@ export function marcar(texto) {
   // cursiva: un asterisco pegado al texto en los dos lados («5 * 3» no es cursiva)
   h = h.replace(/(^|[^*\w])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![*\w])/g, '$1<i>$2</i>');
   h = h.replace(/\\n|\n/g, '<br>');
-  return h;
+  return unirGuiones(h);
+}
+
+// Una palabra compuesta no se corta en su guion: «Just-Click- / The-Buttons» partía el nombre del método. Se mete un
+// word joiner (U+2060, el mismo mecanismo de los rangos de cifras) antes y después de cada guion ENTRE LETRAS, solo
+// en el texto (nunca en etiquetas ni atributos: «tono-v») y nunca dentro de un [DATO-PENDIENTE], que QA cuenta.
+export function unirGuiones(html) {
+  return String(html).split(/(<span class="hueco">[^<]*<\/span>|<[^>]+>)/).map((t, i) => (i % 2 ? t
+    : t.replace(/(\p{L})-(?=\p{L})/gu, '$1\u2060-\u2060'))).join('');
 }
 
 // Texto plano (para contar palabras y para QA)

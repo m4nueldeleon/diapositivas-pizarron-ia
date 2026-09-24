@@ -26,7 +26,7 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 
 ## 2026-09-24 · El sello es una etiqueta opaca
 - **Regla**: la máscara de grano va solo en la tinta; la etiqueta es blanca y opaca, centrada sobre lo
-  que sella y ~60% de su ancho.
+  que sella y ~100% de su ancho (ronda 2: en la ráfaga de 6:45 la tinta roja va de x 50 a 302 y la rejilla también; el 60% no salía de ninguna medida).
 - **Porqué**: con la máscara sobre todo el elemento, el contenido se veía a través de las letras
   («VENTAS PERDIDAS» salía café o verde olivo). En 6:45 la etiqueta tapa las cajas.
 
@@ -39,3 +39,21 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   con un testimonio armado que se leía real y con la lista, el precio y la garantía en láminas oscuras.
   La skill lo enseñaba así: «guion corto», el demo con «Ana (ejemplo)» y la firma de relleno.
 - **Cómo se detectó**: auditoría de mercadotecnia y usabilidad contra las hojas 14-18 y la transcripción.
+
+## 2026-09-24 · Íconos sin texto impreso y letra que se lee en el celular (loop, ronda 2)
+- **Regla**: 📅 📆 🗓️ se dibujan como un calendario SIN fecha, 🎟️ 🎫 como un boleto liso y 📲 como el
+  celular con flecha, igual en Apple y Fluent (también dentro del texto). 🏪 y 🪪 imprimen texto: QA avisa.
+  El texto secundario que se lee (sub de nodo, dato y % de pastilla, post) va a ≥ 48 px en 1920; solo los
+  rótulos decorativos (DÍA, fuente, firma) quedan a ~28-30, como en el video.
+- **Porqué**: el diccionario recomendaba 📅 para «fecha» y en Mac (el modo por omisión) imprimía «JUL 17»
+  en un VSL sobre la fecha real del evento, y 🎟️ decía «ADMIT ONE» a tamaño protagonista. A 360 px de
+  ancho, «2 minutos / 30 minutos» (44 px) salía a ~8 px y QA daba 100.
+- **Cómo se detectó**: hojas de emojis en los dos sets (t3/t4) y montaje de 8 láminas a 360 px.
+
+## 2026-09-24 · Calibrado contra el video, no a ojo (loop, ronda 2)
+- **Regla**: el calendario pinta la fase activa en pastel con borde y número casi negro (la barra sí
+  saturada); el mapa y el flujo usan columnas iguales; el stack va a sangre con tarjetas de producto a
+  color; los descartes tachados van centrados con plumón grueso; la frase de `foco` va a ~88 px.
+- **Porqué**: medido en ref_1760, ref_1040, h18 42:30-42:45, m_256 y 15:20: nuestras versiones usaban el
+  degradado de la barra en las celdas, huecos fijos que dejaban los pasos chuecos, casillas grises con
+  texto negro, la lista a la izquierda y la frase de foco 1.5 veces más chica.

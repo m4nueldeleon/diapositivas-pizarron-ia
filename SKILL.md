@@ -51,7 +51,7 @@ deducir.
    fija el número de láminas**, la duración sale de ahí (≈ láminas × 2.2 pasos × 3 s): escoge la pieza cuyo
    rango la contiene (`tutorial` 3-8 min, `vsl-corto` 3-6 o `libre`); no fuerces `duracion_objetivo` sobre
    una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas cosas).
-6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 26 diseños y sus campos) y
+6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 27 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
@@ -130,7 +130,7 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md);
   - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
     `{ "valor": …, "propuesto": true }` (LAYOUTS.md, «Datos que se llenan una vez»).
-- El demo con los 26 diseños está en `ejemplos/demo/deck.json`.
+- El demo con los 27 diseños está en `ejemplos/demo/deck.json`.
 
 ## 4. Qué entregar al usuario
 

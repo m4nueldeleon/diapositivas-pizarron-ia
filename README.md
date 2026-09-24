@@ -11,9 +11,10 @@ Gadzhi.
 
 ## Qué hace
 
-- **26 diseños**: idea, lista, flujo, sistema de pasos 1-2-3, bifurcación, tabla-marcador escrita
+- **27 diseños**: idea, lista, flujo, sistema de pasos 1-2-3, bifurcación, tabla-marcador escrita
   a mano, gráficas, línea de tiempo, medidor, rejillas de cantidad, chat, capturas de prueba con
-  el dato encerrado, reparto, calendario de fases, botón con cursor, lámina de oferta y más.
+  el dato encerrado, reparto, calendario de fases, calificación con estrellas, botón con cursor,
+  stack de la oferta a sangre y más.
 - **Revelado por acumulación**: cada frase suma un elemento sin mover nada. Es el ritmo de la
   referencia: un cambio visual cada 2.5 segundos.
 - **Cuatro salidas**:
@@ -83,7 +84,7 @@ agrega `"pieza"` (`reel`, `video`, `vsl`, `clase`, `webinar`, `propuesta`) y `"d
 minutos ([`references/ARCOS.md`](references/ARCOS.md)).
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
-El demo con los 26 diseños, en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json).
+El demo con los 27 diseños, en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json).
 
 ### Montaje sobre tu grabación
 

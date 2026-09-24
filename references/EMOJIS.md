@@ -1,7 +1,7 @@
 # Diccionario de emojis
 
 Regla: **literal, universal y constante**. Mismo concepto, mismo emoji en todo el deck, **y un emoji =
-un concepto** dentro del deck: no uses dos emojis que se ven casi iguales (🧑‍💼/👨‍💼, 📅/🗓️) para
+un concepto** dentro del deck: no uses dos emojis que se ven casi iguales (🧑‍💼/👨‍💼) para
 conceptos distintos, ni el mismo emoji para dos cosas. Cada emoji de este diccionario tiene un solo
 concepto. El contraste de cada uno está **medido** en los dos sets y tres fondos con
 `scripts/medir-emojis.mjs` (`scripts/lib/contraste-emojis.json`), y QA lo revisa (ver «Bajo contraste»).
@@ -62,10 +62,10 @@ concepto. El contraste de cada uno está **medido** en los dos sets y tres fondo
 | automatizar, IA | 🤖 |
 | pocos clics | 👆 (el 🖱️ de Apple es un mouse blanco sobre blanco) |
 | escribir, plan | 📝 |
-| enviar mensaje | 📲 · 📩 en Apple (el 💬 de Fluent es lila casi blanco) |
+| enviar mensaje, «te escriben» | 📲 (se lee «celular que recibe un mensaje»; se dibuja en SVG) · 📩 en Apple (el 💬 de Fluent es lila casi blanco) |
 | llamada | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro) |
-| fecha, agenda, reunión agendada | 📅 |
-| reunión en vivo, videollamada | 📹 |
+| fecha, agenda, reunión agendada | 📅 (se dibuja en SVG, un calendario SIN fecha: el de Apple imprimía «JUL 17») |
+| reunión en vivo, videollamada | 💻 (📹 es una videocámara de mano: se lee «grabar») |
 | aprender | 🧠 |
 | rápido | ⚡ |
 | tiempo, espera | ⏳ · ⏱️ |
@@ -78,7 +78,7 @@ concepto. El contraste de cada uno está **medido** en los dos sets y tres fondo
 | Concepto | Emoji | Notas |
 |---|---|---|
 | celular, WhatsApp sin logo | 📱 | se dibuja igual en los dos modos (el de Fluent era una tableta morada) |
-| varias conversaciones a la vez | `rejilla` de 📲 o 📲 con nota «×10» | nunca 👥: se lee «personas» |
+| varias conversaciones a la vez | `rejilla` de 📲 o 📲 con nota «×10»; «conversación» en sí: `📱+💬` si la insignia se ve (si no, 📲) | nunca 👥: se lee «personas» |
 | notificación | 🔔 | |
 | correo | 📧 | |
 | anuncio, publicidad | 📣 | |
@@ -88,10 +88,10 @@ concepto. El contraste de cada uno está **medido** en los dos sets y tres fondo
 | objeción | 🙅 | la lámina de objeción sigue la receta de GUION §2 |
 | garantía | 🛡️ | con plazo y condición medible (GUION §7) |
 | testimonio | sin emoji | es una `prueba` con captura real |
-| cupos limitados | 🎟️ | solo si son reales, con `rejilla` (GUION §7) |
+| cupos limitados | 🎟️ | se dibuja liso (el de Apple dice «ADMIT ONE»); solo si son reales, con `rejilla` (GUION §7) |
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
 | compra en línea, carrito | 🛒 | |
-| tienda o negocio local | 🏪 | |
+| tienda o negocio local | 🏠 o 🏬 | 🏪 trae «24» (Apple) o «24 H» (Fluent) impreso: QA lo avisa |
 | pago con tarjeta | 💳 | |
 | contrato, firma, alianza firmada | ✍️ | |
 
@@ -176,7 +176,6 @@ para una secuencia usa un `flujo`.
 - Logos de marcas hechos con emoji. Para una marca real se usa su **logo real** como `imagen`.
 - 👨‍💼 junto a 🧑‍💼: se ven casi iguales en los dos modos. Cliente es 🧑‍💼; experto, 🧑‍🏫.
 - 👨‍👩‍👧‍👦 para equipo: en Apple es un mosaico gris de siluetas. Usa 🧑‍🤝‍🧑.
-- 🗓️ y 📆: en Fluent son la misma rejilla lila que 📅. Fecha y agenda son 📅.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.
 - 👥 para «conversaciones»: se lee «personas».
@@ -185,9 +184,29 @@ para una secuencia usa un `flujo`.
 | Emoji | Apple | Fluent | Qué hacer |
 |---|---|---|---|
 | 📱 | teléfono | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos |
+| 📲 | celular con flecha | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos (el mismo celular, con una flecha azul que entra) |
 | 🤔 | pensativo | con ojos de alarma | para la pregunta retórica en modo `fluent`, ❓ |
 | 🗣️ | perfil que habla | silueta negra | sirve en lámina clara, pero no junto a 👤 o 👥 grises |
-| 📅 🗓️ 📆 | tres calendarios distintos | la misma rejilla lila | un solo concepto: 📅 |
+| 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | la misma rejilla lila | se dibujan en SVG, un calendario sin fecha, igual en los dos modos (también dentro del texto); usa 📅 |
+| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos lisos | se dibujan en SVG, un boleto rojo liso, igual en los dos modos |
+
+## Emojis con texto impreso
+
+Algunos emojis traen letras: a tamaño de ícono se leen, en inglés o con una fecha que contradice la del deck
+(un VSL sobre la fecha del evento con «JUL 17» encima resta credibilidad). Revisado en render con los dos sets:
+
+| Emoji | Apple | Fluent | Qué pasa ahora |
+|---|---|---|---|
+| 📅 📆 | «JUL 17» | rejilla lila | se dibuja en SVG sin fecha |
+| 🗓️ | «JUL» | rejilla lila | se dibuja en SVG sin fecha |
+| 🎟️ | «ADMIT ONE» | liso | se dibuja en SVG liso |
+| 🎫 | «LIVE CONCERT TICKET / ZONE A / JAN 09» | liso | se dibuja en SVG liso |
+| 🏪 | «24» | «24 H» | QA avisa (`TEXTO_IMPRESO`): usa 🏠 o 🏬 |
+| 🪪 | «Jo Appleseed» | tarjeta azul lisa | QA avisa en Apple: usa 👤 |
+| 💵 | billete de EE. UU. | billete | se tolera: casi no se lee |
+
+QA avisa desde ~80 px de caja (`TEXTO_IMPRESO` en `scripts/lib/emoji.mjs`). Si agregas uno a esta tabla,
+agrégalo también ahí, o dibújalo en `GLIFOS_SVG`.
 
 ## Bajo contraste (por set y fondo)
 
@@ -206,7 +225,7 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 | Apple | tarjeta gris | 💬 (burbuja blanca) | 📲 |
 | los dos | claro | ☁️ | «en la nube» → 🌐 |
 | los dos | claro | 🤍 🏳️ 📄 🧾 | ❤️ · 🚩 · 📋 |
-| Apple | oscura | 🗨️ 📞 💲 🎥 | 💬 · ☎️ · 💵 · 📹 |
+| Apple | oscura | 🗨️ 📞 💲 🎥 | 💬 · ☎️ · 💵 · 📹 (grabar) o 💻 (videollamada) |
 | Fluent | oscura | 🗣️ | 🎤 |
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se

@@ -27,6 +27,12 @@ export const CURSOR_PUNO = `<svg viewBox="0 0 34 39" width="100%" height="100%">
 <path d="M8.6 22.5c-2.6-.6-4.6.9-4.4 3 .1 1.6 1.4 2.6 3.1 3.4l2.2 1" fill="none"/></g></svg>`;
 export const CURSOR_FLECHA = '<svg viewBox="0 0 26 38" width="100%" height="100%"><path d="M2 2v28.5l7.2-6.6 4.6 10.6 4.7-2-4.5-10.5h9.3z" fill="#fff" stroke="#111" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
+// Estrellas de calificación [4:10, 4:45]: llenas doradas como la ⭐ de emoji; vacías en amarillo pálido
+const EST = 'M12 1.8l3 6.3 6.9.9-5.1 4.8 1.3 6.9L12 17.3l-6.1 3.4 1.3-6.9L2.1 9l6.9-.9z';
+export const estrellas = (llenas, max) => Array.from({ length: max }, (_, j) => (j < llenas
+  ? `<svg class="estrella" viewBox="0 0 24 24"><path d="${EST}" fill="#f7b500" stroke="#e39a00" stroke-width="1" stroke-linejoin="round"/></svg>`
+  : `<svg class="estrella" viewBox="0 0 24 24"><path d="${EST}" fill="#f3e3a0"/></svg>`)).join('');
+
 const EXT_IMG = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
 const entero = k => { const n = Math.floor(Number(k)); return Number.isFinite(n) && n >= 0 ? Math.min(n, 200) : 0; };
 

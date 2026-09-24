@@ -112,7 +112,7 @@ la lámina nueva o un elemento más sobre la actual.
   desaparecen sobre blanco; en Apple 🏷️ se pierde. QA lo avisa y propone el sustituto.
 - **La negación se dibuja**: `"no:🎥"` en lugar de escribir «sin video».
 - **Mismo concepto, mismo emoji** en todo el deck: si «producto» fue 📦, lo sigue siendo. Y al revés:
-  **un emoji, un concepto**. No uses dos emojis que se ven casi iguales (🧑‍💼 y 👨‍💼, 📅 y 🗓️) para
+  **un emoji, un concepto**. No uses dos emojis que se ven casi iguales (🧑‍💼 y 👨‍💼) para
   conceptos distintos.
 - Diccionario completo en [EMOJIS.md](EMOJIS.md).
 
@@ -164,6 +164,9 @@ del **webinar o video largo**:
   - el resultado más «sin…» [0:10-0:19];
   - el error en vivo: el chat que se queda en visto;
   - un dato contraintuitivo.
+- **Se tiene que entender sin sonido**: en YouTube y en reels la primera vista suele ser muda. Un gancho
+  en chat muestra a la vista la hora de los dos extremos (cuándo escribió y cuándo contestaste: `hora` por
+  mensaje) y pega el sello a la burbuja culpable con `sello_sobre: "m1"` (LAYOUTS.md, `chat`).
 - Se permite una tesis breve antes, como el «We are entering a new era» de la referencia [0:00-0:10],
   siempre que el resultado llegue en 10 s o menos.
 - En un reel (menos de 60 s) el conflicto concreto va en la lámina 1, no después del mapa.
@@ -197,7 +200,7 @@ real**: si no hay cifra de credibilidad, prueba o escasez real, el beat se omite
 | 4 | Revelación del producto, en 1 paso | 36:15-37:55, 43:00 | `oscura` |
 | 5 | Componentes numerados «#N». Cada uno se desarrolla en su lámina (`lista` que crece como «They will:», `calendario` o `boton`) y cierra con una pregunta de sí 🤔 («¿Ves cómo…?») | 40:15-41:40 | `idea` + `lista` / `calendario` / `boton` |
 | 6 | Prueba real: el muro de capturas | 42:00 | `prueba` |
-| 7 | El stack que se llena pieza por pieza | 42:30-42:45 | `stack`, `tarjetas` o `rejilla` |
+| 7 | El stack que se llena pieza por pieza: a sangre, cada pieza una tarjeta de producto a color nombrada con un sustantivo corto («Ghostwriter OS», «4 llamadas en vivo»), no una frase; el «✓ Hecho contigo» es el remate, en su propio corte [42:50] | 42:30-42:50 | `stack` (o `tarjetas` / `rejilla`) |
 | 8 | Escasez, solo si es real: inscritos contra lista de espera, cupos, meses de espera | 43:00-43:30 | `rejilla` + `destacado_paso` |
 | 9 | Llamado con qué pasa después: flecha roja al link, cuánto tarda («2 minutos»), qué pasa luego (la invitación del calendario) y la salida honesta «si no es para ti, te orientamos» | 43:35-44:10 | `prueba` / `boton` + `idea` ⏱️ + `calendario` + `idea` 🤝 |
 | 10 | Resumen del stack y el llamado otra vez | 44:20-44:30 | `lista` + `boton` o `prueba` |

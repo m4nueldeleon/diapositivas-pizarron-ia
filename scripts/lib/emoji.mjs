@@ -104,7 +104,7 @@ export function resolverFluent(ch, dirSalida, aproximados) {
 const SIL = (x, s = 1) => `<circle cx="${12 * s + x}" cy="${8 * s}" r="${4.6 * s}" fill="url(#pz-sil)"/><path d="M${x + 3 * s} ${22 * s}c0-5 ${4 * s}-${8.2 * s} ${9 * s}-${8.2 * s}s${9 * s} ${3.2 * s} ${9 * s} ${8.2 * s}z" fill="url(#pz-sil)"/>`;
 // El degradado de las siluetas se define UNA vez fuera de las láminas (construir.mjs → DEFS_GLOBALES):
 // si viviera dentro de una lámina oculta, las demás láminas lo perderían en el presentador.
-export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#90a6be"/><stop offset="1" stop-color="#5c7390"/></linearGradient><linearGradient id="pz-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45c91f"/><stop offset="1" stop-color="#1f9a0d"/></linearGradient><linearGradient id="pz-pantalla" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8def"/><stop offset="1" stop-color="#9b6ee0"/></linearGradient></defs></svg>';
+export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="pz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#90a6be"/><stop offset="1" stop-color="#5c7390"/></linearGradient><linearGradient id="pz-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45c91f"/><stop offset="1" stop-color="#1f9a0d"/></linearGradient><linearGradient id="pz-pantalla" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b8def"/><stop offset="1" stop-color="#9b6ee0"/></linearGradient><linearGradient id="pz-boleto" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7a8a"/><stop offset="1" stop-color="#e0182a"/></linearGradient></defs></svg>';
 const DEF_SIL = '';
 // La ✕ llena su caja (la insignia de «no:» cruza la esquina del emoji como en ref_628) y la ✅ es verde
 // saturado con palomita gruesa: el ✅ de Fluent es verde menta pálido y se perdía sobre el cuadrante verde.
@@ -112,18 +112,44 @@ const EQUIS = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M3.5
 const PALOMITA = '<svg viewBox="0 0 24 24" width="100%" height="100%"><rect x="1.5" y="1.5" width="21" height="21" rx="5" fill="url(#pz-ok)"/><path d="M6.6 12.4l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 // 📱 celular: vertical (1:2), cuerpo negro y rejilla de apps de color, igual en Apple y en Fluent. El 📱 de
 // Fluent es una tableta morada que se confunde con 📅 (EMOJIS.md, «Se ven distinto según el modo»).
+// `dx` lo corre a la derecha: 📲 es el mismo celular con una flecha azul que entra (el 📲 de Fluent también era
+// la tableta morada, y era el sustituto que QA proponía para 💬).
 const APPS = ['#ff5f57', '#ffbd2e', '#28c840', '#5ac8fa', '#af52de', '#ff9500', '#34c759', '#007aff', '#ff2d55', '#ffcc00', '#30b0c7', '#5856d6'];
-const CELULAR = `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect x="6.2" y="0.6" width="11.6" height="22.8" rx="2.7" fill="#1c1c1e"/>`
-  + `<rect x="7.2" y="2" width="9.6" height="20" rx="1.7" fill="url(#pz-pantalla)"/><rect x="10.3" y="1.3" width="3.4" height="1" rx=".5" fill="#1c1c1e"/>`
-  + APPS.map((c, k) => `<rect x="${(7.8 + (k % 3) * 3.1).toFixed(1)}" y="${(4 + Math.floor(k / 3) * 3.1).toFixed(1)}" width="2.2" height="2.2" rx=".6" fill="${c}"/>`).join('')
-  + `<rect x="7.8" y="18.2" width="8.4" height="2.9" rx=".9" fill="#fff" fill-opacity=".35"/>`
-  + ['#28c840', '#007aff', '#ff9500'].map((c, k) => `<rect x="${(8.1 + k * 2.75).toFixed(2)}" y="18.55" width="2.2" height="2.2" rx=".6" fill="${c}"/>`).join('') + '</svg>';
+const f1 = v => (Math.round(v * 100) / 100).toString();
+const cuerpoCelular = (dx = 0) => `<rect x="${f1(6.2 + dx)}" y="0.6" width="11.6" height="22.8" rx="2.7" fill="#1c1c1e"/>`
+  + `<rect x="${f1(7.2 + dx)}" y="2" width="9.6" height="20" rx="1.7" fill="url(#pz-pantalla)"/><rect x="${f1(10.3 + dx)}" y="1.3" width="3.4" height="1" rx=".5" fill="#1c1c1e"/>`
+  + APPS.map((c, k) => `<rect x="${f1(7.8 + dx + (k % 3) * 3.1)}" y="${f1(4 + Math.floor(k / 3) * 3.1)}" width="2.2" height="2.2" rx=".6" fill="${c}"/>`).join('')
+  + `<rect x="${f1(7.8 + dx)}" y="18.2" width="8.4" height="2.9" rx=".9" fill="#fff" fill-opacity=".35"/>`
+  + ['#28c840', '#007aff', '#ff9500'].map((c, k) => `<rect x="${f1(8.1 + dx + k * 2.75)}" y="18.55" width="2.2" height="2.2" rx=".6" fill="${c}"/>`).join('');
+const CELULAR = `<svg viewBox="0 0 24 24" width="100%" height="100%">${cuerpoCelular()}</svg>`;
+const CELULAR_ENTRA = `<svg viewBox="0 0 24 24" width="100%" height="100%">${cuerpoCelular(3.6)}`
+  + '<path d="M0.9 12H8.2M5.3 9 8.3 12 5.3 15" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>'
+  + '<path d="M0.9 12H8.2M5.3 9 8.3 12 5.3 15" fill="none" stroke="#1e88e5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// 📅 📆 🗓 calendario SIN fecha: el de Apple imprime «JUL 17» (una fecha falsa en un deck que habla de otra) y en
+// Fluent los tres son la misma rejilla lila. Cuerpo blanco, encabezado rojo liso, dos argollas y una celda marcada.
+const CALENDARIO = '<svg viewBox="0 0 24 24" width="100%" height="100%">'
+  + '<rect x="2.3" y="3.6" width="19.4" height="18.4" rx="2.6" fill="#fff" stroke="#c9ced6" stroke-width="0.9"/>'
+  + '<path d="M2.3 6.2a2.6 2.6 0 0 1 2.6-2.6h14.2a2.6 2.6 0 0 1 2.6 2.6v3.3H2.3z" fill="#e5484d"/>'
+  + '<rect x="6.6" y="1.6" width="1.9" height="4.4" rx=".95" fill="#8e96a3"/><rect x="15.5" y="1.6" width="1.9" height="4.4" rx=".95" fill="#8e96a3"/>'
+  + Array.from({ length: 12 }, (_, k) => `<rect x="${f1(4.3 + (k % 4) * 4)}" y="${f1(11.2 + Math.floor(k / 4) * 3.4)}" width="3.2" height="2.6" rx=".6" fill="${k === 6 ? '#e5484d' : '#d9dde3'}"/>`).join('')
+  + '</svg>';
+// 🎟 🎫 boleto liso: el de Apple dice «ADMIT ONE» / «LIVE CONCERT TICKET» en inglés, a tamaño protagonista.
+const BOLETO = '<svg viewBox="0 0 24 24" width="100%" height="100%">'
+  + '<g transform="rotate(-14 12 12)"><path d="M3.2 6.4h17.6a1.2 1.2 0 0 1 1.2 1.2v2.6a2 2 0 0 0 0 3.8v2.6a1.2 1.2 0 0 1-1.2 1.2H3.2A1.2 1.2 0 0 1 2 16.6V14a2 2 0 0 0 0-3.8V7.6a1.2 1.2 0 0 1 1.2-1.2z" fill="url(#pz-boleto)"/>'
+  + '<path d="M16.4 7.6v8.8" stroke="#fff" stroke-width=".9" stroke-dasharray="1.1 1.1" stroke-linecap="round"/>'
+  + '<path d="M9.2 9.2l.85 1.75 1.9.27-1.38 1.34.33 1.9-1.7-.9-1.7.9.33-1.9-1.38-1.34 1.9-.27z" fill="#fff" fill-opacity=".92"/></g></svg>';
 const GLIFOS_SVG = {
-  '📱': CELULAR,
+  '📱': CELULAR, '📲': CELULAR_ENTRA,
+  '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO,
+  '🎟': BOLETO, '🎫': BOLETO,
   '❌': EQUIS, '✖': EQUIS, '✅': PALOMITA, '☑': PALOMITA, '✔': PALOMITA,
   '👤': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}${SIL(0)}</svg>`,
   '👥': `<svg viewBox="0 0 24 24" width="100%" height="100%">${DEF_SIL}<g opacity=".75">${SIL(5.2, 0.8)}</g>${SIL(-2.4, 0.86)}</svg>`,
 };
+// En modo apple el texto conserva sus emojis de la fuente del sistema, SALVO los que imprimen texto falso (el
+// calendario con «JUL 17», el boleto «ADMIT ONE»): esos se cambian por su SVG también dentro del texto.
+const EN_TEXTO_APPLE = new Set(['📅', '📆', '🗓', '🎟', '🎫']);
+export const esGlifoDibujado = ch => Boolean(GLIFOS_SVG[String(ch || '').replace(/️/g, '')]);
 
 // Sintaxis de un emoji compuesto: [no:|si:]base[+insignia]
 //   Devuelve { base, prefijo, insignia, error } sin descartar nada en silencio.
@@ -192,11 +218,14 @@ export class Emojis {
   }
 
   // Emojis escritos DENTRO del texto (burbujas, etiquetas, tarjetas…). En modo fluent se cambian por la
-  // imagen 3D, para que la lámina use una sola familia de emojis; en apple el HTML sale idéntico.
+  // imagen 3D, para que la lámina use una sola familia de emojis; en apple el HTML sale idéntico, salvo los
+  // calendarios y boletos (EN_TEXTO_APPLE), que se dibujan sin la fecha ni el texto en inglés.
   // Solo toca los trozos de texto: nunca etiquetas, atributos, <script>, <svg> (ahí no cabe <img>) ni
   // el texto de un .emo-txt ya resuelto. ©, ® y ™ no son RGI_Emoji: se quedan como texto.
   enTexto(html) {
-    if (this.modo !== 'fluent' || !html) return html;
+    if (!html) return html;
+    const apple = this.modo !== 'fluent';
+    if (apple && ![...EN_TEXTO_APPLE].some(e => String(html).includes(e))) return html;
     const trozos = String(html).split(/(<script[\s\S]*?<\/script>|<svg[\s\S]*?<\/svg>|<[^>]+>)/);
     let dentroEmo = 0;
     return trozos.map(t => {
@@ -210,7 +239,8 @@ export class Emojis {
       let out = '';
       for (const { segment: g } of segmentador.segment(t)) {
         const f = formaEmoji(g);
-        out += f ? `<span class="emo en-texto" style="--s:1.15em">${this.glifo(f)}</span>` : g;
+        const toca = f && (!apple || EN_TEXTO_APPLE.has(f.replace(/\uFE0F/g, '')));
+        out += toca ? `<span class="emo en-texto" style="--s:1.15em">${this.glifo(f)}</span>` : g;
       }
       return out;
     }).join('');
@@ -246,6 +276,12 @@ export const SUGERIDO = { '💬': '📲', '🗨': '📲', '💭': '💡', '📑'
 export const VISTOS_OK = { apple: ['📈', '📉', '💡', '📩'], fluent: [] };
 // Emojis que cambian de SENTIDO entre sets (no de contraste): EMOJIS.md, «Se ven distinto según el modo»
 export const DIVERGE = { fluent: { '🤔': '❓' }, apple: {} };
+// Emojis que IMPRIMEN texto en su set (un número, un nombre, inglés): a tamaño de ícono se lee y confunde. Los
+// calendarios y boletos ya se dibujan en SVG (GLIFOS_SVG); estos siguen saliendo del set. QA avisa desde ~80 px.
+export const TEXTO_IMPRESO = {
+  apple: { '🏪': ['«24»', '🏬 o 🏠'], '🪪': ['«Jo Appleseed»', '👤'] },
+  fluent: { '🏪': ['«24 H»', '🏬 o 🏠'] },
+};
 let medidas = null;
 export function contrasteMedido() {
   if (medidas) return medidas;

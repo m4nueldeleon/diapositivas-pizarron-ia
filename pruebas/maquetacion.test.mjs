@@ -74,7 +74,7 @@ test('pasos: con clic la mano arrastra la ruta hasta la última tecla (los tramo
 const DEST = [0, 1, 2, 3, 5, 7, 8, 10, 12, 14, 16, 19, 21, 22, 25, 27, 30, 33, 34, 36, 38, 40, 43, 45, 47, 51, 54, 56, 58, 60, 63, 66, 69, 71, 74, 77, 80, 84, 88, 92, 97];
 const SALA = { tipo: 'rejilla', total: 100, columnas: 10, emoji: '🪑', emoji_destacado: '🧑', destacar: DEST, sello: 'Media sala' };
 
-test('sello en rejilla con destacadas: se acomoda para tapar ≤ 2; forzado encima, QA da error; sin destacar sigue centrado [6:45]', { timeout: 180_000 }, async () => {
+test('sello en rejilla con destacadas: a todo el ancho se acomoda para tapar ≤ 25%; forzado encima, QA avisa (no error) [6:45]', { timeout: 180_000 }, async () => {
   await conDeck(base([SALA]), async page => {
     const n = await page.evaluate(() => {
       const lam = window.PZ.lams[0], s = lam.querySelector('.sello'), r = s.getBoundingClientRect();
@@ -86,11 +86,14 @@ test('sello en rejilla con destacadas: se acomoda para tapar ≤ 2; forzado enci
         return Math.abs(u) <= hw && Math.abs(v) <= hh;
       }).length;
     });
-    assert.ok(n <= 2, `el sello tapa ${n} destacadas`);
+    assert.ok(n <= 10, `el sello tapa ${n} de 41 destacadas (tope 25%)`);
   });
-  const r = qa(base([SALA, { ...SALA, sello_sobre: 'rejilla' }]));
-  assert.ok(!r.errores.some(e => /lámina 1 .*celdas destacadas/.test(e)), r.errores.join('\n'));
-  assert.ok(r.errores.some(e => /lámina 2 .*el sello tapa \d+ de las 41 celdas destacadas/.test(e)), r.errores.join('\n'));
+  // forzado encima de una rejilla con las destacadas en la franja del centro: tapa más del 25% → aviso
+  const CENTRO = Array.from({ length: 40 }, (_, i) => 30 + i);
+  const r = qa(base([SALA, { ...SALA, destacar: CENTRO, sello_sobre: 'rejilla' }]));
+  assert.ok(!r.errores.some(e => /celdas destacadas/.test(e)), 'tapar destacadas ya no es error: el sello es el remate\n' + r.errores.join('\n'));
+  assert.ok(!r.avisos.some(e => /lámina 1 .*celdas destacadas/.test(e)), r.avisos.join('\n'));
+  assert.ok(r.avisos.some(e => /lámina 2 .*el sello tapa \d+ de las 40 celdas destacadas/.test(e)), r.avisos.join('\n'));
 });
 
 test('barras: el emoji va ENCIMA de la cifra y ninguno invade el título; QA sin errores', { timeout: 120_000 }, async () => {

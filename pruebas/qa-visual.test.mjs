@@ -71,7 +71,7 @@ test('capa a mano: un renglón = un trazo; puntas en V gruesas; codo que no tach
     { tipo: 'bifurcacion', origen: { texto: 'Tu cliente potencial de hoy' }, ramas: [{ valor: 'Jueves' }, { valor: 'Viernes' }], separacion: 260 },
   ] }, async page => {
     const cuenta = await page.evaluate(() => window.PZ.lams.map(l => ({
-      tach: l.querySelectorAll('.capa-mano path[data-dur="240"]').length,
+      tach: l.querySelectorAll('.capa-mano path[data-dur="240"]:not([data-pase])').length,
       sub: l.querySelectorAll('.capa-mano path[data-dur="280"]').length,
     })));
     assert.equal(cuenta[0].tach, 2);
@@ -127,7 +127,7 @@ test('pasos: texto_paso, nota_paso, clic_paso y revelar:"pasos" se respetan', { 
     const r = await page.evaluate(() => window.PZ.lams.map(l => ({
       t: l.querySelector('.t') && l.querySelector('.t').dataset.p, n: l.querySelector('.nota') && l.querySelector('.nota').dataset.p,
       cur: l.querySelector('.cursor') && l.querySelector('.cursor').dataset.p,
-      cols: [...l.querySelectorAll('.fila > .pila[data-p]')].map(e => e.dataset.p),
+      cols: [...l.querySelectorAll('.fila > .pila[data-p], .fila-pasos > .pila[data-p]')].map(e => e.dataset.p),
     })));
     assert.deepEqual([r[0].t, r[0].n, r[0].cur], ['2', '3', '2']);
     assert.equal(p.pasos[0], 4);

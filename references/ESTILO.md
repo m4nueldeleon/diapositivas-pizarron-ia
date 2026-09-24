@@ -37,7 +37,14 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
     25 palabras baja a 68, nunca menos.
   - Rótulo gris chico, como «Sin:», «Ellos harán:», «Paso 1» o «Objeción #2»: **56 px**, uno solo
     en todo el estilo (`--t-rotulo`).
-  - Nota manuscrita: 60 a 64 px.
+  - Nota manuscrita: 60 a 64 px. La **frase de foco** (la lámina `foco`, que escribe a mano sobre la
+    anterior atenuada) no es una nota al margen: es la protagonista y va a ~88 px y hasta ~1560 px de
+    ancho [15:20].
+  - **Texto que se tiene que leer: ≥ 48 px** en 1920 (≈ 9 px en un celular de 360) y nunca por debajo
+    de 36. Aplica al texto secundario: el sub de un nodo (52), el dato y el % de una pastilla (50 y
+    52), el post escrito (50). Se exceptúan los rótulos decorativos del calendario («DÍA», ~28 px), la
+    fuente de una captura y la firma, que en el original también van a ~28-30 px [ref_1760]. QA avisa
+    bajo 48 en el texto secundario y da error bajo 28 en cualquier texto.
   - Cifra protagonista: 120 a 140 px.
 - Casi nunca hay título. La lámina ES la frase.
 - **Jerarquía entrada → remate** [18:30, 17:15]: «That's what I call a» en regular y, en su propio
@@ -129,7 +136,7 @@ limpio:
 | **Círculo o caja roja** | Óvalo o rectángulo redondeado alrededor de un dato | El número clave dentro de una captura. |
 | **Tachón rojo** | Línea sobre texto o ítem | Descartar opciones, como tachar Dropshipping o Trading. |
 | **Ruta punteada gris** | Curva sinuosa entre pasos | Un camino o un proceso en etapas. |
-| **Sello de goma** | Etiqueta blanca opaca con doble borde rojo, girada −5°, letra slab con grano leve, centrada sobre lo que sella y ~60% de su ancho; no tapa notas ni flechas | El remate: «MUCHA HABILIDAD» sobre una rejilla [6:45]. |
+| **Sello de goma** | Etiqueta blanca opaca con doble borde rojo, girada −5°, letra slab con grano leve, centrada sobre lo que sella y ~100% de su ancho (en [6:45] mide 1210 px sobre una rejilla de 1210, con letras de ~100 px); no tapa notas ni flechas | El remate: «MUCHA HABILIDAD» sobre una rejilla [6:45]. Puede tapar parte de la rejilla: la cifra ya se dijo antes. |
 
 Reglas:
 
@@ -201,6 +208,8 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 |---|---|---|
 | texto compacto / chico / medio / grande / enorme | 68 / 76 / 84 / 90 / 120 px | 72 / 78 / 88 / 100 / 140 px |
 | nota manuscrita | 64 px | 80 px |
+| frase de foco (protagonista, a mano) | 88 px (84 con más de 14 palabras) | 96 px (88) |
+| texto secundario que se lee (sub, dato, %, post) | ≥ 48 px | ≥ 44 px |
 | burbuja de chat | 54 px | 58 px, hasta 820 px de ancho |
 | emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 |
 | lista | 58-72 px | ×1.2 |
