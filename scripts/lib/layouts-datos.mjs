@@ -146,27 +146,50 @@ export function grafica(l, ctx) {
 }
 
 // LÍNEA DE TIEMPO — marcas sobre una línea, tramos de color y llaves con nota manuscrita.
+// Marcas muy juntas («Semana 1» en 0 y «Semana 2» en 0.125) se enciman: la etiqueta que choca con la de la marca
+// anterior en su renglón baja a un segundo renglón, con una guía punteada corta hasta su marca. Las etiquetas de
+// tramo que se cruzan suben ~70 px. No se sube nada arriba de la línea: ahí van las llaves.
+const anchoTexto = (t, px) => [...String(t || '')].length * px * 0.55;
+export function filasEtiquetas(xs, textos, px, sep = 24) {
+  const fin = [-Infinity, -Infinity];   // borde derecho ocupado en cada renglón
+  return xs.map((x, i) => {
+    const w = anchoTexto(textos[i], px), a = x - w / 2, b = x + w / 2;
+    const fila = a >= fin[0] + sep ? 0 : a >= fin[1] + sep ? 1 : 0;
+    fin[fila] = Math.max(fin[fila], b);
+    return fila;
+  });
+}
 export function lineaTiempo(l, ctx) {
   const marcas = l.marcas || [];
   const W = ctx.vertical ? 960 : 1720, y = 330, m0 = 90, m1 = W - 90;
   const xs = marcas.map((m, i) => m.pos != null ? m0 + m.pos * (m1 - m0) : m0 + (i / Math.max(1, marcas.length - 1)) * (m1 - m0));
+  const filaAbajo = filasEtiquetas(xs, marcas.map(m => m.texto), 56);
+  const tamTramo = ctx.vertical ? 56 : 84;
+  const tramos = (l.tramos || []).map(t => {
+    const a = xs[t.desde] ?? 0, b = t.hasta === 'fin' ? W : xs[t.hasta] ?? W;
+    return { t, a, b, mid: (a + b) / 2 };
+  });
+  const filaTramo = filasEtiquetas(tramos.map(q => q.mid), tramos.map(q => q.t.etiqueta || ''), tamTramo);
   let svg = `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#9a9a9a" stroke-width="4"/>`;
-  (l.tramos || []).forEach((t, i) => {
-    const a = xs[t.desde] ?? 0, b = t.hasta === 'fin' ? W : xs[t.hasta] ?? W, c = HEX[t.tono] || HEX.v;
+  tramos.forEach(({ t, a, b, mid }, i) => {
+    const c = HEX[t.tono] || HEX.v;
     const k = t.paso ?? i + 1;
-    const mid = (a + b) / 2, lab = escapar(t.etiqueta || '');
+    const lab = escapar(t.etiqueta || ''), sube = filaTramo[i] * 70;
     svg += `<g${ctx.P(k)}><line x1="${a}" y1="${y}" x2="${b}" y2="${y}" stroke="${c}" stroke-width="9" stroke-linecap="round"/>
       ${lab ? `<path d="M${a + 10} ${y - 44} C${a + 10} ${y - 78}, ${mid - 24} ${y - 56}, ${mid} ${y - 96} C${mid + 24} ${y - 56}, ${b - 10} ${y - 78}, ${b - 10} ${y - 44}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round" data-trazo pathLength="1"/>
-      <text x="${mid}" y="${y - 122}" text-anchor="middle" class="t-mano" font-size="${ctx.vertical ? 56 : 84}" fill="${c}" font-family="Caveat" font-weight="600">${lab}</text>` : ''}</g>`;
+      <text x="${mid}" y="${y - 122 - sube}" text-anchor="middle" class="t-mano" font-size="${tamTramo}" fill="${c}" font-family="Caveat" font-weight="600">${lab}</text>` : ''}</g>`;
   });
   marcas.forEach((m, i) => {
     const c = HEX[m.tono] || '#9a9a9a', x = xs[i], k = m.paso ?? 0;
-    svg += `<g${ctx.P(k)}><line x1="${x}" y1="${y - 30}" x2="${x}" y2="${y + 30}" stroke="${m.tono ? c : '#8a8a8a'}" stroke-width="6" stroke-linecap="round"/>
-      <text x="${x}" y="${y + 100}" text-anchor="middle" font-size="56" font-weight="${m.tono ? 700 : 500}" fill="${m.tono ? c : '#8a8a8a'}">${escapar(m.texto || '')}</text>
-      ${m.arriba ? `<text x="${x}" y="${y - 56}" text-anchor="middle" font-size="50" font-weight="700" fill="${m.tono ? c : '#8a8a8a'}">${escapar(m.arriba)}</text>` : ''}</g>`;
+    const col = m.tono ? c : '#8a8a8a', yT = y + 100 + filaAbajo[i] * 64, yA = y - 56;
+    const guia = filaAbajo[i] ? `<line x1="${x}" y1="${y + 40}" x2="${x}" y2="${yT - 50}" stroke="${col}" stroke-width="3" stroke-dasharray="4 7" stroke-linecap="round"/>` : '';
+    svg += `<g${ctx.P(k)}><line x1="${x}" y1="${y - 30}" x2="${x}" y2="${y + 30}" stroke="${col}" stroke-width="6" stroke-linecap="round"/>
+      ${guia}<text x="${x}" y="${yT}" text-anchor="middle" font-size="56" font-weight="${m.tono ? 700 : 500}" fill="${col}">${escapar(m.texto || '')}</text>
+      ${m.arriba ? `<text x="${x}" y="${yA}" text-anchor="middle" font-size="50" font-weight="700" fill="${col}">${escapar(m.arriba)}</text>` : ''}</g>`;
   });
+  const alto = 460 + (filaAbajo.some(Boolean) ? 64 : 0);
   return `<div class="pila grafica">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0), ' style="margin-bottom:10px"')}
-    <div${ctx.P(0)}><svg viewBox="0 0 ${W} 460" width="${W}" height="460" overflow="visible">${svg}</svg></div>
+    <div${ctx.P(0)}><svg viewBox="0 0 ${W} ${alto}" width="${W}" height="${alto}" overflow="visible">${svg}</svg></div>
     ${nota(ctx, l.nota, l.nota_paso ?? (l.tramos || []).length + 1, 'mt-s')}</div>`;
 }
 
@@ -180,7 +203,7 @@ export function medidor(l, ctx) {
 
 // OPCIONES — pastillas (Fácil / Medio / Difícil) y un cursor que elige una.
 export function opciones(l, ctx) {
-  const items = l.items || [{ texto: 'FÁCIL', tono: 'v' }, { texto: 'MEDIO', tono: 'n' }, { texto: 'DIFÍCIL', tono: 'r' }];
+  const items = l.items || [];   // obligatorio (contrato.mjs): sin contenido de demo que se cuele en un deck real
   const el = l.elegida ?? items.length - 1;
   ctx.clic = { a: 'op' + el, p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor || 'flecha' };
   return `<div class="pila gap-m"${ctx.P(0)}>${items.map((it, i) => `<div class="opcion ${['v', 'n', 'r'].includes(it.tono) ? it.tono : 'v'} ${i === el ? '' : 'apagada'}"${ctx.A('op' + i)}><span>${marcar(it.texto)}</span></div>`).join('')}
@@ -401,24 +424,52 @@ export function calificacion(l, ctx) {
 export function boton(l, ctx) {
   ctx.clic = { a: 'boton', p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor === 'flecha' ? 'flecha' : 'mano' };
   const kt = pasoDe(l, 'texto_paso', 0);
-  return `<div class="pila"><div class="boton-ui"${ctx.P(0)}${ctx.A('boton')}><span class="boton-txt">${escapar(l.boton || 'Generar')}</span>${l.emoji ? ctx.emoji(l.emoji, 58) : ''}</div>
+  return `<div class="pila"><div class="boton-ui"${ctx.P(0)}${ctx.A('boton')}><span class="boton-txt">${escapar(l.boton || '')}</span>${l.emoji ? ctx.emoji(l.emoji, 58) : ''}</div>
     ${texto(ctx, l.texto, (l.tam_texto || 'medio') + ' mt-l', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-s')}</div>`;
 }
 
 // CÍRCULOS — la audiencia: un anillo de personas y un círculo interior (quién sí / quién no).
+// Las personas van en 1 o 2 anillos concéntricos dentro de la corona (r+60 … R−60), a intervalos iguales con un
+// temblor chico (≤ 0.12 rad, y nunca tanto que se toquen): en la referencia se ven chicas, parejas y sin tocarse
+// [hoja_05 10:45-10:50]. Cada par queda a ≥ 1.15 × el tamaño del emoji; si no caben, el emoji se achica (86 → 64) y,
+// si ni así, se dibujan las que caben y se avisa. Semilla fija: el mismo dibujo en cada render.
+export const SEPARACION_PERSONAS = 1.15;
+export function repartirPersonas({ n = 12, R = 360, r = 130, tam = 86, tamMin = 64 } = {}) {
+  let semilla = 7;
+  const rnd = () => ((semilla = (semilla * 16807) % 2147483647) / 2147483647);
+  const dIn = r + 60, dOut = R - 60;
+  const anillos = t => (dOut - dIn >= SEPARACION_PERSONAS * t ? [dIn, dOut] : [(dIn + dOut) / 2]);
+  const cap = (d, t) => Math.max(1, Math.floor((2 * Math.PI * d) / (1.25 * t)));
+  let t = tam;
+  const capTotal = x => anillos(x).reduce((a, d) => a + cap(d, x), 0);
+  while (t > tamMin && capTotal(t) < n) t = Math.max(tamMin, t - 4);
+  const total = capTotal(t), m = Math.min(n, total);
+  // reparto proporcional a la capacidad de cada anillo (con un solo anillo si alcanza)
+  const ds = m <= cap((dIn + dOut) / 2, t) ? [(dIn + dOut) / 2] : anillos(t);
+  const caps = ds.map(d => cap(d, t)), sumCap = caps.reduce((a, b) => a + b, 0);
+  let resto = m;
+  const cuantos = caps.map((c, i) => { const q = i === caps.length - 1 ? resto : Math.min(c, Math.round((m * c) / sumCap)); resto -= q; return q; });
+  const pos = [];
+  ds.forEach((d, a) => {
+    const k = cuantos[a]; if (!k) return;
+    const paso = (2 * Math.PI) / k, necesita = 2 * Math.asin(Math.min(1, (SEPARACION_PERSONAS * t) / (2 * d)));
+    const jit = Math.max(0, Math.min(0.12, (paso - necesita) / 2 - 0.01));
+    const desfase = a % 2 ? paso / 2 : 0;
+    for (let i = 0; i < k; i++) {
+      const ang = -Math.PI / 2 + desfase + i * paso + (rnd() - 0.5) * 2 * jit;
+      pos.push([R + Math.cos(ang) * d, R + Math.sin(ang) * d]);
+    }
+  });
+  return { pos, tam: t, dibujadas: m, pedidas: n };
+}
 export function circulos(l, ctx) {
   const R = l.radio || 360, r = l.radio_interior || 130;
   const tonos = { r: ['#fde3e3', '#f19a9a'], v: ['#dcf9d6', '#8fe08a'], g: ['#f1f1f1', '#cfcfcf'], a: ['#dff0ff', '#8cc8f5'], n: ['#fff1d6', '#f5c56b'] };
   const ext = tonos[l.tono] || tonos.r, int = tonos[l.tono_interior] || tonos.v;
-  let semilla = 7;
-  const rnd = () => ((semilla = (semilla * 16807) % 2147483647) / 2147483647);
-  const n = l.personas || 12;
-  const pos = Array.from({ length: n }, (_, i) => {
-    const ang = (i / n) * Math.PI * 2 + rnd() * 0.4;
-    const d = r + 50 + rnd() * (R - r - 110);
-    return [R + Math.cos(ang) * d, R + Math.sin(ang) * d];
-  });
-  const gente = pos.map(([x, y]) => `<div style="position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%)">${ctx.emoji(l.emoji || '🧑‍💼', 86)}</div>`).join('');
+  const rep = repartirPersonas({ n: l.personas ?? 12, R, r });
+  if (rep.dibujadas < rep.pedidas) ctx.avisos.push(`círculos: ${rep.pedidas} personas no caben sin encimarse en el anillo; se dibujan ${rep.dibujadas} (sube «radio» o baja «personas»)`);
+  const pos = rep.pos;
+  const gente = pos.map(([x, y]) => `<div style="position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%)">${ctx.emoji(l.emoji || '🧑‍💼', rep.tam)}</div>`).join('');
   const centro = l.centro ? `<div${ctx.P(l.centro_paso ?? 0)} style="position:absolute;left:${R}px;top:${R}px;transform:translate(-50%,-50%)">${ctx.emoji(l.centro, 140)}</div>` : '';
   const kt = pasoDe(l, 'texto_paso', 0);
   return `<div class="pila">${texto(ctx, l.texto, 'chico', kt, ' style="margin-bottom:40px"')}
@@ -436,6 +487,17 @@ export function circulos(l, ctx) {
 // lienzo limpio. `sangre: false` (y el 9:16) usa la pila de tarjetas grises con el remate debajo.
 export const COLOR_PIEZA = ['morado', 'marino', 'naranja', 'verde', 'azul', 'negro'];
 const TONO_PIEZA = { v: 'tono-bv', r: 'tono-br', n: 'tono-bn' };
+// Emojis oscuros o grises que se funden con la pieza marino o negra (y los grises también con la verde y la azul): el
+// 🎓 sobre marino da 16% del glifo visible y la 🕶️ sobre negro 8% (contraste-color.mjs). Sin `color` explícito, la pieza
+// sigue la rotación y salta a la siguiente que sí contrasta; con `color`, se respeta y QA avisa.
+const EMOJI_OSCURO = new Set(['🎓', '🕶', '🎩', '♟', '🖤', '⚫', '🐈‍⬛', '🦇', '🕷', '🎱']);
+const EMOJI_GRIS = new Set(['👥', '👤', '⚙', '🔧', '🛠', '🔩', '⛓', '🗿', '🐺', '🦏']);
+export function colorPieza(emoji, i) {
+  const base = String(emoji || '').replace(/^(no|si):/, '').split('+')[0].replace(/\uFE0F/g, '');
+  const evita = EMOJI_GRIS.has(base) ? ['marino', 'negro', 'verde', 'azul'] : EMOJI_OSCURO.has(base) ? ['marino', 'negro'] : [];
+  for (let j = 0; j < COLOR_PIEZA.length; j++) { const c = COLOR_PIEZA[(i + j) % COLOR_PIEZA.length]; if (!evita.includes(c)) return c; }
+  return COLOR_PIEZA[i % COLOR_PIEZA.length];
+}
 export function stack(l, ctx) {
   const sangre = !ctx.vertical && ctx.F.W > ctx.F.H && l.sangre !== false;
   return sangre ? stackSangre(l, ctx) : stackPila(l, ctx);
@@ -448,7 +510,7 @@ function stackSangre(l, ctx) {
   const altoFila = Math.floor((ctx.F.H - 36 - (filas - 1) * 16) / filas);
   const tamE = Math.min(120, Math.round(altoFila * 0.34));
   const piezas = items.map((it, i) => {
-    const color = COLOR_PIEZA.includes(it.color) ? it.color : !it.color && TONO_PIEZA[it.tono] ? '' : COLOR_PIEZA[i % COLOR_PIEZA.length];
+    const color = COLOR_PIEZA.includes(it.color) ? it.color : !it.color && TONO_PIEZA[it.tono] ? '' : colorPieza(it.emoji, i);
     const clase = color ? `c-${color}` : TONO_PIEZA[it.tono];
     const span = [it.doble ? 'grid-column:span 2' : '', it.alto === 2 ? 'grid-row:span 2' : ''].filter(Boolean).join(';');
     const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${tamE}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, tamE) : '';

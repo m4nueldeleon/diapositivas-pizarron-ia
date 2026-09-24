@@ -5,10 +5,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { construirHTML } from './construir.mjs';
 import { cargarPlaywright } from './playwright.mjs';
 
+// Si el lector de la tubería se va («render.mjs … | head -1»), escribir en stdout daba EPIPE y el proceso moría a
+// media escritura (con hojas.json apuntando a hojas ya borradas). render, qa y video importan este módulo: aquí se
+// ignora ese error y el trabajo en disco termina con su código normal.
+for (const s of [process.stdout, process.stderr]) s.on('error', e => { if (e.code !== 'EPIPE' && e.code !== 'ERR_STREAM_DESTROYED') throw e; });
+
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf']);
+const BOOLEANAS = new Set(['--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--estricto']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);

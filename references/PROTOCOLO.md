@@ -125,9 +125,16 @@ node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /pr
 - Empareja cada lámina `id: "r<seg>"` con `ref_<seg>.jpg`. Sin `paso_ref` compara el paso que más se
   parece al cuadro. Avisa si una lámina no tiene referencia o sobra una referencia (y sale con código 1).
 - Antes de medir, revisa que sea la MISMA escena (correlación de la densidad de tinta en 8×5 celdas,
-  `--min-parecido`, 0.3 por omisión: los pares correctos dan ≥ 0.37 y los cruzados ≤ 0.29). Un par por
-  debajo es «no parece la misma lámina» (id desfasado o cuadro de otro momento): no cuenta en el encuadre
-  y hace salir con código 1. Límite: dos frases centradas se parecen de verdad; ahí manda el ojo.
+  `--min-parecido`, 0.7 por omisión: los pares correctos dan 0.86-0.99 y los cruzados llegan hasta 0.605
+  —r255 del deck viejo contra otra escena—). Un par por debajo es «no parece la misma lámina» (id desfasado
+  o cuadro de otro momento): no cuenta en el encuadre y hace salir con código 1. Límite: dos frases
+  centradas se parecen de verdad; ahí manda el ojo.
+- **La comparación del loop se hace SOLO con `node scripts/comparar.mjs pruebas/replica <carpeta-ref> --salida …`.**
+  La única evidencia válida de fidelidad de una ronda son los `comp_N.jpg` y el `comparar.json` que deja ese
+  comando, con su cabecera de métricas (r, x, y, w, h). Una hoja armada a mano, sin métrica, o hecha con otro
+  deck no vale. Dos guardas: si la carpeta de referencias trae su propio `deck.json` distinto del que se
+  compara, sale con código 2 («deck desfasado»: bórralo o renómbralo, p. ej. `deck.VIEJO-no-usar.json`); si
+  ninguna lámina `r<seg>` trae `_cuadro`, sale con código 1 (no es la réplica versionada).
 - Deja `comp_N.jpg` (5 pares por hoja, referencia a la izquierda) y `comparar.json`.
 - La métrica es la **caja de tinta** de cada lado: lo oscuro (luminancia < 150), lo saturado que no es
   pastel (el 🏆 dorado) y la tinta roja, sin fondos pálidos y sin la esquina de la marca de agua. Un par falla si x, y, ancho o alto difieren más
@@ -137,6 +144,9 @@ node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> --salida /pr
 - Cada ronda del loop de mejora anota el número «pares que pasan / total» sobre `pruebas/replica` para ver
   si la réplica se acerca o se aleja del video. Ronda 2: **5/10** (pasan r10, r90, r95, r460, r628; fallan
   de verdad r115 —título en 2 renglones—, r255 —lista más arriba y más chica—, r260, r1040 y r1760).
+  Ronda 3: **8/10** (fallan r260 —alto +8.9— y r1760 —ancho +9.4, alto −12.2—). Las hojas de la ronda 3
+  que emparejaban ref_255, ref_628, ref_1040 y ref_1760 con otras escenas salieron del deck viejo de
+  `pizarron-ref/replica/deck.json`: no cuentan.
 
 ## 5. Entrega
 

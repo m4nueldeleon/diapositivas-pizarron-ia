@@ -1,0 +1,15 @@
+{
+ "_comentario": "Los mismos casos de defectos-r3, escritos como dice LAYOUTS.md: QA no debe marcar nada (pruebas/qa-visual.test.mjs).",
+ "emoji": "apple", "marca": false,
+ "laminas": [
+  { "id": "chat-doc", "tipo": "chat", "sello": "Tarde", "sello_sobre": "m1",
+    "mensajes": [{ "de": "otro", "hora": "11:40 pm", "texto": "¿Cuánto cuesta?" },
+                 { "de": "yo", "hora": "9:05 am", "texto": "¡Buen día! Sí, cuesta…" }] },
+  { "id": "teclas", "tipo": "pasos", "n": 3, "clic": 3, "etiquetas": ["Diagnóstico", "Plan", "Mide"], "texto": "Tres pasos, **un clic**" },
+  { "id": "fondo", "tipo": "idea", "texto": "Tres renglones de texto grande\nque llenan el centro\nde la lámina de arriba abajo", "tam_texto": "grande" },
+  { "id": "foco", "tipo": "foco", "texto": "Y la frase del foco busca su hueco" },
+  { "id": "gente", "tipo": "circulos", "texto": "Reservada para **unos pocos**", "personas": 20, "emoji": "🧑‍💼" },
+  { "id": "semanas", "tipo": "linea-tiempo", "marcas": [{ "texto": "Semana 1", "pos": 0 }, { "texto": "Semana 2", "pos": 0.125 }, { "texto": "Semana 8", "pos": 1 }] },
+  { "id": "stack", "tipo": "stack", "items": [{ "emoji": "🤖", "texto": "El agente" }, { "emoji": "🎓", "texto": "Las clases" }, { "emoji": "🧑‍🏫", "texto": "Un mentor" }, { "emoji": "👥", "texto": "Grupo privado" }] }
+ ]
+}

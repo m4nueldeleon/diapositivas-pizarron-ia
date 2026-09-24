@@ -1,0 +1,91 @@
+// contraste-color.mjs — qué tanto se ve un emoji sobre un fondo de COLOR (pieza del stack, cuadro, botón).
+//
+// La tabla de contraste-emojis.json solo mide 3 fondos neutros (blanco, tarjeta #f3f3f3 y la oscura). Sobre una pieza
+// marino el 🎓 oscuro se funde aunque en blanco se vea perfecto. qa.mjs junta los emojis que caen sobre un fondo que
+// no es neutro (con su fondo real: color o las paradas del degradado) y aquí se rasterizan en una página aparte, desde
+// data URLs (una imagen file:// ensucia el canvas y no se puede leer):
+//   · img (Fluent): el archivo copiado a la salida;
+//   · svg (los glifos dibujados: 👥 👤 📱 ✅…): su outerHTML con los degradados globales (#pz-sil, #pz-ok…) adentro;
+//   · texto (Apple): fillText con Apple Color Emoji, solo en macOS (fuera de macOS no se mide).
+// Métrica (0-100): de los píxeles opacos del glifo, el % con contraste ≥ 2:1 o ΔE76 (Lab) ≥ 40 contra ESE fondo. En
+// un degradado se toma la PEOR de sus paradas y su promedio. Bajo UMBRAL_COLOR, QA avisa; sobre un PASTEL (todas las
+// paradas con luminancia > 0.6: cuadrantes, cuadros, tarjetas de tono) el glifo se ve como sobre la tarjeta #f3f3f3 y
+// vale el umbral de la tabla neutra (UMBRAL_CONTRASTE): el 📧 de Apple da 20% en blanco y 17% en el verde pastel.
+import fs from 'node:fs';
+import path from 'node:path';
+import { DEFS_GLOBALES } from './emoji.mjs';
+
+export const UMBRAL_COLOR = 25;
+const linC = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+export const esPastel = fondos => fondos.every(([r, g, b]) => 0.2126 * linC(r) + 0.7152 * linC(g) + 0.0722 * linC(b) > 0.6);
+const defs = (DEFS_GLOBALES.match(/<defs>[\s\S]*<\/defs>/) || [''])[0];
+
+// Un <svg> del DOM → documento SVG autónomo de 128 px, con los degradados globales
+export function svgAutonomo(outer) {
+  let s = String(outer).replace(/\swidth="[^"]*"/, ' width="128"').replace(/\sheight="[^"]*"/, ' height="128"');
+  if (!/xmlns=/.test(s)) s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+  return s.replace(/(<svg[^>]*>)/, `$1${defs}`);
+}
+
+// Puntuación pura (se inyecta también en la página): rgba del glifo contra un fondo [r,g,b]
+export function puntuarGlifo(datos, [br, bg, bb]) {
+  const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const lab = (r, g, b) => {
+    const X = (0.4124 * lin(r) + 0.3576 * lin(g) + 0.1805 * lin(b)) / 0.95047, Y = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b), Z = (0.0193 * lin(r) + 0.1192 * lin(g) + 0.9505 * lin(b)) / 1.08883;
+    const f = t => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+    return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+  };
+  const lf = lum(br, bg, bb), Lf = lab(br, bg, bb);
+  let op = 0, ve = 0;
+  for (let i = 0; i < datos.length; i += 4) {
+    const a = datos[i + 3] / 255; if (a < 0.5) continue;
+    op++;
+    const r = datos[i] * a + br * (1 - a), g = datos[i + 1] * a + bg * (1 - a), b = datos[i + 2] * a + bb * (1 - a);
+    const l = lum(r, g, b), k = (Math.max(l, lf) + 0.05) / (Math.min(l, lf) + 0.05);
+    const L = lab(r, g, b), de = Math.hypot(L[0] - Lf[0], L[1] - Lf[1], L[2] - Lf[2]);
+    if (k >= 2 || de >= 40) ve++;
+  }
+  return op ? Math.round((ve / op) * 100) : null;
+}
+
+// porLamina[i].medir: [{ tipo, ch, src, svg, fondos }] → [{ i, ch, pct }] (pct = el peor fondo)
+export async function medirSobreColor(browser, porLamina, dirSalida) {
+  const items = [], cache = new Map();
+  porLamina.forEach(r => (r.medir || []).forEach(m => {
+    let url = '';
+    if (m.tipo === 'img' && m.src) { const f = path.join(dirSalida, m.src); if (fs.existsSync(f)) url = `data:image/${/\.png$/i.test(f) ? 'png' : /\.svg$/i.test(f) ? 'svg+xml' : 'webp'};base64,${fs.readFileSync(f).toString('base64')}`; }
+    if (m.tipo === 'svg') url = 'data:image/svg+xml;base64,' + Buffer.from(svgAutonomo(m.svg)).toString('base64');
+    if (m.tipo === 'txt' && process.platform !== 'darwin') return;
+    const promedio = [0, 1, 2].map(j => Math.round(m.fondos.reduce((s, c) => s + c[j], 0) / m.fondos.length));
+    const fondos = m.fondos.length > 1 ? [...m.fondos, promedio] : m.fondos;
+    const clave = `${m.tipo}|${m.ch}|${url.length}|${url.slice(-64)}|${JSON.stringify(fondos)}`;
+    if (!cache.has(clave)) { cache.set(clave, items.length); items.push({ tipo: m.tipo, ch: m.ch, url, fondos }); }
+    m._k = cache.get(clave); m._pastel = esPastel(m.fondos);
+  }));
+  if (!items.length) return [];
+  const pg = await browser.newPage();
+  let pcts = [];
+  try {
+    await pg.addScriptTag({ content: `window.puntuarGlifo = ${puntuarGlifo.toString()};` });
+    pcts = await pg.evaluate(async lista => {
+      const S = 128, c = new OffscreenCanvas(S, S), g = c.getContext('2d', { willReadFrequently: true });
+      const out = [];
+      for (const it of lista) {
+        g.clearRect(0, 0, S, S);
+        try {
+          if (it.tipo === 'txt') { g.font = `${S * 0.8}px "Apple Color Emoji"`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(it.ch, S / 2, S / 2); }
+          else { const im = new Image(); im.src = it.url; await im.decode(); g.drawImage(im, 0, 0, S, S); }
+          const d = g.getImageData(0, 0, S, S).data;
+          const ps = it.fondos.map(f => window.puntuarGlifo(d, f)).filter(x => x != null);
+          out.push(ps.length ? Math.min(...ps) : null);
+        } catch { out.push(null); }
+      }
+      return out;
+    }, items);
+  } finally { await pg.close(); }
+  const res = [];
+  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], pastel: m._pastel }); }));
+  // un hallazgo por emoji y lámina
+  return [...new Map(res.map(x => [`${x.i}|${x.ch}|${x.pct}`, x])).values()];
+}

@@ -70,6 +70,10 @@ async function capturar(html, ancho, destino) {
   console.log(`Hoja → ${destino}`);
 }
 const cuadros = cuadrosHoja(manifiesto);
+// hojas.json solo existe si TODAS las hojas que lista se capturaron: el de un render anterior se borra primero y el
+// nuevo se escribe al final, de un golpe (tmp + rename). Así nunca apunta a hojas borradas o de otro render.
+const hojasJson = path.join(dirSalida, 'hojas.json');
+fs.rmSync(hojasJson, { force: true });
 if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
   // las páginas de un render anterior más largo no se quedan
   fs.readdirSync(dirSalida).filter(f => /^hoja(-pasos)?(-\d+)?\.jpg$/.test(f)).forEach(f => fs.rmSync(path.join(dirSalida, f), { force: true }));
@@ -94,7 +98,8 @@ if (!flag('--sin-hoja') && cuadros.some(c => c.archivo)) {
     }
     if (pp.length > 1) fs.copyFileSync(path.join(dirSalida, archivoPagina('hoja-pasos', 0, pp.length)), path.join(dirSalida, 'hoja-pasos.jpg'));
   }
-  fs.writeFileSync(path.join(dirSalida, 'hojas.json'), JSON.stringify(hojas, null, 2));
+  fs.writeFileSync(hojasJson + '.tmp', JSON.stringify(hojas, null, 2));
+  fs.renameSync(hojasJson + '.tmp', hojasJson);
   if (paginas.length > 1) console.log(`⚠ ${paginas.length} hojas de finales (${hojas.hojas.map(x => `${x.archivo}: ${x.desde}-${x.hasta}`).join(' · ')}): la revisión visual recorre TODAS, no solo hoja.jpg`);
 }
 

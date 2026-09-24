@@ -179,3 +179,21 @@ test('foco con texto y nota: pinta las dos (la nota ya no se pierde)', { timeout
     assert.ok(/Lo verde es tuyo/.test(t) && /Y esta nota se ve/.test(t), t);
   });
 });
+
+// Ronda 3: `circulos` encimaba personas al azar (radio aleatorio sin distancia mínima)
+import { repartirPersonas, SEPARACION_PERSONAS, filasEtiquetas } from '../scripts/lib/layouts-datos.mjs';
+test('círculos: con los valores por omisión y con 20 personas ningún par queda a menos de 1.15 × el emoji', () => {
+  for (const o of [{}, { n: 20 }, { n: 30 }]) {
+    const r = repartirPersonas(o);
+    let min = Infinity;
+    for (let i = 0; i < r.pos.length; i++) for (let j = i + 1; j < r.pos.length; j++) min = Math.min(min, Math.hypot(r.pos[i][0] - r.pos[j][0], r.pos[i][1] - r.pos[j][1]));
+    assert.ok(min >= SEPARACION_PERSONAS * r.tam, `${JSON.stringify(o)}: ${min} < ${SEPARACION_PERSONAS * r.tam}`);
+    assert.equal(r.dibujadas, o.n || 12);
+  }
+  const lleno = repartirPersonas({ n: 60, R: 300 });
+  assert.ok(lleno.dibujadas < 60 && lleno.tam === 64);
+});
+test('línea de tiempo: «Semana 2» pegada a «Semana 1» baja a un segundo renglón', () => {
+  assert.deepEqual(filasEtiquetas([90, 282.5, 1437.5], ['Semana 1', 'Semana 2', 'Semana 8'], 56), [0, 1, 0]);
+  assert.deepEqual(filasEtiquetas([90, 860, 1630], ['Día 1', 'Día 14', 'Día 30'], 56), [0, 0, 0]);
+});

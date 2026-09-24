@@ -146,3 +146,35 @@ test('camara en vivo: vivo es booleano, items es lista de textos; sin dur ni con
   assert.deepEqual(bien.sugerencias, []);
   assert.equal(bien.deck.laminas[0].vivo, true);
 });
+
+// ---------- ronda 3 ----------
+import { PIEZAS } from '../scripts/lib/tiempos.mjs';
+const mini = extra => ({ ...extra, laminas: [{ tipo: 'idea', emoji: '💡', texto: 'Hola', voz: 'Hola' }] });
+
+test('pieza: todas las de PIEZAS valen (libre incluida); «xyz» y «toString» no', () => {
+  for (const p of Object.keys(PIEZAS)) assert.ok(!validarDeck(mini({ pieza: p }), tipos).some(e => /pieza/.test(e)), p);
+  for (const p of ['xyz', 'toString', 'constructor']) assert.ok(validarDeck(mini({ pieza: p }), tipos).some(e => new RegExp(`pieza «${p}» no existe`).test(e)), p);
+});
+
+test('viñeta y avatares son campos de emoji: un compuesto de 3 partes es error; el alias x no avisa', () => {
+  const e = validarDeck({ laminas: [{ tipo: 'lista', vineta: '🤖+💬+✅', items: ['a', 'b'] }, { tipo: 'chat', avatar_otro: '🤖+💬+✅', mensajes: ['x'] }] }, tipos);
+  assert.ok(e.some(x => /lámina 1\.vineta: emoji .* lleva 3 partes/.test(x)), e.join('\n'));
+  assert.ok(e.some(x => /lámina 2\.avatar_otro/.test(x)));
+  const { sugerencias } = sanearDeck({ laminas: [{ tipo: 'lista', vineta: 'x', items: ['a'] }] });
+  assert.deepEqual(sugerencias, []);
+});
+
+test('opciones y boton exigen su contenido (sin demo); «opciones» en opciones sugiere «items»; texto vacío es ausente; foco tras foco', () => {
+  const e = validarDeck({ laminas: [{ tipo: 'opciones', opciones: ['a'] }, { tipo: 'boton' }, { tipo: 'idea', texto: '  ' }, { tipo: 'idea', texto: 'x' }, { tipo: 'foco', texto: 'a' }, { tipo: 'foco', texto: 'b' }] }, tipos);
+  assert.ok(e.some(x => /lámina 1 \[opciones\]: falta items/.test(x)));
+  assert.ok(e.some(x => /lámina 2 \[boton\]: falta boton/.test(x)));
+  assert.ok(e.some(x => /lámina 3 \[idea\]: falta texto o emoji/.test(x)));
+  assert.ok(e.some(x => /lámina 6: foco tras foco/.test(x)));
+  const { sugerencias } = sanearDeck({ laminas: [{ tipo: 'opciones', opciones: ['a'], items: ['a'] }] });
+  assert.ok(sugerencias.some(s => /«opciones» no existe en `opciones`: va en «items»/.test(s)), sugerencias.join('\n'));
+});
+
+test('una palabra de más de 24 letras (un link) avisa al sanear', () => {
+  const { sugerencias } = sanearDeck({ laminas: [{ tipo: 'idea', texto: 'Entra a https://www.midominiomuylargoparaprobar.com/registro' }, { tipo: 'idea', texto: 'Entra a midominio.com' }] });
+  assert.equal(sugerencias.filter(s => /palabra de \d+ letras/.test(s)).length, 1);
+});

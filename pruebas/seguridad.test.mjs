@@ -24,7 +24,7 @@ test('emoji, cursor, pasos, tonos y tamaños maliciosos no inyectan HTML', () =>
     { tipo: 'tarjetas', items: [{ emoji: '💰', texto: 'a', tono: ATAQUE }] },
     { tipo: 'medidor', valor: 50, tono: ATAQUE },
     { tipo: 'cifra', lineas: ['1'], tam: ATAQUE },
-    { tipo: 'boton', cursor: ATAQUE, clic_paso: ATAQUE, sello: 'ok', sello_paso: ATAQUE },
+    { tipo: 'boton', boton: ATAQUE, cursor: ATAQUE, clic_paso: ATAQUE, sello: 'ok', sello_paso: ATAQUE },
     { tipo: 'objeto', imagen: 'https://x.com/a.png' + ATAQUE },
   ]);
   assert.ok(sinEtiquetaViva(html));

@@ -32,11 +32,13 @@ SKILL.md.
   ventanas se siguen por `postMessage` (ventana ↔ opener; BroadcastChannel no cruza documentos `file://` en
   Safari) y la `camara` con `vivo: true` lleva su bloque `.vivo-pres` con cuenta regresiva.
 - `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica versionada (`pruebas/replica/deck.json`) contra
-  los cuadros del video, que viven fuera del repo: ver PROTOCOLO §4b.
+  los cuadros del video, que viven fuera del repo: ver PROTOCOLO §4b. Es la única evidencia de fidelidad de una
+  ronda (`comp_N.jpg` con métrica + `comparar.json`); se niega a comparar si junto a los cuadros hay otro deck.json.
 - `scripts/lib/medidas-dom.mjs`: medidas que QA hace dentro de Chromium (palabras por renglón, recortes, flex
   con texto y negrita). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
 - `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
-  sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md.
+  sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md. Sobre un fondo de COLOR (pieza del stack, cuadro,
+  botón) QA rasteriza el glifo en cada corrida contra el color real (`scripts/lib/contraste-color.mjs`).
 - `references/EMOJIS.md` es la única fuente de verdad de los emojis. `pruebas/emojis-coherencia.test.mjs` falla
   si un emoji queda en dos filas de concepto, si otro documento cita un emoji que no está en el diccionario o
   si un sustituto de `BAJO_CONTRASTE` cambia de concepto. Los grupos de `PARECIDOS` (emoji.mjs) van en su tabla.

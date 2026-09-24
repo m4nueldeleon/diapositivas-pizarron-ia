@@ -51,3 +51,95 @@ test('parecido de composición: la misma lámina ≈ 1; otra composición < 0.3;
   assert.ok(correlacionMiniaturas(d(arriba), d(tabla)) < 0.3);
   assert.equal(correlacionMiniaturas(d(lienzo(160, 90, () => {})), d(arriba)), 0);
 });
+
+// ---------- ronda 3: umbral de «otra escena» y guardas del comparador ----------
+import { esOtraEscena, MIN_PARECIDO } from '../scripts/lib/tinta.mjs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+test('otra escena: 0.605 (r255 del deck viejo contra otra escena) es distinta; 0.856 (el par correcto más bajo) no', () => {
+  assert.equal(MIN_PARECIDO, 0.7);
+  assert.equal(esOtraEscena(0.605), true);
+  assert.equal(esOtraEscena(0.856), false);
+  assert.equal(esOtraEscena(NaN), true);
+  assert.equal(esOtraEscena(0.5, 0.3), false);
+});
+
+test('comparar: un deck.json distinto junto a los cuadros sale con código 2; un deck sin _cuadro, con código 1', { timeout: 60_000 }, () => {
+  const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const ref = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-ref-'));
+  fs.writeFileSync(path.join(ref, 'deck.json'), JSON.stringify({ laminas: [{ tipo: 'idea', id: 'r10', texto: 'viejo' }] }));
+  const r = spawnSync(process.execPath, [path.join(raiz, 'scripts', 'comparar.mjs'), path.join(raiz, 'pruebas', 'replica'), ref], { encoding: 'utf8' });
+  assert.equal(r.status, 2, r.stderr);
+  assert.match(r.stderr, /deck desfasado/);
+  // sin deck.json junto a los cuadros, pero con un deck sin `_cuadro`: no es la réplica versionada
+  fs.rmSync(path.join(ref, 'deck.json'));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-deck-'));
+  fs.writeFileSync(path.join(d, 'deck.json'), JSON.stringify({ emoji: 'apple', laminas: [{ tipo: 'idea', id: 'r10', texto: 'Hola' }] }));
+  const r2 = spawnSync(process.execPath, [path.join(raiz, 'scripts', 'comparar.mjs'), d, ref, '--salida', path.join(d, 'c')], { encoding: 'utf8' });
+  assert.equal(r2.status, 1, r2.stderr);
+  assert.match(r2.stderr, /_cuadro/);
+});
+
+// ---------- ronda 3: la tinta a mano entra completa en el corte (modo seco) ----------
+import { prepararSalida, abrir } from '../scripts/lib/pipeline.mjs';
+async function conDeckT(deck, fn) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-tinta-'));
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify(deck));
+  const p = prepararSalida(dir, path.join(dir, 'salida'));
+  const { browser, page } = await abrir(p.htmlPath, p.W, p.H);
+  try { return await fn(page); } finally { await browser.close(); }
+}
+const deckTinta = animacion => ({ emoji: 'apple', marca: false, ...(animacion ? { animacion } : {}), laminas: [
+  { tipo: 'idea', texto: 'Cobras __el doble__ con la regla del 1%' },
+  { tipo: 'flujo', revelar: 'todo', nodos: [{ emoji: '🐷', etiqueta: 'Ahorro' }, { emoji: '🎰', etiqueta: 'Apuesta' }] },
+  { tipo: 'pasos', n: 3, clic: 1 },
+] });
+
+test('seco: en t=0 del paso, subrayado y flechas están completos (con punta) y animaDur da 0; la ruta del arrastre sí crece', { timeout: 120_000 }, async () => {
+  await conDeckT(deckTinta(), async page => {
+    const r = await page.evaluate(() => {
+      const [a, b, c] = window.PZ.lams;
+      window.PZ.mostrar(a, 0, 0); window.PZ.mostrar(b, 0, 0);
+      const trazos = l => [...l.querySelectorAll(':scope > .capa-mano path[data-trazo]')].filter(e => !e.closest('mask')).map(e => +e.style.strokeDashoffset);
+      const cabezas = l => [...l.querySelectorAll(':scope > .capa-mano path[data-cabeza]')].map(e => +e.style.opacity);
+      const kClic = +c.querySelector('.cursor').dataset.p;
+      window.PZ.mostrar(c, kClic, 900);
+      const mascara = [...c.querySelectorAll('mask path[data-trazo]')].filter(e => +e.dataset.p === kClic).map(e => +e.style.strokeDashoffset);
+      return { sub: trazos(a), flechas: trazos(b), puntas: cabezas(b), dur: [window.PZ.animaDur(a, 0), window.PZ.animaDur(b, 0)], mascara };
+    });
+    assert.ok(r.sub.length && r.sub.every(x => x === 0), JSON.stringify(r.sub));
+    assert.ok(r.flechas.length && r.flechas.every(x => x === 0));
+    assert.ok(r.puntas.length && r.puntas.every(x => x === 1));
+    assert.deepEqual(r.dur, [0, 0]);
+    assert.ok(r.mascara.some(x => x > 0), 'la máscara de la ruta punteada todavía está creciendo');
+  });
+});
+
+test('suave: el subrayado sigue dibujándose (t=0 → oculto)', { timeout: 120_000 }, async () => {
+  await conDeckT(deckTinta('suave'), async page => {
+    const r = await page.evaluate(() => { const a = window.PZ.lams[0]; window.PZ.mostrar(a, 0, 0); return [...a.querySelectorAll(':scope > .capa-mano path[data-trazo]')].map(e => +e.style.strokeDashoffset); });
+    assert.ok(r.every(x => x === 1), JSON.stringify(r));
+  });
+});
+
+test('subrayado: plumón de 5.5 px en arco suave (flecha de 0.8-1.2% del ancho) que remata antes de la última letra', { timeout: 120_000 }, async () => {
+  await conDeckT(deckTinta(), async page => {
+    const g = await page.evaluate(() => {
+      const a = window.PZ.lams[0], pth = a.querySelector(':scope > .capa-mano path[data-clase="subrayado"]');
+      const txt = a.querySelector('[data-sub]'), rg = document.createRange(); rg.selectNodeContents(txt);
+      const R = rg.getClientRects()[0], L = a.getBoundingClientRect();
+      const n = 40, pts = Array.from({ length: n + 1 }, (_, i) => pth.getPointAtLength((i / n) * pth.getTotalLength()));
+      const p0 = pts[0], p1 = pts[n], ancho = p1.x - p0.x;
+      // flecha: distancia máxima de la curva a la cuerda
+      const flecha = Math.max(...pts.map(p => Math.abs((p1.y - p0.y) * p.x - (p1.x - p0.x) * p.y + p1.x * p0.y - p1.y * p0.x) / Math.hypot(p1.y - p0.y, p1.x - p0.x)));
+      return { grosor: +pth.getAttribute('stroke-width'), x0: p0.x, x1: p1.x, izq: R.left - L.left, der: R.right - L.left, w: R.width, flecha, ancho };
+    });
+    assert.equal(g.grosor, 5.5);
+    assert.ok(g.x0 > g.izq && g.x1 < g.der - g.w * 0.025, JSON.stringify(g));
+    assert.ok(g.flecha >= g.w * 0.006 && g.flecha <= g.w * 0.014, JSON.stringify(g));
+  });
+});

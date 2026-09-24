@@ -122,7 +122,7 @@ test('pasos: texto_paso, nota_paso, clic_paso y revelar:"pasos" se respetan', { 
     { tipo: 'pasos', n: 3, texto: 'El sistema', nota: 'nota', texto_paso: 2, nota_paso: 3, clic: 1, clic_paso: 2 },
     { tipo: 'pasos', n: 3, revelar: 'pasos', texto: 'El sistema' },
     { tipo: 'idea', emoji: '💰', texto: 'x', texto_paso: 1 },
-    { tipo: 'opciones', texto: 'x', clic_paso: 2 },
+    { tipo: 'opciones', items: ['Sí', 'No'], texto: 'x', clic_paso: 2 },
   ] }, async (page, p) => {
     const r = await page.evaluate(() => window.PZ.lams.map(l => ({
       t: l.querySelector('.t') && l.querySelector('.t').dataset.p, n: l.querySelector('.nota') && l.querySelector('.nota').dataset.p,
@@ -144,4 +144,83 @@ test('tarjetas: 4 en 16:9 y en 9:16 caben sin reducir la letra', { timeout: 120_
       { emoji: '⚡', texto: 'Velocidad de respuesta' }, { emoji: '🌙', texto: 'Horario completo' }, { emoji: '👥', texto: 'Chats a la vez' }, { emoji: '💵', texto: 'Costo al mes' }] }] },
     async page => { assert.equal(await page.evaluate(() => window.PZ.lams[0].dataset.encaje || '1'), '1', formato); });
   }
+});
+
+// ---------- ronda 3 ----------
+test('QA r3: tecla tapada, emojis encimados, flecha sobre emoji, texto cortado, foco sobre texto, sello sobre avatar, SVG encimados y emoji sobre pieza de color', { timeout: 180_000 }, () => {
+  const r = qa(fx('defectos-r3'));
+  const hay = (lista, re) => lista.some(e => re.test(e));
+  assert.ok(hay(r.errores, /corte-borde.*se corta en el borde del lienzo/), 'texto cortado');
+  assert.ok(hay(r.errores, /tecla-tapada.*el cursor tapa el número de la tecla/), 'tecla');
+  assert.ok(hay(r.errores, /emojis-encimados.*emojis se enciman/), 'emojis encimados');
+  assert.ok(hay(r.avisos, /flecha-emoji.*una flecha atraviesa un emoji/), 'flecha sobre emoji');
+  assert.ok(hay(r.errores, /foco-encima.*se escribe sobre/), 'foco sobre texto');
+  assert.ok(hay(r.errores, /sello-avatar.*tapa un emoji o un avatar/), 'sello sobre avatar');
+  assert.ok(hay(r.errores, /svg-encimados.*se enciman «\$1,000,000» y «\$2,000,000»/), 'SVG encimados');
+  assert.ok(hay(r.avisos, /stack-oscuro.*casi no se ve.*🎓.*🕶/), 'emoji sobre pieza de color');
+});
+
+test('QA r3: los mismos casos escritos como dice LAYOUTS (chat con sello_sobre, teclas con etiquetas, foco, 20 personas, semanas juntas, stack) salen limpios', { timeout: 180_000 }, () => {
+  const r = qa(fx('limpio-r3'));
+  assert.deepEqual(r.errores, []);
+  assert.deepEqual(r.avisos, []);
+  assert.equal(r.nota, 100);
+});
+
+test('QA r3: el sello de un chat se pega a la burbuja sin tapar su texto ni el avatar', { timeout: 120_000 }, async () => {
+  const deck = JSON.parse(fs.readFileSync(path.join(fx('limpio-r3'), 'deck.json'), 'utf8'));
+  await conDeck({ ...deck, laminas: deck.laminas.slice(0, 1) }, async page => {
+    const m = await page.evaluate(() => {
+      const lam = window.PZ.lams[0]; window.PZ.mostrar(lam, 99, Infinity);
+      const s = lam.querySelector('.sello').getBoundingClientRect(), b = lam.querySelector('[data-a="m1"]').getBoundingClientRect();
+      const av = [...lam.querySelectorAll('.yo-av, .otro-av')].map(e => e.getBoundingClientRect());
+      const cruza = (a, c) => a.left < c.right && a.right > c.left && a.top < c.bottom && a.bottom > c.top;
+      return { anchoSello: s.width, anchoBurbuja: b.width, pegado: s.top < b.bottom + 40 && s.bottom > b.bottom, tocaAvatar: av.some(a => cruza(a, s)) };
+    });
+    assert.ok(m.anchoSello < m.anchoBurbuja * 0.8, JSON.stringify(m));
+    assert.ok(m.pegado, 'el sello queda pegado al borde de la burbuja');
+    assert.equal(m.tocaAvatar, false);
+  });
+});
+
+test('QA r3: estado del informe: un vsl sin errores pero sin prueba ni objeción no es «listo»; --estricto sale con 3', { timeout: 120_000 }, () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: false, pieza: 'libre', laminas: [
+    { tipo: 'idea', emoji: '💡', texto: 'Una idea', voz: 'Una idea corta.' }, { tipo: 'boton', boton: 'Aplica aquí', voz: 'Aplica.' }] }));
+  const r = qa(dir);
+  assert.equal(r.estado, 'listo', JSON.stringify(r));
+  assert.deepEqual(r.falta_para_final, []);
+  const deck = JSON.parse(fs.readFileSync(path.join(dir, 'deck.json'), 'utf8'));
+  // en_vivo baja a aviso la duración corta: aquí solo interesa lo que falta para vender
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ ...deck, pieza: 'vsl', en_vivo: true }));
+  const v = qa(dir);
+  assert.equal(v.errores.length, 0, v.errores.join('\n'));
+  assert.ok(['bajo-90', 'falta-venta'].includes(v.estado), v.estado);
+  assert.ok(v.falta_para_final.includes('prueba real'));
+  const e = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts', 'qa.mjs'), dir, '--salida', tmp(), '--estricto'], { encoding: 'utf8' });
+  assert.equal(e.status, 3, e.stdout);
+});
+
+test('QA r3: un hueco declarado a propósito es aviso y borrador, no error', { timeout: 120_000 }, () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: false, datos: { PRECIO: { pendiente: true, motivo: 'lo define dirección' } },
+    laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }, { tipo: 'idea', emoji: '💡', texto: 'Otra' }] }));
+  const r = qa(dir);
+  assert.ok(!r.errores.some(e => /dato pendiente/.test(e)), r.errores.join('\n'));
+  assert.ok(r.avisos.some(a => /pendiente a propósito \[PRECIO\] \(lo define dirección\)/.test(a)));
+  assert.equal(r.estado, 'borrador');
+  assert.ok(r.por_confirmar.PRECIO && r.nota <= 90);
+});
+
+test('foco: con anclar:"arriba" la frase queda en la mitad superior; sin anclar busca el hueco del fondo', { timeout: 120_000 }, async () => {
+  const fondo = { tipo: 'idea', texto: 'Tres renglones de texto grande\nque llenan el centro\nde la lámina de arriba abajo', tam_texto: 'grande' };
+  await conDeck({ emoji: 'apple', marca: false, laminas: [fondo, { tipo: 'foco', anclar: 'arriba', texto: 'Arriba' }, fondo, { tipo: 'foco', texto: 'La frase del foco' }] }, async page => {
+    const m = await page.evaluate(() => [1, 3].map(i => {
+      const lam = window.PZ.lams[i], f = lam.querySelector('.foco-frase .nota').getBoundingClientRect(), L = lam.getBoundingClientRect();
+      const fondo = [...lam.querySelectorAll('.escena.clon .t')].map(e => e.getBoundingClientRect());
+      return { centro: (f.top + f.bottom) / 2 - L.top, choca: fondo.some(r => r.top < f.bottom && r.bottom > f.top) };
+    }));
+    assert.ok(m[0].centro < 540, JSON.stringify(m));
+    assert.equal(m[1].choca, false, JSON.stringify(m));
+  });
 });

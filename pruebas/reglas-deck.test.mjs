@@ -280,3 +280,82 @@ test('duración: en un VSL corto la oferta que arranca después del 70% avisa', 
   const bien = { pieza: 'vsl-corto', laminas: [...beats(30), { tipo: 'oscura', titulo: 'X', voz: 'Te presento X' }, ...beats(25)] };
   assert.ok(!reglasDuracion(bien, unos(56)).avisos.some(a => /oferta del VSL corto/.test(a)));
 });
+
+// ---------- ronda 3: llamado con palabra clave, arco en todas las piezas, estado final, afirmación propia, ritmo ----------
+import { esLlamadoVisible, faltaParaFinal, reglasAfirmacionPropia, reglasRitmo, emojisDeLamina } from '../scripts/lib/reglas-deck.mjs';
+
+test('llamado: verbo + palabra clave marcada o en MAYÚSCULAS, «este/tu + algo» o un canal cuentan; frases de contenido no', () => {
+  const si = ['Comenta ==DOBLE==', 'Comenta DOBLE', 'Escríbeme **CITA** por WhatsApp', 'Guarda este reel', 'Responde **SÍ** a este correo',
+    'Agenda **la llamada de arranque**', 'Manda INFO al 33 1234 5678', 'Agenda tu llamada', 'Comenta la palabra DOBLE'];
+  const no = ['Así cobras **el doble**', 'agenda', 'WhatsApp', 'Agenda citas sola', 'Guarda el dinero', 'Recordatorios por WhatsApp'];
+  si.forEach(t => assert.ok(esLlamadoVisible(idea(t)), t));
+  no.forEach(t => assert.ok(!esLlamadoVisible(idea(t)), t));
+});
+
+test('arco: reel, tutorial y propuesta sin llamado final avisan; el reel con «Comenta ==DOBLE==» sin llamado:true no', () => {
+  const cuerpo = [idea('Uno'), idea('Dos'), idea('Tres'), idea('Cuatro')];
+  for (const pieza of ['reel', 'tutorial', 'video', 'propuesta']) {
+    assert.ok(reglasArco({ pieza, laminas: [...cuerpo, idea('Así cobras **el doble**')] }).avisos.some(a => /termina sin llamado/.test(a)), pieza);
+  }
+  assert.ok(!reglasArco({ pieza: 'reel', laminas: [...cuerpo, idea('Comenta ==DOBLE==')] }).avisos.some(a => /termina sin llamado/.test(a)));
+  // un reel con dos llamados separados avisa (lleva 1)
+  assert.ok(reglasArco({ pieza: 'reel', laminas: [idea('Guarda este reel'), ...cuerpo, idea('Comenta ==DOBLE==')] }).avisos.some(a => /2 llamados/.test(a)));
+  // propuesta: un `flujo` con «firmas» cierra; sin monto ni {{PRECIO}} avisa por la inversión
+  const prop = { pieza: 'propuesta', laminas: [...cuerpo, { tipo: 'flujo', nodos: [{ emoji: '✍️', etiqueta: 'Firmas' }, { emoji: '🚀', etiqueta: 'Arrancamos el lunes' }] }] };
+  const r = reglasArco(prop);
+  assert.ok(!r.avisos.some(a => /termina sin llamado/.test(a)), r.avisos.join('\n'));
+  assert.ok(r.avisos.some(a => /lámina de inversión/.test(a)));
+  assert.ok(!reglasArco({ ...prop, laminas: [{ tipo: 'cifra', valor: 'Inversión: [PRECIO]' }, ...prop.laminas] }).avisos.some(a => /inversión/.test(a)));
+});
+
+test('faltaParaFinal: un vsl sin prueba, sin objeción y con 1 llamado da esas claves; una clase no da nada', () => {
+  const vsl = { pieza: 'vsl', laminas: [idea('Uno'), idea('Dos'), { tipo: 'boton', boton: 'Aplica aquí' }] };
+  const f = faltaParaFinal(vsl);
+  for (const k of ['prueba real', 'objeción antes del llamado', '2º llamado visible', 'cifra de credibilidad']) assert.ok(f.includes(k), k);
+  assert.deepEqual(faltaParaFinal({ pieza: 'clase', laminas: [idea('Uno'), idea('Nos vemos en la próxima clase')] }), []);
+});
+
+test('afirmación propia: «me hizo cobrar el doble» y «te mando la tabla» quedan por confirmar; «vendiste», «me hizo pensar» no', () => {
+  const short = { pieza: 'reel', laminas: [
+    idea('La regla del 1% que **me hizo cobrar el doble**', { nota: 'Sin un solo aumento grande', voz: 'Esta regla me hizo cobrar el doble.' }),
+    idea('Dos'), idea('Tres'), idea('Cuatro'), idea('Cinco'), idea('Seis'), idea('Siete'),
+    idea('Comenta ==DOBLE==', { nota: 'y te mando la tabla con tus 70 precios', voz: 'Comenta DOBLE y te mando la tabla.' })] };
+  const r = reglasAfirmacionPropia(short);
+  assert.deepEqual(r.porConfirmar.CASO_PROPIO.laminas, [1]);
+  assert.deepEqual(r.porConfirmar.ENTREGABLE.laminas, [8]);
+  assert.ok(r.avisos.some(a => /descargo/.test(a)));
+  // confirmado en datos: ya no queda por confirmar
+  const ok = reglasAfirmacionPropia({ ...short, datos: { CASO_PROPIO: 'Pasé de $800 a $1,600 por sesión en 2025', ENTREGABLE: 'tabla.xlsx' } });
+  assert.deepEqual(ok.porConfirmar, {});
+  // negativos
+  const neg = reglasAfirmacionPropia({ laminas: [idea('Si vendiste 50 mil este mes'), idea('Esto me hizo pensar'), idea('Que tu negocio gane más')] });
+  assert.deepEqual(neg.porConfirmar, {});
+  // con porConfirmar el deck no pasa de 90
+  assert.equal(notaQA({ porConfirmar: r.porConfirmar }), TOPE_BORRADOR);
+});
+
+test('ritmo: un paso de 16 palabras avisa (uno por deck), uno de 13 solo no, uno de 22 es error; dur y cámara quedan fuera', () => {
+  const pal = n => Array.from({ length: n }, (_, i) => `palabra${i}`).join(' ');
+  const base = Array.from({ length: 8 }, (_, i) => idea(`L${i}`, { voz: 'una frase corta de seis palabras' }));
+  const r16 = reglasRitmo({ laminas: [...base, idea('x', { voz: pal(16) }), idea('y', { voz: pal(16) })] }, unos(10));
+  assert.equal(r16.avisos.filter(a => /pasan de 5 s/.test(a)).length, 1, r16.avisos.join('\n'));
+  assert.deepEqual(r16.errores, []);
+  assert.deepEqual(reglasRitmo({ laminas: [...base, idea('x', { voz: pal(13) })] }, unos(9)).avisos, []);
+  assert.ok(reglasRitmo({ laminas: [...base, idea('x', { voz: pal(22) })] }, unos(9)).errores.some(e => /dura 8\.\d s/.test(e)));
+  const exento = reglasRitmo({ laminas: [...base, idea('x', { voz: pal(30), dur: 9 }), { tipo: 'camara', voz: pal(40) }] }, unos(10));
+  assert.deepEqual([exento.errores, exento.avisos], [[], []]);
+  assert.ok(r16.ritmo.mediana > 0 && r16.ritmo.p90 >= r16.ritmo.mediana);
+  // la réplica del video queda sin hallazgos de ritmo
+  const rep = JSON.parse(fs.readFileSync(new URL('./replica/deck.json', import.meta.url), 'utf8'));
+  const rr = reglasRitmo(rep, rep.laminas.map(l => (Array.isArray(l.voz) ? l.voz.length : 1)));
+  assert.deepEqual([rr.errores, rr.avisos], [[], []]);
+});
+
+test('iconos: la viñeta y los avatares entran al inventario', () => {
+  const deck = { laminas: [{ tipo: 'chat', avatar_otro: '🤖', mensajes: [{ texto: 'hola 🤔' }] }, { tipo: 'lista', vineta: '🤔', items: ['a', 'b'] }, { tipo: 'lista', vineta: 'x', items: ['c'] }] };
+  const inv = inventarioIconos(deck);
+  assert.ok(inv['🤖'] && inv['🤖'][0].startsWith('lámina 1'));
+  assert.ok(inv['🤔'] && inv['🤔'].some(x => x.startsWith('lámina 2')));
+  assert.ok(inv['❌'], 'el alias x de la viñeta cuenta como ❌');
+  assert.equal(emojisDeLamina(deck.laminas[0])[0].campo, 'avatar_otro');
+});

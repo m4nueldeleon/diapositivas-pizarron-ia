@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // qa.mjs — revisa el deck renderizado con reglas que cuentan, no que opinan. Nota 0-100.
 //
-//   node scripts/qa.mjs <carpeta|deck.json> [--salida dir] [--json]
+//   node scripts/qa.mjs <carpeta|deck.json> [--salida dir] [--json] [--estricto]
+//
+//   --estricto  sale con 3 si no hay errores pero el estado no es «listo» (bajo-90, falta-venta, borrador)
 //
 // Errores (−12 c/u):
 //   · desbordes del lienzo (el sello incluido, medido con su giro), textos encimados;
@@ -42,7 +44,8 @@
 //     antes del llamado; descargo «de ejemplo» en pantalla; emojis parecidos o con rol contrario en el deck;
 //     claves del deck que nadie lee (`_marca`, `_datos`); más de 40% a cámara; oferta tardía en un VSL corto.
 // Nota: 100 − 12 × errores − 3 × avisos; con datos propuestos sin confirmar, BORRADOR y tope de 90.
-// qa.json trae además `estado`, `por_confirmar` e `iconos` (emoji → láminas donde sale, para revisar coherencia).
+// qa.json trae además `estado` (borrador · con errores · bajo-90 · falta-venta · listo), `falta_para_final` (lo que le
+// falta a una pieza de venta), `ritmo` (mediana y p90 de los pasos), `por_confirmar` e `iconos` (emoji → láminas).
 import fs from 'node:fs';
 import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
@@ -52,11 +55,14 @@ import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
 import { revisarDeck, notaQA, TOPE_BORRADOR } from './lib/reglas-deck.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
+import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
+
+const NOTA_FINAL = 90;   // SKILL §6: 90 o más y cero errores
 
 const { flag, pos, opt } = argumentos(process.argv);
 let prep;
 try { prep = prepararSalida(pos[0], opt('--salida')); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
-const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, formato } = prep;
+const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, avisos: avisosBuild, sugerencias = [], propuestos = {}, declarados = {}, formato } = prep;
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
@@ -124,7 +130,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
 
   window.PZ.lams.forEach((lam, i) => {
     const n = window.PZ.pasos(lam), L = lam.getBoundingClientRect();
-    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [] };
+    const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [] };
     if (lam.dataset.tipo === 'camara') { out.push(r); return; }
     for (let p = 0; p < n; p++) {
       window.PZ.mostrar(lam, p, Infinity);
@@ -141,6 +147,27 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         if (c > 0.06 * Math.min(A0.w * A0.h, B0.w * B0.h)) E(`se enciman «${corto(textos[a].innerText, 24)}» y «${corto(textos[b].innerText, 24)}»`);
       }
       const lineas = renglones(lam, L);
+      // Renglones que se salen del lienzo: la caja de .t se queda adentro (max-width) aunque una palabra larga (un link)
+      // se desborde; se miden los rects reales de cada renglón
+      const cortados = new Set();
+      lineas.forEach(q => { if (q.b.x < -2 || q.b.y < -2 || q.b.x + q.b.w > W + 2 || q.b.y + q.b.h > H + 2) cortados.add(corto(q.n.nodeValue, 30)); });
+      cortados.forEach(t => E(`«${t}» se corta en el borde del lienzo: acorta el link o la palabra (sin https://, www ni utm)`));
+      // …o se sale de su propia caja (tarjeta, pastilla, burbuja, pieza del stack): aviso
+      const desbordan = new Set();
+      lineas.forEach(q => {
+        const c = q.el.closest('.tarjeta, .opcion, .burbuja, .bento-lleno, .cuadro, .boton-ui, .pastilla');
+        if (!c) return;
+        const B = caja(c, lam);
+        if (q.b.x < B.x - 2 || q.b.x + q.b.w > B.x + B.w + 2) desbordan.add(corto(q.n.nodeValue, 30));
+      });
+      desbordan.forEach(t => A(`«${t}» se sale de su caja: acorta la palabra`));
+      // Textos SVG (marcas y tramos de la línea de tiempo, ejes, series): encimados entre sí o fuera del lienzo
+      const tSvg = [...lam.querySelectorAll('svg text')].filter(t => fueraClon(t) && visible(t) && opac(t) >= 0.5 && t.textContent.trim() && !t.closest('.escena:not(.lamina)'));
+      tSvg.forEach(t => { const b = caja(t, lam); if (b.x < -2 || b.y < -2 || b.x + b.w > W + 2 || b.y + b.h > H + 2) E(`«${corto(t.textContent, 30)}» se sale del lienzo`); });
+      for (let a = 0; a < tSvg.length; a++) for (let b = a + 1; b < tSvg.length; b++) {
+        const A0 = caja(tSvg[a], lam), B0 = caja(tSvg[b], lam), c = cruza(A0, B0);
+        if (c > 0.06 * Math.min(A0.w * A0.h, B0.w * B0.h)) E(`se enciman «${corto(tSvg[a].textContent, 24)}» y «${corto(tSvg[b].textContent, 24)}»`);
+      }
       // Marcas sin convertir
       lineas.forEach(({ n: nodo }) => { if (reMarca.test(nodo.nodeValue)) E(`marca sin cerrar o partida a la vista: «${corto(nodo.nodeValue, 40)}»`); });
       // Letra efectiva (el encaje reduce con zoom y getComputedStyle no lo descuenta)
@@ -167,9 +194,10 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
           const n = dest.filter(d => { const b = caja(d, lam); return dentroPoligono([b.x + b.w / 2, b.y + b.h / 2], pol); }).length;
           if (n > 2 && n > 0.25 * dest.length) A(`el sello tapa ${n} de las ${dest.length} celdas destacadas de la rejilla: asegúrate de que la cifra ya se dijo o está en una nota; o quita sello_sobre para que se acomode solo`);
         });
-        [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && !tolerado(e) && opac(e) > 0.5).forEach(e => {
-          if (fraccionEn(caja(e, lam), pol) > 0.2) E('el sello tapa un emoji: muévelo con sello_sobre o sello_pos');
-        });
+        // los avatares del chat (.yo-av/.otro-av, silueta o emoji) cuentan como emoji: el gancho se lee por quién habla
+        const iconos = [...lam.querySelectorAll('.emo, .yo-av, .otro-av')].filter(e => e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'));
+        const tapaIcono = iconos.filter(e => visible(e) && fueraClon(e) && !tolerado(e) && opac(e) > 0.5).some(e => fraccionEn(caja(e, lam), pol) > 0.2);
+        if (tapaIcono) E('el sello tapa un emoji o un avatar: muévelo con sello_sobre o sello_pos');
         const tapaFlecha = [...lam.querySelectorAll(':scope > .capa-mano path[data-clase="flecha"]')].some(pth => {
           if (+pth.dataset.p > p) return false;
           const tot = pth.getTotalLength(); let k = 0;
@@ -183,18 +211,30 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       const cur = lam.querySelector(':scope > .cursor');
       if (cur && visible(cur)) {
         const C0 = caja(cur, lam), C = { x: C0.x + C0.w * 0.3, y: C0.y, w: C0.w * 0.62, h: C0.h * 0.95 };
-        lineas.filter(q => !q.el.closest('.tecla') && cruza(C, q.b) > 0).forEach(q => {
-          const txt = q.n.nodeValue; let tapadas = '';
-          for (let k = 0; k < txt.length; k++) {
-            if (!txt[k].trim()) continue;
-            const rg = document.createRange(); rg.setStart(q.n, k); rg.setEnd(q.n, k + 1);
-            const b = rel(rg.getBoundingClientRect(), L); if (!b.w) continue;
-            if (cruza(C, b) / (b.w * b.h) > 0.3) tapadas += txt[k];
+        // Tapado de cada letra (fracción de su caja bajo la mano)
+        const porLetra = q => [...q.n.nodeValue].map((ch, k) => {
+          if (!ch.trim()) return null;
+          const rg = document.createRange(); rg.setStart(q.n, k); rg.setEnd(q.n, k + 1);
+          const b = rel(rg.getBoundingClientRect(), L); return b.w ? { ch, f: cruza(C, b) / (b.w * b.h), a: b.w * b.h } : null;
+        }).filter(Boolean);
+        lineas.filter(q => cruza(C, q.b) > 0).forEach(q => {
+          const letras = porLetra(q), txt = q.n.nodeValue;
+          if (q.el.closest('.tecla')) {
+            // El número de la tecla: en ref_115 la punta del dedo toca el PIE del «1» y el número se lee entero. Se suma
+            // el área tapada del glifo: error si la mano cubre más del 40% (se ve menos del 60%)
+            const A = letras.reduce((t, x) => t + x.a, 0), T = letras.reduce((t, x) => t + x.f * x.a, 0);
+            if (A && T / A > 0.4) E(`el cursor tapa el número de la tecla «${corto(txt, 4)}» (${Math.round((T / A) * 100)}%): ajusta clic_pos`);
+            return;
           }
+          const tapadas = letras.filter(x => x.f > 0.3).map(x => x.ch).join('');
           if (tapadas) E(`el cursor tapa «${tapadas}» de «${corto(txt, 24)}»: ajusta clic_pos`);
         });
+        // El emoji del ancla del clic se toca (la punta del dedo va sobre él): ahí se tolera hasta la mitad
+        let anclaClic = null;
+        try { const sp = JSON.parse(lam.dataset.clic || 'null'); anclaClic = sp && [...lam.querySelectorAll(`[data-a="${CSS.escape(sp.a)}"]`)].find(fueraClon); } catch (e) { anclaClic = null; }
         [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5).forEach(e => {
-          const b = caja(e, lam); if (cruza(C, b) / (b.w * b.h) > 0.2) E('el cursor tapa un emoji: ajusta clic_pos');
+          const b = caja(e, lam), tope = anclaClic && anclaClic.contains(e) ? 0.5 : 0.2;
+          if (cruza(C, b) / (b.w * b.h) > tope) E('el cursor tapa un emoji: ajusta clic_pos');
         });
       }
       // Flechas que cruzan un renglón (≥ 3 muestras dentro del renglón recortado 22% arriba y abajo)
@@ -318,6 +358,30 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         sets.forEach(x => { const s2 = bajo(ch, x, fondo); if (s2) flojos[x].add(`${ch} → ${s2}`); const d = (CT.DIVERGE[x] || {})[ch]; if (d) cambia.add(`${ch} en ${x} → ${d}`); });
       });
     });
+    // Fondo REAL de cada emoji (el primer ancestro con color o degradado): sobre las piezas de color del stack, los
+    // cuadros o el botón, la tabla de 3 fondos neutros no sirve. Esos se rasterizan aparte (fuera de esta página) y se
+    // mide qué % del glifo se distingue de ESE fondo.
+    const neutro = c => [[255, 255, 255], [243, 243, 243], [11, 11, 14]].some(n => n.every((v, j) => Math.abs(v - c[j]) <= 8));
+    const fondoReal = el => {
+      for (let a = el.parentElement; a && a.nodeType === 1; a = a.parentElement) {
+        const cs = getComputedStyle(a);
+        const bi = /gradient/.test(cs.backgroundImage) ? colores(cs.backgroundImage).map(c => c.slice(0, 3)) : [];
+        if (bi.length) return bi;
+        const bc = colores(cs.backgroundColor);
+        if (bc.length) return [bc[0].slice(0, 3)];
+        if (a === lam) break;
+      }
+      return [oscura ? [11, 11, 14] : [255, 255, 255]];
+    };
+    [...lam.querySelectorAll('.emo')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5 && !e.closest('.en-texto, .en-linea')).forEach(e => {
+      const fondos = fondoReal(e);
+      if (fondos.every(neutro)) return;
+      const g = e.querySelector(':scope > .emo-txt, :scope > img, :scope > svg');
+      if (!g) return;
+      const tipo = g.tagName === 'IMG' ? 'img' : g.tagName.toLowerCase() === 'svg' ? 'svg' : 'txt';
+      const ch = tipo === 'img' ? g.getAttribute('alt') : tipo === 'txt' ? g.textContent : '';
+      r.medir.push({ tipo, ch: String(ch || '').replace(/\uFE0F/g, ''), src: tipo === 'img' ? g.getAttribute('src') : '', svg: tipo === 'svg' ? g.outerHTML : '', fondos });
+    });
     const fondoTxt = oscura ? 'fondo oscuro' : 'fondo claro';
     if (flojos[modoEmoji].size) AF(`emoji de bajo contraste en ${modoEmoji} sobre ${fondoTxt}; cámbialo: ${[...flojos[modoEmoji]].join(', ')}`);
     sets.slice(1).forEach(x => { if (flojos[x].size) AF(`deck en emoji "auto": en ${x} (${x === 'fluent' ? 'Linux, VPS, la nube' : 'una Mac'}) se pierde ${[...flojos[x]].join(', ')}; fija "emoji": "apple" o "fluent" (EMOJIS.md, «Qué set usar»)`); });
@@ -382,6 +446,53 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       if (e.closest('.grafica') && b0.y < CT.mv * 0.99) AF(`un emoji de la gráfica queda a ${Math.round(b0.y)} px del borde de arriba (margen ${CT.mv})`);
     });
     tapadosE.forEach(t => EF(`un emoji tapa «${t}»: sepáralo del texto`));
+    // Foco: la frase contra los renglones de TEXTO del fondo atenuado (renglones() excluye el clon a propósito; aquí se
+    // miden sin filtro de opacidad). Sobre íconos atenuados sí puede ir [15:20]; sobre texto no.
+    const clon = lam.querySelector(':scope > .escena.clon');
+    if (clon) {
+      const frase = lineasF.filter(q => q.el.closest('.lienzo.foco-frase'));
+      const tw = document.createTreeWalker(clon, NodeFilter.SHOW_TEXT);
+      const pisados = new Map();
+      for (let nd; (nd = tw.nextNode());) {
+        const el = nd.parentElement;
+        if (!el || !/\S/.test(nd.nodeValue) || el.closest('script, style, .emo') || !visible(el)) continue;
+        const rg = document.createRange(); rg.selectNodeContents(nd);
+        [...rg.getClientRects()].map(q => rel(q, L)).filter(b => b.h >= 60 * (W / 1920) && b.w > 3).forEach(b => {
+          const cub = Math.max(0, ...frase.filter(f => f.b.x < b.x + b.w && f.b.x + f.b.w > b.x)
+            .map(f => Math.max(0, Math.min(b.y + b.h, f.b.y + f.b.h) - Math.max(b.y, f.b.y)) / b.h));
+          const k = corto(nd.nodeValue, 24), o = opac(el);
+          if (cub > 0.3 && !(pisados.get(k) && pisados.get(k).cub >= cub)) pisados.set(k, { cub, o });
+        });
+      }
+      pisados.forEach(({ cub, o }, t) => {
+        if (cub > 0.6 && o > 0.12) EF(`la frase del foco se escribe sobre «${t}» del fondo (se lee texto sobre texto): acorta la frase, usa "anclar" o baja "opacidad"`);
+        else AF(`la frase del foco pisa «${t}» del fondo: acórtala o usa "anclar"`);
+      });
+    }
+    // Emoji sobre emoji (dos personas encimadas en un anillo): cajas recortadas al 84%, sin compuestos ni insignias
+    // (una caja dentro de la otra) y sin las celdas de la rejilla, que se miden aparte
+    const recorte = e => { const b0 = caja(e, lam); return { x: b0.x + b0.w * 0.08, y: b0.y + b0.h * 0.08, w: b0.w * 0.84, h: b0.h * 0.84 }; };
+    const sueltos = emos.filter(e => !e.closest('.rejilla'));
+    let encimados = 0;
+    for (let a = 0; a < sueltos.length; a++) for (let b = a + 1; b < sueltos.length; b++) {
+      if (sueltos[a].contains(sueltos[b]) || sueltos[b].contains(sueltos[a])) continue;
+      const A0 = recorte(sueltos[a]), B0 = recorte(sueltos[b]);
+      if (cruza(A0, B0) > 0.15 * Math.min(A0.w * A0.h, B0.w * B0.h)) encimados++;
+    }
+    if (encimados) EF(`${encimados === 1 ? 'dos emojis se enciman' : `${encimados} pares de emojis se enciman`}: sepáralos (en círculos, sube «radio» o baja «personas»)`);
+    // Flecha que atraviesa un emoji que no es su origen ni su destino: se lee, pero ensucia (aviso)
+    lam.querySelectorAll(':scope > .capa-mano path[data-clase="flecha"]').forEach(pth => {
+      if (!visible(pth) || opac(pth) < 0.5) return;
+      const extremos = [pth.dataset.de, pth.dataset.a].filter(Boolean).map(id => [...lam.querySelectorAll(`[data-a="${CSS.escape(id)}"]`)].find(fueraClon)).filter(Boolean);
+      const libres = [...emos, ...[...lam.querySelectorAll('img')].filter(e => visible(e) && fueraClon(e) && !e.closest('.emo'))]
+        .filter(e => !extremos.some(x => x.contains(e) || e.contains(x)));
+      const tot = pth.getTotalLength(), golpes = new Map();
+      for (let t = tot * 0.1; t <= tot * 0.9; t += 5) {
+        const q = pth.getPointAtLength(t);
+        libres.forEach(e => { const b = caja(e, lam), mx = b.w * 0.15, my = b.h * 0.15; if (q.x > b.x + mx && q.x < b.x + b.w - mx && q.y > b.y + my && q.y < b.y + b.h - my) golpes.set(e, (golpes.get(e) || 0) + 1); });
+      }
+      if ([...golpes.values()].some(g => g >= 3)) AF('una flecha atraviesa un emoji que no es su origen ni su destino: mueve la flecha o el emoji (en una rejilla, destaca una celda de la primera fila)');
+    });
     // Línea o punta de una serie que atraviesa un texto (su etiqueta, el eje, otra serie)
     lam.querySelectorAll('.grafica svg').forEach(sv => {
       const vb = sv.viewBox && sv.viewBox.baseVal, R = sv.getBoundingClientRect();
@@ -413,6 +524,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   });
   return out;
 }, [W, H, MARCA_LITERAL, CONTRASTE]);
+// Emojis sobre un fondo de color: se rasterizan en una página aparte (data URL: sin el bloqueo de file://)
+const contrasteColor = await medirSobreColor(browser, porLamina, dirSalida);
 await browser.close();
 
 const errores = [], avis = [];
@@ -429,17 +542,27 @@ porLamina.forEach(r => {
   if (r.palabras > 35) errores.push(`${n}: ${r.palabras} palabras a la vista; el estilo pide una idea por lámina (≤ 22)`);
   else if (r.palabras > 22) avis.push(`${n}: ${r.palabras} palabras a la vista (ideal ≤ 22)`);
   if (r.enfasis > 2) avis.push(`${n}: ${r.enfasis} énfasis (subrayado/resaltador); uno por lámina, dos como máximo`);
+  const flojos = contrasteColor.filter(m => m.i === r.i && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : UMBRAL_COLOR));
+  if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });
-// Datos pendientes: UN error por dato distinto, con las láminas donde aparece
+// Datos pendientes: UN error por dato distinto, con las láminas donde aparece. Un hueco DECLARADO a propósito
+// ({ "pendiente": true, "motivo" }) no es un olvido: va como aviso y deja el deck en BORRADOR.
 const pendientes = {};
 porLamina.forEach(r => r.pendientes.forEach(t => (pendientes[t] = pendientes[t] || []).push(r.i + 1)));
-Object.entries(pendientes).forEach(([t, ls]) => errores.push(`dato pendiente ${t} en ${ls.length > 1 ? 'las láminas' : 'la lámina'} ${ls.join(', ')}: llénalo en "datos" (${t.replace(/^\[|\]$/g, '')}) y escribe {{${t.replace(/^\[|\]$/g, '')}}} en el texto`));
-// Datos PROPUESTOS ({ "valor", "propuesto": true }): se pintan, pero el deck no es final hasta confirmarlos
 const porConfirmar = {};
+const enLaminas = ls => `${ls.length > 1 ? 'las láminas' : 'la lámina'} ${ls.join(', ')}`;
+Object.entries(pendientes).forEach(([t, ls]) => {
+  const k = t.replace(/^\[|\]$/g, '');
+  if (Object.hasOwn(declarados, k)) {
+    porConfirmar[k] = { valor: '', laminas: ls, motivo: declarados[k].motivo, pendiente: true };
+    avis.push(`dato pendiente a propósito ${t} (${declarados[k].motivo}) en ${enLaminas(ls)}: el deck es borrador hasta llenarlo`);
+  } else errores.push(`dato pendiente ${t} en ${enLaminas(ls)}: llénalo en "datos" (${k}) y escribe {{${k}}} en el texto; si se deja a propósito, decláralo: { "pendiente": true, "motivo": "…" }`);
+});
+// Datos PROPUESTOS ({ "valor", "propuesto": true }): se pintan, pero el deck no es final hasta confirmarlos
 Object.entries(propuestos).forEach(([k, ls]) => {
   const v = crudo.datos && crudo.datos[k] && typeof crudo.datos[k] === 'object' ? crudo.datos[k].valor : '';
   porConfirmar[k] = { valor: v, laminas: ls };
-  avis.push(`dato propuesto ${k} («${v}») en ${ls.length > 1 ? 'las láminas' : 'la lámina'} ${ls.join(', ')}: confírmalo y quita "propuesto"; mientras tanto el deck no es final`);
+  avis.push(`dato propuesto ${k} («${v}») en ${enLaminas(ls)}: confírmalo y quita "propuesto"; mientras tanto el deck no es final`);
 });
 // Voz y anclas contra los pasos (una frase por paso; si no cuadran, los cortes del montaje se desalinean)
 deck.laminas.forEach((l, i) => {
@@ -453,9 +576,15 @@ deck.laminas.forEach((l, i) => {
 });
 // Reglas del deck.json (sin navegador): firma de relleno, duración de la pieza, apertura, voz, proyecciones,
 // posts de maqueta y llamado (scripts/lib/reglas-deck.mjs)
-const delDeck = revisarDeck(deck, pasos, { dirDeck });
+// El deck crudo trae «datos» (CASO_PROPIO, ENTREGABLE confirmados); las láminas son las ya sustituidas
+const delDeck = revisarDeck({ ...deck, datos: crudo.datos }, pasos, { dirDeck });
 errores.push(...delDeck.errores);
 avis.push(...delDeck.avisos);
+// Resultado propio o entregable prometido sin confirmar: BORRADOR, igual que un dato propuesto
+Object.entries(delDeck.porConfirmar || {}).forEach(([k, v]) => {
+  porConfirmar[k] = v;
+  avis.push(`${k} por confirmar en ${enLaminas(v.laminas)}: ${v.motivo}${v.valor ? ` («${v.valor}»)` : ''}`);
+});
 // Reglas del deck completo
 const tipos = deck.laminas.map(l => l.tipo).filter(t => t !== 'camara');
 let racha = 1;
@@ -487,7 +616,11 @@ const objetivo = minutosObjetivo(deck.duracion_objetivo);
 const porTipo = duracionPorTipo(deck, pasos);
 const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDeck.duracion), laminas: mmss(porTipo.laminas), camara: mmss(porTipo.camara),
   ...(objetivo ? { objetivo: mmss(objetivo * 60) } : {}), ...(deck.pieza ? { pieza: deck.pieza } : {}) };
-const informe = { nota, estado: borrador ? 'borrador' : errores.length ? 'con errores' : 'listo', laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, errores,
+// Estado, en orden: borrador → con errores → bajo-90 → falta-venta → listo. Un loop o un agente de fondo lee `estado`
+// (o corre con --estricto): «listo» es el ÚNICO estado que se entrega como final (SKILL §6).
+const falta = delDeck.faltaParaFinal || [];
+const estado = borrador ? 'borrador' : errores.length ? 'con errores' : nota < NOTA_FINAL ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
+const informe = { nota, estado, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos, fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
@@ -498,5 +631,7 @@ else {
   errores.forEach(e => console.log('  ✗ ' + e));
   avis.forEach(e => console.log('  ⚠ ' + e));
   if (!errores.length && !avis.length) console.log('  ✓ sin hallazgos');
+  if (estado !== 'listo') console.log(`ESTADO: ${estado}${falta.length ? ` / falta-venta: ${falta.join(', ')}` : ''}`);
 }
-process.exit(errores.length ? 1 : 0);
+// Código de salida: 1 con errores; con --estricto, 3 si no hay errores pero el estado no es «listo»
+process.exit(errores.length ? 1 : flag('--estricto') && estado !== 'listo' ? 3 : 0);

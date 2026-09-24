@@ -49,8 +49,9 @@ export function emparejar(ids, archivos) {
 }
 
 // Densidad de tinta por celda (W×H, por omisión 8×5) de un RGBA de w0×h0: la COMPOSICIÓN de la lámina (dónde
-// hay contenido), con la misma regla de tinta que cajaTinta. Calibrada con la réplica: los pares correctos dan
-// ≥ 0.37 y los cruzados (lámina de otro momento) ≤ 0.29, salvo dos frases centradas, que se parecen de verdad.
+// hay contenido), con la misma regla de tinta que cajaTinta. Calibrada con la réplica (ronda 3): los pares correctos
+// dan 0.86-0.99 y los cruzados llegan hasta 0.605 (r255 del deck viejo contra otra escena): umbral 0.7. Dos frases
+// centradas pueden parecerse de verdad: ahí manda el ojo. (La calibración salió de 10 pares correctos y 6 cruzados.)
 // Una miniatura en gris de 48×27 no separaba nada (un par correcto daba 0.06). Autocontenida (se inyecta).
 export function densidadTinta(rgba, w0, h0, W = 8, H = 5) {
   const out = new Array(W * H).fill(0);
@@ -74,3 +75,7 @@ export function correlacionMiniaturas(a, b) {
   for (let i = 0; i < n; i++) { const da = a[i] - ma, db = b[i] - mb; sab += da * db; saa += da * da; sbb += db * db; }
   return saa && sbb ? sab / Math.sqrt(saa * sbb) : 0;
 }
+
+// ¿Es OTRA escena? Con correlación menor que el umbral el par no se mide (id desfasado o cuadro de otro momento).
+export const MIN_PARECIDO = 0.7;
+export const esOtraEscena = (parecido, minParecido = MIN_PARECIDO) => !(parecido >= minParecido);

@@ -9,7 +9,8 @@
 // ~3,400 imágenes la primera vez).
 //
 // Métrica (0-100): de los píxeles opacos del glifo, el % que se DISTINGUE del fondo: contraste ≥ 2:1 contra
-// el fondo o saturación ≥ 0.45. Un 💬 de Fluent (lila casi blanco) da 0; un 💰 da 100.
+// el fondo o ΔE76 (Lab) ≥ 40 (la misma de lib/contraste-color.mjs). Antes contaba «saturación ≥ 0.45», que daba por
+// visible un glifo saturado sobre un fondo igual de saturado. Un 💬 de Fluent (lila casi blanco) da 0; un 💰 da 100.
 // Fondos: claro (#ffffff), tarjeta (#f3f3f3: tarjeta, cuadro, bento) y oscura (#0b0b0e).
 // Apple se mide con la fuente del sistema (solo en macOS); Fluent con la imagen 3D del CDN (caché en disco).
 import fs from 'node:fs';
@@ -18,6 +19,7 @@ import path from 'node:path';
 import { argumentos, DIR_SKILL } from './lib/pipeline.mjs';
 import { cargarPlaywright } from './lib/playwright.mjs';
 import { resolverFluent, BAJO_CONTRASTE, formaEmoji } from './lib/emoji.mjs';
+import { puntuarGlifo } from './lib/contraste-color.mjs';
 
 const { flag, opt } = argumentos(process.argv);
 const salida = path.resolve(opt('--salida', path.join(DIR_SKILL, 'scripts', 'lib', 'contraste-emojis.json')));
@@ -55,28 +57,11 @@ for (const e of lista) {
 const { chromium } = cargarPlaywright(DIR_SKILL);
 const browser = await chromium.launch();
 const page = await browser.newPage();
+await page.addScriptTag({ content: `window.puntuarGlifo = ${puntuarGlifo.toString()};` });
 const medir = await page.evaluate(async ([items, fondos, apple]) => {
-  const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
-  const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
   const S = 128;
   const c = new OffscreenCanvas(S, S), g = c.getContext('2d', { willReadFrequently: true });
-  const puntuar = datos => {
-    const out = {};
-    for (const [nom, [br, bg, bb]] of Object.entries(fondos)) {
-      const lf = lum(br, bg, bb);
-      let op = 0, ve = 0;
-      for (let i = 0; i < datos.length; i += 4) {
-        const a = datos[i + 3] / 255; if (a < 0.5) continue;
-        op++;
-        const r = datos[i] * a + br * (1 - a), gg = datos[i + 1] * a + bg * (1 - a), b = datos[i + 2] * a + bb * (1 - a);
-        const l = lum(r, gg, b), k = (Math.max(l, lf) + 0.05) / (Math.min(l, lf) + 0.05);
-        const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), sat = mx ? (mx - mn) / mx : 0;
-        if (k >= 2 || sat >= 0.45) ve++;
-      }
-      out[nom] = op ? Math.round((ve / op) * 100) : null;
-    }
-    return out;
-  };
+  const puntuar = datos => Object.fromEntries(Object.entries(fondos).map(([nom, f]) => [nom, window.puntuarGlifo(datos, f)]));
   const r = { apple: {}, fluent: {} };
   for (const [k, e, src] of items) {
     if (apple) {
@@ -95,7 +80,7 @@ await browser.close();
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // Tabla por set y fondo: { apple: { claro: { '💬': 100, … }, tarjeta: {…}, oscura: {…} }, fluent: {…} }
-const tabla = { metrica: '% de píxeles del glifo con contraste ≥ 2:1 contra el fondo o saturación ≥ 0.45', fondos: FONDOS, apple: {}, fluent: {} };
+const tabla = { metrica: '% de píxeles del glifo con contraste ≥ 2:1 contra el fondo o ΔE76 ≥ 40', fondos: FONDOS, apple: {}, fluent: {} };
 for (const set of ['apple', 'fluent']) for (const f of Object.keys(FONDOS)) {
   tabla[set][f] = Object.fromEntries(Object.entries(medir[set]).filter(([, v]) => v[f] != null).map(([k, v]) => [k, v[f]]).sort());
 }

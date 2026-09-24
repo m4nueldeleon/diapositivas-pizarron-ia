@@ -313,3 +313,17 @@ export function bajoContraste(ch, modo, fondo) {
   const m = ((contrasteMedido()[modo] || {})[fondo === 'oscura' ? 'oscura' : fondo === 'tarjeta' ? 'tarjeta' : 'claro'] || {})[k];
   return m != null && m < UMBRAL_CONTRASTE && !(VISTOS_OK[modo] || []).includes(k) ? SUGERIDO[k] || '?' : '';
 }
+
+// ---------- campos de emoji del deck (una sola lista para el contrato y para QA) ----------
+// Todo campo que se dibuja como ícono: `emoji`, `iconos`, la viñeta de una lista, los avatares del chat, `sobre`
+// y `centro`, y los `emoji_*` que no son un tamaño, un lado o un paso. La viñeta acepta alias (x, no, check, si).
+export const NO_EMOJI = ['emoji_tam', 'emoji_lado', 'emoji_paso'];
+export const ALIAS_VINETA = { x: '❌', no: '❌', check: '✅', si: '✅' };
+const CAMPOS_EMOJI = new Set(['emoji', 'iconos', 'vineta', 'avatar', 'avatar_yo', 'avatar_otro', 'sobre', 'centro']);
+export const esCampoEmoji = k => typeof k === 'string' && (CAMPOS_EMOJI.has(k) || (k.startsWith('emoji_') && !NO_EMOJI.includes(k)));
+// Los textos de emoji de un campo (lista si es lista, alias de viñeta ya traducidos); [] si no es un campo de emoji
+export function specsDeCampo(k, v) {
+  if (!esCampoEmoji(k)) return [];
+  const lista = Array.isArray(v) ? v : [v];
+  return lista.filter(x => typeof x === 'string' && x.trim()).map(x => (k === 'vineta' && Object.hasOwn(ALIAS_VINETA, x) ? ALIAS_VINETA[x] : x));
+}

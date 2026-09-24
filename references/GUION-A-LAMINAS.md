@@ -92,6 +92,8 @@ la lámina nueva o un elemento más sobre la actual.
      $10,000-$50,000». Si hay que dar un solo número, sale de la tasa baja.
    - c) Si el total subrayado sostiene la promesa del título, la voz dice el descargo en esa lámina o en el
      gancho, como la referencia [0:38]: «que yo tenga estos resultados no quiere decir que tú los tengas».
+     QA avisa cuando el arranque afirma un resultado propio («me hizo cobrar el doble») y ninguna voz trae el
+     descargo, y deja el deck en borrador hasta confirmar ese resultado en `datos.CASO_PROPIO`.
    - d) **Escena o cifra ilustrativa**: una situación inventada para explicar, que no le promete nada al
      espectador («entran $50,000 este mes»). La voz la presenta **una sola vez** y con naturalidad, al abrir
      la escena: «Pongamos que este mes vendiste 50 mil…», como la referencia [22:28, «in this example», sobre

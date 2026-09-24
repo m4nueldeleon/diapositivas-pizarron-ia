@@ -1,0 +1,214 @@
+{
+ "_comentario": "Defectos de la ronda 3 que QA tiene que ver (pruebas/qa-visual.test.mjs). Cada lámina aísla uno.",
+ "emoji": "apple",
+ "marca": false,
+ "laminas": [
+  {
+   "id": "corte-borde",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "🔍",
+     "etiqueta": "Uno"
+    },
+    {
+     "emoji": "🛠️",
+     "etiqueta": "Dos"
+    },
+    {
+     "emoji": "🚀",
+     "etiqueta": "Tres",
+     "sub": "Supercalifragilisticoespialidosoextraordinariamente"
+    }
+   ]
+  },
+  {
+   "id": "tecla-tapada",
+   "tipo": "pasos",
+   "n": 3,
+   "clic": 3,
+   "clic_pos": [
+    0.5,
+    0.45
+   ],
+   "texto": "El sistema de 3 pasos"
+  },
+  {
+   "id": "emojis-encimados",
+   "tipo": "grafica",
+   "grafica": "barras",
+   "barras": [
+    {
+     "etiqueta": "A",
+     "valor": 40,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "B",
+     "valor": 44,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "C",
+     "valor": 48,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "D",
+     "valor": 52,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "E",
+     "valor": 56,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "F",
+     "valor": 60,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "G",
+     "valor": 64,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "H",
+     "valor": 68,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "I",
+     "valor": 72,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "J",
+     "valor": 76,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "K",
+     "valor": 80,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "L",
+     "valor": 84,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "M",
+     "valor": 88,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "N",
+     "valor": 92,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "O",
+     "valor": 96,
+     "emoji": "💰"
+    },
+    {
+     "etiqueta": "P",
+     "valor": 100,
+     "emoji": "💰"
+    }
+   ]
+  },
+  {
+   "id": "flecha-emoji",
+   "tipo": "rejilla",
+   "emoji": "👤",
+   "total": 40,
+   "columnas": 10,
+   "destacar": [
+    14
+   ],
+   "emoji_destacado": "🧑‍💻",
+   "etiqueta_destacado": "Tú",
+   "alto": 520
+  },
+  {
+   "id": "fondo",
+   "tipo": "idea",
+   "texto": "Tres renglones de texto grande\nque llenan el centro\nde la lámina de arriba abajo",
+   "tam_texto": "grande"
+  },
+  {
+   "id": "foco-encima",
+   "tipo": "foco",
+   "anclar": "centro",
+   "opacidad": 0.5,
+   "texto": "La frase del foco se escribe sobre el texto del fondo"
+  },
+  {
+   "id": "sello-avatar",
+   "tipo": "chat",
+   "sello": "Respuesta tardía",
+   "sello_pos": "abajo-derecha",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "¿Cuánto cuesta?"
+    },
+    {
+     "de": "yo",
+     "texto": "¡Buen día!"
+    },
+    {
+     "de": "otro",
+     "texto": "¿Y el precio?"
+    },
+    {
+     "de": "yo",
+     "texto": "Sí, cuesta…"
+    }
+   ]
+  },
+  {
+   "id": "svg-encimados",
+   "tipo": "linea-tiempo",
+   "marcas": [
+    {
+     "texto": "S1",
+     "arriba": "$1,000,000",
+     "pos": 0
+    },
+    {
+     "texto": "S2",
+     "arriba": "$2,000,000",
+     "pos": 0.1
+    },
+    {
+     "texto": "S8",
+     "pos": 1
+    }
+   ]
+  },
+  {
+   "id": "stack-oscuro",
+   "tipo": "stack",
+   "items": [
+    {
+     "emoji": "🎓",
+     "texto": "Las clases",
+     "color": "marino"
+    },
+    {
+     "emoji": "🕶️",
+     "texto": "El estilo",
+     "color": "negro"
+    },
+    {
+     "emoji": "🤖",
+     "texto": "El agente"
+    }
+   ]
+  }
+ ]
+}

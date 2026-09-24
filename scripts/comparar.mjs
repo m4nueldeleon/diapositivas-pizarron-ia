@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 // comparar.mjs — mide la fidelidad de la réplica: cada lámina «r<seg>» contra el cuadro «ref_<seg>.jpg».
 //
-//   node scripts/comparar.mjs <carpeta-del-deck> <carpeta-ref> [--salida dir] [--umbral 8] [--min-parecido 0.3]
+//   node scripts/comparar.mjs <carpeta-del-deck> <carpeta-ref> [--salida dir] [--umbral 8] [--min-parecido 0.7]
 //
-// El deck versionado de la réplica es pruebas/replica/deck.json; los cuadros (ref_*.jpg) viven FUERA del repo.
+// El deck versionado de la réplica es pruebas/replica/deck.json; los cuadros (ref_*.jpg) viven FUERA del repo. Es la
+// ÚNICA evidencia de fidelidad de una ronda (comp_N.jpg con su métrica y comparar.json): una hoja armada a mano o con
+// otro deck no vale. Dos guardas contra un deck desfasado:
+//   · si la carpeta de referencias trae su propio deck.json y no es igual al que se compara, sale con código 2;
+//   · si ninguna lámina r<seg> trae `_cuadro` (lo que distingue a la réplica versionada), sale con código 1.
 //
 // Qué paso se compara: `paso_ref` de la lámina (desde 0; −1 = el último) cuando el cuadro del video es un
 // momento intermedio del revelado; sin él, el paso que más se parece al cuadro (correlación de la densidad de
@@ -19,19 +23,32 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
-import { cajaTinta, compararCajas, emparejar, densidadTinta, correlacionMiniaturas } from './lib/tinta.mjs';
+import { cajaTinta, compararCajas, emparejar, densidadTinta, correlacionMiniaturas, MIN_PARECIDO, esOtraEscena } from './lib/tinta.mjs';
 
 const { pos, opt } = argumentos(process.argv);
 const [dirDeck, dirRef] = pos;
-if (!dirDeck || !dirRef) { console.error('uso: node scripts/comparar.mjs <carpeta-del-deck> <carpeta-ref> [--salida dir] [--umbral 8]'); process.exit(2); }
+if (!dirDeck || !dirRef) { console.error('uso: node scripts/comparar.mjs <carpeta-del-deck> <carpeta-ref> [--salida dir] [--umbral 8] [--min-parecido 0.7]'); process.exit(2); }
 const umbral = Number(opt('--umbral', 8)) || 8;
-const minParecido = Number(opt('--min-parecido', 0.3));
+const minParecido = Number(opt('--min-parecido', MIN_PARECIDO));
+// Guarda 1: un deck.json junto a los cuadros que no es el que se compara (el deck viejo de pizarron-ref/replica)
+const deckJunto = path.join(dirRef, 'deck.json');
+if (fs.existsSync(deckJunto)) {
+  const aComparar = fs.statSync(dirDeck).isDirectory() ? path.join(dirDeck, 'deck.json') : dirDeck;
+  let igual = false;
+  try { igual = JSON.stringify(JSON.parse(fs.readFileSync(deckJunto, 'utf8'))) === JSON.stringify(JSON.parse(fs.readFileSync(aComparar, 'utf8'))); } catch { igual = false; }
+  if (!igual) { console.error(`✗ deck desfasado en ${deckJunto}: la réplica versionada es pruebas/replica/deck.json; bórralo o renómbralo`); process.exit(2); }
+}
 let prep;
 try { prep = prepararSalida(dirDeck, opt('--salida') ? path.join(opt('--salida'), 'html') : undefined); } catch (e) { console.error('✗ ' + e.message); process.exit(2); }
 const salida = path.resolve(opt('--salida') || path.join(prep.dirSalida, 'comparar'));
 fs.mkdirSync(salida, { recursive: true });
 
 const ids = prep.deck.laminas.map(l => l.id);
+// Guarda 2: la réplica versionada anota en cada lámina qué cuadro replica (`_cuadro`); un deck sin eso no es ella
+const replicas = prep.deck.laminas.filter(l => /^r\d+$/.test(String(l.id || '')));
+const sinCuadro = replicas.filter(l => !l._cuadro);
+if (replicas.length && sinCuadro.length === replicas.length) { console.error('✗ ninguna lámina r<seg> trae _cuadro: ¿no es pruebas/replica/deck.json?'); process.exit(1); }
+sinCuadro.forEach(l => console.warn(`⚠ ${l.id} sin _cuadro: ¿no es pruebas/replica?`));
 const { pares, sinRef, sinLamina } = emparejar(ids, fs.readdirSync(dirRef));
 sinRef.forEach(id => console.warn(`⚠ la lámina «${id}» no tiene referencia (ref_${id.slice(1)}.jpg)`));
 sinLamina.forEach(f => console.warn(`⚠ sobra la referencia ${f}: no hay lámina con id «r${f.match(/\d+/)[0]}»`));
@@ -70,7 +87,7 @@ for (const par of pares) {
   const corr = nuestros.map(m => correlacionMiniaturas(ref.mini, m.mini));
   const k = par.pasoRef ?? corr.reduce((b, c, j) => (c > corr[b] ? j : b), 0);
   par.paso = k; par.parecido = +corr[k].toFixed(3); par.nuestra = par.pasos[k];
-  par.distinta = par.parecido < minParecido;
+  par.distinta = esOtraEscena(par.parecido, minParecido);
   Object.assign(par, { cajaRef: ref.caja, cajaNuestra: nuestros[k].caja, ...compararCajas(ref.caja, nuestros[k].caja, umbral) });
   if (!par.distinta && [par.dw, par.dh].some(v => v != null && Math.abs(v) > 30)) console.warn(`⚠ ${par.id}: la caja difiere más de 30 puntos de ancho o alto: ¿par de otro momento?`);
 }

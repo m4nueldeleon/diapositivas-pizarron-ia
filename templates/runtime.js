@@ -245,7 +245,8 @@
         pts = linea(P, Q, r, 2.6); ancho = 7; len = 30;
       }
     }
-    trazo(svg, suave(pts), { color, ancho, p, dur: 300, clase: 'flecha', estilo: c.estilo || 'recta' });
+    const fl = trazo(svg, suave(pts), { color, ancho, p, dur: 300, clase: 'flecha', estilo: c.estilo || 'recta' });
+    Object.assign(fl.dataset, { de: c.de, a: c.a });   // qa.mjs no cuenta como choque el origen ni el destino
     const Q = pts[pts.length - 1], ang = angulo(pts);
     // La punta es siempre una V abierta con el mismo trazo (grosor, extremos redondos y textura) [c_0635]
     trazo(svg, cabezaV(Q, ang, len, abre, r), { color, ancho, p, cabeza: true, clase: 'punta' });
@@ -257,9 +258,14 @@
   // ---------- marcas sobre texto e imágenes ----------
   const pasoDe = e => +((e.closest('[data-p]') || {}).dataset || {}).p || 0;
   function subrayados(esc, lam, svg, r) {
+    // Subrayado [ref_10]: plumón de ~5.5 px en un arco suave (flecha de 0.8-1.2% del ancho), que arranca un poco a la
+    // derecha del inicio (1-2%) y remata ANTES de la última letra (3-5%); arranque y remate varían ±2% por renglón
     dentro(esc, '[data-sub]').forEach(el => rectsTexto(el, lam).forEach(b => {
-      const y = b.y + b.h * 0.93;
-      trazo(svg, suave(linea([b.x + 2, y + 1], [b.x + b.w - 2, y - 2 + (r() - 0.5) * 3], r, 1.6, 5)), { color: C.rojo, ancho: 4.4, p: pasoDe(el), dur: 280 });
+      const y = b.y + b.h * 0.93, w = b.w;
+      const x0 = b.x + w * (0.01 + r() * 0.01), x1 = b.x + w * (1 - 0.03 - r() * 0.02);
+      const sag = w * (0.008 + r() * 0.004), y1 = y - 2 + (r() - 0.5) * 3;
+      const pts = cuadratica([x0, y + 1], [x1, y1], [(x0 + x1) / 2, (y + 1 + y1) / 2 - 2 * sag], 12);
+      trazo(svg, suave(pts), { color: C.rojo, ancho: 5.5, p: pasoDe(el), dur: 280, clase: 'subrayado' });
     }));
     dentro(esc, '[data-tachar]').forEach(el => {
       const p = el.dataset.tacharP != null ? +el.dataset.tacharP : pasoDe(el);
@@ -314,13 +320,22 @@
     const spec = esc.dataset.clic ? JSON.parse(esc.dataset.clic) : null; if (!spec) return;
     const el = ancla(esc, spec.a); if (!el) { avisos.push(`lámina ${+lam.dataset.i + 1}: el clic apunta a «${spec.a}», que no existe`); return; }
     const cur = esc.querySelector(':scope > .cursor'), onda = esc.querySelector(':scope > .onda');
-    const mano = cur.dataset.tipo !== 'flecha', W = mano ? 104 : 72, H = mano ? 119 : 106;
+    // Sobre una tecla la mano es más chica (~0.55 del ancho de la tecla, como en ref_115)
+    const enTecla = el.classList.contains('tecla');
+    const mano = cur.dataset.tipo !== 'flecha', W = mano ? (enTecla ? 92 : 104) : 72, H = mano ? (enTecla ? 105 : 119) : 106;
     // Punta del dedo (o de la flecha) sobre un ancla
     const punta = e => {
       const b = caja(e, lam);
       let tx = b.x + b.w * (mano ? (b.w > 300 ? 0.84 : 0.6) : 0.74), ty = b.y + b.h * (mano ? 0.56 : 0.62);
       if (Array.isArray(spec.pos)) { tx = b.x + b.w * spec.pos[0]; ty = b.y + b.h * spec.pos[1]; }   // clic_pos manda
-      else if (mano && e.classList.contains('boton-ui')) {
+      else if (mano && e.classList.contains('tecla')) {
+        // tecla [ref_115]: la cifra ocupa de y≈0.28 a y≈0.72; la punta toca el PIE del número y el número se lee entero
+        tx = b.x + b.w * 0.64; ty = b.y + b.h * 0.74;
+      } else if (mano && e.closest('.fila-pasos, .fila') && e.querySelector(':scope > .emo')) {
+        // mapa con íconos: la punta en el cuarto inferior derecho del emoji (se toca, no se tapa)
+        const q = caja(e.querySelector(':scope > .emo'), lam);
+        tx = q.x + q.w * 0.72; ty = q.y + q.h * 0.78;
+      } else if (mano && e.classList.contains('boton-ui')) {
         // botón [23:15]: la punta del dedo a la derecha del emoji (~0.45 de su ancho), a media altura; el emoji
         // se ve entero. Sin emoji, en el relleno de la derecha sin tapar el texto.
         const emo = e.querySelector('.emo');
@@ -362,6 +377,36 @@
     }));
   }
 
+  // ---------- foco: la frase no se escribe sobre el texto del fondo ----------
+  // En la referencia [15:20] la frase va centrada sobre el fondo atenuado y puede pasar sobre ÍCONOS (las bolsas), pero
+  // nunca sobre renglones de texto. Si la frase choca con un renglón del fondo, se busca el hueco entre renglones que la
+  // alcance MÁS CERCA DEL CENTRO vertical y se mueve ahí. Si no hay hueco, se queda centrada y el fondo baja a 0.1
+  // (salvo que el autor fijara `opacidad`). Con `anclar` no se toca.
+  function acomodarFoco(lam) {
+    const lz = lam.querySelector(':scope > .lienzo.foco-frase'), clon = lam.querySelector(':scope > .escena.clon');
+    if (!lz || !clon || lz.dataset.anclar) return;
+    const pila = lz.firstElementChild; if (!pila) return;
+    const H = lam.offsetHeight, P = caja(pila, lam), pad = 18;
+    const TXT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca';
+    const rs = [...clon.querySelectorAll(TXT)].filter(e => !e.querySelector(TXT)).flatMap(e => rectsTexto(e, lam))
+      .concat([...clon.querySelectorAll('svg text')].filter(t => t.textContent.trim()).map(t => caja(t, lam)))
+      .filter(r => r.h >= 30 && r.x < P.x + P.w && r.x + r.w > P.x);
+    const choca = y0 => rs.some(r => r.y < y0 + P.h + pad && r.y + r.h > y0 - pad);
+    if (!rs.length || !choca(P.y)) return;
+    // huecos verticales libres (dentro de los márgenes) donde cabe la frase
+    const mv = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--margen-v')) || 60;
+    const ocup = rs.map(r => [r.y - pad, r.y + r.h + pad]).sort((a, b) => a[0] - b[0]);
+    const libres = []; let y = mv * 0.6;
+    ocup.forEach(([a, b]) => { if (a - y >= P.h) libres.push([y, a]); y = Math.max(y, b); });
+    if (H - mv * 0.6 - y >= P.h) libres.push([y, H - mv * 0.6]);
+    const centro = H / 2;
+    const cands = libres.map(([a, b]) => clamp(centro, a + P.h / 2, b - P.h / 2)).sort((p, q) => Math.abs(p - centro) - Math.abs(q - centro));
+    if (cands.length) {
+      Object.assign(pila.style, { position: 'relative', top: (cands[0] - (P.y + P.h / 2)).toFixed(1) + 'px' });
+      lam.dataset.focoMovido = '1';
+    } else if (!clon.dataset.opFija) clon.style.opacity = '0.1';
+  }
+
   // ---------- sello: tamaño y posición ----------
   // Se mide sin escala; k lo reduce si, girado −5°, no cabe en el lienzo (sellos largos, 9:16). Se centra
   // en un ancla (sello_sobre), en una zona (sello_pos) o en el lienzo, y se acota a los bordes.
@@ -374,10 +419,15 @@
     const s = lam.querySelector(':scope > .sello'); if (!s) return;
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
     let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
-    let rejilla = null;
+    let rejilla = null, burbuja = null;
     if (s.dataset.sobre) {
       const el = ancla(lam, s.dataset.sobre);
-      if (el) {
+      if (el && (el.classList.contains('burbuja') || el.closest('.chat'))) {
+        // Chat: el sello NO mide el ancho de la burbuja (la tapaba entera): tinta fija y se pega junto a ella
+        burbuja = el;
+        const tinta = s.querySelector('.sello-tinta');
+        if (tinta) tinta.style.fontSize = (H > W ? 72 : 84) + 'px';
+      } else if (el) {
         const b = caja(el, lam), tinta = s.querySelector('.sello-tinta');
         cx = b.cx; cy = b.cy;
         if (tinta) for (let i = 0; i < 2; i++) {
@@ -388,9 +438,13 @@
       } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
     }
     const w = s.offsetWidth, h = s.offsetHeight;
-    const k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
-    const bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2, bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
+    let k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
+    let bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2, bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
     if (rejilla) [cx, cy] = selloEnRejilla(lam, rejilla, [cx, cy], w * k, h * k, a, bw, bh, m);
+    if (burbuja) {
+      const r = selloEnChat(lam, burbuja, w, h, a, k, m);
+      [cx, cy] = r.p; k = r.k; bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2; bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
+    }
     cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, m + bh, H - m - bh);
     Object.assign(s.style, { left: cx + 'px', top: cy + 'px' });
     s.dataset.k = k.toFixed(3);
@@ -425,6 +479,50 @@
     return fuera || cands[0].p;
   }
 
+  // Sello en un chat [gancho sin sonido]: califica la burbuja culpable SIN taparla. Se prueban, en orden: montado sobre el
+  // borde de abajo de la burbuja (del lado contrario al avatar, pisando el relleno y no las letras), a la derecha, a la
+  // izquierda y debajo del mensaje. Cada posición se mide con el sello girado −5° contra los renglones (burbujas, horas,
+  // textos), los avatares y emojis y el lienzo: gana la que no toca nada (QA tolera hasta 12% de un renglón). Gana la primera limpia; si ninguna, la que menos tapa, con el sello reducido
+  // hasta 0.7 (dataset.k: QA avisa si se redujo de más).
+  function selloEnChat(lam, burbuja, w, h, a, k0, m) {
+    // del lienzo al marco del sello: el sello va girado −a, así que se deshace con +a
+    const W = lam.offsetWidth, H = lam.offsetHeight, c = Math.cos(a), sn = Math.sin(a);
+    const b = caja(burbuja, lam), yo = !!burbuja.closest('.msj.yo');
+    const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
+      .flatMap(e => rectsTexto(e, lam));
+    const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo')].filter(e => e.getClientRects().length && !e.closest('.escena.clon') && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
+    // fracción de una caja bajo el sello (muestreo 10×5, más fino que el de QA: aquí se busca NO tocar las letras)
+    const frac = (r, cx, cy, sw, sh) => {
+      let n = 0;
+      for (let i = 0; i <= 9; i++) for (let j = 0; j <= 4; j++) {
+        const x = r.x + (i / 9) * r.w - cx, y = r.y + (j / 4) * r.h - cy, u = x * c - y * sn, v = x * sn + y * c;
+        if (Math.abs(u) <= sw / 2 && Math.abs(v) <= sh / 2) n++;
+      }
+      return n / 50;
+    };
+    const costo = (cx, cy, kk) => {
+      const sw = w * kk, sh = h * kk, bw = (sw * Math.cos(a) + sh * Math.sin(a)) / 2, bh = (sw * Math.sin(a) + sh * Math.cos(a)) / 2;
+      let t = 0;
+      if (cx - bw < m || cx + bw > W - m || cy - bh < m || cy + bh > H - m) t += 100;
+      renglones.forEach(r => { t += frac(r, cx, cy, sw, sh); });
+      iconos.forEach(r => { t += 4 * frac(r, cx, cy, sw, sh); });
+      return t;
+    };
+    for (const kk of [k0, k0 * 0.85, Math.max(0.7, k0 * 0.7)]) {
+      const sw = w * kk, sh = h * kk, bw = (sw * Math.cos(a) + sh * Math.sin(a)) / 2, bh = (sw * Math.sin(a) + sh * Math.cos(a)) / 2;
+      const lado = yo ? b.x + bw * 0.9 : b.x + b.w - bw * 0.9;   // del lado contrario al avatar
+      // montado sobre el borde de abajo: pisa el relleno de la burbuja, nunca sus letras
+      const pie = Math.max(b.y + b.h + bh * 0.35, Math.max(b.y, ...rectsTexto(burbuja, lam).map(r => r.y + r.h)) + 8 + bh);
+      const cands = [[lado, pie], [b.cx, pie], [b.x + b.w + bw + 16, b.cy], [b.x - bw - 16, b.cy], [b.cx, b.y + b.h + bh + 12]]
+        .map(([x, y]) => [clamp(x, m + bw, W - m - bw), clamp(y, m + bh, H - m - bh)]);
+      const medidos = cands.map(p => ({ p, t: costo(p[0], p[1], kk) }));
+      const limpio = medidos.find(q => q.t === 0);
+      if (limpio) return { p: limpio.p, k: kk };
+      if (kk === Math.max(0.7, k0 * 0.7)) return { p: medidos.sort((p, q) => p.t - q.t)[0].p, k: kk };
+    }
+    return { p: [b.cx, b.y + b.h], k: k0 };
+  }
+
   function dibujar(lam) {
     const escenas = [lam, ...lam.querySelectorAll('.escena')].filter((e, i, a) => a.indexOf(e) === i);
     escenas.forEach((esc, k) => {
@@ -443,6 +541,8 @@
   }
 
   // ---------- revelado y animación ----------
+  // Paso de un trazo: el suyo o el del grupo que lo contiene (las series de una gráfica lo llevan en su <g>)
+  const pasoTrazo = e => (e.dataset.p != null ? +e.dataset.p : pasoDe(e));
   function mostrar(lam, paso, t) {
     const fin = !isFinite(t), suave = document.body.dataset.anim === 'suave';
     lam.querySelectorAll('[data-p]').forEach(e => {
@@ -452,13 +552,17 @@
     // data-hasta: el elemento se va DESPUÉS de su paso (la mano y las estrellas de una calificación que no acumula)
     lam.querySelectorAll('[data-hasta]').forEach(e => e.classList.toggle('pasado', paso > +e.dataset.hasta));
     lam.querySelectorAll('[data-atenuar]').forEach(e => e.classList.toggle('atenuado-paso', paso >= +e.dataset.atenuar));
+    // En modo seco (el del video) la tinta a mano ENTRA COMPLETA con su elemento, en el mismo cuadro del corte
+    // [ráfagas k_underline 0:41.2, c_alcancia 1:44.5, f_flechas 7:30.1]. Solo crece la ruta punteada que arrastra la
+    // mano (su máscara) [d_123 1:55.6-1:55.9]. El dibujado progresivo queda para `animacion: "suave"`.
     lam.querySelectorAll('[data-trazo]').forEach(e => {
-      const p = +e.dataset.p, dur = +e.dataset.dur || 300, ret = +e.dataset.retraso || 0;
-      const k = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : easeOut(clamp((t - ret) / dur));
+      const p = pasoTrazo(e), dur = +e.dataset.dur || 300, ret = +e.dataset.retraso || 0;
+      const crece = suave || e.closest('mask');
+      const k = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : crece ? easeOut(clamp((t - ret) / dur)) : 1;
       e.style.strokeDashoffset = String(1 - k);
     });
     lam.querySelectorAll('[data-cabeza]').forEach(e => {
-      const p = +e.dataset.p; e.style.opacity = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : (t >= 280 ? 1 : 0);
+      const p = pasoTrazo(e); e.style.opacity = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : !suave || t >= 280 ? 1 : 0;
     });
     const s = lam.querySelector('.sello[data-p]');
     if (s) {
@@ -526,7 +630,12 @@
     }
     if (lam.querySelector(`.sello[data-p="${paso}"]`)) return 400;
     let m = 0;
-    lam.querySelectorAll(`[data-trazo][data-p="${paso}"]`).forEach(e => (m = Math.max(m, (+e.dataset.dur || 300) + (+e.dataset.retraso || 0))));
+    // en seco solo cuenta lo que crece (la máscara de la ruta punteada); la tinta a mano entra completa y no suma
+    const suave = document.body.dataset.anim === 'suave';
+    lam.querySelectorAll('[data-trazo]').forEach(e => {
+      if (pasoTrazo(e) !== paso || (!suave && !e.closest('mask'))) return;
+      m = Math.max(m, (+e.dataset.dur || 300) + (+e.dataset.retraso || 0));
+    });
     if (document.body.dataset.anim === 'suave' && lam.querySelector(`.nota[data-p="${paso}"]`)) m = Math.max(m, 750);
     return m;
   };
@@ -539,6 +648,7 @@
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
+    lams.forEach(l => { try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); } });
     lams.forEach(l => { try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); } });
     lams.forEach(l => { try { colocarSello(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sello (${e.message})`); } });
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));

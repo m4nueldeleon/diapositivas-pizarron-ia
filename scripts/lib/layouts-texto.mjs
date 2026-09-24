@@ -148,6 +148,9 @@ export function pasos(l, ctx) {
   // tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada uno) al terminar la
   // onda (~760 ms). `arrastre: false` deja la ruta completa desde el paso 0 y la mano quieta.
   const arrastra = l.clic && ruta && l.arrastre !== false && !rev && l.clic < n;
+  // Con clic, la punta del dedo va al PIE del número (runtime.js: 0.64, 0.74 de la tecla [ref_115]) y la mano cuelga
+  // ~60 px bajo la tecla: TODAS las etiquetas bajan juntas (siguen alineadas) para que la mano no las toque
+  const mEtq = l.clic && !l.iconos ? 75 : 28;
   const cols = [];
   for (let i = 0; i < n; i++) {
     const apagado = activo && activo !== i + 1 ? ' style="opacity:.2"' : '';
@@ -159,7 +162,7 @@ export function pasos(l, ctx) {
         ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
       cab = `<div class="tecla" style="--s:${ctx.vertical ? 150 : 170}px"${ctx.A('k' + i)}>${i + 1}</div>
-        ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${tamEtqTecla}px;font-weight:700;margin-top:28px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
+        ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${tamEtqTecla}px;font-weight:700;margin-top:${mEtq}px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
     const ok = hechos.has(i + 1) ? `<div style="margin-top:26px">${ctx.emoji('✅', 90)}</div>` : '';
     // flex:0 0 auto: la columna nunca se encoge (encogida partía «Paso / 2»); si la fila no cabe, encaja con zoom
@@ -170,8 +173,8 @@ export function pasos(l, ctx) {
       else ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: rev ? i : 0 });
     }
   }
-  // con etiquetas bajo la tecla, la mano aprieta la parte de arriba para no taparlas
-  if (l.clic) ctx.clic = { a: 'k' + (l.clic - 1), p: kClic, ...(l.etiquetas && !l.iconos ? { pos: [0.6, 0.4] } : {}), ...(arrastra ? { fin: 'k' + (n - 1) } : {}) };
+  // El punto del dedo sobre la tecla lo decide el motor (runtime.js, punta()); aquí solo el ancla y el arrastre
+  if (l.clic) ctx.clic = { a: 'k' + (l.clic - 1), p: kClic, ...(arrastra ? { fin: 'k' + (n - 1) } : {}) };
   // 9:16: una fila con hueco fijo (`separacion` es el hueco)
   const fila = horizontal
     ? `<div class="fila-pasos"${rev ? '' : ctx.P(0)} style="display:grid;grid-template-columns:repeat(${n},${colW}px);justify-items:center;align-items:start">`

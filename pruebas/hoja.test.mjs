@@ -95,3 +95,22 @@ test('render --finales: el stack a sangre con remate sale lleno en la hoja y en 
   const pdf = fs.readFileSync(path.join(sal, 'laminas.pdf'));
   assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length, 3);
 });
+
+// Regresión r3: `render.mjs … | head -1` moría con EPIPE a media escritura y dejaba un hojas.json viejo apuntando a
+// hojas ya borradas. Ahora el render termina con código 0 y todo lo que lista hojas.json existe en disco.
+import { spawnSync } from 'node:child_process';
+test('render con la salida en una tubería cerrada (| head -1): termina y hojas.json solo lista hojas que existen', { timeout: 180_000 }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-epipe-'));
+  const laminas = Array.from({ length: 22 }, (_, i) => ({ tipo: 'idea', id: `i${i + 1}`, emoji: '💡', texto: `Idea **${i + 1}**`, revelar: 'todo' }));
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', laminas }));
+  const sal = path.join(dir, 'salida');
+  const cmd = `set -o pipefail; "${process.execPath}" "${path.join(RAIZ, 'scripts', 'render.mjs')}" "${dir}" --salida "${sal}" | head -1 >/dev/null`;
+  const r = spawnSync('bash', ['-c', cmd], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  const hojas = JSON.parse(fs.readFileSync(path.join(sal, 'hojas.json'), 'utf8'));
+  for (const h of [...hojas.hojas, ...hojas.pasos]) assert.ok(fs.existsSync(path.join(sal, h.archivo)), h.archivo);
+  // con --sin-hoja, un hojas.json falso de otro render se borra
+  fs.writeFileSync(path.join(sal, 'hojas.json'), JSON.stringify({ hojas: [{ archivo: 'hoja-09.jpg' }], pasos: [] }));
+  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--salida', sal, '--finales', '--sin-hoja'], { stdio: 'pipe' });
+  assert.ok(!fs.existsSync(path.join(sal, 'hojas.json')));
+});

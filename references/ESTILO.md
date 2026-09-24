@@ -182,7 +182,11 @@ Reglas:
      (`arrastre: false` lo apaga).
   3. El **sello** cae con golpe y un temblor.
   4. **Foco**: la lámina anterior queda al 20% y encima aparece una frase manuscrita.
-- Los trazos a mano se dibujan en unos 300 ms.
+- Los trazos a mano (subrayado, flechas, llaves, elipses, ✕) entran completos con su elemento, en el mismo cuadro
+  del corte [ráfagas k_underline 0:41.2, c_alcancia 1:44.5, f_flechas 7:30.1]. Solo crece la ruta punteada que
+  arrastra la mano [d_123 1:55.6-1:55.9]. El dibujado progresivo existe solo en modo `suave`.
+- El subrayado es un plumón de ~5.5 px en un arco suave (sube y baja ~1% del ancho), que arranca un poco a la
+  derecha del inicio del texto y remata antes de la última letra [ref_10].
 
 **Por qué funciona:** el revelado por acumulación es el principio de segmentación. Un elemento
 por frase reduce la carga cognitiva y además crea contigüidad temporal: la imagen aparece en el

@@ -442,6 +442,7 @@
   {
    "id": "elige",
    "tipo": "opciones",
+   "items": [{ "texto": "FÁCIL", "tono": "v" }, { "texto": "MEDIO", "tono": "n" }, { "texto": "DIFÍCIL", "tono": "r" }],
    "elegida": 2
   },
   {
@@ -626,7 +627,7 @@
    "total": 40,
    "columnas": 10,
    "destacar": [
-    14
+    4
    ],
    "emoji_destacado": "🧑‍💻",
    "etiqueta_destacado": "Tú",

@@ -6,16 +6,16 @@
 //              valor raro se descarta con aviso en lugar de romper el render. Además normaliza los ítems
 //              escritos como texto suelto (tarjetas, chat, cuadrantes, nodos…) y devuelve `sugerencias`:
 //              avisos suaves (campo que ese diseño no usa, emoji dudoso) que QA cuenta como aviso, no error.
-import { analizarCompuesto, esEmojiTexto } from './emoji.mjs';
-import { palabras } from './markup.mjs';
+import { analizarCompuesto, esEmojiTexto, specsDeCampo } from './emoji.mjs';
+import { palabras, plano } from './markup.mjs';
 import { validarDatos } from './datos.mjs';
 import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
 
 const REQUERIDOS = {
   idea: ['texto|emoji'], lista: ['items'], flujo: ['nodos'], pasos: [], bifurcacion: ['origen', 'ramas'],
   cifra: ['lineas|valor'], cita: ['texto'], objeto: ['imagen|emoji'], tarjetas: ['items'], oscura: ['titulo|texto|imagen|emoji'],
-  cuadrantes: ['items'], tabla: ['columnas', 'filas'], grafica: [], 'linea-tiempo': ['marcas'], medidor: [], opciones: [], rejilla: ['total'],
-  prueba: ['capturas'], chat: ['mensajes'], reparto: ['total'], calendario: [], boton: [], circulos: [], camara: [], foco: ['texto|nota'],
+  cuadrantes: ['items'], tabla: ['columnas', 'filas'], grafica: [], 'linea-tiempo': ['marcas'], medidor: [], opciones: ['items'], rejilla: ['total'],
+  prueba: ['capturas'], chat: ['mensajes'], reparto: ['total'], calendario: [], boton: ['boton'], circulos: [], camara: [], foco: ['texto|nota'],
   stack: ['items'], calificacion: ['filas'],
 };
 const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barras', 'marcas', 'tramos', 'partes', 'dias', 'fases',
@@ -75,11 +75,20 @@ function distancia(a, b) {
   return d[a.length][b.length];
 }
 
+// Confusiones frecuentes: el campo que se escribe por intuición → el que lee el diseño (no se aceptan como alias:
+// una sola forma de escribir cada cosa)
+const CONFUSIONES = {
+  opciones: { opciones: 'items', pastillas: 'items' }, lista: { lista: 'items', elementos: 'items' }, tarjetas: { tarjetas: 'items' },
+  boton: { texto_boton: 'boton', etiqueta: 'boton' }, chat: { mensaje: 'mensajes', burbujas: 'mensajes' }, flujo: { pasos: 'nodos', items: 'nodos' },
+  stack: { piezas: 'items', incluye: 'items' }, cifra: { numero: 'valor', cifra: 'valor' }, 'linea-tiempo': { hitos: 'marcas' },
+};
 // Campos del deck que ese diseño no usa: un error de dedo («sello_pso») o un campo de otro diseño.
 export function camposDesconocidos(l, i) {
   if (!l || typeof l !== 'object' || !CAMPOS[l.tipo]) return [];
   const validos = [...COMUNES, ...CAMPOS[l.tipo]];
   return Object.keys(l).filter(k => !k.startsWith('_') && !validos.includes(k)).map(k => {
+    const conf = (CONFUSIONES[l.tipo] || {})[k];
+    if (conf) return `lámina ${i + 1} (${l.id || l.tipo}): «${k}» no existe en \`${l.tipo}\`: va en «${conf}»`;
     const cerca = validos.map(v => [v, distancia(k, v)]).filter(([, d]) => d <= 3).sort((a, b) => a[1] - b[1])[0];
     return `lámina ${i + 1} (${l.id || l.tipo}): «${k}» no aplica a «${l.tipo}» y se ignora${cerca ? `; ¿quisiste decir «${cerca[0]}»?` : ''}`;
   });
@@ -102,15 +111,15 @@ const ELEMENTOS = {
 };
 const vacio = v => v == null || (typeof v === 'string' && !v.trim());
 
-// Emojis: [no:|si:]base[+insignia]. Recorre la lámina entera (items, nodos, ramas, barras…).
-const CLAVE_EMOJI = k => ['emoji', 'sobre', 'centro', 'avatar', 'avatar_yo', 'avatar_otro'].includes(k)
-  || (k.startsWith('emoji_') && !['emoji_tam', 'emoji_lado', 'emoji_paso'].includes(k));
+// Emojis: [no:|si:]base[+insignia]. Recorre la lámina entera (items, nodos, ramas, barras…). Los campos de emoji son
+// los de emoji.mjs (esCampoEmoji): también la viñeta, los avatares del chat, `sobre` y `centro`.
 const PICTO = /\p{Extended_Pictographic}|\p{Emoji_Presentation}|\u20e3/u;
 function revisarEmojis(o, ruta, errores, avisos) {
   if (Array.isArray(o)) return o.forEach((x, i) => revisarEmojis(x, `${ruta}[${i}]`, errores, avisos));
   if (!o || typeof o !== 'object') return;
   for (const [k, v] of Object.entries(o)) {
-    const specs = CLAVE_EMOJI(k) && typeof v === 'string' ? [v] : (k === 'iconos' || (k === 'emoji' && CLAVE_EMOJI(k))) && Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+    // `emoji` como lista solo existe en idea (par antes/después); `iconos` siempre es lista; el resto, un texto
+    const specs = Array.isArray(v) && !['emoji', 'iconos'].includes(k) ? [] : specsDeCampo(k, v);
     for (const sp of specs) {
       const c = analizarCompuesto(sp);
       if (c.error) errores.push(`${ruta}.${k}: emoji «${sp}» ${c.error}`);
@@ -162,7 +171,8 @@ export function validarDeck(deck, tipos) {
   if (deck.formato && !['16:9', '9:16', '1:1', '4:5'].includes(deck.formato)) e.push(`formato «${deck.formato}» no existe (usa 16:9, 9:16, 1:1 o 4:5)`);
   if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe (usa auto, apple o fluent)`);
   e.push(...validarDatos(deck.datos));
-  if (deck.pieza != null && !PIEZAS[deck.pieza]) e.push(`pieza «${deck.pieza}» no existe (usa ${Object.keys(PIEZAS).join(', ')})`);
+  // `libre` vale null (sin rango): se valida que la clave EXISTA, sin tomar claves del prototipo («toString»)
+  if (deck.pieza != null && (typeof deck.pieza !== 'string' || !Object.hasOwn(PIEZAS, deck.pieza))) e.push(`pieza «${deck.pieza}» no existe (usa ${Object.keys(PIEZAS).join(', ')})`);
   if (deck.duracion_objetivo != null && minutosObjetivo(deck.duracion_objetivo) == null) e.push(`duracion_objetivo «${deck.duracion_objetivo}» no se entiende: minutos (45) o "mm:ss" ("0:45")`);
   if (deck.en_vivo != null && typeof deck.en_vivo !== 'boolean') e.push('«en_vivo» es true o false');
   deck.laminas.forEach((l, i) => {
@@ -171,11 +181,13 @@ export function validarDeck(deck, tipos) {
     if (!tipos.includes(l.tipo)) { e.push(`${n}: tipo «${l.tipo}» no existe. Tipos: ${tipos.join(', ')}`); return; }
     for (const req of REQUERIDOS[l.tipo] || []) {
       const alt = req.split('|');
-      if (!alt.some(k => l[k] != null && !(Array.isArray(l[k]) && !l[k].length))) e.push(`${n} [${l.tipo}]: falta ${alt.join(' o ')}`);
+      // un texto vacío o solo espacios cuenta como ausente (una `idea` con texto "" salía en blanco)
+      if (!alt.some(k => l[k] != null && !(Array.isArray(l[k]) && !l[k].length) && !(typeof l[k] === 'string' && !l[k].trim()))) e.push(`${n} [${l.tipo}]: falta ${alt.join(' o ')}`);
     }
     for (const k of LISTAS) if (l[k] != null && !Array.isArray(l[k]) && !(k === 'columnas' && typeof l[k] === 'number')) e.push(`${n}: «${k}» debe ser una lista […]`);
     if (l.tipo === 'reparto' && l.total != null && typeof l.total !== 'object') e.push(`${n}: «total» debe ser un objeto { "datos": [...] }`);
     if (l.tipo === 'foco' && i === 0) e.push(`${n}: «foco» atenúa la lámina anterior, no puede ir primero`);
+    if (l.tipo === 'foco' && i > 0 && deck.laminas[i - 1] && deck.laminas[i - 1].tipo === 'foco') e.push(`${n}: foco tras foco; el fondo sería la frase del foco anterior. Pon una lámina normal entre los dos`);
     if (l.dur != null && !(typeof l.dur === 'number' || Array.isArray(l.dur))) e.push(`${n}: «dur» debe ser número o lista de números`);
     // Cada elemento de cada lista: un null o un tipo raro tumbaba el render sin decir dónde
     for (const k of LISTAS) {
@@ -322,6 +334,16 @@ export function sugerenciasDiseno(l, i, formato = '16:9') {
     if (!(typeof l.texto === 'string' && l.texto.trim()) && !(typeof l.nota === 'string' && l.nota.trim())) out.push(`${n}: tramo en vivo sin consigna: pon en "texto" qué hace el público («Ahora tú: tu reparto con lo que entró el mes pasado»)`);
     if (Array.isArray(l.items) && l.items.length > 5) out.push(`${n}: ${l.items.length} pasos en la consigna; se muestran 5 como máximo`);
   }
+  // Una palabra de más de 24 letras (un link, una palabra pegada) no se parte y se sale por el borde del lienzo
+  const largas = new Set();
+  const ir = (x, k) => {
+    if (k && /^(voz|id|tipo|imagen|src|logo|emoji|iconos|vineta|avatar|sobre|centro|fuente|_)/.test(k)) return;
+    if (typeof x === 'string') plano(x).split(/\s+/).filter(w => [...w].length > 24).forEach(w => largas.add(w));
+    else if (Array.isArray(x)) x.forEach(y => ir(y, null));
+    else if (x && typeof x === 'object') Object.entries(x).forEach(([kk, v]) => ir(v, kk));
+  };
+  ir(l, null);
+  largas.forEach(w => out.push(`${n}: palabra de ${[...w].length} letras («${w.slice(0, 32)}…»): se parte a media palabra o se sale de su caja; acorta el link (sin https://, www ni utm) o pártela`));
   if (l.tipo === 'chat' && l.sello && !l.sello_sobre) out.push(`${n}: el sello del chat queda suelto; pégalo a la burbuja culpable con "sello_sobre": "m0"…"mN" (se cuentan desde 0)`);
   return out;
 }

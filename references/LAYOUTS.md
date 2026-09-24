@@ -37,14 +37,19 @@ ese diseño.
   dijo: tapar parte de la rejilla es fiel a [6:45]; QA solo avisa si tapa más del 25% de las destacadas). Se
   mueve con:
   - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
-    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). No lo pongas sobre notas ni flechas: QA lo avisa;
+    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). Eso vale para rejillas y cajas; sobre una
+  burbuja de `chat` el sello va con tinta fija y se pega junto a ella sin taparla (ver `chat`). No lo pongas
+  sobre notas ni flechas: QA lo avisa;
   - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,
     `arriba-derecha`, `abajo-izquierda` o `abajo-derecha`.
   Siempre queda dentro del lienzo y, si es muy largo para el formato, se reduce (QA avisa bajo 70%:
   un sello lleva 1 o 2 palabras).
 - `clic`: el ancla que el cursor va a presionar; `cursor` elige entre `mano` y `flecha`.
   `clic_pos: [x, y]` (de 0 a 1 dentro del ancla) mueve la punta del dedo. En un `boton` la punta cae
-  por omisión a la derecha del emoji, a media altura, con el emoji entero a la vista [23:15].
+  por omisión a la derecha del emoji, a media altura, con el emoji entero a la vista [23:15]. En una tecla de
+  `pasos` la punta toca el PIE del número (0.64, 0.74) con una mano más chica, y el número se lee entero [ref_115]:
+  las etiquetas bajan solas para que la mano no las toque. En un mapa con `iconos`, la punta cae en el cuarto
+  inferior derecho del emoji. QA da error si la mano tapa más del 40% del número de la tecla.
 - `anclar: "arriba" | "centro"`: dónde arranca el contenido. Por omisión, `lista` y `tarjetas` que
   se revelan de a uno arrancan ARRIBA y crecen hacia abajo [ref_95, 3:25, 9:25]; lo demás va
   centrado. `"centro"` lo devuelve al centro [15:35].
@@ -247,6 +252,9 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
 { "tipo": "circulos", "texto": "Reservada para **unos pocos**", "tono": "r", "tono_interior": "v", "personas": 12, "emoji": "🧑‍💼", "centro": "⭐" }
 ```
 - `radio` (360) y `radio_interior` (130), en px, cambian el tamaño de los dos círculos.
+- Las personas van parejas en 1 o 2 anillos dentro de la corona, sin tocarse (≥ 1.15 × su tamaño) [10:45]. Si no
+  caben, el emoji se achica (86 → 64 px) y, si ni así, se dibujan las que caben y la construcción avisa: sube
+  `radio` o baja `personas`. QA da error si dos emojis de una lámina se enciman.
 
 ## Datos
 
@@ -315,6 +323,9 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 ```
 - Una marca acepta `pos` (de 0 a 1) y `arriba`, un texto sobre la marca como «$1B». Los textos de marcas
   y tramos van en SVG: sin emojis (ver `grafica`).
+- Marcas muy juntas («Semana 1» en 0 y «Semana 2» en 0.125) bajan solas a un segundo renglón, con una guía
+  punteada hasta su marca; las etiquetas de tramo que se cruzan suben. QA marca los textos SVG encimados o
+  fuera del lienzo.
 - Cada tramo aparece en su propio paso.
 
 ### `medidor` — barra verde → rojo con pin  ·  [4:20]
@@ -326,6 +337,7 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 ```json
 { "tipo": "opciones", "items": [{ "texto": "FÁCIL", "tono": "v" }, { "texto": "MEDIO", "tono": "n" }, { "texto": "DIFÍCIL", "tono": "r" }], "elegida": 2 }
 ```
+- `items` es obligatorio (la lista de pastillas va en `items`, no en `opciones`).
 
 ### `rejilla` — cantidad hecha visible  ·  [6:35, 14:45, 14:55]
 - **Muchas cajas**:
@@ -381,14 +393,14 @@ fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las es
 
 ### `calendario` — días en tarjetas con fases de color  ·  [28:45 → 29:20]
 ```json
-{ "tipo": "calendario", "titulo": "Calendario de 14 días", "fase_activa": 2,
-  "dias": [{ "sub": "Inversión" }, { "sub": "Identificación" }],
+{ "tipo": "calendario", "titulo": "Calendario de 14 días", "fase_activa": 2, "n": 14,
   "fases": [{ "nombre": "Fase 1", "sub": "Calentamiento", "desde": 1, "hasta": 3, "color": "amarillo" },
             { "nombre": "Fase 2", "sub": "Entregar valor", "desde": 4, "hasta": 9, "color": "azul" }],
   "anotaciones": [{ "texto": "«Me gusta su contenido»", "dia": 1, "lado": "izquierda", "arriba": "12%" }] }
 ```
 - `color`: `amarillo`, `azul`, `verde` o `rojo`.
-- Cuántos días: `dias` (uno por día, con `sub`, `titulo` o `numero`) o `n` (14 por omisión, **hasta 42**:
+- Cuántos días: `dias` (uno por día, con `sub`, `titulo` o `numero`; **sustituye a `n`**: con `dias` se dibujan
+  tantos días como elementos tenga, así que para 14 días con subtítulo van 14 entradas) o `n` (14 por omisión, **hasta 42**:
   seis semanas). Con más de 20 días van de 7 en 7 (`columnas` lo cambia) y la fila se achica para caber;
   con 5-6 semanas se ocultan los `sub`. `palabra_dia` cambia «DÍA» (el rótulo de cada tarjeta y la
   pastilla); `rango` cambia la pastilla sin fase activa («DÍAS 1-14»). Una fase de un solo día dice
@@ -429,7 +441,10 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
     "mensajes": [{ "de": "otro", "hora": "11:40 pm", "texto": "¿Cuánto cuesta?" },
                  { "de": "yo", "hora": "9:05 am", "texto": "¡Buen día! Sí, cuesta…" }] }
   ```
-  QA avisa si un chat lleva `sello` sin `sello_sobre`.
+  QA avisa si un chat lleva `sello` sin `sello_sobre`. En un chat el sello **no mide el ancho de la burbuja** (como en
+  la rejilla): va con tinta fija y se pega JUNTO a la burbuja culpable —montado sobre su borde de abajo, del lado
+  contrario al avatar, o a un lado—, sin tapar su texto, las horas, las otras burbujas ni el avatar. No uses
+  `sello_pos` en un chat: el sello cae sobre lo que haya en esa zona (un avatar tapado es error de QA).
 
 ### `prueba` — capturas reales, con el dato encerrado  ·  [0:35, 15:45, 19:30]
 ```json
@@ -456,7 +471,7 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 ```json
 { "tipo": "boton", "boton": "Generar", "emoji": "🤖", "texto": "Solo das clic en el **agente correcto**…" }
 ```
-`cursor` acepta `mano` (por omisión) o `flecha`.
+`boton` (el texto del botón) es obligatorio. `cursor` acepta `mano` (por omisión) o `flecha`.
 
 ### `stack` — lo que incluye la oferta, pieza por pieza  ·  [42:30-42:50]
 En 16:9 va **a sangre**: el bento llena la lámina de borde a borde (18 px de margen), las casillas vacías
@@ -475,8 +490,10 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
   8 piezas ya no se leen: agrupa.
 - Un ítem lleva `emoji` o `imagen` (un logo real), `texto`, `sub` (subrenglón en píldora, «Por 6 meses»),
   `doble: true` (dos columnas), `alto: 2` (dos filas) y `color`: `morado`, `marino`, `naranja`, `verde`,
-  `azul` o `negro`. Sin `color`, cada pieza toma uno por turno en ese orden. `tono` (`v`, `r`, `n`) da
-  la tarjeta pastel con letra negra.
+  `azul` o `negro`. Sin `color`, cada pieza toma uno por turno en ese orden, pero un emoji oscuro (🎓 y los negros)
+  salta el marino y el negro, y uno gris (👥 👤 ⚙️ 🛠️) además el verde y el azul: se fundían con la pieza. Con
+  `color` explícito se respeta, y QA avisa si el emoji casi no se ve sobre él (mide el glifo contra el color
+  real de la pieza). `tono` (`v`, `r`, `n`) da la tarjeta pastel con letra negra.
 - `columnas`: 3 (4 con 7 piezas o más); las filas se calculan. Sin rótulo: el `encabezado` no se dibuja a
   sangre (QA avisa); si hace falta, va en la lámina anterior.
 - `sangre: false` (y el 9:16) usa la pila de casillas grises con el rótulo, el remate y el `total` debajo.
@@ -493,6 +510,12 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 - La frase de foco es la PROTAGONISTA, no una nota al margen: Caveat a 88 px en 16:9 (84 si pasa de 14
   palabras; 96 / 88 en 9:16) y hasta ~1560 px de ancho, como en el cuadro 15:20. `tam` la cambia.
 - `opacidad`: por omisión 0.2.
+- La frase va centrada y puede pasar sobre los ÍCONOS atenuados del fondo (las bolsas de [15:20]), pero no sobre
+  sus renglones de texto: si choca con uno, busca el hueco entre renglones que la alcance más cercano al centro y
+  se mueve ahí. Si no hay hueco, se queda centrada y el fondo baja a 0.1 (salvo que pongas `opacidad`).
+  `anclar` (`"arriba"` o `"centro"`) la fija y apaga ese reacomodo. QA avisa si la frase pisa un renglón del
+  fondo y da error si lo tapa casi entero con el fondo a más de 0.12.
+- No se permite foco tras foco (el fondo sería la frase del foco anterior): pon una lámina normal entre los dos.
 - `nota`: con `texto`, va debajo, más chica y a mano, en el mismo corte (`nota_paso` la mueve). Sin
   `texto`, la `nota` es la frase principal.
 - No puede ir como primera lámina.

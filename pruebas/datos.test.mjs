@@ -103,3 +103,14 @@ test('datos propuestos: se pintan con su valor, se listan en propuestos y QA los
   assert.deepEqual(q.por_confirmar, { TIEMPO_LLAMADA: { valor: '30 minutos', laminas: [1] } });
   assert.ok(q.avisos.some(a => /dato propuesto TIEMPO_LLAMADA .*el deck no es final/.test(a)));
 });
+
+// ---------- ronda 3: hueco declarado a propósito ----------
+test('datos: { pendiente, motivo } es un hueco declarado (va en declarados, no en faltan); sin motivo o con valor es error', () => {
+  assert.deepEqual(validarDatos({ PRECIO: { pendiente: true, motivo: 'lo define dirección' } }), []);
+  assert.ok(validarDatos({ PRECIO: { pendiente: true } }).some(e => /dice por qué/.test(e)));
+  assert.ok(validarDatos({ PRECIO: { pendiente: true, motivo: 'x', valor: '$1' } }).some(e => /«valor» y «pendiente»|"valor" y "pendiente"/.test(e)));
+  const r = sustituirDatos({ datos: { PRECIO: { pendiente: true, motivo: 'lo define dirección' } }, laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }, { tipo: 'idea', texto: '{{FALTA}}' }] });
+  assert.equal(r.deck.laminas[0].valor, 'Inversión: [PRECIO]');
+  assert.deepEqual(r.declarados, { PRECIO: { motivo: 'lo define dirección', laminas: [1] } });
+  assert.deepEqual(r.faltan, { FALTA: [2] });
+});

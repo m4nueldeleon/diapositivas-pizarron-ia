@@ -32,7 +32,7 @@ también en vivo.
 
 | Pieza (`"pieza"`) | Duración | Voz escrita | Beats | Láminas | Oferta | Llamado |
 |---|---|---|---|---|---|---|
-| `reel` | 30-60 s | 80-160 palabras | 12-20 | 8-12 | ninguna, sin oscuras | 1: guardar o comentar una palabra |
+| `reel` | 30-60 s | 80-140 palabras | 12-20 | 8-12 | ninguna, sin oscuras | 1: guardar o comentar una palabra |
 | `video` (YouTube) | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | puente suave o ninguna | 1-2 |
 | `vsl` | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | el 25-30% final (GUION §7) | 2 o más |
 | `clase` (en vivo) | 40-60 min | el guion completo en beats, más tramos en vivo con `dur` | 500-900 + tramos | 220-400 | sin oscuras; puente al siguiente paso | al final: comunidad, próxima clase o invitación suave |
@@ -41,6 +41,15 @@ también en vivo.
 | `tutorial` | 3-8 min | 500-1,300 | 60-160 | 25-70 | ninguna | 1 |
 | `vsl-corto` | 3-6 min | 480-970 | 60-125 | 25-55 | desde el 55-60%, 1 objeción antes | 2 |
 | `clase-corta` (taller) | 15-30 min | el guion en beats, más tramos en vivo con `dur` | 200-450 + tramos | 90-200 | sin oscuras; puente al siguiente paso | al final |
+
+La cuenta que usa QA: **duración ≈ palabras ÷ 2.7 + 0.35 × pasos**. 140 palabras en 20 pasos dan ≈ 59 s: por eso
+el reel va hasta 140 palabras (con 160 pasaba de 60 s). Cada paso es un beat de 2-3 s: QA avisa (un solo aviso por
+deck) si 15% o más de los pasos pasan de 5 s o si alguno pasa de 6 s, da error si uno pasa de 8 s (un párrafo con
+la lámina quieta) y guarda en `qa.json → ritmo` la mediana y el p90 (la referencia va a 2.9 s).
+
+`"pieza": "libre"` no tiene rango: apaga las revisiones de arco y de duración por pieza (y el aviso «fuera de
+rango»); si hay `duracion_objetivo`, solo se compara la voz contra ese objetivo. Sirve para un deck con el número
+de láminas fijo o de duración atípica.
 
 `tutorial`, `vsl-corto` y `clase-corta` son arcos propios de piezas cortas, no el arco largo comprimido: un VSL
 de 5 min no puede dejar la oferta para el 25% final, porque no le queda espacio para gancho, problema,
@@ -60,13 +69,27 @@ la voz (y los `dur`) y:
   después del 70%;
 - da **error** si más de 60% son tramos en vivo y las láminas no cubren la mitad de lo que toca, aunque sea
   `en_vivo`: el deck es mayormente tramos sin lámina;
-- avisa si una clase, VSL o webinar termina sin llamado visible o siguiente paso, si una clase o un reel
-  llevan láminas oscuras, o si un VSL o webinar tiene menos de 2 llamados VISIBLES (botón, palabra clave o
-  `llamado: true`; una palabra suelta en la voz no cuenta);
+- avisa si CUALQUIER pieza de la tabla (reel, video, tutorial, propuesta, clase, VSL, webinar) termina sin
+  llamado visible o siguiente paso en sus 3 últimas láminas, si una clase o un reel llevan láminas oscuras, si un
+  reel lleva más de un llamado separado, o si un VSL o webinar tiene menos de 2 llamados VISIBLES. Un llamado
+  visible es un botón, `llamado: true` o un texto que ARRANCA con verbo + objeto: la palabra clave marcada o en
+  MAYÚSCULAS («Comenta ==DOBLE==», «Escríbeme **CITA** por WhatsApp», «Manda INFO al…»), «este/tu + algo»
+  («Guarda este reel», «Agenda tu llamada») o un canal. `llamado: true` queda para lo que no empieza con verbo
+  (una flecha al link). Una palabra suelta en la voz («WhatsApp», «aparta») no cuenta;
+- en `propuesta`, avisa si no hay lámina de inversión (un monto, «inversión» o `{{PRECIO}}`) o si no cierra con
+  el siguiente paso (un llamado, o un `flujo`/`pasos` con «firmas», «agenda», «arrancamos»…); la credibilidad
+  (años, clientes o casos) es un aviso suave y no se le piden capturas;
 - en `vsl`, `vsl-corto` y `webinar`, avisa si no hay ninguna objeción («Objeción #N» o «Razón #N») antes del
   llamado de la oferta, si no hay ninguna prueba real o la única es una maqueta, y si antes de la revelación no
   aparece una cifra de credibilidad (GUION §7).
 - `qa.json → duracion` trae la voz total y, aparte, `laminas` y `camara`.
+- `qa.json → estado`: `borrador` (datos por confirmar) → `con errores` → `bajo-90` → `falta-venta` → `listo`.
+  `falta_para_final` lista lo que le falta a una pieza de venta (prueba real, cifra de credibilidad, objeción antes
+  del llamado, 2º llamado visible, llamado final, inversión). Solo `listo` se entrega como final; `qa.mjs
+  --estricto` sale con 3 si no hay errores pero el estado no es `listo`.
+- Un precio (o cualquier dato) que se deja a propósito para después se DECLARA en `datos`:
+  `"PRECIO": { "pendiente": true, "motivo": "lo define dirección el lunes" }`. Se pinta como hueco `[PRECIO]`,
+  pero cuenta como aviso y deja el deck en borrador (tope de 90), no como error.
 
 ## Las plantillas
 

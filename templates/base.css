@@ -73,6 +73,9 @@ body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: an
    y ~1490 de ancho, que es Figtree a 84 px; las de más de 15 palabras (c_0115, c_0205) van a ~76. */
 .t { font-size: var(--t, 84px); line-height: 1.24; font-weight: 400; letter-spacing: -.012em; max-width: var(--ancho-texto); text-wrap: balance; }
 .t b, .t strong { font-weight: 700; }
+/* Una palabra sin cortes (un link largo) se parte antes que salirse del lienzo. break-word y no anywhere: anywhere
+   cambia el ancho mínimo en flex y grid y encogía diseños que hoy están bien. QA marca el renglón que aun así se sale. */
+.t, .item, .nota, .etiqueta, .burbuja, .tarjeta, .opcion, .b-texto { overflow-wrap: break-word; }
 .t.compacto { --t: 68px; }   /* solo frases de más de 25 palabras: nunca por debajo */
 .t.chico { --t: 76px; }
 .t.medio { --t: 84px; }

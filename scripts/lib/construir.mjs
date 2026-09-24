@@ -146,7 +146,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   const errores = validarDeck(crudo, Object.keys(LAYOUTS));
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
   // {{CLAVE}} → valor de «datos» (o «[CLAVE]», que QA cuenta como pendiente). Luego, listas cerradas.
-  const { deck: conDatos, faltan, propuestos } = sustituirDatos(crudo);
+  const { deck: conDatos, faltan, propuestos, declarados } = sustituirDatos(crudo);
   const { deck, avisos: avisosSaneo, sugerencias } = sanearDeck(conDatos);
   fs.mkdirSync(dirSalida, { recursive: true });
   const formato = FORMATOS[deck.formato || '16:9'] ? deck.formato || '16:9' : '16:9';
@@ -171,8 +171,11 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
     if (l.tipo === 'foco') {
       const prev = armadas[i - 1];
       const op = Number.isFinite(l.opacidad) ? l.opacidad : 0.2;
-      const fondo = prev ? `<div class="escena clon" style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
-      cuerpo = `${fondo}<div class="lienzo" style="z-index:3">${a.interior}</div>`;
+      // data-op-fija: el autor puso la opacidad; runtime.js no la baja aunque la frase no encuentre hueco
+      const fondo = prev ? `<div class="escena clon"${Number.isFinite(l.opacidad) ? ' data-op-fija="1"' : ''} style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
+      // La frase se acomoda en el hueco entre los renglones del fondo más cercano al centro (runtime.js, acomodarFoco);
+      // con `anclar` se respeta tal cual (arriba o al centro)
+      cuerpo = `${fondo}<div class="lienzo foco-frase${a.arriba ? ' arriba' : ''}"${l.anclar ? ' data-anclar="1"' : ''} style="z-index:3">${a.interior}</div>`;
     }
     const tipo = escapar(l.tipo);
     const claseFondo = a.oscura && ['azul', 'negro'].includes(l.fondo) ? ` fondo-${l.fondo}` : '';
@@ -206,5 +209,5 @@ ${secciones.join('\n')}
 <script>${runtime}</script>
 <script>${presentador}</script>
 </body></html>`;
-  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos), faltan, propuestos };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos), faltan, propuestos, declarados };
 }
