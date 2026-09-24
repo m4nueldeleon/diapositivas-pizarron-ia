@@ -176,6 +176,7 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 |---|---|---|
 | voz, narrar, la voz en off, podcast | 🎤 · 🗣️ solo con Apple en lámina clara | 🗣️ en Fluent es una silueta negra pesada (y 1% sobre lámina oscura); 🎙️ en Fluent es gris pálido |
 | grabar la pantalla (del celular) | `📱+🔴` | 🖥️ es un monitor de escritorio: úsalo solo si se habla de la computadora |
+| insignia «grabando» (solo como insignia: `🎥+🔴`, `📱+🔴`) | 🔴 | sola no dice nada (ver «Evita») |
 | tomas, clips de video, stock | 🎞️ | 🎥 es «grabar video». Pálido en Apple (≈45 en claro y en tarjeta): no lo pongas en tarjeta con Apple |
 | música de fondo | 🎵 | no en lámina oscura (26 en Apple, 33 en Fluent); 🔊 se lee «volumen» y en Fluent es gris |
 | borrar, descartar | 🗑️ | en Fluent es gris (32 en claro, 22 en tarjeta): no en tarjeta ni sobre un cuadrante de color; o tacha el elemento |
@@ -222,9 +223,11 @@ Una persona del equipo sin rol (vendedor, integrante) es 👤, y el equipo 🧑�
 | saludo, alto | ✋ |
 
 ## Sí / no
-- ✅ lo que sí, lo que ya está hecho.
-- ❌ lo que no, lo que no necesitas.
-- ⭐ calificación (se ve bien en fila: ⭐⭐⭐⭐⭐).
+| Concepto | Emoji |
+|---|---|
+| lo que sí, lo que ya está hecho | ✅ |
+| lo que no, lo que no necesitas | ❌ |
+| calificación (en fila: ⭐⭐⭐⭐⭐) | ⭐ |
 
 ## Compuestos útiles
 La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**.
@@ -341,9 +344,10 @@ agrégalo también ahí, o dibújalo en `GLIFOS_SVG`.
 
 Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en `scripts/lib/emoji.mjs`:
 - la **medida** (`contraste-emojis.json`, de `node scripts/medir-emojis.mjs`): % del glifo que se distingue
-  del fondo (contraste ≥ 2:1 o saturación ≥ 0.45) sobre blanco, tarjeta gris y lámina oscura. Bajo 15, QA
-  avisa, salvo los revisados a ojo que sí se leen (`VISTOS_OK`: 📈 📉 💡 📩 de Apple). Revisa la base y las
-  insignias. Al agregar emojis al diccionario, vuelve a correr la medida;
+  del fondo (contraste ≥ 2:1, o ΔE ≥ 40 con color propio) sobre blanco y tarjeta gris; sobre la **lámina oscura**
+  solo cuenta el contraste ≥ 3:1 (WCAG 1.4.11): con 2:1 un morado casi negro «se veía». Bajo 15 (bajo **30** en la
+  oscura), QA avisa, salvo los revisados a ojo que sí se leen (`VISTOS_OK`: 📈 📉 💡 📩 de Apple). Revisa la base y
+  las insignias. Al agregar emojis al diccionario, vuelve a correr la medida;
 - la **tabla revisada** (`BAJO_CONTRASTE`), con el sustituto que QA propone.
 
 | Set | Fondo | Se pierden | Usa en su lugar |
@@ -354,7 +358,8 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 | los dos | claro | ☁️ | «en la nube» → 🌐 |
 | los dos | claro | 🤍 🏳️ 🧾 | ❤️ · 🚩 · 💵 |
 | Apple | oscura | 📞 💲 🎥 | ☎️ · 💵 · 📹 (el mismo «grabar video») |
-| Fluent | oscura | 🗣️ | 🎤 |
+| Fluent | oscura | 🗣️ 🎥 | 🎤 · 📹 |
+| los dos | oscura | 🎓 ♟️ 🎵 ➕ (se hunden en el negro: 2-19 con 3:1) | sin sustituto con el mismo concepto: QA avisa «elige otro»; en la oscura va la revelación, no un ícono de concepto |
 | Fluent | blanco, tarjeta | 🔊 🗑️ 🔗 (grises: 22-40, pasan el umbral pero se ven apagados) | música → 🎵 · borrar → tacha el elemento · link → la flecha roja al `boton`, o 🌐 si es «la página» |
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se

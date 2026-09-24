@@ -244,16 +244,27 @@ export function textosCrudos(l) {
   return out;
 }
 export function esVerboConObjeto(texto) {
-  const t = semiPlano(texto).replace(/^[^\p{L}«"]+/u, '');
+  // La marca que cubre la frase entera («__Guarda este reel__», «**Comenta MINUTA**») deja una « antes del verbo y una »
+  // pegada a él: se quitan las dos. El objeto lo siguen resolviendo OBJETO_MARCADO y OBJETO_PALABRA.
+  const t = semiPlano(texto).replace(/^[^\p{L}«"]+/u, '').replace(/^[«"](?=\p{L})/u, '');
   const m = t.toLowerCase().match(VERBO_LLAMADO);
   if (!m) return false;
-  const resto = t.slice(m[0].length);
+  const resto = t.slice(m[0].length).replace(/^[»"]/, '');
   // el objeto va pegado al verbo; los canales también se aceptan con su preposición («por WhatsApp»)
   return OBJETO_MARCADO.test(resto) || OBJETO_PALABRA.test(resto.toLowerCase());
 }
-export const esLlamadoVisible = l => l.llamado === true || l.tipo === 'boton'
+// `llamado: false` gana a todo: un `boton` de demostración («Enviar», «Generar», el «solo das clic» del mecanismo) no es
+// un llamado (LAYOUTS §boton)
+export const esLlamadoVisible = l => l.llamado !== false && (l.llamado === true || l.tipo === 'boton'
   || textosVisibles(l).some(t => IMPERATIVO.test(sinAcentos(t).replace(/^[^a-z0-9"«]+/, '')))
-  || textosCrudos(l).some(esVerboConObjeto);
+  || textosCrudos(l).some(esVerboConObjeto));
+// Botones que cuentan como llamado y no están en las 3 últimas láminas: pueden ser una demostración sin marcar
+export function pistaBotonDemo(deck, solo = null) {
+  const L = deck.laminas, vis = L.map((l, i) => [l, i]).filter(([l]) => l && l.tipo !== 'camara');
+  const finales = new Set(vis.slice(-3).map(([, i]) => i));
+  const b = vis.filter(([l, i]) => l.tipo === 'boton' && l.llamado !== true && !finales.has(i) && (solo === null || solo === i)).map(([, i]) => i + 1);
+  return b.length ? `; si el botón de la lámina ${b.join(', ')} es de una demostración («Enviar», «Generar»), márcalo "llamado": false` : '';
+}
 // Cierre de una clase: más flexible (también en la voz): próxima clase, nos vemos el…, siguiente paso, comunidad
 const LLAMADO_CIERRE = /\b(proxima clase|nos vemos (el|en|la)|te espero|siguiente paso|unete|comunidad|inscribete|registrate|link|liga)\b/;
 const esCierre = l => esLlamadoVisible(l) || LLAMADO_CIERRE.test(sinAcentos([...textosVisibles(l), vozDe(l)].join(' ')));
@@ -302,7 +313,7 @@ export function reglasArco(deck) {
     const taller = p === 'tutorial' && !esClase(deck) ? '; si es un taller o clase express que cierra con una tarea, marca "clase": true y pon el puente (próxima clase o comunidad)' : '';
     avisos.push(`el deck (${p}) termina sin llamado visible ni siguiente paso: cierra con ${que} a la vista, no solo en la voz${taller} (ARCOS.md)`);
   }
-  if (p === 'reel' && llamadosVisibles(deck) > 1) avisos.push(`el reel lleva ${llamadosVisibles(deck)} llamados visibles separados: un reel lleva 1 (guardar o comentar), al final (ARCOS.md)`);
+  if (p === 'reel' && llamadosVisibles(deck) > 1) avisos.push(`el reel lleva ${llamadosVisibles(deck)} llamados visibles separados: un reel lleva 1 (guardar o comentar), al final${pistaBotonDemo(deck)} (ARCOS.md)`);
   if (p === 'propuesta' && !hayInversion(deck)) avisos.push('la propuesta no tiene lámina de inversión: pon el monto (o {{PRECIO}} si aún no está) en una `cifra` o `idea` antes del siguiente paso (ARCOS.md, propuesta)');
   if (['clase', 'clase-corta', 'reel'].includes(p)) {
     const osc = L.map((l, i) => (l.tipo === 'oscura' || l.oscura ? i + 1 : 0)).filter(Boolean);
@@ -316,13 +327,13 @@ export function reglasArco(deck) {
     if (!hayObjecionAntes(deck)) avisos.push(`ninguna objeción antes del llamado: agrega ${p === 'vsl-corto' ? '1 lámina' : '1-2 láminas'} \`idea\` con encabezado «Objeción #N» o «Razón #N» (emoji negado, la objeción en negrita) y la respuesta con un dato o un paso en la siguiente; salen del público real, no se inventan (ARCOS.md, GUION §7)`);
     // Un solo canal por pieza [43:36, 44:31: los dos llamados son «aplicar»]: botón/link o palabra clave por mensaje
     const canales = canalesDeLlamado(deck);
-    if (canales.boton.length && canales.palabra.length) avisos.push(`los llamados mezclan dos acciones: botón o link (${canales.boton.map(i => `lámina ${i + 1}`).join(', ')}) y palabra clave por mensaje (${canales.palabra.map(i => `lámina ${i + 1}`).join(', ')}): una sola acción por pieza, la misma en todos los llamados (GUION §7)`);
+    if (canales.boton.length && canales.palabra.length) avisos.push(`los llamados mezclan dos acciones: botón o link (${canales.boton.map(i => `lámina ${i + 1}`).join(', ')}) y palabra clave por mensaje (${canales.palabra.map(i => `lámina ${i + 1}`).join(', ')}): una sola acción por pieza, la misma en todos los llamados${pistaBotonDemo(deck)} (GUION §7)`);
   }
   // VSL: nada de «aplica» antes de decir qué se vende [la referencia: revelación 36:16, primer botón 43:36]. El webinar
   // puede llevar un llamado temprano (GUION §7).
   if (['vsl', 'vsl-corto'].includes(p)) {
     const k = llamadoAntesDeRevelar(deck);
-    if (k >= 0) avisos.push(`${nombre(deck, k)} pide actuar antes de decir qué se vende: en un(a) ${p} el llamado va después de la revelación (la lámina oscura) y otra vez al final; mueve este llamado detrás de la revelación y deja antes la objeción con su respuesta (GUION §7)`);
+    if (k >= 0) avisos.push(`${nombre(deck, k)} pide actuar antes de decir qué se vende: en un(a) ${p} el llamado va después de la revelación (la lámina oscura) y otra vez al final; mueve este llamado detrás de la revelación y deja antes la objeción con su respuesta${pistaBotonDemo(deck, k)} (GUION §7)`);
   }
   return { errores: [], avisos };
 }
@@ -747,13 +758,25 @@ export function reglasAfirmacionPropia(deck) {
 // «Johansson y Hall, revista Science (2005)» en `nota` sale en Caveat de 60 px; la misma función en otra lámina salía
 // en la `fuente` gris de 40: dos jerarquías para lo mismo. En los diseños que aceptan `fuente`, una nota con forma de
 // cita (Autor … (año)) avisa. La atribución a mano sin año («Antonio Damasio, neurocientífico») sigue siendo nota.
-export const CON_FUENTE = new Set(['idea', 'flujo', 'grafica', 'cifra', 'cita']);
+export const CON_FUENTE = new Set(['idea', 'flujo', 'grafica', 'cifra', 'cita', 'rejilla', 'tabla', 'tarjetas', 'linea-tiempo']);
 export const RE_CITA = /[A-ZÁÉÍÓÚÑ][\p{L}'-]+(\s+(y|e|&)\s+[A-ZÁÉÍÓÚÑ][\p{L}'-]+|\s+et al\.)?.*\((1[89]|20)\d\d\)/u;
-export function reglasFuente(deck) {
+// `rejilla`, `tabla`, `tarjetas` y `linea-tiempo` también llevan `fuente` (r5): el gancho con un dato publicado la trae en la
+// misma lámina, porque la primera vista es muda (GUION §6.1)
+export function reglasFuente(deck, { crudo } = {}) {
   const avisos = [];
-  deck.laminas.forEach((l, i) => {
+  const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
+  L.forEach((l, i) => {
     if (!CON_FUENTE.has(l.tipo) || typeof l.nota !== 'string' || !RE_CITA.test(plano(l.nota))) return;
     avisos.push(`${nombre(deck, i)}: la nota «${plano(l.nota).slice(0, 50)}» parece una cita: ponla en "fuente" (un solo estilo: Autor, obra (año); sans gris al pie)`);
+  });
+  // Una rejilla que AFIRMA una proporción («54 de 100 no lo terminaron», puntos con destacados) sin fuente: ¿dato
+  // publicado? Una pregunta («¿El 99%…?») o un ejemplo dicho como tal («Imagina 100…», «Pongamos…») no afirman nada.
+  L.forEach((l, i) => {
+    if (!l || l.tipo !== 'rejilla' || l.multitud === true || conTexto(l.fuente) || /\{\{/.test(JSON.stringify(C[i] || {}))) return;
+    const txt = sinAcentos(plano([l.encabezado, l.texto, l.anotacion].filter(x => typeof x === 'string').join(' / ')));
+    const proporcion = (l.punto && Array.isArray(l.destacar) && l.destacar.length) || /\b\d+\s+de\s+(cada\s+)?\d+\b|\d\s*%/.test(txt);
+    if (!proporcion || /[¿?]|\b(imagina|pongamos|supongamos|digamos|si)\b/.test(txt)) return;
+    avisos.push(`${nombre(deck, i)}: ¿dato publicado? dale "fuente" (Autor, obra (año)) en la misma lámina; si es un ejemplo, dilo en el encabezado («Imagina 100…», «Pongamos…») (GUION §6.1)`);
   });
   return { errores: [], avisos };
 }
@@ -790,26 +813,34 @@ export function infoFirma(crudo, { aplicada = null, rutaGlobal = '~/.config/diap
 // TOPE_BORRADOR: un VSL con el nombre del programa inventado nunca sale como final. Los huecos declarados no restan
 // (qa.mjs no los pasa en `avisos`): ya los representa el tope; restarlos premiaba borrar el caso o la prueba.
 export const TOPE_BORRADOR = 90;
+// La nota SIN el tope del borrador: distingue un borrador limpio (100) de uno con 3 avisos (91), que el tope iguala en 90.
+export const notaSinTope = ({ errores = [], avisos = [] } = {}) => Math.max(0, 100 - 12 * errores.length - 3 * avisos.length);
 export function notaQA({ errores = [], avisos = [], porConfirmar = {} } = {}) {
-  const n = Math.max(0, 100 - 12 * errores.length - 3 * avisos.length);
+  const n = notaSinTope({ errores, avisos });
   return Object.keys(porConfirmar).length ? Math.min(n, TOPE_BORRADOR) : n;
+}
+// Estado, en orden: con errores → borrador → bajo-90 → falta-venta → listo. Los errores mandan aunque haya datos por
+// confirmar: un hueco declarado no puede esconder una marca rota o una firma de relleno a quien lee solo `estado`.
+export function estadoQA({ errores = [], borrador = false, nota = 100, falta = [], notaFinal = 90 } = {}) {
+  return errores.length ? 'con errores' : borrador ? 'borrador' : nota < notaFinal ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
 }
 
 // Todas juntas
 // `crudo`: el deck antes de sustituir `datos` (qa.mjs lo pasa); dice si un número vino de un {{MARCADOR}}
 export function revisarDeck(deck, pasos, { dirDeck, crudo, marca } = {}) {
   const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck), tasa = reglasTasa(deck, { crudo }), promesa = reglasPromesa(deck);
+  const cierre = cierreDeClase(deck, { crudo });
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck, marca)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
-    reglasClaves(deck), reglasFuente(deck), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
-    reglasDemostracion(deck), tasa, promesa, cierreDeClase(deck, { crudo })];
+    reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
+    reglasDemostracion(deck), tasa, promesa, cierre];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
     duracion: partes[1].estimado,
     iconos: inventarioIconos(deck),
     ritmo: ritmo.ritmo,
-    porConfirmar: { ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
+    porConfirmar: { ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
       motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
     faltaParaFinal: faltaParaFinal(deck),
     prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,

@@ -19,7 +19,8 @@ export function filasConcepto(md) {
     const compuestos = /^Compuestos/.test(seccion);
     bloque.split('\n').filter(l => /^\|/.test(l) && !/^\|\s*-/.test(l)).slice(1).forEach(l => {
       const celdas = l.split('|').slice(1, -1).map(c => c.trim());
-      const [conc, col] = compuestos ? [celdas[1], celdas[0]] : [celdas[0], celdas[1]];
+      // En Compuestos, la Lectura trae notas tras «;» («“No tengo tiempo” (objeción); “rápido…” es ⚡»): el concepto es lo de antes
+      const [conc, col] = compuestos ? [celdas[1].split(';')[0].trim(), celdas[0]] : [celdas[0], celdas[1]];
       if (!col) return;
       const limpia = col.replace(/\([^)]*\)/g, ' ').replace(/\[[^\]]*\]/g, ' ');
       const specs = limpia.split(/\s+·\s+|\s+o\s+/).map(p => p.replace(/`/g, '').trim()).map(p => p.match(TOKEN)).filter(Boolean)
@@ -35,7 +36,7 @@ function cargar() {
   if (indice) return indice;
   indice = new Map();
   try {
-    filasConcepto(fs.readFileSync(RUTA, 'utf8')).forEach(f => f.specs.forEach(sp => { if (!indice.has(sp)) indice.set(sp, f.concepto.replace(/\*\*/g, '').trim()); }));
+    filasConcepto(fs.readFileSync(RUTA, 'utf8')).forEach(f => f.specs.forEach(sp => { if (!indice.has(sp)) indice.set(sp, f.concepto.replace(/\*\*|`/g, '').trim()); }));
   } catch { /* sin diccionario: todo sale «fuera del diccionario» */ }
   return indice;
 }
@@ -45,5 +46,8 @@ export function conceptoDe(spec) {
   if (!s) return null;
   if (m.has(s)) return m.get(s);
   const base = s.replace(/^(no|si):/, '').split('+')[0];
-  return m.get(base) || null;
+  if (m.has(base)) return m.get(base);
+  // Personas con tono de piel (🧑🏻‍💼): el diccionario las guarda sin tono
+  const sinTono = s.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
+  return sinTono !== s ? conceptoDe(sinTono) : null;
 }

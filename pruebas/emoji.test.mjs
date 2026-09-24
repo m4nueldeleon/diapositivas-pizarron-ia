@@ -157,3 +157,23 @@ test('📄 y 📃 se dibujan en SVG (hoja con renglones): ya no se sustituyen po
   assert.match(html, /<svg[^>]*>.*url\(#pz-doblez\)/);
   assert.ok(!/stroke="#39414f"/.test(html), 'sin el contorno negro de clip-art');
 });
+
+test('r5: sobre la oscura solo cuenta ≥ 3:1 (umbral 30): los que se hunden salen bajo 30 y los que se ven, sobre 30', async () => {
+  const { puntuarGlifo } = await import('../scripts/lib/contraste-color.mjs');
+  const { contrasteMedido, bajoContraste, UMBRAL_OSCURA } = await import('../scripts/lib/emoji.mjs');
+  // un píxel morado casi negro (#2a2040) sobre la oscura: con 2:1 contaba como visible; con 3:1 no
+  assert.equal(puntuarGlifo(new Uint8ClampedArray([0x2a, 0x20, 0x40, 255]), [11, 11, 14]), 0);
+  // sobre blanco la métrica no cambia: un gris medio sigue contando
+  assert.equal(puntuarGlifo(new Uint8ClampedArray([110, 110, 110, 255]), [255, 255, 255]), 100);
+  assert.equal(UMBRAL_OSCURA, 30);
+  const t = contrasteMedido();
+  const o = (set, e) => t[set].oscura[e.replace(/️/g, '')];
+  for (const [set, e] of [['apple', '📞'], ['apple', '💲'], ['fluent', '🎓'], ['fluent', '♟'], ['fluent', '🎵'], ['fluent', '🗣'], ['apple', '✔'], ['apple', '➕']]) assert.ok(o(set, e) < 30, `${set} ${e} ${o(set, e)}`);
+  for (const e of ['☎', '📹', '💵', '🚀', '💰']) for (const set of ['apple', 'fluent']) assert.ok(o(set, e) > 30, `${set} ${e} ${o(set, e)}`);
+  assert.ok(o('fluent', '🎤') > 30);
+  // QA propone algo para cada uno en la oscura (sustituto o «elige otro»)
+  assert.equal(bajoContraste('✔', 'apple', 'oscura'), '', '✔ se dibuja en SVG: no sale del set');
+  assert.equal(bajoContraste('🎥', 'fluent', 'oscura'), '📹');
+  assert.ok(bajoContraste('🎓', 'fluent', 'oscura'));
+  assert.equal(bajoContraste('💰', 'fluent', 'oscura'), '');
+});

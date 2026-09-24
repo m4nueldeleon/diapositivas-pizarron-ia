@@ -10,6 +10,7 @@ import { analizarCompuesto, esEmojiTexto, specsDeCampo, esMano } from './emoji.m
 import { palabras, plano } from './markup.mjs';
 import { validarDatos } from './datos.mjs';
 import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
+import { etiquetasBarras } from './layouts-datos.mjs';
 
 const REQUERIDOS = {
   idea: ['texto|emoji'], lista: ['items'], flujo: ['nodos'], pasos: [], bifurcacion: ['origen', 'ramas'],
@@ -28,7 +29,7 @@ export const COMUNES = ['id', 'tipo', 'como', 'voz', 'dur', 'ancla', 'anclas', '
   'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar',
   // `llamado: true` marca una lámina como llamado visible (reglas-deck.mjs); `paso_ref` elige el paso que
   // comparar.mjs mide contra el cuadro del video (réplica)
-  'llamado', 'paso_ref',
+  'llamado', 'paso_ref', 'ms_ref',
   // `anotaciones`: nota a mano con gancho (o flecha que entra desde el borde) hacia un ancla de CUALQUIER diseño
   'anotaciones'];
 export const CAMPOS = {
@@ -43,21 +44,21 @@ export const CAMPOS = {
   cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'fuente_paso', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
   cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
   objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'emoji_tam', 'encabezado', 'nota', 'nota_paso'],
+  tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'emoji_tam', 'encabezado', 'nota', 'nota_paso', 'fuente', 'fuente_paso'],
   oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cuadrantes: ['items', 'columnas'],
-  tabla: ['columnas', 'filas', 'vacias', 'fijas', 'esquina', 'ancho_etiqueta', 'converger'],
+  tabla: ['columnas', 'filas', 'vacias', 'fijas', 'esquina', 'ancho_etiqueta', 'converger', 'fuente', 'fuente_paso'],
   grafica: ['grafica', 'series', 'barras', 'banda', 'banda_paso', 'eje_x', 'eje_y', 'titulo', 'subtitulo', 'texto', 'texto_paso', 'nota', 'nota_paso',
     'fuente', 'fuente_paso'],
-  'linea-tiempo': ['marcas', 'tramos', 'texto', 'texto_paso', 'nota', 'nota_paso'],
+  'linea-tiempo': ['marcas', 'tramos', 'texto', 'texto_paso', 'nota', 'nota_paso', 'fuente', 'fuente_paso'],
   medidor: ['valor', 'tono', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   opciones: ['items', 'elegida', 'texto', 'texto_paso', 'texto_pos'],
   rejilla: ['total', 'aspecto', 'columnas', 'ancho', 'alto', 'destacar', 'emoji', 'punto', 'emoji_destacado', 'apagar_resto', 'tono',
     'tono_destacado', 'anotacion', 'anotacion_paso', 'etiqueta_destacado', 'flecha_etiqueta', 'destacado_paso', 'emoji_etiqueta', 'encabezado', 'encabezado_estilo',
     'multitud', 'nota_destacado', 'nota_destacado_paso',
-    'texto', 'texto_paso'],
+    'texto', 'texto_paso', 'fuente', 'fuente_paso'],
   prueba: ['capturas', 'encabezado', 'encabezado_estilo', 'texto', 'texto_paso'],
-  chat: ['mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro'],
+  chat: ['mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro', 'avatar_tam'],
   reparto: ['total', 'partes', 'separacion', 'titulo'],
   calendario: ['fases', 'fase_activa', 'color', 'dias', 'n', 'columnas', 'palabra_dia', 'anotaciones', 'titulo', 'rango'],
   boton: ['boton', 'emoji', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
@@ -221,6 +222,26 @@ function revisarCalendario(l, n, e) {
   }
 }
 
+// Índices que apuntan fuera de lo que se dibuja: un `pasos` con `activo: 9` y 3 teclas salía todo gris y QA daba 100.
+// `activo` y `hechos` cuentan desde 1; `destacar` (rejilla) y `elegida` (opciones) desde 0.
+function revisarRangos(l, n, e) {
+  if (l.tipo === 'pasos') {
+    const N = Number(l.n) || (Array.isArray(l.iconos) ? l.iconos.length : 3);
+    if (Number.isFinite(Number(l.activo)) && Number(l.activo) > N) e.push(`${n} (pasos): activo ${l.activo} y hay ${N} pasos (se cuentan desde 1)`);
+    (Array.isArray(l.hechos) ? l.hechos : []).forEach(h => { if (typeof h === 'number' && (h < 1 || h > N)) e.push(`${n} (pasos): hechos incluye ${h} y hay ${N} pasos (se cuentan desde 1: 1..${N})`); });
+  }
+  if (l.tipo === 'rejilla' && Array.isArray(l.destacar)) {
+    const multitud = l.multitud === true;
+    if (!multitud || l.total != null) {
+      const total = Math.min(Number(l.total) || 100, 1200);
+      l.destacar.forEach(d => { if (typeof d === 'number' && d >= total) e.push(`${n} (rejilla): destacar ${d} y la rejilla tiene ${total} celdas (se cuentan desde 0: 0..${total - 1})`); });
+    }
+  }
+  if (l.tipo === 'opciones' && Array.isArray(l.items) && typeof l.elegida === 'number' && (l.elegida >= l.items.length || l.elegida < 0)) {
+    e.push(`${n} (opciones): elegida ${l.elegida} y hay ${l.items.length} opciones (se cuentan desde 0: 0..${l.items.length - 1})`);
+  }
+}
+
 // Flujo: signos de la lista cerrada y retornos que apuntan a nodos que existen (o al nodo aparte, si lo hay)
 function revisarFlujo(l, n, e) {
   const N = Array.isArray(l.nodos) ? l.nodos.length : 0;
@@ -296,6 +317,7 @@ export function validarDeck(deck, tipos) {
     if (l.tipo === 'flujo') revisarFlujo(l, n, e);
     if (l.tipo === 'bifurcacion' && l.origen != null && (typeof l.origen !== 'object' || Array.isArray(l.origen))) e.push(`${n}: «origen» debe ser un objeto { emoji, texto }`);
     if (l.tipo === 'calendario') revisarCalendario(l, n, e);
+    revisarRangos(l, n, e);
     if (l.tipo === 'camara' && l.vivo != null && typeof l.vivo !== 'boolean') e.push(`${n} (camara): «vivo» es true o false`);
     if (l.tipo === 'camara' && l.items != null && !(Array.isArray(l.items) && l.items.every(x => typeof x === 'string' || (x && typeof x === 'object' && typeof x.texto === 'string')))) e.push(`${n} (camara): «items» es una lista de textos (los pasos de la consigna)`);
     revisarEmojis(l, n, e, []);
@@ -325,6 +347,7 @@ const NUMEROS = {
   opacidad: [0, 1], ancho_etiqueta: [0.05, 0.5], elegida: [0, 20, 1], activo: [0, 20, 1], clic: [0, 20, 1], n: [1, 12, 1],
   fase_activa: [0, 20, 1], desde: [0, 1e9], hasta: [0, 1e9], dia: [1, 400, 1], pos: [0, 1], emoji_tam: [16, 700],
   apagar_emoji: [0, 1, 1], peso: [300, 900, 1], paso_ref: [-1, 200, 1], max: [1, 10, 1], estrellas: [0, 10, 1],
+  avatar_tam: [80, 160, 1], ms_ref: [0, 20000, 1],
 };
 // Rangos que dependen del diseño: `n` son pasos (≤ 12) en `pasos` y días (≤ 42, seis semanas) en `calendario`
 const NUMEROS_TIPO = { calendario: { n: [1, 42, 1] }, stack: { alto: [1, 2, 1] } };
@@ -408,10 +431,15 @@ function normalizar(l) {
 export function sugerenciasDiseno(l, i, formato = '16:9') {
   const out = [], n = `lámina ${i + 1} (${l.id || l.tipo})`;
   if (l.tipo === 'stack' && Array.isArray(l.items)) {
-    const sangre = formato === '16:9' && l.sangre !== false;
+    const sangre = ['16:9', '9:16'].includes(formato) && l.sangre !== false;
     if (sangre && l.encabezado) out.push(`${n}: el stack va a sangre y no dibuja «encabezado»; ponlo en la lámina anterior o usa "sangre": false`);
+    if (!sangre && l.items.some(it => it && it.alto === 2)) out.push(`${n}: «alto: 2» solo cuenta en el stack a sangre (16:9 y 9:16); en la pila se ignora`);
     l.items.forEach((it, j) => { const t = typeof it === 'string' ? it : it && it.texto; if (palabras(t) > 5) out.push(`${n}: items[${j}] «${String(t).slice(0, 30)}» tiene ${palabras(t)} palabras: es una tarjeta de producto, no un renglón (≤ 5, un sustantivo corto)`); });
     if (l.items.length > 8) out.push(`${n}: ${l.items.length} piezas en el stack; más de 8 ya no se leen como «mira todo lo que te llevas»: agrupa`);
+  }
+  if (l.tipo === 'grafica' && l.grafica === 'barras' && Array.isArray(l.barras)) {
+    const e = etiquetasBarras(l.barras.map(b => (b && typeof b === 'object' ? b.etiqueta : '') || ''), ['9:16', '4:5'].includes(formato));
+    e.noCaben.forEach(t => out.push(`${n}: la etiqueta de barra «${t}» no cabe en su columna (${e.colW} px) ni en 2 renglones: acórtala a 1-3 palabras o usa menos barras`));
   }
   if (l.tipo === 'camara' && l.vivo === true) {
     const d = Array.isArray(l.dur) ? l.dur.reduce((a, b) => a + (Number(b) || 0), 0) : Number(l.dur) || 0;

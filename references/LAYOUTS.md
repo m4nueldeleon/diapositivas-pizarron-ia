@@ -71,9 +71,13 @@ ese diseño.
   al link). QA solo cuenta como llamado un `boton`, una lámina con `llamado: true` o un texto a la vista que
   ARRANCA con un imperativo con objeto («Agenda tu diagnóstico», «Escribe «CITA»», «Entra a…»); una palabra
   suelta en la voz («WhatsApp», «aparta») no cuenta. En `vsl` y `webinar` pide 2 llamados visibles (láminas
-  contiguas, como el botón y su «Después del clic», cuentan como uno).
+  contiguas, como el botón y su «Después del clic», cuentan como uno). La frase entera marcada también cuenta
+  («__Guarda este reel__», «**Comenta MINUTA**»).
+- `llamado: false`: la lámina NO es un llamado aunque sea un `boton` o empiece con un verbo: es para el botón de una
+  demostración («Enviar», «Generar»; ver `boton`).
 - `paso_ref`: solo para la réplica (`scripts/comparar.mjs`): el paso de la lámina que se ve en el cuadro del
-  video, desde 0 (`-1` = el último).
+  video, desde 0 (`-1` = el último). `ms_ref` (ms) captura ese paso en ese instante de su animación, no en su estado
+  final (la mano ya en la tecla 1, antes de arrastrar [ref_115]: `"paso_ref": 0, "ms_ref": 900`).
 - `anclas`: frases que disparan cada paso en el montaje.
 
 ---
@@ -129,10 +133,13 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   la derecha. `alinear: "centro"` lo fuerza en cualquier lista; `alinear: "izquierda"` lo quita. Las listas
   con encabezado («Sin:», razones) siguen a la izquierda y arriba [1:35, 3:30].
 
-### Fuente de un dato o un estudio (`idea`, `flujo`, `grafica`, `cifra`, `cita`)
+### Fuente de un dato o un estudio (`idea`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
 `"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
 40 px (36 en 9:16), sin cursiva: **un solo estilo** para citar, «Autor, obra (año)». Aparece con el dato (el paso
-del texto, del último nodo o de la última línea de la cifra); `fuente_paso` la mueve. No cites con `nota`: la nota
+del texto, del último nodo o de la última línea de la cifra; en `rejilla`, con el destacado; en `tabla`, `tarjetas` y
+`linea-tiempo`, con su último paso); `fuente_paso` la mueve. Un gancho con un dato publicado lleva su `fuente` en la
+MISMA lámina (la primera vista es muda): QA avisa una `rejilla` que afirma una proporción («54 de 100», puntos
+destacados) sin `fuente` ni `{{…}}`; una pregunta o un ejemplo dicho como tal («Imagina 100…») no cuentan. No cites con `nota`: la nota
 es Caveat de 60 px y la misma función sale con otra jerarquía; QA avisa cuando una nota tiene forma de cita
 (Autor … (año)). La atribución a mano de una `cita` («Antonio Damasio, neurocientífico») sí va en `nota`.
 
@@ -293,13 +300,14 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   business» cabe en UN renglón, como en el video. La ruta punteada se dibuja por omisión.
 - `sobre: "✋"` pone un emoji arriba de cada tecla. `clic: 2` hace que el cursor presione la
   tecla 2. `ruta: false` quita la ruta punteada.
-- **Arrastre** [1:55]: con `clic` y ruta, la mano presiona la tecla y ARRASTRA la ruta punteada hasta la
-  última tecla: los tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada
-  uno, al terminar la onda), con la mano cerrada y gris en la punta del trazo; al final queda la mano de
+- **Arrastre** [1:55, ráfaga d_123]: con `clic` y ruta, la mano entra en el MISMO corte que las teclas (~100 ms
+  después, ya junto a la tecla), aprieta la tecla, se queda ~1.4 s sobre ella y luego ARRASTRA la ruta punteada hasta
+  la última tecla: los tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada uno,
+  desde los 1500 ms), con la mano cerrada y gris en la punta del trazo; al final queda la mano de
   dedo sobre la última tecla (así sale en el PNG). Los tramos anteriores a la tecla del clic se ven desde
   el paso 0. `arrastre: false` lo apaga: ruta completa desde el paso 0 y la mano quieta en su tecla.
-- Por omisión teclas, texto y nota entran en un solo corte, como en la referencia [1:55]; el cursor
-  llega en el paso siguiente. Con `revelar: "pasos"` cada tecla entra en su propio paso, la ruta se
+- Por omisión teclas, texto, nota y la mano entran en un solo corte, como en la referencia [1:55]: la `voz` lleva UN
+  texto. `clic_paso: 1` separa la mano en un segundo paso. Con `revelar: "pasos"` cada tecla entra en su propio paso, la ruta se
   dibuja tramo por tramo y el texto llega al final (sin `activo` ni `hechos`).
 - `texto_paso`, `nota_paso` y `clic_paso` mueven el texto, la nota y el clic.
 
@@ -409,6 +417,9 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 - `forma` de cada serie: `recta`, `exponencial`, `curva`, `plana`, `s` o `baja`.
 - Una serie con `puntos: true` lleva puntos sobre la línea.
 - Las barras se definen así: `"barras": [{ "etiqueta": "Sueldo", "valor": 45, "tono": "a" }, { "etiqueta": "Producto", "valor": 100, "tono": "v", "emoji": "💰" }]`.
+- La `etiqueta` ideal de una barra es de 1 a 3 palabras. Si no cabe en su columna, el motor la parte en **2 renglones
+  como máximo** (a 50 px, o a 44), con la misma letra en todas las etiquetas y el eje un renglón más arriba; si ni así
+  cabe, QA avisa que se acorte. Dos etiquetas a menos de 32 px en la misma banda se leen como una sola frase (aviso).
 - `valor_texto`: la cifra sobre la barra («50%», «$9,000»), en negrita y del color de la barra. `emoji`
   va encima de la barra (140 px). Con los dos, de abajo hacia arriba: barra, cifra, emoji; la altura que
   ocupan se reserva UNA vez para toda la gráfica (~240 px con los dos, ~180 solo con emoji), así que las
@@ -465,6 +476,7 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   ```json
   { "tipo": "rejilla", "punto": true, "total": 100, "columnas": 20, "destacar": [99], "texto": "¿El **99%**?" }
   ```
+  Con un dato publicado, `"fuente": "Autor, obra (año)"` sale al pie con el destacado (no en `multitud`).
 - **«Tú» en la multitud** (`multitud: true`), dos láminas [14:55, 15:05]. El protagonista **nunca** va dentro de
   la multitud: rótulo en negrita arriba y su emoji (~170 px) debajo, aparte y sin flecha. La multitud es enorme:
   siluetas de ~190 px (150 en 9:16) en filas escalonadas medio paso que arrancan a ~44% del alto y se salen por los
@@ -548,7 +560,12 @@ fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las es
   aparte en regular. Nunca los unas con «·» (ni «|», «-», «—») dentro de `nombre`: es error de contrato.
 - **Grande** [ref_1760]: en 16:9, sin anotaciones y con ≤ 15 días (3 filas de 5), la tarjeta usa casi todo el alto
   (margen de 40 px), mide ~1250 de ancho, la barra ~160 con el nombre a ~64 px y las celdas son cuadradas (~228)
-  con 10 px de separación. Con notas al margen, en 9:16 o con más días, el calendario normal de 1400.
+  con 10 px de separación. Con notas al margen o con más días, el calendario normal de 1400.
+- **9:16**: la tarjeta usa casi todo el ancho (1000; 960 con nota) y los días van en **3-4 columnas**, no en 5: 4 (celdas
+  casi cuadradas, ≥ 210 px) si el `sub` más largo cabe a 30 px; si no, 3. El `sub` no baja de 30 px (28 reales tras la
+  escala) y nunca se parte ni invade la celda vecina (si no cabe, QA lo marca recortado). La nota va ENCIMA de la
+  tarjeta, 30 px sobre ella y de su lado (el `arriba` de 16:9 no aplica), y su flecha baja por el margen de fuera y
+  entra a la celda por el COSTADO: nunca cruza la barra de la fase.
 - El `sub` de cada día va a 32 px (28 en un calendario angosto); «DÍA» es un rótulo decorativo (~28 px,
   como en el video).
 - Anotaciones: `tam` en px (56 por omisión, medido en m_1740) y `arriba` en px o en porcentaje
@@ -566,7 +583,11 @@ Un texto entre corchetes dentro de una burbuja sale con resaltador amarillo, com
 en la azul y en la gris: sirve para plantillas de mensaje (escríbelos sobre todo en los mensajes «yo»). En minúsculas es plantilla; en MAYÚSCULAS (`[PRECIO]`) es un dato pendiente y QA lo
 marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{ "texto": … }`.
 - Avatar: silueta por omisión. `avatar_yo` / `avatar_otro` (o `avatar` en un mensaje) con un emoji la
-  cambian, por ejemplo `"avatar_otro": "🤖"` para la IA; `false` la quita.
+  cambian, por ejemplo `"avatar_otro": "🤖"` para la IA; `false` la quita. El emoji llena ~85% de su círculo
+  gris, como la silueta del original [17:45, 19:00].
+- `avatar_tam` (80-160): diámetro en px de los DOS avatares a la vez (por omisión 126 en 16:9 y 96 en 9:16; el emoji
+  llena ~85%). No pases del alto de una burbuja de una línea (≤ ~130 px en 9:16) ni agrandes solo el de la IA: los dos
+  avatares quedarían desparejos y las burbujas perderían ancho.
 - `tam_texto` (px) cambia la letra de las burbujas (54 en 16:9, 58 en 9:16).
 - `hora` por mensaje: un separador gris centrado sobre la burbuja, en el mismo paso. Un gancho en chat
   tiene que entenderse sin sonido: muestra la hora de los dos extremos y pega el sello a la burbuja culpable.
@@ -611,8 +632,11 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 
 ### `boton` — botón de interfaz y cursor que lo aprieta  ·  [23:15, 38:15]
 ```json
-{ "tipo": "boton", "boton": "Generar", "emoji": "🤖", "texto": "Solo das clic en el **agente correcto**…" }
+{ "tipo": "boton", "boton": "Generar", "emoji": "🤖", "texto": "Solo das clic en el **agente correcto**…", "llamado": false }
 ```
+- **Llamado o demostración.** Un `boton` cuenta como llamado visible por omisión. Si solo demuestra un clic de la
+  herramienta («Enviar», «Generar», el «solo das clic» del mecanismo), ponle `"llamado": false`: QA no lo cuenta como
+  llamado ni avisa «pide actuar antes de decir qué se vende» [23:15: demostración; 43:36: llamado].
 `boton` (el texto del botón) es obligatorio. `cursor` acepta `mano` (por omisión) o `flecha`.
 - **Pasos: 1.** El botón, su `texto` y el cursor que llega y aprieta entran en el paso 0 (`clic_paso` y `texto_paso`
   valen 0 por omisión): la `voz` lleva UN texto. `clic_paso: 1` separa el clic en un segundo paso.
@@ -642,7 +666,11 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
   real de la pieza). `tono` (`v`, `r`, `n`) da la tarjeta pastel con letra negra.
 - `columnas`: 3 (4 con 7 piezas o más); las filas se calculan. Sin rótulo: el `encabezado` no se dibuja a
   sangre (QA avisa); si hace falta, va en la lámina anterior.
-- `sangre: false` (y el 9:16) usa la pila de casillas grises con el rótulo, el remate y el `total` debajo.
+- **9:16** también va a sangre: 2 columnas (`columnas` no pasa de 2), entre la firma de arriba (y ≈ 290) y la zona de
+  Reels (abajo 320), con 18 px a los lados. Con 7 piezas y una doble salen ~514 × 315 px por pieza.
+- `sangre: false` (o 1:1 y 4:5) usa la pila de casillas con el rótulo, el remate y el `total` debajo. La pila también
+  pinta el `sub` (píldora) y el `color` de la pieza, y el ícono va en una columna fija para que los íconos de una
+  columna queden alineados. `alto: 2` solo cuenta a sangre (QA avisa en la pila).
 - `remate_paso` y `nota_paso` mueven el cierre.
 - **Bonos** (solo si la oferta los tiene, GUION §7 beat 7b): van AL FINAL del stack, después de las piezas base, cada
   uno con `sub: "Bono #N"` (la píldora) y su nombre desde `datos`:
@@ -675,16 +703,17 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
 - `nota`: con `texto`, va debajo, más chica y a mano, en el mismo corte (`nota_paso` la mueve). Sin
   `texto`, la `nota` es la frase principal.
 - No puede ir como primera lámina.
-- El fondo atenuado repite el contenido y las flechas de la lámina anterior, pero no su sello ni
-  su cursor.
+- El fondo atenuado es el ESTADO FINAL de la lámina anterior: su contenido, sus flechas, su sello y sus anotaciones
+  (con sus ganchos), en el mismo lugar; no su cursor. La frase del foco busca un hueco que tampoco pise el sello.
+  QA da error si el fondo perdió tinta, el sello o una anotación.
 - Acepta su propio `sello`.
 
 ### `camara` — tramo a cámara (en el montaje se ve tu grabación)
 ```json
 { "tipo": "camara", "voz": "Déjame contarte cómo empecé", "dur": 4 }
 ```
-- En el presentador se proyecta en **negro limpio**; la `nota` («🎥 A cámara») solo sale en los PNG, la
-  hoja y la vista de ensayo. En el montaje (`video.mjs --sobre`) ahí se ve tu grabación.
+- En el presentador se proyecta en **negro limpio**; en la hoja sale como cuadro gris «🎥 cámara» y no genera PNG.
+  En el montaje (`video.mjs --sobre`) ahí se ve tu grabación.
 - **Tramo en vivo de una clase** (actividad, demostración, preguntas): una `camara` con `"vivo": true`.
   ```json
   { "tipo": "camara", "id": "actividad", "vivo": true, "dur": 300,
@@ -699,8 +728,10 @@ letra blanca en mayúsculas. Se lee como «mira todo lo que te llevas», no como
   - `dur`: los segundos del tramo; de ahí sale la cuenta regresiva, que se reinicia al entrar a la lámina, pasa
     a rojo en los últimos 30 s y parpadea en 0:00. Sin `dur`, o con menos de 30 s, QA avisa.
   - En el presentador el público ve la consigna en **blanco** con su emoji y la cuenta regresiva; la vista de
-    ensayo muestra la misma cuenta y la consigna. Los PNG, la hoja y el video no cambian: sigue siendo un
-    tramo a cámara.
+    ensayo muestra la misma cuenta y la consigna. Como el público la ve minutos enteros, sale igual (con el reloj
+    congelado en `dur`) en su PNG (`NN-id-1.png`), en la hoja (rótulo «EN VIVO · m:ss»), en su página de `--pdf` y,
+    sin `--sobre`, en el video. QA la revisa con las mismas reglas: más de 35 palabras (consigna + pasos; el reloj
+    no cuenta), datos pendientes, desbordes, letra y la zona de Reels en 9:16.
   - Cuenta en la duración de la pieza, pero **no sustituye beats** (ARCOS.md).
 - `camara` sin `vivo` queda para los tramos del montaje y los respiros a cámara (~4 s).
 
@@ -746,6 +777,10 @@ cohete, una tarjeta. `anotaciones` vale en cualquier lámina:
   `izquierda`, `arriba`, `abajo`; sin él, a la derecha si cabe), `tono` (`r` rojo por omisión, `v` verde, `n`
   tinta; en lámina oscura el rojo sale claro), `paso` (por omisión, un paso extra al final), `tam` (px) y `x`/`y`
   (px o `%` del lienzo) para fijarla a mano. Sobre una captura la nota va FUERA de ella, a la altura del ancla.
+- La nota va en el blanco junto a lo que señala, nunca encima del contenido. Si el lado pedido no cabe (el borde la
+  empuja más de 20 px), pisa su tarjeta, otro texto o el sello, o deja menos de 80 px para el gancho, el motor prueba
+  derecha, izquierda, abajo y arriba (en ese orden) y usa el primero limpio; si ninguno sirve, baja la letra hasta 44 px y,
+  como último recurso, avisa. QA da error si una nota cae encima de su ancla u otra caja, o si su gancho la tacha.
 - Sin `texto` y con `entra` (`derecha`, `izquierda`, `arriba`, `abajo`): una flecha roja larga que entra desde ese
   borde del lienzo hasta el ancla [15:00].
 - En `calendario`, las anotaciones con `dia` siguen siendo las del calendario (nota al margen del día).
@@ -769,6 +804,7 @@ confunden (una prueba construye cada uno y compara con esta tabla):
 | Diseño | Pasos | Qué entra |
 |---|---|---|
 | `boton` | 1 | el botón, su texto y el clic, todo en el paso 1 (`clic_paso: 1` separa el clic) |
+| `pasos` con `clic` | 1 | teclas, texto, nota y la mano que aprieta y arrastra, todo en el paso 1 (`clic_paso: 1` separa la mano) |
 | `tabla` con 3 columnas (`revelar: "columnas"`) | 4 | paso 1: el marco y los rótulos de fila; luego una columna por paso (N + 1) |
 | `lista` de 3 ítems con `tachar_despues` | 6 | los 3 ítems, uno por paso, y después los 3 tachones, uno por paso (2 × N) |
 | `idea` con `sello` | 2 | el texto (aunque sean 2 renglones) en el paso 1; el sello, un paso extra |

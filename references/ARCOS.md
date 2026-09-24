@@ -105,7 +105,8 @@ la voz (y los `dur`) y:
   llamado de la oferta, si su voz afirma una frecuencia que nadie midió («la de siempre», «la que más oigo»), si no hay ninguna prueba real o la única es una maqueta, y si antes de la revelación no
   aparece una cifra de credibilidad (GUION §7).
 - `qa.json → duracion` trae la voz total y, aparte, `laminas` y `camara`.
-- `qa.json → estado`: `borrador` (datos por confirmar) → `con errores` → `bajo-90` → `falta-venta` → `listo`.
+- `qa.json → estado`: `con errores` → `borrador` (datos por confirmar, sin errores) → `bajo-90` → `falta-venta` → `listo`.
+  Un borrador con errores sale `con errores`; en borrador, `nota_sin_tope` y `listo_salvo_datos` dicen si quedan avisos.
   `falta_para_final` lista lo que le falta a una pieza de venta (prueba real, cifra de credibilidad, objeción antes
   del llamado, 2º llamado visible, llamado final, inversión). Solo `listo` se entrega como final; `qa.mjs
   --estricto` sale con 3 si no hay errores pero el estado no es `listo`.
@@ -149,7 +150,9 @@ Minutos por bloque. Cada bloque abre, si toca, con el mapa 1-2-3 (`pasos` con `a
 3. **Tres bloques** de 10-15 min. Cada uno abre con el mapa, explica en beats, hace una demostración
    en vivo (`camara` con `vivo: true` y `dur`) y regresa al mapa.
 4. **Tarea**: qué hacer hoy, con objeto (qué mandar, a quién).
-5. **Puente al siguiente paso**: la comunidad, la próxima clase o una invitación suave. Sin láminas oscuras.
+5. **Puente al siguiente paso**: la comunidad, la próxima clase o una invitación suave, con su dato a la vista:
+   CUÁNDO (fecha y hora, `{{PROXIMA_CLASE}}`) o CÓMO se entra (link, palabra clave o `boton` con destino,
+   `{{COMUNIDAD}}`). Sin láminas oscuras.
 
 ### Webinar (60-90 min)
 El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
@@ -165,7 +168,9 @@ El arco completo de la referencia (GUION §6), estirado, con dos bloques más:
 También es la pieza de una **clase de menos de 15 min** («clase express» o taller): se marca con `"clase": true`
 en el deck (no se deduce de `en_vivo`). Entonces el cierre son **dos beats obligatorios**: la tarea con objeto y el
 puente a la próxima clase o la comunidad, con un dato real (`{{PROXIMA_CLASE}}`, `{{COMUNIDAD}}`) a la vista. QA avisa
-«tarea sin puente» o «cierre sin tarea». No hay pieza aparte.
+«tarea sin puente» o «cierre sin tarea». El puente de una clase gratis lleva CUÁNDO (fecha y hora) y CÓMO se entra (link,
+palabra clave o botón con destino): «Te espero» o «Nos vemos en la comunidad» sin dato avisan «puente sin dato» y dejan
+el deck en borrador (`por_confirmar.PUENTE`), igual que quitar el puente. No hay pieza aparte.
 1. El resultado a la vista en los primeros 10 s, o el error en vivo.
 2. El mapa 1-2-3 si son 3 pasos o más.
 3. Los pasos, uno por bloque, cada uno con su demostración (captura real, `objeto` con foto o `camara` corta). QA
@@ -199,7 +204,8 @@ La apertura sigue la tabla de GUION §6.1 (la referencia da la promesa de 0:08 a
 2. **Dos bloques** en vez de tres, cada uno en beats con su demostración o actividad en vivo (`camara` con
    `vivo: true`).
 3. Tarea con objeto y puente a la vista (la próxima clase con `{{PROXIMA_CLASE}}`, la comunidad o el programa): los
-   dos, no uno u otro. QA los revisa en las 3 últimas láminas. Sin láminas oscuras.
+   dos, no uno u otro. El puente dice cuándo (fecha y hora) y cómo se entra (link, palabra clave o botón); sin ese
+   dato el deck queda en borrador. QA los revisa en las 3 últimas láminas. Sin láminas oscuras.
 
 ### Propuesta (3-20 min; la corta, 3-8 min y 20-60 láminas, se presenta en vivo con conversación)
 Nueve bloques. Se reenvía a directores que no estuvieron en la junta: el porqué va en la `voz` y se manda con

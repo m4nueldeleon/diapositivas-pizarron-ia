@@ -25,6 +25,7 @@ import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina
 import { duracionTotal, mmss } from './lib/tiempos.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { exportarPdf, conNotas } from './lib/pdf.mjs';
+import { duracionVivo } from './lib/construir.mjs';
 
 const { opt, flag, pos } = argumentos(process.argv);
 let prep;
@@ -62,7 +63,16 @@ const lams = await page.$$('section.lamina');
 for (let i = 0; i < lams.length; i++) {
   const l = deck.laminas[i];
   const n = await page.evaluate(k => window.PZ.pasos(window.PZ.lams[k]), i);
-  if (l.tipo === 'camara') { manifiesto.push({ lamina: i, id: l.id || 'camara', tipo: 'camara', paso: 0, pasos: 1, archivo: null }); continue; }
+  if (l.tipo === 'camara' && l.vivo !== true) { manifiesto.push({ lamina: i, id: l.id || 'camara', tipo: 'camara', paso: 0, pasos: 1, archivo: null }); continue; }
+  // Tramo en vivo: se captura lo que ve el público (la consigna con su reloj congelado en `dur`), no un cuadro gris
+  if (l.tipo === 'camara') {
+    const nombre = `${String(i + 1).padStart(2, '0')}-${String(l.id || 'vivo').replace(/[^\w-]/g, '') || 'vivo'}-1.png`;
+    await page.evaluate(k => window.PZ.lams[k].classList.add('captura-vivo'), i);
+    await lams[i].screenshot({ path: path.join(dirPng, nombre), type: 'png' });
+    await page.evaluate(k => window.PZ.lams[k].classList.remove('captura-vivo'), i);
+    manifiesto.push({ lamina: i, id: l.id || 'vivo', tipo: 'camara', vivo: true, dur: duracionVivo(l), paso: 0, pasos: 1, archivo: `laminas/${nombre}`, revela: ['consigna en vivo'] });
+    continue;
+  }
   // pasos clave: un layout cuyo cierre tapa lo anterior (stack a sangre + remate) marca data-clave-paso
   const claves = new Set(await page.evaluate(k => [...window.PZ.lams[k].querySelectorAll('[data-clave-paso]')]
     .map(e => Number(e.dataset.clavePaso)), i).then(v => v.filter(q => Number.isInteger(q) && q >= 0 && q < n - 1)));

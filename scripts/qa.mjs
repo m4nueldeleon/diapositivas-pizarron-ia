@@ -3,7 +3,8 @@
 //
 //   node scripts/qa.mjs <carpeta|deck.json> [--salida dir] [--json] [--estricto]
 //
-//   --estricto  sale con 3 si no hay errores pero el estado no es «listo» (bajo-90, falta-venta, borrador)
+//   --estricto  sale con 3 si no hay errores pero el estado no es «listo» (bajo-90, falta-venta, borrador: un borrador
+//               nunca es final, aunque esté `listo_salvo_datos`)
 //
 // Errores (−12 c/u):
 //   · desbordes del lienzo (el sello incluido, medido con su giro), textos encimados;
@@ -46,16 +47,17 @@
 //     claves del deck que nadie lee (`_marca`, `_datos`); más de 40% a cámara; oferta tardía en un VSL corto.
 // Nota: 100 − 12 × errores − 3 × avisos; con datos por confirmar (huecos declarados, propuestos, capturas por
 // conseguir), BORRADOR y tope de 90: esos datos NO restan, van en qa.json → datos_por_confirmar (consola: «◌»).
-// qa.json trae además `estado` (borrador · con errores · bajo-90 · falta-venta · listo), `falta_para_final` (lo que le
+// qa.json trae además `estado` (con errores · borrador · bajo-90 · falta-venta · listo: los errores ganan al borrador),
+// en borrador `nota_sin_tope` y `listo_salvo_datos` (sin errores, 90+ sin el tope y nada en falta), `falta_para_final` (lo que le
 // falta a una pieza de venta), `ritmo` (mediana y p90 de los pasos), `por_confirmar` e `iconos` (emoji → láminas).
 import fs from 'node:fs';
 import path from 'node:path';
 import { argumentos, prepararSalida, abrir } from './lib/pipeline.mjs';
 import { MARCA_LITERAL, palabras } from './lib/markup.mjs';
-import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
+import { BAJO_CONTRASTE, contrasteMedido, UMBRAL_CONTRASTE, UMBRAL_OSCURA, VISTOS_OK, DIVERGE, SUGERIDO, TEXTO_IMPRESO } from './lib/emoji.mjs';
 import { inyectable } from './lib/medidas-dom.mjs';
 import { FORMATOS } from './lib/construir.mjs';
-import { revisarDeck, notaQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos } from './lib/reglas-deck.mjs';
+import { revisarDeck, notaQA, notaSinTope, estadoQA, TOPE_BORRADOR, infoEmoji, infoFirma, infoIconos } from './lib/reglas-deck.mjs';
 import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
@@ -70,7 +72,7 @@ const { deck, crudo, dirSalida, dirDeck, htmlPath, W, H, pasos, revela = [], avi
 if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() });
-const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
+const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
 
 const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const out = [];
@@ -84,7 +86,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const opac = e => { let o = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) o *= parseFloat(getComputedStyle(a).opacity); return o; };
   const zoom = e => { let z = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) z *= parseFloat(getComputedStyle(a).zoom) || 1; return z; };
   const corto = (s, n = 30) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
-  const TEXTO = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca';
+  const TEXTO = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .post p, .vivo-consigna, .vivo-items li';
   const CAJAS = TEXTO + ', .emo, img, table, .captura, .pastilla, .calendario, .rejilla, .medidor, .boton-ui';
   const PRINCIPAL = '.t, .item, .etiqueta, .burbuja, .tarjeta';
   // Texto secundario que se tiene que LEER (≥ 48 px a 1920, ≈ 9 px en un celular de 360). Los rótulos decorativos
@@ -146,7 +148,10 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   window.PZ.lams.forEach((lam, i) => {
     const n = window.PZ.pasos(lam), L = lam.getBoundingClientRect();
     const r = { i, tipo: lam.dataset.tipo, errores: [], avisos: [], palabras: 0, mano: 0, enfasis: 0, pendientes: [], medir: [] };
-    if (lam.dataset.tipo === 'camara') { out.push(r); return; }
+    // La `camara` normal se proyecta en negro: nada que revisar. El tramo en vivo (`vivo: true`) SÍ lo ve el público minutos
+    // enteros: se revisa lo que se proyecta (.captura-vivo), con las mismas reglas (palabras, pendientes, desborde, letra)
+    if (lam.dataset.tipo === 'camara' && !lam.dataset.vivo) { out.push(r); return; }
+    if (lam.dataset.vivo) lam.classList.add('captura-vivo');
     for (let p = 0; p < n; p++) {
       window.PZ.mostrar(lam, p, Infinity);
       const E = m => r.errores.push(`paso ${p + 1}: ${m}`), A = m => r.avisos.push(`paso ${p + 1}: ${m}`);
@@ -197,6 +202,15 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       for (let a = 0; a < tSvg.length; a++) for (let b = a + 1; b < tSvg.length; b++) {
         const A0 = caja(tSvg[a], lam), B0 = caja(tSvg[b], lam), c = cruza(A0, B0);
         if (c > 0.06 * Math.min(A0.w * A0.h, B0.w * B0.h)) E(`se enciman «${corto(tSvg[a].textContent, 24)}» y «${corto(tSvg[b].textContent, 24)}»`);
+      }
+      // Etiquetas de una gráfica en la misma banda y a menos de 32 px: «Solo la pensaron Reportaban cada semana» se lee
+      // como una sola frase (el cruce de más de 6% ya es error arriba)
+      const gT = tSvg.filter(t => t.closest('.grafica'));
+      for (let a = 0; a < gT.length; a++) for (let b = a + 1; b < gT.length; b++) {
+        const A0 = caja(gT[a], lam), B0 = caja(gT[b], lam);
+        if (!(A0.y < B0.y + B0.h && B0.y < A0.y + A0.h) || cruza(A0, B0) > 0) continue;
+        const hueco = Math.max(B0.x - (A0.x + A0.w), A0.x - (B0.x + B0.w));
+        if (hueco >= 0 && hueco < 32 * (W / 1920)) A(`las etiquetas «${corto(gT[a].textContent, 24)}» y «${corto(gT[b].textContent, 24)}» quedan a ${Math.round(hueco)} px y se leen como una sola frase: acórtalas`);
       }
       // Marcas sin convertir
       lineas.forEach(({ n: nodo }) => { if (reMarca.test(nodo.nodeValue)) E(`marca sin cerrar o partida a la vista: «${corto(nodo.nodeValue, 40)}»`); });
@@ -308,6 +322,24 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
         const largo = pth.getTotalLength();
         if (largo < 60) A(`una flecha de anotación mide ${Math.round(largo)} px: se ve como un garabato; separa la nota (≥ 60)`);
       });
+      // Anotación ENCIMA de su ancla (la tarjeta, la captura) o de otra caja, y gancho que tacha su propia nota: el borde
+      // del lienzo la regresaba sobre la tarjeta [r5, muro 14]. La nota va en el blanco junto a lo que señala.
+      lam.querySelectorAll(':scope > .anotacion').forEach(n => {
+        if (!visible(n) || opac(n) < 0.5 || +n.dataset.p > p) return;
+        const N = caja(n, lam), area = N.w * N.h || 1, txt = corto(n.textContent, 24);
+        const el = n.dataset.sobre ? [...lam.querySelectorAll(`[data-a="${CSS.escape(n.dataset.sobre)}"]`)].find(fueraClon) : null;
+        const cont = el && (el.closest('.captura, .tarjeta, .burbuja, .rejilla, .post, .bento, .cuadro') || el);
+        const otras = [...lam.querySelectorAll(CAJAS)].filter(e => visible(e) && fueraClon(e) && e !== n && !n.contains(e) && !e.contains(n) && opac(e) >= 0.5
+          && !e.closest('.anotacion') && !(cont && (cont.contains(e) || e.contains(cont))));
+        const pisa = [cont, ...otras].filter(Boolean).find(e => cruza(N, caja(e, lam)) / area > 0.04);
+        if (pisa) E(`la anotación «${txt}» cae encima de «${corto(pisa.textContent || pisa.className, 24)}»: va en el blanco junto a su ancla (cambia «lado», acórtala o dale "x"/"y")`);
+        const g = lam.querySelector(`:scope > .capa-mano path[data-clase="flecha"][data-de="${CSS.escape(n.dataset.a || '')}"]`);
+        if (g && +g.dataset.p <= p) {
+          const tot = g.getTotalLength(); let dentro = 0;
+          for (let t = 0; t <= tot * 0.92; t += 4) { const q = g.getPointAtLength(t); if (q.x > N.x + 4 && q.x < N.x + N.w - 4 && q.y > N.y + 4 && q.y < N.y + N.h - 4) dentro++; }
+          if (dentro >= 3) E(`el gancho de la anotación «${txt}» tacha su propia nota: sepárala de su ancla`);
+        }
+      });
       // Firma: contra renglones (también en tablas) y contra celdas con texto
       const firma = lam.querySelector(':scope > .firma');
       if (firma) {
@@ -323,7 +355,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       [...lam.querySelectorAll('.burbuja, .tarjeta, .cuadro, .lista .item, .nodo .etiqueta, .opcion')]
         .filter(e => fueraClon(e) && visible(e) && !e.textContent.trim() && !e.querySelector('.emo, img'))
         .forEach(e => E(`hay un elemento vacío (${e.className.split(' ')[0]}): revisa sus datos en deck.json`));
-      const lienzo = [...lam.querySelectorAll(':scope > .lienzo')].pop();
+      // en vivo: la consigna y sus pasos (el reloj no cuenta como palabras)
+      const lienzo = lam.dataset.vivo ? lam.querySelector(':scope > .vivo-pres') : [...lam.querySelectorAll(':scope > .lienzo')].pop();
       if (lienzo && !['tabla', 'prueba', 'chat', 'calendario'].includes(lam.dataset.tipo)) {
         const txt = [...lienzo.querySelectorAll(TEXTO)].filter(visible).filter(e => !e.querySelector(TEXTO)).map(e => e.innerText).join(' ');
         r.palabras = Math.max(r.palabras, (txt.match(/[\p{L}\p{N}]+/gu) || []).length);
@@ -365,7 +398,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     });
     // 9:16: que el contenido ocupe el alto y respete la zona que tapa la interfaz de Reels
     if (vertical) {
-      const lz = lam.querySelector(':scope > .lienzo'), h = lz && lz.firstElementChild;
+      const lz = lam.querySelector(':scope > .lienzo'), h = lam.dataset.vivo ? lam.querySelector(':scope > .vivo-pres') : lz && lz.firstElementChild;
       if (h && !h.classList.contains('cuadrantes')) {
         let y0 = 1e9, y1 = -1e9, zona = '';
         [h, ...h.querySelectorAll('*')].forEach(e => {
@@ -395,7 +428,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       const t = (CT.BAJO[set] || {})[fondo === 'oscura' ? 'oscura' : 'claro'] || {};
       if (t[ch]) return t[ch];
       const m = (((CT.MEDIDO[set] || {})[fondo]) || {})[ch];
-      if (m != null && m < CT.U && !(CT.OK[set] || []).includes(ch)) return CT.SUG[ch] || 'otro emoji';
+      if (m != null && m < (fondo === 'oscura' ? CT.UO : CT.U) && !(CT.OK[set] || []).includes(ch)) return CT.SUG[ch] || 'otro emoji';
       return '';
     };
     const sets = CT.pedido === 'auto' ? [modoEmoji, modoEmoji === 'apple' ? 'fluent' : 'apple'] : [modoEmoji];
@@ -583,6 +616,11 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       const tinta = svg => (svg ? [...svg.querySelectorAll('path')].filter(q => !q.closest('defs') && !q.classList.contains('oculto') && q.dataset.pase !== '2').length : 0);
       const enClon = tinta(clon.querySelector(':scope > .capa-mano')), antes = prev ? tinta(prev.querySelector(':scope > .capa-mano')) : 0;
       if (enClon < antes) EF(`el fondo del foco perdió tinta de la lámina anterior (${enClon} de ${antes} trazos): no es su estado final (un tachón perdido invierte el mensaje)`);
+      // …y el mismo sello y las mismas notas: sin el sello «ERROR» la frase se leía como recomendación
+      if (prev) for (const [sel, que] of [['.sello', 'el sello'], ['.anotacion', 'la anotación']]) {
+        const n0 = [...prev.querySelectorAll(`:scope > ${sel}`)].filter(visible).length, n1 = [...clon.querySelectorAll(`:scope > ${sel}`)].filter(visible).length;
+        if (n1 < n0) EF(`el fondo del foco perdió ${que} de la lámina anterior (${n1} de ${n0}): no es su estado final`);
+      }
     }
     // Emoji sobre emoji (dos personas encimadas en un anillo): cajas recortadas al 84%, sin compuestos ni insignias
     // (una caja dentro de la otra) y sin las celdas de la rejilla, que se miden aparte
@@ -644,6 +682,13 @@ const contrasteColor = await medirSobreColor(browser, porLamina, dirSalida);
 const modoRender = await page.evaluate(() => document.body.dataset.emoji || 'apple');
 // Qué emojis se midieron en vivo por estar fuera de la tabla y cuáles no se pudieron revisar (Apple fuera de macOS)
 const enVivo = [...new Set(porLamina.flatMap(r => (r.medir || []).filter(m => m.neutro).map(m => m.ch)))];
+// Una persona con tono (🧑🏻‍💼) se sigue midiendo en vivo (el tono cambia el contraste), pero no se lista como «fuera de la
+// tabla» si su forma sin tono ya está medida: era ruido fijo en todo deck con `piel`
+const enTablaSinTono = ch => {
+  const k = String(ch).replace(/\uFE0F/g, ''), base = k.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
+  return base !== k && Object.values(contrasteMedido()[modoRender] || {}).some(f => f && f[base] != null);
+};
+const enVivoInfo = enVivo.filter(ch => !enTablaSinTono(ch));
 const sinRevisar = process.platform === 'darwin' ? [] : [...new Set(porLamina.flatMap(r => (r.medir || []).filter(m => m.neutro && m.tipo === 'txt').map(m => m.ch)))];
 await browser.close();
 
@@ -664,9 +709,9 @@ porLamina.forEach(r => {
   if (r.palabras > 35) errores.push(`${n}: ${r.palabras} palabras a la vista; el estilo pide una idea por lámina (≤ 22)`);
   else if (r.palabras > 22) avis.push(`${n}: ${r.palabras} palabras a la vista (ideal ≤ 22)`);
   if (r.enfasis > 2) avis.push(`${n}: ${r.enfasis} énfasis (subrayado/resaltador); uno por lámina, dos como máximo`);
-  const flojos = contrasteColor.filter(m => m.i === r.i && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : UMBRAL_COLOR));
-  // fuera de la tabla medida, sobre blanco, tarjeta u oscura: el umbral de la tabla neutra
-  const flojosN = contrasteColor.filter(m => m.i === r.i && m.neutro && m.pct != null && m.pct < CONTRASTE.U);
+  const flojos = contrasteColor.filter(m => m.i === r.i && !m.neutro && m.pct != null && m.pct < (m.pastel ? CONTRASTE.U : m.oscuro ? UMBRAL_OSCURA : UMBRAL_COLOR));
+  // fuera de la tabla medida, sobre blanco, tarjeta u oscura: el umbral de la tabla neutra (30 en la oscura)
+  const flojosN = contrasteColor.filter(m => m.i === r.i && m.neutro && m.pct != null && m.pct < (m.fondoN === 'oscura' ? UMBRAL_OSCURA : CONTRASTE.U));
   if (flojosN.length) avis.push(`${n}: emoji fuera de la tabla medida que casi no se ve en ${modoRender} sobre ${flojosN[0].fondoN === 'oscura' ? 'la lámina oscura' : flojosN[0].fondoN === 'tarjeta' ? 'la tarjeta' : 'blanco'}: ${flojosN.map(m => `${m.ch} (${m.pct}%)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cámbialo (EMOJIS.md)`);
   if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });
@@ -744,25 +789,29 @@ const objetivo = minutosObjetivo(deck.duracion_objetivo);
 const porTipo = duracionPorTipo(deck, pasos);
 const duracion = { estimada: mmss(delDeck.duracion), segundos: Math.round(delDeck.duracion), laminas: mmss(porTipo.laminas), camara: mmss(porTipo.camara),
   ...(objetivo ? { objetivo: mmss(objetivo * 60) } : {}), ...(deck.pieza ? { pieza: deck.pieza } : {}) };
-// Estado, en orden: borrador → con errores → bajo-90 → falta-venta → listo. Un loop o un agente de fondo lee `estado`
-// (o corre con --estricto): «listo» es el ÚNICO estado que se entrega como final (SKILL §6).
+// Estado, en orden: con errores → borrador → bajo-90 → falta-venta → listo (los errores mandan aunque haya datos por
+// confirmar). Un loop o un agente de fondo lee `estado` y `listo_salvo_datos` (o corre con --estricto): «listo» es el
+// ÚNICO estado que se entrega como final (SKILL §6).
 const falta = delDeck.faltaParaFinal || [];
-const estado = borrador ? 'borrador' : errores.length ? 'con errores' : nota < NOTA_FINAL ? 'bajo-90' : falta.length ? 'falta-venta' : 'listo';
+const estado = estadoQA({ errores, borrador, nota, falta, notaFinal: NOTA_FINAL });
+// Sin el tope del borrador: ¿quedan avisos por corregir? `listo_salvo_datos` = mismo criterio que «listo», ignorando el tope
+const sinTope = notaSinTope({ errores, avisos: avis });
+const listoSalvoDatos = borrador && !errores.length && sinTope >= NOTA_FINAL && !falta.length;
 // Información que NO resta nota: el set de emojis sin fijar y la firma (de dónde salió o dónde se llena)
 const pruebaInfo = delDeck.prueba && delDeck.prueba.tipo !== 'real'
   ? `va con prueba por sustituto ${delDeck.prueba.tipo === 'logica' ? 'd (prueba lógica)' : 'e (primeros casos con garantía)'} en la lámina ${delDeck.prueba.lamina}; una captura real con permiso la refuerza (GUION §7)` : null;
 const infoContraste = [
-  enVivo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
+  enVivoInfo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivoInfo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
 const info = [...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal() }), avisoFirma, pruebaInfo, infoIconos(deck)].filter(Boolean);
-const informe = { nota, estado, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
+const informe = { nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: avisDatos, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
-  if (borrador) console.log(`BORRADOR: ${Object.keys(porConfirmar).length} dato(s) por confirmar (${Object.keys(porConfirmar).join(', ')}); la nota no pasa de ${TOPE_BORRADOR} hasta confirmarlos`);
+  if (borrador) console.log(`BORRADOR: ${Object.keys(porConfirmar).length} dato(s) por confirmar (${Object.keys(porConfirmar).join(', ')}); la nota no pasa de ${TOPE_BORRADOR} hasta confirmarlos; ${avis.length} aviso(s), sin tope sería ${sinTope}; listo salvo datos: ${listoSalvoDatos ? 'sí' : 'no'}`);
   const partes = porTipo.camara ? ` (láminas ~${duracion.laminas} · cámara ~${duracion.camara})` : '';
   console.log(`QA ${nota}/100 · ${informe.laminas} láminas · ${informe.pasos} pasos · voz ~${duracion.estimada}${partes}${duracion.objetivo ? ` (objetivo ${duracion.objetivo})` : ''}`);
   errores.forEach(e => console.log('  ✗ ' + e));

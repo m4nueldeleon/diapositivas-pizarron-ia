@@ -231,6 +231,16 @@
           if (d > 340) P = [Q[0] + (P[0] - Q[0]) * 340 / d, Q[1] + (P[1] - Q[1]) * 340 / d];
           pts = cuadratica(P, Q, [Q[0] + (P[0] - Q[0]) * 0.2, P[1] - 8]); ancho = 5; len = 24; break;
         }
+        if (c.lateral) {
+          // Calendario en 9:16: la nota va encima de la tarjeta; la flecha baja por el margen de FUERA de la tarjeta y entra a
+          // la celda por su costado. Desde arriba cruzaba la barra («Fase 2») y se leía como tachón.
+          const cont = eb.closest('.' + (c.caja || 'calendario')), K = cont ? caja(cont, lam) : B, izq = c.lateral !== 'derecha';
+          const xM = izq ? Math.max(14, K.x - 26) : Math.min(lam.offsetWidth - 14, K.x + K.w + 26);
+          const P = [izq ? A.x + Math.min(24, A.w * 0.1) : A.x + A.w - Math.min(24, A.w * 0.1), A.y + A.h + 10];
+          const Q = [izq ? B.x - 10 : B.x + B.w + 10, B.cy];
+          pts = cubica(P, [xM, P[1] + (Q[1] - P[1]) * 0.35], [xM, Q[1]], Q); ancho = 5; len = 24;
+          break;
+        }
         const P = borde(A, [B.cx, B.cy], 16), Q = borde(B, [A.cx, A.cy], 12);
         const dx = Q[0] - P[0], dy = Q[1] - P[1], s = c.curva || (Q[0] < P[0] ? 1 : -1);
         pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2 + dy * 0.35 * s, (P[1] + Q[1]) / 2 - dx * 0.35 * s]); ancho = c.fina ? 3.6 : 5; len = c.fina ? 18 : 24;
@@ -456,21 +466,56 @@
   }
 
   // ---------- anotaciones comunes: la nota junto a su ancla, del lado pedido, con aire para el gancho ----------
-  // Sin `lado`, a la derecha si cabe y si no a la izquierda. `x`/`y` del autor la fijan. Se acota al lienzo.
+  // `x`/`y` del autor la fijan. Si no, se prueban los lados en orden (el pedido, derecha, izquierda, abajo, arriba) y gana
+  // el primero donde la nota (a) cabe sin que el borde del lienzo la empuje más de 20 px, (b) no pisa más del 4% de su
+  // área el contenedor de su ancla (captura, tarjeta, burbuja, rejilla) ni otro texto, sello o nota, y (c) queda a ≥ 80 px
+  // del ancla (el gancho). Si ningún lado sirve, la letra baja de 4 en 4 hasta 44 px; si aun así no, el lado que menos
+  // pisa y un aviso. Antes el borde la regresaba ENCIMA de la tarjeta y su gancho tachaba la propia nota [r5, muro 14].
+  const OBST_ANOT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .captura, .post, .sello, .tabla, .rejilla, .bento, .cuadro, .grafica svg, .dia';
   function colocarAnotaciones(lam) {
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, aire = 130;
+    const cruce = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const gapR = (a, b) => Math.hypot(Math.max(0, a.x - (b.x + b.w), b.x - (a.x + a.w)), Math.max(0, a.y - (b.y + b.h), b.y - (a.y + a.h)));
+    const puestas = [];
     lam.querySelectorAll(':scope > .anotacion[data-sobre]').forEach(n => {
-      if (n.dataset.fija) return;
+      if (n.dataset.fija) { puestas.push(caja(n, lam)); return; }
       const el = ancla(lam, n.dataset.sobre); if (!el) return;   // la conexión avisa que falta el ancla
       // sobre una captura, la nota va FUERA de ella (al lado del ancla, a la altura de lo que señala) [28:35]
       const A0 = caja(el, lam), cap = el.closest('.captura'), R = cap && cap !== el ? caja(cap, lam) : A0;
-      const B = { x: R.x, w: R.w, y: A0.y, h: A0.h, cx: A0.cx, cy: A0.cy }, w = n.offsetWidth, h = n.offsetHeight;
-      const lado = n.dataset.lado || (B.x + B.w + aire + w <= W - m ? 'derecha' : 'izquierda');
-      const Yv = lado === 'arriba' ? Math.min(A0.y, R.y) : Math.max(A0.y + A0.h, R.y + (cap ? R.h : 0));
-      let x = lado === 'derecha' ? B.x + B.w + aire : lado === 'izquierda' ? B.x - aire - w : B.cx - w / 2;
-      let y = lado === 'arriba' ? Yv - aire * 0.8 - h : lado === 'abajo' ? Yv + aire * 0.8 : B.cy - h / 2 - 60;
-      x = clamp(x, m, W - m - w); y = clamp(y, m, H - m - h);
-      Object.assign(n.style, { left: x + 'px', top: y + 'px' });
+      const cont = el.closest('.captura, .tarjeta, .burbuja, .rejilla, .post, .bento, .cuadro') || el, C = caja(cont, lam);
+      const B = { x: R.x, w: R.w, y: A0.y, h: A0.h, cx: A0.cx, cy: A0.cy };
+      const obst = [...lam.querySelectorAll(OBST_ANOT)].filter(e => e !== n && !n.contains(e) && !e.closest('.escena.clon') && e.getClientRects().length
+        && !e.contains(el) && !cont.contains(e) && !e.closest('.anotacion')).map(e => caja(e, lam)).concat(puestas);
+      const pedido = n.dataset.lado;
+      const lados = [...new Set([pedido, 'derecha', 'izquierda', 'abajo', 'arriba'].filter(Boolean))];
+      const probar = lado => {
+        const w = n.offsetWidth, h = n.offsetHeight;
+        const Yv = lado === 'arriba' ? Math.min(A0.y, R.y) : Math.max(A0.y + A0.h, R.y + (cap ? R.h : 0));
+        const x0 = lado === 'derecha' ? B.x + B.w + aire : lado === 'izquierda' ? B.x - aire - w : B.cx - w / 2;
+        const y0 = lado === 'arriba' ? Yv - aire * 0.8 - h : lado === 'abajo' ? Yv + aire * 0.8 : B.cy - h / 2 - 60;
+        const x = clamp(x0, m, W - m - w), y = clamp(y0, m, H - m - h), b = { x, y, w, h };
+        const pisa = Math.max(cruce(b, C), ...obst.map(o => cruce(b, o)), 0) / (w * h || 1);
+        const empuje = Math.hypot(x - x0, y - y0);
+        return { lado, x, y, ok: empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 };
+      };
+      let elegido = null;
+      const base = parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54;
+      const tams = [base];
+      for (let t = base - 4; t > 44; t -= 4) tams.push(t);
+      if (base > 44) tams.push(44);
+      for (const tn of tams) {
+        if (tn !== base) n.style.setProperty('--tn', tn + 'px');
+        elegido = lados.map(probar).find(c => c.ok) || null;
+        if (elegido) break;
+      }
+      if (!elegido) {
+        n.style.setProperty('--tn', base + 'px');
+        elegido = lados.map(probar).sort((a, b) => a.costo - b.costo)[0];
+        avisos.push(`lámina ${+lam.dataset.i + 1}: la anotación «${(n.textContent || '').trim().slice(0, 30)}» no cabe junto a su ancla sin pisar nada; acórtala o dale "x"/"y"`);
+      }
+      if (pedido && elegido.lado !== pedido) n.dataset.ladoReal = elegido.lado;
+      Object.assign(n.style, { left: elegido.x + 'px', top: elegido.y + 'px' });
+      puestas.push(caja(n, lam));
     });
   }
 
@@ -561,7 +606,7 @@
     if (!lz || !clon || lz.dataset.anclar) return;
     const pila = lz.firstElementChild; if (!pila) return;
     const H = lam.offsetHeight, P = caja(pila, lam), pad = 18;
-    const TXT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente';
+    const TXT = '.t, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .sello-tinta';
     const rs = [...clon.querySelectorAll(TXT)].filter(e => !e.querySelector(TXT)).flatMap(e => rectsTexto(e, lam))
       .concat([...clon.querySelectorAll('svg text')].filter(t => t.textContent.trim()).map(t => caja(t, lam)))
       .filter(r => r.h >= 30 && r.x < P.x + P.w && r.x + r.w > P.x);
@@ -583,6 +628,21 @@
       lam.dataset.focoSobreFondo = '1';
       if (!clon.dataset.opFija) clon.style.opacity = '0.1';
     }
+  }
+
+  // ---------- foco: el fondo conserva el sello y las notas de la lámina anterior [15:20] ----------
+  // El fondo del foco es el ESTADO FINAL de la lámina anterior: sin su sello («ERROR») la frase tachada se leía como
+  // recomendación, y sin sus anotaciones QA pedía una tinta que el autor no podía dar. Se copian ya colocados (misma
+  // posición: el clon mide lo mismo que la lámina) y sin pasos; el cursor y la onda del clic no.
+  function copiarExtrasAlClon(lam, prev) {
+    const clon = lam.querySelector(':scope > .escena.clon'); if (!clon || !prev) return;
+    const svg = clon.querySelector(':scope > .capa-mano');
+    prev.querySelectorAll(':scope > .sello, :scope > .anotacion').forEach(e => {
+      const c = e.cloneNode(true);
+      [c, ...c.querySelectorAll('[data-p]')].forEach(x => { x.removeAttribute('data-p'); x.classList.remove('oculto'); });
+      c.dataset.copia = '1';
+      clon.insertBefore(c, svg);
+    });
   }
 
   /*@@SELLO@@*/  // templates/runtime-sello.js (construir.mjs lo inserta aquí, dentro de este mismo ámbito)
@@ -645,13 +705,23 @@
     lam.querySelectorAll('.cursor[data-p]').forEach(cur => {
       const p = +cur.dataset.p, onda = cur.parentElement.querySelector(':scope > .onda');
       const arrastra = cur.dataset.fx != null;
-      let dx = 0, dy = 0, sc = 1, oo = 0, os = 20, cerrada = false;
-      if (!fin && p === paso) {
+      let dx = 0, dy = 0, sc = 1, oo = 0, os = 20, cerrada = false, op = '';
+      // Teclas del mapa [d_123 1:53.9-1:55.6]: la mano entra en el mismo corte que las teclas, ya junto a la tecla
+      // (~100 ms, desde +30/+60 px), aprieta, se queda ~1.1 s y arrastra desde los 1500 ms. Los demás cursores (botón,
+      // opciones, idea) conservan su entrada larga: no hay ráfaga del video que diga otra cosa.
+      const teclas = arrastra || lam.dataset.tipo === 'pasos';
+      if (!fin && p === paso && teclas) {
+        const t0 = 100, k = easeOut(clamp((t - t0) / 250));
+        dx = (1 - k) * 30; dy = (1 - k) * 60; op = String(k);
+        if (t > t0 + 250 && t < t0 + 400) sc = 0.86;
+        if (t > t0 + 250 && t < t0 + 700) { const q = (t - t0 - 250) / 450; oo = 0.9 * (1 - q); os = 20 + q * 110; }
+        if (arrastra && t > t0 + 400) { const q = arrastre(cur, t); dx = q[0]; dy = q[1]; cerrada = q[2]; if (cerrada) sc = 0.85; }
+      } else if (!fin && p === paso) {
         const k = easeInOut(clamp(t / 560)); dx = (1 - k) * 280; dy = (1 - k) * 210;
         if (t > 600 && t < 740) sc = 0.86;
         if (t > 600 && t < 1050) { const q = (t - 600) / 450; oo = 0.9 * (1 - q); os = 20 + q * 110; }
-        if (arrastra && t > 740) { const q = arrastre(cur, t); dx = q[0]; dy = q[1]; cerrada = q[2]; if (cerrada) sc = 0.85; }
       } else if (arrastra && (fin || p < paso)) { dx = +cur.dataset.fx; dy = +cur.dataset.fy; }
+      cur.style.opacity = op;
       cur.classList.toggle('cerrada', cerrada);
       cur.style.transform = `translate(${dx}px,${dy}px) scale(${sc})`; cur.style.transformOrigin = '40% 5%';
       if (onda) Object.assign(onda.style, { opacity: oo, width: os + 'px', height: os + 'px' });
@@ -691,8 +761,8 @@
   const pasos = lam => Math.max(1, Math.floor(+lam.dataset.pasos) || 1);
   const animaDur = (lam, paso) => {
     if (lam.querySelector(`.cursor[data-p="${paso}"]`)) {
-      // con arrastre, hasta que la mano llega a la última tecla
-      let fin = 1100;
+      // con arrastre, hasta que la mano llega a la última tecla; en el mapa sin arrastre, la mano se queda ~1.4 s en la tecla
+      let fin = lam.dataset.tipo === 'pasos' ? 1500 : 1100;
       lam.querySelectorAll('.capa-mano path[data-arrastre]').forEach(e => { if (+e.dataset.p === paso) fin = Math.max(fin, (+e.dataset.retraso || 0) + (+e.dataset.dur || 700) + 300); });
       return fin;
     }
@@ -721,10 +791,19 @@
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
-    lams.forEach(l => { try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); } });
-    lams.forEach(l => { try { colocarAnotaciones(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: anotaciones (${e.message})`); } });
-    lams.forEach(l => { try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); } });
-    lams.forEach(l => { try { colocarSello(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sello (${e.message})`); } });
+    // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
+    const esFoco = l => !!l.querySelector(':scope > .escena.clon');
+    const capa = l => {
+      try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); }
+      try { colocarAnotaciones(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: anotaciones (${e.message})`); }
+      try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); }
+      try { colocarSello(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sello (${e.message})`); }
+    };
+    lams.filter(l => !esFoco(l)).forEach(capa);
+    lams.filter(esFoco).forEach(l => {
+      try { copiarExtrasAlClon(l, lams[lams.indexOf(l) - 1]); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fondo del foco (${e.message})`); }
+      capa(l);
+    });
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     return lams;
   }

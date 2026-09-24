@@ -172,11 +172,12 @@ export function pasos(l, ctx) {
   const tamPref = horizontal ? Math.round(baseEtq * 0.72) : 62;
   const tamEtqTecla = l.tam_etiqueta || (horizontal ? ajusta(56, 40) : 56);
   const kt = pasoDe(l, 'texto_paso', rev ? n : 0);
-  const kClic = l.clic ? pasoDe(l, 'clic_paso', kt + 1) : -1;
+  // La mano entra en el MISMO corte que las teclas y la frase [d_123 1:53.9]; `clic_paso: 1` la separa en otro paso
+  const kClic = l.clic ? pasoDe(l, 'clic_paso', kt) : -1;
   const ruta = l.ruta ?? !l.iconos;
-  // Arrastre [1:55]: la mano aprieta la tecla del clic y ARRASTRA la ruta punteada hasta la última tecla. Los
-  // tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada uno) al terminar la
-  // onda (~760 ms). `arrastre: false` deja la ruta completa desde el paso 0 y la mano quieta.
+  // Arrastre [1:55, ráfaga d_123]: la mano llega ~100 ms después del corte, aprieta la tecla del clic, se QUEDA ~1.1 s
+  // sobre ella y luego ARRASTRA la ruta punteada hasta la última tecla: los tramos nacen en el paso del clic, uno tras
+  // otro (~700 ms cada uno) desde los 1500 ms. `arrastre: false` deja la ruta completa desde el paso 0 y la mano quieta.
   const arrastra = l.clic && ruta && l.arrastre !== false && !rev && l.clic < n;
   // Con clic, la punta del dedo va al PIE del número (runtime.js: 0.64, 0.74 de la tecla [ref_115]) y la mano cuelga
   // ~60 px bajo la tecla: TODAS las etiquetas bajan juntas (siguen alineadas) para que la mano no las toque
@@ -199,7 +200,7 @@ export function pasos(l, ctx) {
     cols.push(`<div class="pila" style="flex:0 0 auto"${rev ? ctx.P(i) : ''}><div class="pila"${apagado}>${sobre}${cab}</div>${ok}</div>`);
     if (i > 0 && ruta) {
       const j = i - l.clic;   // tramo j-ésimo desde la tecla del clic (0 = el que sale de ella)
-      if (arrastra && j >= 0) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: kClic, retraso: 760 + j * 700, arrastre: j });
+      if (arrastra && j >= 0) ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: kClic, retraso: 1500 + j * 700, arrastre: j });
       else ctx.con({ de: 'k' + (i - 1), a: 'k' + i, estilo: 'punteada', onda: i % 2 ? 1 : -1, p: rev ? i : 0 });
     }
   }
@@ -301,7 +302,7 @@ export function tarjetas(l, ctx) {
   const html = items.map((it, i) => `<div class="tarjeta ${['v', 'r', 'n'].includes(it.tono) ? 'tono-b' + it.tono : ''}"${ctx.P(i)}>${it.emoji ? ctx.emoji(it.emoji, it.emoji_tam || l.emoji_tam || tamDef) : ''}<div class="rotulo">${marcar(it.texto)}</div></div>`).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     <div class="tarjetas" style="--cols:${cols};--tw:${tw}px;--th:${items.length <= 3 ? 320 : 280}px${tt}">${html}</div>
-    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}</div>`;
+    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, items.length - 1)))}</div>`;
 }
 
 // OSCURA — revelación de producto u oferta: fondo negro con brillo violeta. Rompe el blanco a propósito.

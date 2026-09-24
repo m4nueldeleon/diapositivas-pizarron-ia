@@ -9,7 +9,7 @@
 // ~3,400 imágenes la primera vez).
 //
 // Métrica (0-100): de los píxeles opacos del glifo, el % que se DISTINGUE del fondo: contraste ≥ 2:1 contra
-// el fondo o ΔE76 (Lab) ≥ 40 (la misma de lib/contraste-color.mjs). Antes contaba «saturación ≥ 0.45», que daba por
+// el fondo o ΔE76 (Lab) ≥ 40 (la misma de lib/contraste-color.mjs); sobre la oscura, solo ≥ 3:1 (umbral 30). Antes contaba «saturación ≥ 0.45», que daba por
 // visible un glifo saturado sobre un fondo igual de saturado. Un 💬 de Fluent (lila casi blanco) da 0; un 💰 da 100.
 // Fondos: claro (#ffffff), tarjeta (#f3f3f3: tarjeta, cuadro, bento) y oscura (#0b0b0e).
 // Apple se mide con la fuente del sistema (solo en macOS); Fluent con la imagen 3D del CDN (caché en disco).
@@ -80,7 +80,7 @@ await browser.close();
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // Tabla por set y fondo: { apple: { claro: { '💬': 100, … }, tarjeta: {…}, oscura: {…} }, fluent: {…} }
-const tabla = { metrica: '% de píxeles del glifo con contraste ≥ 2:1 contra el fondo o ΔE76 ≥ 40', fondos: FONDOS, apple: {}, fluent: {} };
+const tabla = { metrica: '% de píxeles del glifo con contraste ≥ 2:1 contra el fondo o ΔE76 ≥ 40 (con croma ≥ 35 o ≥ 1.5:1); sobre la oscura, solo ≥ 3:1', fondos: FONDOS, apple: {}, fluent: {} };
 for (const set of ['apple', 'fluent']) for (const f of Object.keys(FONDOS)) {
   tabla[set][f] = Object.fromEntries(Object.entries(medir[set]).filter(([, v]) => v[f] != null).map(([k, v]) => [k, v[f]]).sort());
 }

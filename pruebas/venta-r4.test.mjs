@@ -94,6 +94,10 @@ test('tutorial que cierra con una tarea: los dos avisos dicen la misma salida (c
   const sinLlamado = reglasArco({ pieza: 'tutorial', en_vivo: true, laminas: [idea('Paso'), idea('Tu tarea: **sube tu encuesta**')] }).avisos.join('\n');
   assert.match(sinLlamado, /termina sin llamado/);
   assert.match(sinLlamado, /"clase": true/);
-  // en una clase express la tarea con su puente no pide nada más
-  assert.deepEqual(cierreDeClase({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), idea('Tu tarea: **sube tu encuesta**'), idea('Te espero en la próxima clase')] }).avisos, []);
+  // en una clase express la tarea con su puente (con su dato: cuándo) no pide nada más
+  assert.deepEqual(cierreDeClase({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), idea('Tu tarea: **sube tu encuesta**'), idea('Te espero el **jueves 2 de octubre, 7 pm**')] }).avisos, []);
+  // r5: «Te espero en la próxima clase» sin cuándo ni cómo es un puente sin dato: aviso y borrador
+  const vago = cierreDeClase({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), idea('Tu tarea: **sube tu encuesta**'), idea('Te espero en la próxima clase')] });
+  assert.ok(vago.avisos.some(a => /^puente sin dato/.test(a)), vago.avisos.join('\n'));
+  assert.ok(vago.porConfirmar.PUENTE);
 });

@@ -438,3 +438,74 @@ test('iconos r4: la clave del inventario trae el concepto de EMOJIS.md; un emoji
   assert.ok(Object.keys(inv).includes('🦩 (fuera del diccionario)'), Object.keys(inv).join(' | '));
   assert.match(infoIconos({ laminas: [idea('x', { emoji: '🦩' })] }), /fuera del diccionario \(🦩\)/);
 });
+
+test('r5: estadoQA pone los errores antes del borrador; notaSinTope distingue un borrador con avisos', async () => {
+  const { estadoQA, notaSinTope } = await import('../scripts/lib/reglas-deck.mjs');
+  assert.equal(estadoQA({ errores: ['x'], borrador: true, nota: 88 }), 'con errores');
+  assert.equal(estadoQA({ errores: [], borrador: true, nota: 90 }), 'borrador');
+  assert.equal(estadoQA({ errores: [], borrador: false, nota: 85 }), 'bajo-90');
+  assert.equal(estadoQA({ errores: [], borrador: false, nota: 95, falta: ['prueba real'] }), 'falta-venta');
+  assert.equal(estadoQA({ errores: [], borrador: false, nota: 95 }), 'listo');
+  assert.equal(notaQA({ avisos: ['a'], porConfirmar: { P: {} } }), 90);
+  assert.equal(notaSinTope({ avisos: ['a'] }), 97);
+});
+
+test('r5: llamado con la frase entera marcada cuenta; `llamado: false` gana al botón de demostración', async () => {
+  const { esVerboConObjeto, esLlamadoVisible, llamadoAntesDeRevelar, llamadosVisibles, cierreDeClase } = await import('../scripts/lib/reglas-deck.mjs');
+  for (const t of ['Guarda __este reel__', '__Guarda este reel__ y pruébalo el lunes', '**Comenta MINUTA** y te mando el prompt', '==Comenta «MINUTA»==', '==Comenta== DOBLE', '**Escríbeme** CITA', '**Comenta CITA**']) {
+    assert.ok(esVerboConObjeto(t), t);
+  }
+  for (const t of ['__Guarda el dinero__', '**Agenda citas** sola', '**Guarda el dinero**', '«Comenta la palabra»']) assert.ok(!esVerboConObjeto(t), t);
+  assert.equal(esLlamadoVisible({ tipo: 'boton', boton: 'Enviar', llamado: false }), false);
+  assert.equal(esLlamadoVisible({ tipo: 'boton', boton: 'Únete' }), true);
+  const demo = { tipo: 'boton', boton: 'Enviar', texto: 'Tú la lees y das enviar' };
+  const vsl = { pieza: 'vsl-corto', laminas: [idea('Gancho'), { ...demo, llamado: false }, { tipo: 'oscura', texto: 'El programa' }, { tipo: 'boton', boton: 'Aplica' }] };
+  assert.equal(llamadoAntesDeRevelar(vsl), -1);
+  assert.equal(llamadoAntesDeRevelar({ ...vsl, laminas: [idea('Gancho'), demo, ...vsl.laminas.slice(2)] }), 1);
+  const reel = { pieza: 'reel', laminas: [idea('Gancho'), { ...demo, llamado: false }, idea('Mecanismo'), idea('Guarda __este reel__')] };
+  assert.equal(llamadosVisibles(reel), 1);
+  // sin la marca, el aviso de 2 llamados sugiere `llamado: false` para el botón de demostración
+  const r = revisarDeck({ ...reel, laminas: [idea('Gancho'), demo, idea('Mecanismo'), idea('Otra'), idea('Guarda __este reel__')] }, unos(5));
+  assert.ok(r.avisos.some(a => /2 llamados visibles.*lámina 2 es de una demostración.*"llamado": false/.test(a)), r.avisos.join('\n'));
+  // «Guarda __este reel__» con llamado:true en un reel ya es un llamado: sin el aviso de «tarea»
+  assert.deepEqual(cierreDeClase({ pieza: 'reel', laminas: [idea('Guarda __este reel__ y pruébalo', { llamado: true })] }).avisos, []);
+  assert.equal(cierreDeClase({ pieza: 'clase', laminas: [idea('Sube tu encuesta', { llamado: true })] }).avisos.filter(a => /llamado: true/.test(a)).length, 1);
+});
+
+test('r5: puente sin dato (cuándo o cómo se entra) deja la clase en borrador; con fecha, link, palabra clave o {{PROXIMA_CLASE}} no', async () => {
+  const { cierreDeClase: cierre } = await import('../scripts/lib/reglas-deck.mjs');
+  const tarea = idea('Tu tarea: **sube tu encuesta**');
+  const conCierre = (ult, crudoUlt = ult) => cierre({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), tarea, ult] }, { crudo: { laminas: [idea('Paso'), tarea, crudoUlt] } });
+  for (const vago of [idea('Te espero en la **próxima clase**'), idea('Nos vemos en la **comunidad**'), { tipo: 'boton', boton: 'Únete' }]) {
+    const r = conCierre(vago);
+    assert.ok(r.avisos.some(a => /^puente sin dato/.test(a)), JSON.stringify(vago) + r.avisos.join('\n'));
+    assert.ok(r.porConfirmar.PUENTE && r.porConfirmar.PUENTE.laminas.includes(3), JSON.stringify(r.porConfirmar));
+  }
+  const conDato = [
+    [idea('Próxima clase: [PROXIMA_CLASE]'), idea('Próxima clase: {{PROXIMA_CLASE}}')],
+    [idea('Te espero el **jueves 2 de octubre, 7 pm**')],
+    [{ tipo: 'boton', boton: 'Únete en clubia.mx' }],
+    [idea('Nos vemos en la comunidad: comenta **CLUB**')],
+    [{ tipo: 'boton', boton: '[COMUNIDAD_LINK]' }, { tipo: 'boton', boton: '{{COMUNIDAD_LINK}}' }],
+  ];
+  for (const [l, c] of conDato) {
+    const r = conCierre(l, c || l);
+    assert.deepEqual(r.avisos, [], JSON.stringify(l));
+    assert.deepEqual(r.porConfirmar, {}, JSON.stringify(l));
+  }
+  // sin puente: también borrador
+  assert.ok(conCierre(idea('Gracias')).porConfirmar.PUENTE);
+  // revisarDeck lo suma a porConfirmar
+  const rd = revisarDeck({ pieza: 'tutorial', clase: true, laminas: [idea('Paso'), tarea, idea('Te espero en la **próxima clase**')] }, unos(3));
+  assert.ok(rd.porConfirmar.PUENTE);
+});
+
+test('r5: una rejilla que afirma una proporción sin fuente avisa; con fuente, pregunta o ejemplo no', async () => {
+  const { reglasFuente } = await import('../scripts/lib/reglas-deck.mjs');
+  const rj = extra => ({ laminas: [{ tipo: 'rejilla', punto: true, total: 100, destacar: [1, 2], encabezado: '100 personas pagaron un curso', texto: '**54 no lo terminaron**', ...extra }] });
+  assert.equal(reglasFuente(rj({})).avisos.filter(a => /dato publicado/.test(a)).length, 1);
+  assert.deepEqual(reglasFuente(rj({ fuente: 'Reich y Ruipérez-Valiente, Science (2019)' })).avisos, []);
+  assert.deepEqual(reglasFuente(rj({ encabezado: 'Imagina 100 alumnos' })).avisos, []);
+  assert.deepEqual(reglasFuente(rj({ texto: '¿El **99%**?' })).avisos, []);
+  assert.deepEqual(reglasFuente({ laminas: [{ tipo: 'rejilla', emoji: '📦', total: 300, anotacion: 'Son 300' }] }).avisos, []);
+});

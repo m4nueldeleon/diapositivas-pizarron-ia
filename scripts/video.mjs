@@ -88,6 +88,19 @@ for (const s of segs) {
   if (s.inicio > t + 0.001) agregar(negro, s.inicio - t);   // hueco: se ve la cámara (montaje)
   const dur = s.fin - s.inicio;
   t = s.fin;
+  // Sin --sobre, un tramo en vivo (`camara` + `vivo: true`) muestra su consigna fija (lo que ve el público) en vez del
+  // negro; con --sobre, o en una `camara` normal, ahí va la grabación
+  if (s.camara && !crudo && deck.laminas[s.lamina] && deck.laminas[s.lamina].vivo === true) {
+    await page.evaluate(i => {
+      document.body.classList.add('video');
+      window.PZ.lams.forEach((l, k) => { l.classList.toggle('activa', k === i); l.classList.toggle('captura-vivo', k === i); });
+    }, s.lamina);
+    const archivo = path.join(dirCuadros, `${String(++n).padStart(6, '0')}.jpg`);
+    await page.screenshot({ path: archivo, type: 'jpeg', quality: 93, clip: { x: 0, y: 0, width: W, height: H } });
+    await page.evaluate(i => window.PZ.lams[i].classList.remove('captura-vivo'), s.lamina);
+    agregar(archivo, dur);
+    continue;
+  }
   if (s.camara) { agregar(negro, dur); continue; }
   const animMs = await page.evaluate(([i, p]) => {
     document.body.classList.add('video');

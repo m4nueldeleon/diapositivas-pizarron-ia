@@ -54,6 +54,7 @@ export function reglasPromesa(deck) {
 //          «Mañana/Hoy + verbo», o una lista/pasos con encabezado «tarea»;
 //   PUENTE (visible, no solo en la voz): próxima clase, nos vemos el…, te espero, comunidad, únete, programa, inscríbete,
 //          regístrate, un {{PROXIMA_CLASE}} o {{COMUNIDAD}}, o un botón. «Siguiente paso» o «link» sueltos no cuentan.
+//   DATO del puente (datoDePuente): cuándo o cómo se entra. Sin él (o sin puente), el deck queda en borrador (PUENTE).
 const TAREA = /^(tu tarea|tarea\b|para (manana|la proxima))/;
 const VERBO_TAREA = /^(sube|graba|haz|escribe|publica|manda|abre|arma|prueba|elige|define|crea|agenda|llena|contesta|responde|comenta|guarda|descarga|pon|cambia|mide|calcula|busca|copia|pega|anota|revisa)\b\s+\S+/;
 const CUANDO_TAREA = /^(hoy|manana|esta semana|esta noche)\s+(subes|grabas|haces|escribes|publicas|mandas|armas|pruebas|eliges|defines|creas|llenas|anotas|revisas)\b/;
@@ -61,15 +62,35 @@ const PUENTE = /\b(proxima clase|nos vemos (el|en|la)|te espero|comunidad|unete|
 const esTareaTexto = t => { const x = sinAcentos(plano(t)).replace(/^[^a-z0-9]+/, ''); return TAREA.test(x) || VERBO_TAREA.test(x) || CUANDO_TAREA.test(x); };
 const esTarea = l => textosVisibles(l).some(esTareaTexto) || (['lista', 'pasos'].includes(l.tipo) && /tarea/.test(sinAcentos(plano(String(l.encabezado || '')))));
 const esPuente = (l, c) => l.tipo === 'boton' || PUENTE.test(sinAcentos(textosVisibles(l).join(' / '))) || /\{\{\s*(PROXIMA_CLASE|COMUNIDAD)\b/.test(JSON.stringify(c || {}));
+// DATO del puente: CUÁNDO (fecha u hora reales, o {{PROXIMA_CLASE}}) o CÓMO se entra (link, dominio, palabra clave en
+// MAYÚSCULAS, {{COMUNIDAD}}, o un botón que lleva algo de eso o un {{…}}). «Te espero en la próxima clase» o «Nos vemos
+// en la comunidad» sueltos no dicen ni cuándo ni cómo: el deck queda en borrador (ARCOS.md). Quitar el hueco declarado
+// ya no sube el deck a «listo».
+const FECHA_HORA = [/\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/, /\b\d{1,2}\s+(de\s+)?(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)/, /\b\d{1,2}(:\d{2})?\s*(am|pm|h|hrs)\b/];
+const LINK = [/https?:/, /\b[\w-]+\.(com|mx|io|app|link)\b/, /(^|\s)\/[a-z]/];
+const NO_CLAVE = new Set(['PROXIMA', 'CLASE', 'COMUNIDAD', 'TAREA', 'HOY', 'MANANA']);
+const conClave = t => (plano(t).match(/(?<!\p{L})\p{Lu}{3,}(?!\p{L})/gu) || []).some(w => !NO_CLAVE.has(sinAcentos(w).toUpperCase()));
+const textoConDato = t => { const x = sinAcentos(plano(t)); return FECHA_HORA.some(r => r.test(x)) || LINK.some(r => r.test(x)) || conClave(t); };
+export function datoDePuente(l, c) {
+  const crudo = JSON.stringify(c || {});
+  if (/\{\{\s*(PROXIMA_CLASE|COMUNIDAD)\b/.test(crudo)) return true;
+  if (l.tipo === 'boton' && /\{\{/.test(crudo)) return true;
+  return textosVisibles(l).some(textoConDato);
+}
 export const esClase = deck => ['clase', 'clase-corta'].includes(deck.pieza) || (deck.pieza === 'tutorial' && deck.clase === true);
 export function cierreDeClase(deck, { crudo } = {}) {
-  const avisos = [];
+  const avisos = [], porConfirmar = {};
   const L = deck.laminas, C = crudo && Array.isArray(crudo.laminas) && crudo.laminas.length === L.length ? crudo.laminas : L;
   if (esClase(deck)) {
     const ult = L.map((l, i) => [l, C[i]]).filter(([l]) => l && l.tipo !== 'camara').slice(-3);
     if (ult.length) {
       const tarea = ult.some(([l]) => esTarea(l)), puente = ult.some(([l, c]) => esPuente(l, c));
+      const dato = ult.some(([l, c]) => datoDePuente(l, c));
+      const conPuente = ult.map(([l, c], k) => (esPuente(l, c) ? k : -1)).filter(k => k >= 0);
+      const laminas = (conPuente.length ? conPuente : [ult.length - 1]).map(k => L.indexOf(ult[k][0]) + 1);
       if (!puente) avisos.push(`${tarea ? 'tarea sin puente' : 'cierre sin puente'}: la clase termina sin decir a dónde sigue; cierra con la próxima clase (fecha y hora desde {{PROXIMA_CLASE}}) o con {{COMUNIDAD}} / el programa, más su palabra clave o link, a la vista (ARCOS.md)`);
+      else if (!dato) avisos.push('puente sin dato: di CUÁNDO (fecha y hora, con {{PROXIMA_CLASE}}) y CÓMO se entra (link, palabra clave o botón con {{COMUNIDAD}}) a la vista; «Te espero» o «Nos vemos en la comunidad» solos no llevan a nadie (ARCOS.md)');
+      if (!puente || !dato) porConfirmar.PUENTE = { valor: '', laminas, pendiente: true, motivo: puente ? 'puente sin fecha ni forma de entrar' : 'la clase cierra sin puente (próxima clase o comunidad)' };
       if (!tarea) avisos.push('cierre sin tarea con objeto: la clase cierra con algo que el público hace hoy («Tu tarea: sube tu encuesta»), antes del puente (ARCOS.md)');
     }
   }
@@ -78,6 +99,8 @@ export function cierreDeClase(deck, { crudo } = {}) {
     if (!l || l.llamado !== true) return;
     const crudos = textosCrudos(C[i] || l), junto = crudos.join(' / ');
     if (!crudos.length || !esTareaTexto(crudos[0])) return;
+    // Fuera de una clase, «Guarda __este reel__» o «Comenta **CITA**» ya es un llamado visible (ARCOS.md: verbo + objeto)
+    if (!esClase(deck) && esVerboConObjeto(crudos[0])) return;
     if (/whatsapp|\bdm\b|link|liga|correo|https?:|\.com|\{\{/i.test(junto) || /\b[A-ZÁÉÍÓÚÑ]{2,}\b/.test(plano(junto))) return;
     // En un tutorial que no es clase express, quitar el `llamado` deja el deck sin cierre: el aviso da la salida entera
     const salida = deck.pieza === 'tutorial' && !esClase(deck)
@@ -85,6 +108,6 @@ export function cierreDeClase(deck, { crudo } = {}) {
       : '';
     avisos.push(`${nombre(deck, i)}: \`llamado: true\` en una tarea («${plano(crudos[0]).slice(0, 40)}»): es para la flecha al link o la palabra clave, no para una tarea${salida} (ARCOS.md)`);
   });
-  return { errores: [], avisos };
+  return { errores: [], avisos, porConfirmar };
 }
 

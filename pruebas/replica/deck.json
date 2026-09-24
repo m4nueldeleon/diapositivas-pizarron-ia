@@ -41,6 +41,8 @@
    "id": "r115",
    "tipo": "pasos",
    "clic": 1,
+   "paso_ref": 0,
+   "ms_ref": 900,
    "texto": "3-step “**Just-Click-The-Buttons**\" business",
    "nota": "Complete beginners are using to get paid as much as doctors"
   },

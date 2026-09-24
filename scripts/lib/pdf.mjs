@@ -71,7 +71,17 @@ export async function capturarPaginas(page, deck, dir) {
   let cursores = 0;
   for (let i = 0; i < lams.length; i++) {
     const l = deck.laminas[i];
-    if (!l || l.tipo === 'camara') continue;
+    if (!l || (l.tipo === 'camara' && l.vivo !== true)) continue;
+    // Tramo en vivo: su página es la consigna que ve el público (reloj congelado en `dur`), igual que su PNG
+    if (l.tipo === 'camara') {
+      const img = path.join(dir, `${String(i + 1).padStart(2, '0')}.png`);
+      await page.evaluate(k => window.PZ.lams[k].classList.add('captura-vivo'), i);
+      await lams[i].screenshot({ path: img, type: 'png' });
+      const textos = await page.evaluate(k => (window.PZ.lams[k].querySelector('.vivo-pres') || {}).innerText || '', i);
+      await page.evaluate(k => window.PZ.lams[k].classList.remove('captura-vivo'), i);
+      paginas.push({ n: i + 1, id: l.id || 'vivo', voz: vozPlana(l), img, textos });
+      continue;
+    }
     const n = await page.evaluate(k => window.PZ.pasos(window.PZ.lams[k]), i);
     const clave = await page.evaluate(k => {
       const v = [...window.PZ.lams[k].querySelectorAll('[data-clave-paso]')].map(e => Number(e.dataset.clavePaso)).filter(Number.isInteger);

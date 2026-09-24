@@ -105,7 +105,9 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
 - Corrige y vuelve a renderizar hasta que `estado` sea **`listo`**, o `borrador` cuando lo único que queda son huecos
   declarados, datos propuestos o capturas por conseguir (entonces la nota es 90: esos datos no restan). **Nunca
   quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o
-  salir de borrador**: decláralo con `pendiente: true` y lístalo. Un loop juzga por `estado` y `falta_para_final`.
+  salir de borrador**: decláralo con `pendiente: true` y lístalo. Un loop juzga por `estado`, `listo_salvo_datos` y
+  `falta_para_final`: `borrador` con `listo_salvo_datos: false` todavía no está listo, y `con errores` gana aunque haya
+  huecos declarados.
 - Lee `qa.json → iconos`: cada emoji trae entre paréntesis su concepto de EMOJIS.md («💬 (comentar una palabra)»).
   Confirma que cada lámina donde aparece dice ESE concepto; si no, cámbialo por el emoji del suyo (💬 «Te preguntan»
   → 📲; un brazo con celular «Su audiencia» → 👥). «(fuera del diccionario)» pide uno del diccionario o agregarlo con su concepto.
@@ -194,8 +196,9 @@ Teclas del presentador:
 La lámina `camara` se proyecta en negro limpio: el público no ve el letrero «A cámara», que solo sale
 en los PNG y la hoja. Una `camara` con `"vivo": true` (actividad, demostración, preguntas) se proyecta en
 blanco con su emoji, la consigna, sus pasos y una cuenta regresiva desde `dur` (roja en los últimos 30 s); la
-vista de ensayo muestra la misma cuenta y la consigna. Fuera de un proyector 16:9 (4:3, 16:10) las bandas
-salen negras. La `voz` viaja dentro del HTML y no se dibuja: los PNG y el video no cambian.
+vista de ensayo muestra la misma cuenta y la consigna; esa misma pantalla (reloj en `dur`) sale en su PNG, la hoja,
+el PDF y el video sin `--sobre`, y QA la revisa. Fuera de un proyector 16:9 (4:3, 16:10) las bandas salen negras. La
+`voz` viaja dentro del HTML y no se dibuja.
 
 ## 6. Montaje sobre una grabación a cámara
 

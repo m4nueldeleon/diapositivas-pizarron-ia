@@ -58,11 +58,14 @@ export function tabla(l, ctx) {
     }).join('')}${Array.from({ length: vacias }, () => '<td></td>').join('')}</tr>`).join('');
   const letra = anchos ? `;--tt:${anchos.th}px;--td:${anchos.td}px;--tde:${anchos.td + 2}px` : tt ? `;--tt:${Math.round(tt * 1.1)}px;--td:${tt}px;--tde:${tt}px` : '';
   const tablaHtml = `<table class="tabla${anchos && anchos.parte ? ' parte' : ''}"${ctx.P(0)} data-ajusta style="width:${W}px${letra}">${cab}${cuerpo}</table>`;
-  if (!conv) return tablaHtml;
+  // `fuente` (dato publicado): al pie, con el último paso de la tabla
+  const pie = fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', modo === 'filas' ? filas.length : paso));
+  if (!conv) return pie ? `<div class="pila">${tablaHtml}${pie}</div>` : tablaHtml;
   const kc = pasoDe(conv, 'paso', ctx.max + 1);
   filas.forEach((_, fi) => ctx.con({ de: `c${fi}-${conv.columna}`, a: 'conv', estilo: 'converge', i: fi, n: filas.length, p: kc }));
   const pregunta = `<div class="pila"${ctx.P(kc)}${ctx.A('conv')} style="max-width:400px">${conv.emoji ? ctx.emoji(conv.emoji, 110) : ''}<div class="nota" style="--tn:60px;color:var(--tinta);margin-top:14px">${marcar(conv.texto || '')}</div></div>`;
-  return `<div class="fila" style="gap:${ctx.vertical ? 40 : 110}px;align-items:center">${tablaHtml}${pregunta}</div>`;
+  const filaConv = `<div class="fila" style="gap:${ctx.vertical ? 40 : 110}px;align-items:center">${tablaHtml}${pregunta}</div>`;
+  return pie ? `<div class="pila">${filaConv}${pie}</div>` : filaConv;
 }
 
 // En 9:16 (1000 px de ancho) las columnas iguales de 16:9 encimaban las palabras largas («Dropshipping», «$1,000-5,000»):
@@ -94,6 +97,43 @@ const formas = {
 };
 
 // GRÁFICA — líneas (tiempo contra dinero, escala contra costo), barras o crecimiento.
+// Geometría de las barras (la usan grafica() y el aviso de contrato.mjs)
+export function geometriaBarras(n, V) {
+  const W = V ? 940 : 1500, nb = Math.max(1, n), gap = nb > 1 ? Math.max(40, Math.min(230, (W - 200) * 0.35 / (nb - 1))) : 0;
+  const bw = Math.min(250, (W - 200 - gap * (nb - 1)) / nb);
+  return { W, gap, bw, colW: nb > 1 ? bw + gap - 40 : Math.min(W - 200, 600) };
+}
+// Etiquetas de barra: a 50 px en un renglón si caben en su columna; si no, en 2 renglones equilibrados (a 50, o a 44);
+// nunca 3. Todas con el MISMO tamaño (el menor que resulte). `noCaben`: las que ni a 44 en 2 renglones caben (o una
+// palabra sola más ancha que la columna): contrato.mjs avisa que se acorten. Juntas se leían como una sola frase.
+const anchoEtq = (t, px) => [...t].length * px * 0.55;
+function partirEn2(t) {
+  const ws = t.split(/\s+/).filter(Boolean);
+  if (ws.length < 2) return [t];
+  let mejor = null;
+  for (let k = 1; k < ws.length; k++) {
+    const a = ws.slice(0, k).join(' '), b = ws.slice(k).join(' '), m = Math.max([...a].length, [...b].length);
+    if (!mejor || m < mejor.m) mejor = { m, lineas: [a, b] };
+  }
+  return mejor.lineas;
+}
+export function etiquetasBarras(etiquetas, V) {
+  const { colW } = geometriaBarras(etiquetas.length, V);
+  const cabe = (ls, px) => ls.every(x => anchoEtq(x, px) <= colW);
+  const noCaben = [];
+  const plan = etiquetas.map(e => {
+    const t = String(e || '').replace(/\s+/g, ' ').trim();
+    if (!t || cabe([t], 50)) return { lineas: [t], px: 50 };
+    const dos = partirEn2(t);
+    if (cabe(dos, 50)) return { lineas: dos, px: 50 };
+    if (!cabe(dos, 44) || t.split(' ').some(w => anchoEtq(w, 44) > colW)) noCaben.push(t);
+    return { lineas: dos, px: 44 };
+  });
+  const px = Math.min(50, ...plan.map(p => p.px));
+  // con la letra común, una etiqueta que ya cabía en un renglón se queda en uno
+  const lineas = plan.map(p => (p.lineas.length === 2 && cabe([p.lineas.join(' ')], px) ? [p.lineas.join(' ')] : p.lineas));
+  return { px, lineas, colW: Math.round(colW), noCaben, dos: lineas.some(ls => ls.length > 1) };
+}
 export function grafica(l, ctx) {
   const tipo = l.grafica || 'lineas';   // lineas | barras | crecimiento
   // En 9:16 el área es alta (940×1000) y sin los 330 px de la etiqueta lateral: la banda va arriba, dentro [r4, escala]
@@ -104,9 +144,12 @@ export function grafica(l, ctx) {
     const bs = l.barras || [];
     const val = b => Math.max(0, Number(b.valor) || 0);
     const max = Math.max(1, ...bs.map(val));
-    const nb = Math.max(1, bs.length), gap = nb > 1 ? Math.max(40, Math.min(230, (W - 200) * 0.35 / (nb - 1))) : 0;
-    const bw = Math.min(250, (W - 200 - gap * (nb - 1)) / nb);
+    const { gap, bw } = geometriaBarras(bs.length, V);
     const inicio = (W - (bs.length * bw + (bs.length - 1) * gap)) / 2;
+    // Etiquetas en 1-2 renglones con una sola letra; con 2 renglones el eje sube un renglón (la barra se acorta) para
+    // que el segundo no choque con el texto, la nota o la fuente de abajo
+    const etq = etiquetasBarras(bs.map(b => b.etiqueta || ''), V);
+    const y0 = H - 60 - (etq.dos ? Math.round(etq.px * 1.1) : 0);
     // Sobre la barra van, de abajo hacia arriba, la cifra (valor_texto) y el emoji. La altura que ocupan se
     // reserva UNA vez para toda la gráfica (misma escala en todas las barras): así la barra más alta no manda
     // el emoji al título y el emoji nunca tapa la cifra [6:15, 16:15].
@@ -120,7 +163,7 @@ export function grafica(l, ctx) {
       const gid = `gb-${ctx.uid}-${i}`;
       svg += `<g${ctx.P(k)}><defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".85"/><stop offset="1" stop-color="${c}"/></linearGradient></defs>
         <rect x="${x}" y="${y0 - h}" width="${bw}" height="${h}" rx="6" fill="url(#${gid})"/>
-        <text x="${x + bw / 2}" y="${y0 + 66}" text-anchor="middle" font-size="50" font-weight="500" fill="#222">${escapar(b.etiqueta || '')}</text>
+        <text x="${x + bw / 2}" y="${y0 + Math.round(etq.px * 1.32)}" text-anchor="middle" font-size="${etq.px}" font-weight="500" fill="#222">${etq.lineas[i].map((t, j) => `<tspan x="${x + bw / 2}"${j ? ` dy="${Math.round(etq.px * 1.1)}"` : ''}>${escapar(t)}</tspan>`).join('')}</text>
         ${b.valor_texto ? `<text x="${x + bw / 2}" y="${y0 - h - 30}" text-anchor="middle" font-size="56" font-weight="800" fill="${c}">${escapar(b.valor_texto)}</text>` : ''}</g>`;
       if (b.emoji) ctx.extraSobreBarras = (ctx.extraSobreBarras || []).concat({ i, x: x + bw / 2, y: y0 - h, e: b.emoji, k, v: !!b.valor_texto });
     });
@@ -233,9 +276,10 @@ export function lineaTiempo(l, ctx) {
       ${m.arriba ? `<text x="${x}" y="${yA}" text-anchor="middle" font-size="${Math.round(50 * f)}" font-weight="700" fill="${col}">${escapar(m.arriba)}</text>` : ''}</g>`;
   });
   const alto = Math.round(460 * f) + (filaAbajo.some(Boolean) ? Math.round(64 * f) : 0);
+  const ultimoLT = Math.max(0, ...tramos.map(({ t }, i) => t.paso ?? i + 1), ...marcas.map(m => m.paso ?? 0));
   return `<div class="pila grafica">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0), ' style="margin-bottom:10px"')}
     <div${ctx.P(0)}><svg viewBox="0 0 ${W} ${alto}" width="${W}" height="${alto}" overflow="visible">${svg}</svg></div>
-    ${nota(ctx, l.nota, l.nota_paso ?? (l.tramos || []).length + 1, 'mt-s')}</div>`;
+    ${nota(ctx, l.nota, l.nota_paso ?? (l.tramos || []).length + 1, 'mt-s')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', ultimoLT))}</div>`;
 }
 
 // MEDIDOR — barra verde→rojo con pin: qué tan difícil es algo.
@@ -331,7 +375,7 @@ export function rejilla(l, ctx) {
     ${l.etiqueta_destacado ? `<div class="pila"${ctx.P(l.destacado_paso ?? 0)}${ctx.A('etq')} style="margin-bottom:${conFlecha ? 110 : 20}px">${l.emoji_etiqueta ? ctx.emoji(l.emoji_etiqueta, 110) : ''}<div style="font-size:72px;font-weight:700">${marcar(l.etiqueta_destacado)}</div></div>` : ''}
     <div class="fila" style="align-items:center;gap:${l.anotacion ? 150 : 40}px"><div class="rejilla"${ctx.P(0)}${ctx.A('rejilla')} style="--cols:${cols};--c:${c}px;--g:${g}px">${celdas.join('')}</div>
     ${l.anotacion ? `<div class="nota"${ctx.P(kAn)}${ctx.A('anot')} style="--tn:66px;color:var(--tinta);margin-top:110px;white-space:nowrap">${marcar(l.anotacion)}</div>` : ''}</div>
-    ${texto(ctx, l.texto, 'chico mt-m', l.texto_paso ?? 0)}</div>`;
+    ${texto(ctx, l.texto, 'chico mt-m', l.texto_paso ?? 0)}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', kDest))}</div>`;
 }
 
 // PRUEBA — capturas reales con sombra, círculo rojo y datos tachados [0:35, 15:45, 19:30].
@@ -405,7 +449,10 @@ export function chat(l, ctx) {
     const spec = m.avatar ?? (yo ? l.avatar_yo : l.avatar_otro);
     if (spec === false) return '';
     const cls = yo ? 'yo-av' : 'otro-av';
-    return typeof spec === 'string' && spec ? `<div class="${cls} av-emo">${ctx.emoji(spec, ctx.vertical ? 70 : 92)}</div>` : `<div class="${cls}">${PERSONA}</div>`;
+    // El emoji llena ~85% del círculo, como la silueta del original [17:45, 19:00]: a 70/92 px quedaba en ~62% y el 🤖 de
+    // «Te escribe tu IA» pesaba menos que el avatar del video. `avatar_tam` agranda los DOS avatares a la vez.
+    const tamEmo = Number.isFinite(l.avatar_tam) ? Math.round(l.avatar_tam * 0.85) : (ctx.vertical ? 82 : 108);
+    return typeof spec === 'string' && spec ? `<div class="${cls} av-emo">${ctx.emoji(spec, tamEmo)}</div>` : `<div class="${cls}">${PERSONA}</div>`;
   };
   const html = ms.map((m, i) => {
     const yo = (m.de || 'yo') === 'yo';
@@ -418,7 +465,8 @@ export function chat(l, ctx) {
     const hora = typeof m.hora === 'string' && m.hora.trim() ? `<div class="chat-hora"${ctx.P(k)}>${escapar(m.hora)}</div>` : '';
     return `${hora}<div class="msj ${yo ? 'yo' : 'otro'}"${ctx.P(k)}>${yo ? '' : av}<div class="burbuja"${ctx.A('m' + i)}>${cuerpo}</div>${yo ? av : ''}</div>`;
   }).join('');
-  const tb = l.tam_texto && /px$/.test(l.tam_texto) ? ` style="--tb:${l.tam_texto}"` : '';
+  const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ''].filter(Boolean);
+  const tb = vars.length ? ` style="${vars.join(';')}"` : '';
   return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div></div>`;
 }
 
@@ -459,8 +507,16 @@ export function calendario(l, ctx) {
   const clave = BARRA[pedido] ? pedido : 'amarillo';
   const barra = BARRA[clave];
   const dias = l.dias || Array.from({ length: l.n || 14 }, (_, i) => ({ titulo: `DÍA ${i + 1}` }));
+  // El sub del día (la palabra más larga, o un sub de 2 palabras entero) y su ancho aproximado a una letra dada
+  const largoSub = Math.max(0, ...dias.map(d => { const t = String(d.sub || '').trim(), ps = t.split(/\s+/); return ps.length <= 2 ? t.length : Math.max(...ps.map(w => w.length)); }));
+  // 9:16: el calendario usa casi todo el ancho (1000; 960 con nota al margen, para que su flecha baje por fuera de la
+  // tarjeta) y va en 3-4 columnas, no en 5: con 5 las celdas medían ~154 px y «Identificación» se salía de la suya.
+  // 4 columnas (celdas casi cuadradas, como ref_1760) si el sub más largo cabe a 30 px; si no, 3. Nunca se parte la palabra.
+  const anchoV = (l.anotaciones || []).length ? 960 : 1000;
+  const celdaV = c => (anchoV - 72 - (c - 1) * 20) / c;
+  const cabeV = c => !largoSub || (celdaV(c) - 16) / (0.5 * largoSub) >= 30;
   // Con más de 20 días (4-6 semanas) van de 7 en 7; la fila se achica para que todo quepa en el alto útil
-  const cols = l.columnas || (dias.length > 20 ? 7 : 5);
+  const cols = l.columnas || (ctx.vertical ? (dias.length > 20 ? 5 : cabeV(4) ? 4 : 3) : dias.length > 20 ? 7 : 5);
   const filas = Math.ceil(dias.length / cols);
   // Calendario GRANDE [ref_1760]: 16:9, sin notas al margen y ≤ 15 días (3 filas de 5). La tarjeta usa casi todo el alto
   // (1004 de 1080), mide ~1250 de ancho, la barra ~170 y las celdas son CUADRADAS (~234) con ~6-10 px de separación.
@@ -474,11 +530,11 @@ export function calendario(l, ctx) {
   const compacto = altoDia < 110;
   const faseDe = d => fases.findIndex(f => d + 1 >= f.desde && d + 1 <= f.hasta);
   // El sub del día se lee (32 px), pero en un calendario angosto baja hasta 28 para que «Prueba social» quepa en su
-  // celda en un renglón (2 palabras de hasta 14 letras no se parten)
-  const anchoCal = (l.anotaciones || []).length && !ctx.vertical ? 1080 : ctx.vertical ? 920 : grande ? anchoGrande : 1400;
+  // celda en un renglón (2 palabras de hasta 14 letras no se parten). En 9:16 el piso es 30: la escala del lienzo
+  // vertical no lo deja bajar de 28 reales.
+  const anchoCal = ctx.vertical ? anchoV : (l.anotaciones || []).length ? 1080 : grande ? anchoGrande : 1400;
   const celdaW = (anchoCal - 72 - (cols - 1) * gapDia) / cols;
-  const largoSub = Math.max(0, ...dias.map(d => { const t = String(d.sub || '').trim(), ps = t.split(/\s+/); return ps.length <= 2 ? t.length : Math.max(...ps.map(w => w.length)); }));
-  const tamSub = largoSub ? Math.max(28, Math.min(32, Math.floor((celdaW - 8) / (0.5 * largoSub)))) : 32;
+  const tamSub = largoSub ? Math.max(ctx.vertical ? 30 : 28, Math.min(32, Math.floor((celdaW - (ctx.vertical ? 16 : 8)) / (0.5 * largoSub)))) : 32;
   // Sin fase activa los días van en gris neutro (la lámina que presenta el plan, 28:45).
   const html = dias.map((d, i) => {
     const f = faseDe(i), c = f >= 0 ? CELDA[fases[f].color] || CELDA.amarillo : null;
@@ -491,10 +547,17 @@ export function calendario(l, ctx) {
     const sd = String(d.sub || '').trim(), corto = sd.split(/\s+/).length <= 2 && sd.length <= 14 ? ' class="corta"' : '';
     return `<div class="dia${apagada}" style="width:calc((100% - ${(cols - 1) * gapDia}px)/${cols});${st}"${ctx.A('dia' + i)}><small>${escapar(d.titulo || l.palabra_dia || 'DÍA')}</small><b>${escapar(String(d.numero ?? i + 1))}</b>${d.sub ? `<span${corto}>${escapar(d.sub)}</span>` : ''}</div>`;
   }).join('');
-  (l.anotaciones || []).forEach((a, i) => ctx.con({ de: 'an' + i, a: 'dia' + (a.dia - 1), estilo: 'curva-roja', p: a.paso ?? 1 }));
+  // En 9:16 la flecha de la nota llega al COSTADO de la celda y baja por el margen de fuera: desde arriba cruzaba la barra
+  // («Fase 2») y se leía como tachón
+  (l.anotaciones || []).forEach((a, i) => ctx.con({ de: 'an' + i, a: 'dia' + (a.dia - 1), estilo: 'curva-roja', p: a.paso ?? 1,
+    ...(ctx.vertical ? { lateral: a.lado === 'derecha' ? 'derecha' : 'izquierda', caja: 'calendario' } : {}) }));
   // `arriba`: px (número) o un porcentaje del alto («40%»); `tam` en px (52-58 en m_1740, 56 por omisión)
   const arriba = a => (typeof a.arriba === 'string' && /^\d{1,3}(\.\d+)?%$/.test(a.arriba) ? a.arriba : `${Number.isFinite(Number(a.arriba)) ? Number(a.arriba) : 300}px`);
-  const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};top:${arriba(a)};--tn:${a.tam || '56px'};color:var(--tinta);max-width:340px">${marcar(a.texto)}</div>`).join('');
+  // 9:16: la nota va ENCIMA de la tarjeta, en el margen de arriba y a su lado (la firma va al centro, y ≈ 226): su borde
+  // de abajo queda 30 px sobre la tarjeta (centrada en el lienzo), sin importar sus renglones ni el `arriba` de 16:9
+  const altoCal = barraH + 66 + filas * altoDia + (filas - 1) * gapDia + 4;
+  const posV = `bottom:${Math.round((ctx.F.H + altoCal) / 2 + 30)}px`;
+  const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};${ctx.vertical ? posV : `top:${arriba(a)}`};--tn:${a.tam || '56px'};color:var(--tinta);max-width:340px">${marcar(a.texto)}</div>`).join('');
   const sub = activa && activa.sub ? `<em class="sub">${escapar(activa.sub)}</em>` : '';
   // con notas al margen el calendario se angosta para que la nota quede FUERA, como en m_1740
   const angosto = (l.anotaciones || []).length && !ctx.vertical;
@@ -506,7 +569,7 @@ export function calendario(l, ctx) {
   const libre = anchoCal - 80 - (String(pastilla).length * 40 * 0.66 + 60) - (sub ? String(activa.sub).length * 42 * 0.52 + 80 : 0);
   const tamBarra = Math.max(44, Math.min(grande ? 64 : 60, Math.floor(libre / (0.6 * Math.max(1, String(nombre).length)))));
   const estilo = `--alto-dia:${altoDia}px;--t-sub-dia:${tamSub}px;--t-barra:${tamBarra}px;--c-fase:${TINTA_FASE[clave]}${angosto ? ';width:1080px' : ''}`
-    + (grande ? `;--ancho-cal:${anchoGrande}px;--barra-h:${barraH}px` : '');
+    + (grande ? `;--ancho-cal:${anchoGrande}px;--barra-h:${barraH}px` : ctx.vertical ? `;--ancho-cal:${anchoCal}px` : '');
   return `<div class="calendario${compacto ? ' compacto' : ''}${grande ? ' grande' : ''}"${ctx.P(0)} style="${estilo}"><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})"><b>${escapar(nombre)}</b>${sub}<span>${escapar(pastilla)}</span></div>
     <div class="dias" style="display:flex;flex-wrap:wrap;justify-content:center;gap:${gapDia}px">${html}</div></div>${anot}`;
 }
@@ -638,7 +701,8 @@ export function circulos(l, ctx) {
 // PRODUCTO a color con la letra blanca en mayúsculas (morado, marino, naranja, verde, azul, negro, por turno si la
 // pieza no trae `color`). `doble` ocupa dos columnas, `alto: 2` dos filas y `sub` es un subrenglón («For 6 Months»).
 // El `remate` (✅ Hecho contigo) es una lámina aparte en la referencia [42:50]: aquí entra en su paso sobre un
-// lienzo limpio. `sangre: false` (y el 9:16) usa la pila de tarjetas grises con el remate debajo.
+// lienzo limpio. En 9:16 también va a sangre, en 2 columnas y entre la firma y la zona de Reels. `sangre: false` (o 1:1 y
+// 4:5) usa la pila de tarjetas con el remate debajo.
 export const COLOR_PIEZA = ['morado', 'marino', 'naranja', 'verde', 'azul', 'negro'];
 const TONO_PIEZA = { v: 'tono-bv', r: 'tono-br', n: 'tono-bn' };
 // Emojis oscuros o grises que se funden con la pieza marino o negra (y los grises también con la verde y la azul): el
@@ -655,9 +719,11 @@ export function colorPieza(emoji, i, previo = '') {
   for (let j = 0; j < COLOR_PIEZA.length; j++) { const c = COLOR_PIEZA[(i + j) % COLOR_PIEZA.length]; if (!evita.includes(c)) return c; }
   return COLOR_PIEZA[i % COLOR_PIEZA.length];
 }
+export const stackASangre = (l, F) => l.sangre !== false && (F.W > F.H || F.H >= 1.7 * F.W);
+// 9:16 a sangre: la zona segura va bajo la firma (arriba, y ≈ 226) y sobre la interfaz de Reels (abajo 320), con 18 px a los lados
+export const SANGRE_V = { arriba: 290, abajo: 320, lado: 18 };
 export function stack(l, ctx) {
-  const sangre = !ctx.vertical && ctx.F.W > ctx.F.H && l.sangre !== false;
-  return sangre ? stackSangre(l, ctx) : stackPila(l, ctx);
+  return stackASangre(l, ctx.F) ? stackSangre(l, ctx) : stackPila(l, ctx);
 }
 // El ícono es el protagonista de la pieza [42:40: la imagen de «Dedicated Consultant» ocupa ~37-45% del alto]: ~40% del
 // alto de la pieza y ≤ 45% de su ancho (tope 220). Siempre deja lugar al rótulo de dos renglones (2 × 57), al `sub`
@@ -668,10 +734,12 @@ export function tamEmojiPieza(alto, ancho, conSub = false) {
 }
 function stackSangre(l, ctx) {
   const items = l.items || [];
-  const cols = l.columnas || (items.length >= 7 ? 4 : 3);
+  const V = ctx.vertical;
+  const cols = V ? Math.min(l.columnas || 2, 2) : l.columnas || (items.length >= 7 ? 4 : 3);
   const celdas = items.reduce((s, it) => s + (it.doble ? 2 : 1) * (it.alto === 2 ? 2 : 1), 0);
   const filas = Math.max(1, Math.ceil(celdas / cols));
-  const altoFila = Math.floor((ctx.F.H - 36 - (filas - 1) * 16) / filas);
+  const altoUtil = V ? ctx.F.H - SANGRE_V.arriba - SANGRE_V.abajo : ctx.F.H - 36;
+  const altoFila = Math.floor((altoUtil - (filas - 1) * 16) / filas);
   const anchoCol = Math.floor((ctx.F.W - 36 - (cols - 1) * 16) / cols);
   const usados = [];
   const piezas = items.map((it, i) => {
@@ -691,19 +759,25 @@ function stackSangre(l, ctx) {
     ${nota(ctx, l.nota, kNota, 'mt-m')}</div>` : '';
   // El cierre tapa las piezas: el paso anterior (el stack lleno) es un cuadro CLAVE para la hoja, el PDF y --finales
   const clave = cierre ? ` data-clave-paso="${Math.min(kRem, kNota) - 1}"` : '';
-  return `<div class="stack sangre"${ctx.P(0)}${clave} style="--cols:${cols};--alto-fila:${altoFila}px">${piezas}</div>${cierre}`;
+  const inset = V ? `;inset:${SANGRE_V.arriba}px ${SANGRE_V.lado}px ${SANGRE_V.abajo}px` : '';
+  return `<div class="stack sangre"${ctx.P(0)}${clave} style="--cols:${cols};--alto-fila:${altoFila}px${inset}">${piezas}</div>${cierre}`;
 }
 function stackPila(l, ctx) {
   const items = l.items || [];
   const cols = l.columnas || (ctx.vertical ? 2 : 3);
   const cw = Math.min(480, Math.floor((ctx.util - (cols - 1) * 28) / Math.max(1, cols)));
+  // La pila también pinta el `sub` («Bono #1») y el `color` de la pieza; el ícono va en una columna fija (--ico) para
+  // que los íconos de una columna queden en la misma x (centrar el grupo ícono + texto los desalineaba)
+  const ico = ctx.vertical ? 84 : 96;
   const piezas = items.map((it, i) => {
-    const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${ctx.vertical ? 80 : 96}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, ctx.vertical ? 84 : 96) : '';
-    return `<div class="bento"${it.doble ? ' style="grid-column:span 2"' : ''}${ctx.A('s' + i)}><div class="bento-lleno ${TONO_PIEZA[it.tono] || ''}"${ctx.P(i + 1)}>${vis}${it.texto ? `<span class="b-texto">${marcar(it.texto)}</span>` : ''}</div></div>`;
+    const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${ctx.vertical ? 80 : 96}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, ico) : '';
+    const clase = COLOR_PIEZA.includes(it.color) ? `c-${it.color}` : TONO_PIEZA[it.tono] || '';
+    const cuerpo = `${it.texto ? `<span class="b-texto">${marcar(it.texto)}</span>` : ''}${it.sub ? `<span class="b-sub">${marcar(it.sub)}</span>` : ''}`;
+    return `<div class="bento"${it.doble ? ' style="grid-column:span 2"' : ''}${ctx.A('s' + i)}><div class="bento-lleno${vis ? ' con-ico' : ''} ${clase}"${ctx.P(i + 1)}>${vis}${cuerpo ? `<div class="b-cuerpo">${cuerpo}</div>` : ''}</div></div>`;
   }).join('');
   const kRem = pasoDe(l, 'remate_paso', items.length + 1);
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    <div class="stack"${ctx.P(0)} style="--cols:${cols};--cw:${cw}px">${piezas}</div>
+    <div class="stack"${ctx.P(0)} style="--cols:${cols};--cw:${cw}px;--ico:${ico}px">${piezas}</div>
     ${l.remate ? `<div class="t chico mt-m"${ctx.P(kRem)}>${ctx.em.html('✅', '1.1em', 'en-linea')}${marcar(l.remate)}</div>` : ''}
     ${l.total ? `<div class="etiqueta-chica"${ctx.P(kRem)} style="margin-top:18px">${marcar(l.total)}</div>` : ''}
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kRem + (l.remate || l.total ? 1 : 0)), 'mt-s')}</div>`;

@@ -345,10 +345,13 @@ export const BAJO_CONTRASTE = {
   fluent: {
     claro: { '💭': '💡', '✉': '📧', '📩': '📲', '🤍': '❤', '🧾': '💵', '🏳': '🚩',
       '🔧': '🛠', '📨': '📧', '🗒': '📄', '☁': '🌐', '🖱': '👆', '⚙': '🛠' },
-    oscura: { '🗣': '🎤', '🤍': '❤' },
+    oscura: { '🗣': '🎤', '🤍': '❤', '🎥': '📹' },
   },
 };
 export const UMBRAL_CONTRASTE = 15;
+// Sobre la lámina oscura la medida es más estricta (solo ≥ 3:1, contraste-color.mjs) y el umbral más alto: con 30 se
+// separan sin un error los que se hunden (📞 💲 de Apple; 🎓 ♟ 🎵 🗣 de Fluent) de los que se ven (☎ 📹 💵 🚀 💰 🎤).
+export const UMBRAL_OSCURA = 30;
 // Sustituto para un emoji que solo la MEDIDA marca (p. ej. 💬 de Apple sobre tarjeta gris)
 // (📄 y 📃 ya se dibujan en SVG: son el sustituto de toda «hoja»; 📋 es «tarea», no «documento»)
 // (💬 y 🗨 se dibujan en SVG: la burbuja azul; ya no se sustituyen por 📲, que es «te llega al celular»)
@@ -385,7 +388,7 @@ export function bajoContraste(ch, modo, fondo) {
   const t = (BAJO_CONTRASTE[modo] || {})[fondo === 'oscura' ? 'oscura' : 'claro'] || {};
   if (t[k]) return t[k];
   const m = ((contrasteMedido()[modo] || {})[fondo === 'oscura' ? 'oscura' : fondo === 'tarjeta' ? 'tarjeta' : 'claro'] || {})[k];
-  return m != null && m < UMBRAL_CONTRASTE && !(VISTOS_OK[modo] || []).includes(k) ? SUGERIDO[k] || '?' : '';
+  return m != null && m < (fondo === 'oscura' ? UMBRAL_OSCURA : UMBRAL_CONTRASTE) && !(VISTOS_OK[modo] || []).includes(k) ? SUGERIDO[k] || '?' : '';
 }
 
 // Manos (👆 👉 ✍️ 🖱…): en un `boton` con cursor de mano serían dos manos [23:15]. Sin tono ni FE0F.

@@ -32,7 +32,10 @@ SKILL.md.
   funciones puras: su prueba va en `pruebas/reglas-deck.test.mjs` u `oferta-propuesta.test.mjs`. `revisarDeck`
   recibe `crudo` (el deck antes de sustituir `datos`) para saber si un número vino de un `{{MARCADOR}}`.
 - `scripts/lib/reglas-venta.mjs`: tasas sin origen, promesas sin descargo visible y el cierre de una clase (tarea +
-  puente); reglas-deck.mjs las re-exporta y las suma en `revisarDeck`.
+  puente con su DATO: cuándo o cómo se entra; sin él, `por_confirmar.PUENTE`); reglas-deck.mjs las re-exporta y las suma
+  en `revisarDeck`. `estadoQA` (reglas-deck) fija el orden del estado: con errores → borrador → bajo-90 → falta-venta → listo.
+- El fondo del `foco` copia en runtime (copiarExtrasAlClon) el sello y las anotaciones YA colocados de la lámina anterior:
+  preparar() arma primero las láminas normales y después los focos.
 - `scripts/lib/marca.mjs`: la ficha MI-MARCA.md (firma y palabras vetadas) con UNA cadena de búsqueda (carpeta del
   deck → arriba → `$PIZARRON_MARCA` → `~/.config/diapositivas-pizarron-ia/MI-MARCA.md`). `pipeline.mjs` aplica la
   firma a un deck sin `marca`; el logo solo se copia si la ficha está en la carpeta del deck.

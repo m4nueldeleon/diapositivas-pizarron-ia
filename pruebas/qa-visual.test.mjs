@@ -291,3 +291,15 @@ test('QA r4: el modelo vsl-corto (huecos declarados) da 90, borrador, sin errore
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: false, laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }] }));
   assert.equal(qa(dir).estado, 'con errores');
 });
+
+test('QA r5: un hueco declarado no esconde los errores: estado «con errores», por_confirmar presente y salida 1', { timeout: 120_000 }, () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', marca: { texto: 'tumarca', sufijo: '.com' }, datos: { PRECIO: { pendiente: true, motivo: 'lo define dirección' } },
+    laminas: [{ tipo: 'cifra', valor: 'Inversión: {{PRECIO}}' }, { tipo: 'idea', emoji: '💡', texto: 'Otra idea' }] }));
+  const r = qa(dir);
+  assert.equal(r.estado, 'con errores', JSON.stringify(r.errores));
+  assert.ok(r.por_confirmar.PRECIO);
+  assert.equal(r.listo_salvo_datos, false);
+  const e = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts', 'qa.mjs'), dir, '--salida', tmp()], { encoding: 'utf8' });
+  assert.equal(e.status, 1);
+});

@@ -208,3 +208,19 @@ test('como r4: hereda solo los campos del objeto (no revelar ni voz), la hija ga
   // el campo `como` lo conoce el contrato
   assert.ok(COMUNES.includes('como'));
 });
+
+test('r5: índices fuera de rango son error (pasos activo/hechos desde 1; rejilla destacar y opciones elegida desde 0)', async () => {
+  const { resolverComo } = await import('../scripts/lib/contrato.mjs');
+  const v = laminas => validarDeck(resolverComo({ laminas }).deck, tipos);
+  const mapa = { id: 'mapa', tipo: 'pasos', etiquetas: ['A', 'B', 'C'] };
+  const e = v([mapa, { tipo: 'pasos', como: 'mapa', activo: 9, hechos: [7, 8] }]);
+  assert.ok(e.some(x => /activo 9 y hay 3 pasos/.test(x)), e.join('\n'));
+  assert.equal(e.filter(x => /hechos incluye/.test(x)).length, 2, e.join('\n'));
+  assert.deepEqual(v([{ ...mapa, activo: 3, hechos: [1, 2] }]), []);
+  assert.ok(v([{ ...mapa, hechos: [0] }]).some(x => /hechos incluye 0/.test(x)));
+  const rj = destacar => v([{ tipo: 'rejilla', total: 30, destacar }]);
+  assert.deepEqual(rj([29]), []);
+  assert.ok(rj([30]).some(x => /destacar 30 y la rejilla tiene 30 celdas/.test(x)));
+  assert.ok(v([{ tipo: 'opciones', items: ['a', 'b'], elegida: 2 }]).some(x => /elegida 2 y hay 2 opciones/.test(x)));
+  assert.deepEqual(v([{ tipo: 'opciones', items: ['a', 'b'], elegida: 1 }]), []);
+});

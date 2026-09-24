@@ -90,7 +90,7 @@ las tipografías.
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
 | **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
-| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: el deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`. También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
+| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: el deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
 
@@ -179,7 +179,9 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   voz contra la de la pieza.
 - Si `qa.json` trae `pendientes` sin declarar, son errores (`estado: "con errores"`): pregunta esos datos. Los
   huecos declarados (`"pendiente": true`), los datos propuestos y las capturas por conseguir (`CAPTURA_N`) van en
-  `por_confirmar` (`estado: "borrador"`, nota con tope de 90; **no restan nota**, salen en `datos_por_confirmar`). Lístalos (el dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén
+  `por_confirmar` (`estado: "borrador"`, nota con tope de 90; **no restan nota**, salen en `datos_por_confirmar`).
+  `borrador` implica cero errores: un deck con huecos declarados Y errores sale `con errores` (corrige primero los
+  errores; los `por_confirmar` se listan igual). `nota_sin_tope` y `listo_salvo_datos` dicen si quedan avisos. Lístalos (el dato, su valor propuesto y sus láminas) y no llames «final» al deck hasta que estén
   llenos o confirmados en `"datos"` (sin `propuesto` ni `pendiente`).
 - Si QA avisa «sin prueba real» o «credibilidad sin cifra», dilo en una línea («Va sin prueba real: mándame 1-3
   capturas con permiso y reemplazo la lámina N, o busco un dato publicado del mercado con su fuente») y no llames

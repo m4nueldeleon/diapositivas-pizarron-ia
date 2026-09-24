@@ -8,7 +8,8 @@
 //   · svg (los glifos dibujados: 👥 👤 📱 ✅…): su outerHTML con los degradados globales (#pz-sil, #pz-ok…) adentro;
 //   · texto (Apple): fillText con Apple Color Emoji, solo en macOS (fuera de macOS no se mide).
 // Métrica (0-100): de los píxeles opacos del glifo, el % con contraste ≥ 2:1, o ΔE76 (Lab) ≥ 40 con color propio (croma ≥ 35) o
-// con al menos 1.5:1, contra ESE fondo. En
+// con al menos 1.5:1, contra ESE fondo; sobre un fondo casi negro (luminancia < 0.05) solo cuenta ≥ 3:1 (y el umbral es
+// UMBRAL_OSCURA de emoji.mjs: 30). En
 // un degradado se toma la PEOR de sus paradas y su promedio. Bajo UMBRAL_COLOR, QA avisa; sobre un PASTEL (todas las
 // paradas con luminancia > 0.6: cuadrantes, cuadros, tarjetas de tono) el glifo se ve como sobre la tarjeta #f3f3f3 y
 // vale el umbral de la tabla neutra (UMBRAL_CONTRASTE): el 📧 de Apple da 20% en blanco y 17% en el verde pastel.
@@ -18,6 +19,8 @@ import { DEFS_GLOBALES } from './emoji.mjs';
 
 export const UMBRAL_COLOR = 25;
 const linC = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+// Todas las paradas casi negras (luminancia < 0.05): vale el umbral de la oscura (UMBRAL_OSCURA)
+export const esOscuro = fondos => fondos.every(([r, g, b]) => 0.2126 * linC(r) + 0.7152 * linC(g) + 0.0722 * linC(b) < 0.05);
 export const esPastel = fondos => fondos.every(([r, g, b]) => 0.2126 * linC(r) + 0.7152 * linC(g) + 0.0722 * linC(b) > 0.6);
 const defs = (DEFS_GLOBALES.match(/<defs>[\s\S]*<\/defs>/) || [''])[0];
 
@@ -38,6 +41,9 @@ export function puntuarGlifo(datos, [br, bg, bb]) {
     return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
   };
   const lf = lum(br, bg, bb), Lf = lab(br, bg, bb);
+  // Fondo muy oscuro (la lámina oscura #0b0b0e, un marino casi negro): 2:1 es un piso bajísimo (un morado oscuro ya pasa)
+  // y el ΔE sobre negro engaña. Ahí solo cuenta el contraste de 3:1 de WCAG 1.4.11 (objetos gráficos).
+  const oscuro = lf < 0.05;
   let op = 0, ve = 0;
   for (let i = 0; i < datos.length; i += 4) {
     const a = datos[i + 3] / 255; if (a < 0.5) continue;
@@ -47,7 +53,7 @@ export function puntuarGlifo(datos, [br, bg, bb]) {
     const L = lab(r, g, b), de = Math.hypot(L[0] - Lf[0], L[1] - Lf[1], L[2] - Lf[2]);
     // ΔE ≥ 40 cuenta si el píxel tiene color propio (croma ≥ 35: el amarillo de ⚠️ o 💡 sobre gris claro se ve) o algo de
     // contraste de luz (≥ 1.5:1). Una silueta gris azulada (croma ~17) sobre morado da ΔE ≥ 40 con 1.1:1 y se ve apagada.
-    if (k >= 2 || (de >= 40 && (k >= 1.5 || Math.hypot(L[1], L[2]) >= 35))) ve++;
+    if (oscuro ? k >= 3 : (k >= 2 || (de >= 40 && (k >= 1.5 || Math.hypot(L[1], L[2]) >= 35)))) ve++;
   }
   return op ? Math.round((ve / op) * 100) : null;
 }
@@ -65,7 +71,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     const fondos = m.fondos.length > 1 ? [...m.fondos, promedio] : m.fondos;
     const clave = `${m.tipo}|${m.ch}|${url.length}|${url.slice(-64)}|${JSON.stringify(fondos)}`;
     if (!cache.has(clave)) { cache.set(clave, items.length); items.push({ tipo: m.tipo, ch: m.ch, url, fondos }); }
-    m._k = cache.get(clave); m._pastel = esPastel(m.fondos); m._neutro = m.neutro === true;
+    m._k = cache.get(clave); m._pastel = esPastel(m.fondos); m._oscuro = esOscuro(m.fondos); m._neutro = m.neutro === true;
   }));
   if (!items.length) return [];
   const pg = await browser.newPage();
@@ -89,7 +95,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     }, items);
   } finally { await pg.close(); }
   const res = [];
-  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], pastel: m._pastel, ...(m._neutro ? { neutro: true, fondoN: m.fondoN } : {}) }); }));
+  porLamina.forEach(r => (r.medir || []).forEach(m => { if (m._k != null) res.push({ i: r.i, ch: m.ch, pct: pcts[m._k], pastel: m._pastel, oscuro: m._oscuro, ...(m._neutro ? { neutro: true, fondoN: m.fondoN } : {}) }); }));
   // un hallazgo por emoji y lámina
   return [...new Map(res.map(x => [`${x.i}|${x.ch}|${x.pct}`, x])).values()];
 }

@@ -12,7 +12,8 @@
 //   · si ninguna lámina r<seg> trae `_cuadro` (lo que distingue a la réplica versionada), sale con código 1.
 //
 // Qué paso se compara: `paso_ref` de la lámina (desde 0; −1 = el último) cuando el cuadro del video es un
-// momento intermedio del revelado; sin él, el paso que más se parece al cuadro (correlación de la densidad de
+// momento intermedio del revelado (con `ms_ref`, ese paso se captura en ese milisegundo de su animación, p. ej. la mano
+// que ya aprieta la tecla 1 antes de arrastrar la ruta); sin él, el paso que más se parece al cuadro (correlación de la densidad de
 // tinta en 8×5 celdas, lib/tinta.mjs). Antes de medir encuadre se revisa que sean la MISMA escena: con correlación menor que
 // --min-parecido el par es «no parece la misma lámina» (error: id desfasado o cuadro de otro momento), cuenta
 // aparte y hace salir con código 1. Sale:
@@ -75,6 +76,12 @@ for (const par of pares) {
     par.pasoRef = l.paso_ref < 0 ? n - 1 : l.paso_ref;
     if (l.paso_ref >= n) console.warn(`⚠ ${par.id}: paso_ref ${l.paso_ref} y la lámina tiene ${n} pasos: uso el último`);
     par.pasoRef = Math.min(par.pasoRef, n - 1);
+    // `ms_ref`: el cuadro del video es un instante DENTRO de la animación del paso (la mano ya en la tecla 1 y sin ruta
+    // [ref_115]): ese paso se captura en ese milisegundo, no en su estado final
+    if (Number.isFinite(l.ms_ref)) {
+      await page.evaluate(([k, x, ms]) => window.PZ.mostrar(window.PZ.lams[k], x, ms), [i, par.pasoRef, l.ms_ref]);
+      par.pasos[par.pasoRef] = 'data:image/png;base64,' + (await lam.screenshot({ type: 'png' })).toString('base64');
+    }
   }
   par.cuadro = l._cuadro || '';
   par.referencia = aDataUrl(path.join(dirRef, par.ref));

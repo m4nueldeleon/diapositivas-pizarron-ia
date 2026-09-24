@@ -85,7 +85,8 @@ la lámina nueva o un elemento más sobre la actual.
 7. **Las cifras siempre con número** y en la unidad que se dice: «$10k al mes», no «diez mil
    mensuales».
    Un estudio o un dato publicado se cita en `fuente` («Autor, obra (año)», sans gris al pie), en `idea`,
-   `flujo`, `grafica`, `cifra` o `cita`; nunca en `nota` (LAYOUTS.md, «Fuente de un dato o un estudio»).
+   `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas` o `linea-tiempo`; nunca en `nota` (LAYOUTS.md,
+   «Fuente de un dato o un estudio»).
 8. **Proyecciones al espectador.** Cuando la cuenta promete lo que ganará o conseguirá quien mira
    (dinero, clientes, ventas). No aplica al tamaño de un mercado ni a un dato publicado: ahí va `fuente`.
    - a) La condición concreta va en `arriba`, con número: «Si te escriben 20 personas al día:» o «Con 10
@@ -192,7 +193,9 @@ del **webinar o video largo**:
   - una escena concreta con hora y lugar: «11:40 pm. Alguien quiere comprarte…»;
   - el resultado más «sin…» [0:10-0:19];
   - el error en vivo: el chat que se queda en visto;
-  - un dato contraintuitivo.
+  - un dato contraintuitivo. Un gancho con un dato publicado lleva su `fuente` en la MISMA lámina, porque la primera
+    vista es muda; y no se generaliza el dato más allá de la población del estudio («alumnos verificados de edX», no
+    «un curso en línea»).
 - **Se tiene que entender sin sonido**: en YouTube y en reels la primera vista suele ser muda. Un gancho
   en chat muestra a la vista la hora de los dos extremos (cuándo escribió y cuándo contestaste: `hora` por
   mensaje) y pega el sello a la burbuja culpable con `sello_sobre: "m1"` (LAYOUTS.md, `chat`).

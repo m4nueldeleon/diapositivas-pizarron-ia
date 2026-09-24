@@ -1,6 +1,7 @@
 // hoja.mjs — hojas de contacto para revisar un deck de un vistazo.
 //   hoja.jpg        el último paso de cada lámina, rotulado «N · id» con el MISMO número que el PNG
-//                   (NN-id-P.png) y que el QA («lámina N»); las `camara` ocupan su lugar como cuadro gris.
+//                   (NN-id-P.png) y que el QA («lámina N»); las `camara` ocupan su lugar como cuadro gris, salvo el
+//                   tramo en vivo (`vivo: true`), que sale con la consigna que ve el público y el rótulo «EN VIVO · m:ss».
 //   hoja-pasos.jpg  una fila por lámina con TODOS sus pasos («N.P»): así se revisa el orden del revelado.
 // Una clase (220-400 láminas) o un webinar (450-700) no caben en una imagen legible: con más de POR_HOJA láminas
 // se pagina en hoja-01.jpg, hoja-02.jpg… (y hoja-pasos-01.jpg…, FILAS_POR_HOJA filas cada una), cada página
@@ -27,13 +28,16 @@ export function tituloPagina(trozo, k, paginas, total) {
 export const archivoPagina = (base, k, paginas) => (paginas <= 1 ? `${base}.jpg` : `${base}-${String(k + 1).padStart(2, '0')}.jpg`);
 const encabezado = t => (t ? `<h1 style="margin:18px 18px 0;font:700 30px system-ui;color:#111">${escapar(t)}</h1>` : '');
 
+// El rótulo va EN FLUJO, como una franja encima de la miniatura: sobre ella tapaba la esquina de la lámina (el primer
+// encabezado de una tabla).
 const ESTILO = `body{margin:0;background:#dcdcdc;font:600 18px system-ui}
-figure{margin:0;position:relative}img,.cam{display:block;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+figure{margin:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}img,.cam{display:block;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .cam{background:#9a9a9a;color:#fff;display:grid;place-items:center;font-size:34px}
-figcaption{position:absolute;left:8px;top:8px;background:#111;color:#fff;padding:2px 8px;border-radius:4px}`;
+figcaption{background:#111;color:#fff;padding:2px 8px;border-radius:4px;line-height:22px}`;
 
 // Rótulo común: número de lámina (1 = la primera del deck, contando las cámaras) y su id; un cuadro clave dice su paso
-export const rotulo = c => `${c.n} · ${c.id}${c.clave ? ` · paso ${c.paso + 1}` : ''}`;
+const mmssV = s => `${Math.floor((Number(s) || 0) / 60)}:${String(Math.round(Number(s) || 0) % 60).padStart(2, '0')}`;
+export const rotulo = c => `${c.n} · ${c.id}${c.clave ? ` · paso ${c.paso + 1}` : ''}${c.vivo ? ` · EN VIVO · ${mmssV(c.dur)}` : ''}`;
 
 // Cuadros de la hoja a partir del manifiesto de render (pasos.json): uno por lámina, su último paso. Un paso
 // `clave` (el stack a sangre lleno, antes de que el remate lo tape) sale además, antes del final y con el mismo número.
@@ -45,7 +49,7 @@ export function cuadrosHoja(manifiesto) {
     c.ultimo = m;                                               // se queda con el último paso de cada una
     porLamina.set(m.lamina, c);
   });
-  const cuadro = m => ({ n: m.lamina + 1, id: m.id, camara: m.tipo === 'camara', archivo: m.archivo });
+  const cuadro = m => ({ n: m.lamina + 1, id: m.id, camara: m.tipo === 'camara' && !m.archivo, archivo: m.archivo, ...(m.vivo ? { vivo: true, dur: m.dur } : {}) });
   return [...porLamina.values()].flatMap(({ claves, ultimo }) => [
     ...claves.filter(m => m !== ultimo).map(m => ({ ...cuadro(m), clave: true, paso: m.paso })),
     cuadro(ultimo),
@@ -54,9 +58,9 @@ export function cuadrosHoja(manifiesto) {
 
 export function htmlHoja(cuadros, { W, H, ancho = 560, titulo = '' }) {
   const cols = cuadros.length <= 4 ? 2 : cuadros.length <= 9 ? 3 : 4, alto = Math.round(ancho * H / W);
-  const fig = c => `<figure>${c.camara || !c.archivo
+  const fig = c => `<figure><figcaption>${escapar(rotulo(c))}</figcaption>${c.camara || !c.archivo
     ? `<div class="cam" style="width:${ancho}px;height:${alto}px">🎥 cámara</div>`
-    : `<img src="${escapar(c.archivo)}" style="width:${ancho}px;height:${alto}px">`}<figcaption>${escapar(rotulo(c))}</figcaption></figure>`;
+    : `<img src="${escapar(c.archivo)}" style="width:${ancho}px;height:${alto}px">`}</figure>`;
   return { cols, ancho, html: `<!doctype html><meta charset="utf-8"><style>${ESTILO}
   .g{display:grid;grid-template-columns:repeat(${cols},${ancho}px);gap:18px;padding:18px}</style>
   ${encabezado(titulo)}<div class="g">${cuadros.map(fig).join('')}</div>` };
@@ -78,7 +82,7 @@ export function htmlHojaPasos(filas, { W, H, ancho: anchoPedido = 320, titulo = 
   const ancho = Math.max(120, Math.min(anchoPedido, Math.floor((ANCHO_MAX_PASOS - 236) / max) - 12));
   const alto = Math.round(ancho * H / W);
   const fila = f => `<div class="f"><div class="id">${escapar(rotulo(f))}</div>${f.pasos.map(p =>
-    `<figure><img src="${escapar(p.archivo)}" style="width:${ancho}px;height:${alto}px"><figcaption>${escapar(p.etiqueta)}</figcaption></figure>`).join('')}</div>`;
+    `<figure><figcaption>${escapar(p.etiqueta)}</figcaption><img src="${escapar(p.archivo)}" style="width:${ancho}px;height:${alto}px"></figure>`).join('')}</div>`;
   return { anchoTotal: 200 + max * (ancho + 12) + 36, html: `<!doctype html><meta charset="utf-8"><style>${ESTILO}
   .f{display:flex;gap:12px;align-items:center;padding:8px 18px}.id{width:188px;flex:none;font-size:20px;word-break:break-word}</style>
   ${encabezado(titulo)}${filas.map(fila).join('')}` };
