@@ -120,6 +120,17 @@ s.tachon, .tachon { text-decoration: none; }
 .emo .insignia.izq { right: auto; left: -10%; bottom: -4%; width: 60%; height: 60%; }
 .emo .insignia.izq.no { width: 62%; height: 62%; left: -8%; bottom: -2%; }   /* la ✕ cruza el cuarto inferior izquierdo [ref_628] */
 .emo .insignia > img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* La insignia de la derecha (+💰) mide ~45-48% del alto del glifo base [ref_10: la bolsa es el 45% del médico]. En
+   apple el glifo ya da ~47% (font-size .5 de --s); la imagen de Fluent y el SVG llenaban la caja del 58% y le tapaban
+   piernas y manos a una base ancha (🧑‍🤝‍🧑+🤖). Se pegan a la esquina de abajo a la derecha de la caja al 82%. */
+.emo .insignia:not(.izq) > img, .emo .insignia:not(.izq) > svg { position: absolute; right: 0; bottom: 0; width: 82%; height: 82%; }
+/* Glifos SVG de objeto (📱 📲 📄 💬, y en apple 📅 🎟): sombra suave bajo el cuerpo, como la de los emojis 3D del set.
+   Proporcional al emoji (--s): a 200 px cae ~6 px. Las siluetas 👤 👥 y las insignias ✅ ❌ no la llevan. */
+/* foco: halo de papel para que la frase a mano se despegue del fondo atenuado cuando no encuentra hueco */
+.lienzo.foco-frase .nota { text-shadow: 0 0 12px #fff, 0 0 12px #fff, 0 0 4px #fff; }
+.lamina.oscura .lienzo.foco-frase .nota { text-shadow: 0 0 12px #07060d, 0 0 12px #07060d, 0 0 4px #07060d; }
+.emo svg.vol { overflow: visible; filter: drop-shadow(0 calc(var(--s) * .03) calc(var(--s) * .035) rgb(0 0 0 / .2)); }
+.emo .insignia svg.vol { filter: drop-shadow(0 calc(var(--s) * .015) calc(var(--s) * .02) rgb(0 0 0 / .2)); }
 .emo .insignia > .emo-txt { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; font-size: calc(var(--s) * .5); line-height: calc(var(--s) * .58); display: block; text-align: center; }
 .emo .insignia.izq > .emo-txt { font-size: calc(var(--s) * .52); line-height: calc(var(--s) * .6); }
 .emo.en-linea { --s: 1.15em; margin-right: .45em; transform: translateY(-.06em); }
@@ -149,7 +160,9 @@ s.tachon, .tachon { text-decoration: none; }
 /* fila de columnas iguales (flujo): el grid toma el ancho del nodo más ancho para todas */
 /* 1fr: todas del ancho del nodo más ancho mientras quepan en el ancho útil; si no, se reparten iguales y el sub
    (hasta 9 em) se parte en dos renglones balanceados. Una etiqueta corta (nowrap) nunca baja de su ancho. */
-.fila-igual { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; justify-items: center; align-items: start; }
+/* minmax(0, 1fr): con 1fr (= minmax(auto, 1fr)) una etiqueta rígida agrandaba SU columna y apretaba a la vecina (470 / 390
+   / 520 px). runtime.js (igualarFilas) decide si todas van en un renglón o todas se parten. */
+.fila-igual { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); justify-items: center; align-items: start; }
 .nodo .etiqueta { font-size: var(--te, 76px); font-weight: 700; letter-spacing: -.015em; line-height: 1.1; text-wrap-style: balance; }
 .nodo .etiqueta.normal { font-weight: 500; }
 .nodo .sub-etiqueta { font-size: 52px; color: var(--gris); margin-top: -12px; max-width: 9em; text-align: center; text-wrap-style: balance; }
@@ -191,7 +204,7 @@ s.tachon, .tachon { text-decoration: none; }
 .opcion.apagada { opacity: .28; box-shadow: none; }
 .boton-ui { padding: 44px 92px; border-radius: 30px; font: 700 76px/1 var(--sans); color: #fff; display: inline-flex; align-items: center; gap: 18px;
   background: linear-gradient(180deg, #62cbb9, #2f9f8f); box-shadow: 0 16px 34px rgba(47, 159, 143, .35), inset 0 2px 0 rgba(255,255,255,.35); }
-.boton-ui .emo { --s: 84px; }
+.boton-ui .emo { --s: 68px; }   /* ~0.9× la letra del botón (76): a 58 el 📝 de Fluent era una mancha pálida */
 
 /* ---------- stack (bento de lo que incluye) ---------- */
 /* Pila (9:16 o sangre: false): casillas gris claro; el rótulo va en flujo y la casilla crece si pasa de un renglón */
@@ -290,8 +303,13 @@ s.tachon, .tachon { text-decoration: none; }
 .captura.hueco-prueba { box-shadow: none; background: transparent; border: 5px dashed #b9b9b9; border-radius: 26px;
   width: 1000px; height: 440px; display: grid; place-items: center; }
 .captura.hueco-prueba .mano { font-size: 84px; color: #8a8a8a; }
-.fuente { margin-top: 26px; font-size: 30px; color: #6b6b6b; }
-.captura > .fuente { margin: -24px 0 0; padding: 0 64px 36px; text-align: left; }
+/* Fuente de un dato o un estudio («Autor, obra (año)»): sans gris sobria pero legible. A 30 px quedaba en ~5.6 px en un
+   celular de 360; 40 px da ~7.5 (QA avisa bajo 36). En la captura va pegada al post, un poco más chica. */
+.fuente { margin-top: 26px; font-family: var(--sans); font-style: normal; font-weight: 400; font-size: 40px; line-height: 1.2; color: #555;
+  max-width: var(--ancho-texto); text-wrap: balance; text-align: center; }
+.f-vertical .fuente { font-size: 36px; }
+.lamina.oscura .fuente { color: #c9c4dc; }
+.captura > .fuente { margin: -24px 0 0; padding: 0 64px 36px; text-align: left; font-size: 36px; }
 .post .clave { position: relative; }
 
 /* ---------- rejilla ---------- */
@@ -311,13 +329,16 @@ s.tachon, .tachon { text-decoration: none; }
 /* Medido en ref_1760 y m_1740: caja gris muy clara con borde fino; barra de color con el nombre de la fase en blanco
    (~60 px) y el subtítulo aparte en regular; la pastilla del rango es blanca translúcida con la letra en el tono
    OSCURO de la fase («DAYS 1-14» naranja sobre amarillo, azul sobre celeste). */
-.calendario { width: 1400px; border-radius: 26px; background: #f8f8f8; border: 2px solid #ececec; box-shadow: var(--sombra); overflow: hidden; }
+.calendario { width: var(--ancho-cal, 1400px); border-radius: 26px; background: #f8f8f8; border: 2px solid #ececec; box-shadow: var(--sombra); overflow: hidden; }
 .calendario .barra { display: flex; justify-content: flex-start; align-items: center; padding: 24px 40px; font: 800 60px/1 var(--sans); color: #fff;
   text-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .calendario .barra b { font-size: var(--t-barra, 60px); text-align: left; }
 .calendario .barra .sub { font-weight: 500; font-style: normal; font-size: 42px; margin-left: 80px; }
 .calendario .barra span { margin-left: auto; background: rgba(255,255,255,.55); color: var(--c-fase, #b05c00); text-shadow: none;
   padding: 12px 26px; border-radius: 14px; font-size: 40px; font-weight: 800; white-space: nowrap; flex: none; margin-left: auto; }
+/* Grande [ref_1760]: barra de ~160-170 px con el nombre a ~64 y celdas cuadradas; el lienzo baja su margen a 40 */
+.calendario.grande .barra { min-height: var(--barra-h, auto); padding: 0 48px; }
+.lienzo.lz-calendario:has(> .calendario.grande) { padding-top: 40px; padding-bottom: 40px; }
 .calendario .dias { display: grid; grid-template-columns: repeat(var(--cols, 5), 1fr); gap: 20px; padding: 30px 34px 36px; }
 .calendario .dia { border-radius: 16px; background: linear-gradient(180deg, #ffffff, #e9e9e9); box-shadow: var(--sombra-suave), inset 0 2px 0 #fff;
   height: var(--alto-dia, 196px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
@@ -442,11 +463,16 @@ body.hoja { display: flex; flex-direction: column; gap: 30px; padding: 30px; ali
 
 /* ---------- cuadrantes (bloques de color a sangre) ---------- */
 .cuadrantes { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols, 2), 1fr); grid-auto-rows: 1fr; }
-.cuadro { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; padding: 40px; text-align: center;
-  font-size: 76px; line-height: 1.15; letter-spacing: -.015em; text-wrap-style: balance; }
-.cuadro.r { background: linear-gradient(160deg, #f7c3c3 0%, #fbe3e3 100%); }
-.cuadro.v { background: linear-gradient(160deg, #c3f3bd 0%, #e6fbe2 100%); }
-.cuadro.n { background: linear-gradient(160deg, #fbd9b5 0%, #fdefe0 100%); }
-.cuadro.g { background: linear-gradient(160deg, #e6e6e6 0%, #f6f6f6 100%); }
-.cuadro.a { background: linear-gradient(160deg, #c7e6fb 0%, #e8f5fe 100%); }
+/* Medido en ref_628: el cuerpo del bloque es SATURADO donde cae el texto, rojo ≈(245,177,176) y verde ≈(206,251,192), con un
+   brillo casi blanco que sale de la esquina inferior izquierda; la letra en peso medio a ~84 px y el emoji pegado al
+   texto (gap 4). «Showing your / face online» se parte sola con el padding; «Creating Content» no. El degradado viejo
+   a blanco (#f7c3c3→#fbe3e3) dejaba el texto sobre un rosa casi blanco. */
+.cuadro { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 40px; text-align: center;
+  font-size: 84px; font-weight: 500; line-height: 1.15; letter-spacing: -.015em; text-wrap-style: balance;
+  --brillo: radial-gradient(ellipse 60% 70% at 0% 100%, rgba(255, 255, 255, .55), transparent 70%); }
+.cuadro.r { background: var(--brillo), linear-gradient(160deg, #f2adad 0%, #f6c4c4 100%); }
+.cuadro.v { background: var(--brillo), linear-gradient(160deg, #c4f4b6 0%, #dffad6 100%); }
+.cuadro.n { background: var(--brillo), linear-gradient(160deg, #f9ca9c 0%, #fbdcbd 100%); }
+.cuadro.g { background: var(--brillo), linear-gradient(160deg, #e0e0e0 0%, #efefef 100%); }
+.cuadro.a { background: var(--brillo), linear-gradient(160deg, #b5dcf9 0%, #d3ebfc 100%); }
 .cuadro.b { background: #fff; }

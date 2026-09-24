@@ -98,7 +98,7 @@ test('contraste medido: 🖱️ de Apple y ⚙️ de Fluent avisan con sustituto
   assert.equal(bajoContraste('💰', 'fluent', 'tarjeta'), '');
   // la medida existe y recupera lo que la tabla revisada ya sabía
   const m = contrasteMedido();
-  assert.ok(m.fluent.claro['💬'] < UMBRAL_CONTRASTE && m.apple.claro['🖱'] < UMBRAL_CONTRASTE);
+  assert.ok(m.fluent.claro['💭'] < UMBRAL_CONTRASTE && m.apple.claro['🖱'] < UMBRAL_CONTRASTE);
   for (const set of ['apple', 'fluent']) for (const ch of Object.keys(BAJO_CONTRASTE[set].claro)) {
     const v = m[set].claro[ch];
     // ⚙️ de Fluent (30) va en la tabla por revisión a ojo: lila lavado sobre la tarjeta
@@ -120,8 +120,8 @@ test('QA: con emoji "auto" revisa también el otro set; en fluent avisa el emoji
     const r = spawnSync(process.execPath, [fileURLToPath(new URL('../scripts/qa.mjs', import.meta.url)), dir, '--salida', path.join(dir, 's'), '--json'], { encoding: 'utf8' });
     return JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));
   };
-  const auto = correr({ marca: false, laminas: [{ tipo: 'idea', emoji: '💬', texto: 'Contesta rápido' }, { tipo: 'idea', emoji: '🤔', texto: '¿Por qué?' }] });
-  if (process.platform === 'darwin') assert.ok(auto.avisos.some(a => /deck en emoji "auto": en fluent .*💬 → 📲/.test(a)), auto.avisos.join('\n'));
+  const auto = correr({ marca: false, laminas: [{ tipo: 'idea', emoji: '💭', texto: 'Contesta rápido' }, { tipo: 'idea', emoji: '🤔', texto: '¿Por qué?' }] });
+  if (process.platform === 'darwin') assert.ok(auto.avisos.some(a => /deck en emoji "auto": en fluent .*💭 → 💡/.test(a)), auto.avisos.join('\n'));
   assert.ok(auto.avisos.some(a => /🤔 en fluent → ❓/.test(a)), auto.avisos.join('\n'));
   const fl = correr({ emoji: 'fluent', marca: false, laminas: [{ tipo: 'grafica', grafica: 'barras', barras: [{ etiqueta: 'Operación ⚙️', valor: 50 }, { etiqueta: 'Sueldo', valor: 30 }] }] });
   assert.ok(fl.avisos.some(a => /emoji dentro de un texto de gráfica.*⚙️/.test(a)), fl.avisos.join('\n'));
@@ -134,5 +134,6 @@ test('📄 y 📃 se dibujan en SVG (hoja con renglones): ya no se sustituyen po
   assert.ok(!Object.values(SUGERIDO).includes('📋'), 'ningún sustituto propone 📋 («tarea») como hoja');
   for (const set of Object.values(BAJO_CONTRASTE)) for (const t of Object.values(set)) assert.ok(!Object.values(t).includes('📋'));
   const html = new Emojis({ modo: 'fluent', dirSalida: '/tmp' }).html('📄', 200);
-  assert.match(html, /<svg[^>]*>.*#3e7bfa/);
+  assert.match(html, /<svg[^>]*>.*url\(#pz-doblez\)/);
+  assert.ok(!/stroke="#39414f"/.test(html), 'sin el contorno negro de clip-art');
 });

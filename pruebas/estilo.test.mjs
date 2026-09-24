@@ -40,8 +40,10 @@ test('emoji: ✅ dibujada igual en Apple y Fluent; tabla de bajo contraste', () 
   assert.ok(f.glifo('✅️').startsWith('<svg'));
   assert.ok(new Emojis({ modo: 'apple' }).html('no:🎥').includes('insignia izq no'));
   assert.equal(bajoContraste('🏷️', 'apple', 'claro'), '💵');
-  assert.equal(bajoContraste('💬', 'fluent', 'claro'), '📲');
-  assert.equal(bajoContraste('🗨️', 'apple', 'oscura'), '💬');
+  // 💬 🗨 son la burbuja azul dibujada en SVG en los dos sets: ya no caen a 📲 («te llega al celular»)
+  assert.equal(bajoContraste('💬', 'fluent', 'claro'), '');
+  assert.equal(bajoContraste('🗨️', 'apple', 'oscura'), '');
+  assert.equal(bajoContraste('💭', 'fluent', 'claro'), '💡');
   assert.equal(bajoContraste('☎️', 'apple', 'oscura'), '');
 });
 

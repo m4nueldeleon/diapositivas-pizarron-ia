@@ -83,6 +83,8 @@ la lámina nueva o un elemento más sobre la actual.
    subrayan.
 7. **Las cifras siempre con número** y en la unidad que se dice: «$10k al mes», no «diez mil
    mensuales».
+   Un estudio o un dato publicado se cita en `fuente` («Autor, obra (año)», sans gris al pie), en `idea`,
+   `flujo`, `grafica`, `cifra` o `cita`; nunca en `nota` (LAYOUTS.md, «Fuente de un dato o un estudio»).
 8. **Proyecciones al espectador.** Cuando la cuenta promete lo que ganará o conseguirá quien mira
    (dinero, clientes, ventas). No aplica al tamaño de un mercado ni a un dato publicado: ahí va `fuente`.
    - a) La condición concreta va en `arriba`, con número: «Si te escriben 20 personas al día:» o «Con 10

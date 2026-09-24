@@ -31,20 +31,22 @@ export const COMUNES = ['id', 'tipo', 'voz', 'dur', 'ancla', 'anclas', 'revelar'
   'llamado', 'paso_ref'];
 export const CAMPOS = {
   idea: ['texto', 'texto_paso', 'tam_texto', 'emoji', 'emoji_tam', 'emoji_lado', 'emoji_paso', 'apagar_emoji', 'estrellas', 'encabezado', 'encabezado_pos',
-    'nota', 'nota_paso', 'tachar_paso'],
+    'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
   lista: ['items', 'tam_texto', 'separacion', 'vineta', 'tachar_despues', 'alinear', 'encabezado', 'nota', 'nota_paso'],
-  flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
+  flujo: ['nodos', 'emoji_tam', 'separacion', 'flecha', 'flechas', 'encabezado', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso',
+    'fuente', 'fuente_paso'],
   pasos: ['n', 'iconos', 'etiquetas', 'activo', 'hechos', 'sobre', 'prefijo', 'ruta', 'arrastre', 'separacion', 'tam_etiqueta', 'texto', 'texto_paso',
     'tam_texto', 'nota', 'nota_paso'],
   bifurcacion: ['origen', 'ramas', 'llave', 'separacion', 'tam_texto', 'emoji_tam'],
-  cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
-  cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso'],
+  cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'fuente_paso', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
+  cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
   objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'encabezado', 'nota', 'nota_paso'],
   oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cuadrantes: ['items', 'columnas'],
   tabla: ['columnas', 'filas', 'vacias', 'fijas', 'esquina', 'ancho_etiqueta'],
-  grafica: ['grafica', 'series', 'barras', 'banda', 'banda_paso', 'eje_x', 'eje_y', 'titulo', 'subtitulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
+  grafica: ['grafica', 'series', 'barras', 'banda', 'banda_paso', 'eje_x', 'eje_y', 'titulo', 'subtitulo', 'texto', 'texto_paso', 'nota', 'nota_paso',
+    'fuente', 'fuente_paso'],
   'linea-tiempo': ['marcas', 'tramos', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   medidor: ['valor', 'tono', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
   opciones: ['items', 'elegida', 'texto', 'texto_paso'],
@@ -153,6 +155,9 @@ function revisarCalendario(l, n, e) {
     if (!f || typeof f !== 'object') return;
     if (Number(f.hasta) > dias) e.push(`${n} (calendario): fases[${j}] llega al día ${f.hasta} y el calendario tiene ${dias} días: sube «n» o agrega días`);
     if (Number(f.desde) > Number(f.hasta)) e.push(`${n} (calendario): fases[${j}] empieza (${f.desde}) después de terminar (${f.hasta})`);
+    // «PHASE 2 · Value Delivery» en `nombre` sale todo en negrita en la barra; en ref_1760 el título, el subtítulo en
+    // regular y la pastilla van separados (LAYOUTS.md, calendario)
+    if (typeof f.nombre === 'string' && /\s[·•|–—-]\s\S/.test(f.nombre)) e.push(`${n} (calendario): fases[${j}].nombre une título y subtítulo con «${f.nombre.match(/\s([·•|–—-])\s/)[1]}»: pon el título en "nombre" y el resto en "sub"`);
   });
   if (Number(l.fase_activa) > fases.length) e.push(`${n} (calendario): fase_activa ${l.fase_activa} y hay ${fases.length} fases`);
   (Array.isArray(l.anotaciones) ? l.anotaciones : []).forEach((a, j) => {
@@ -170,6 +175,7 @@ export function validarDeck(deck, tipos) {
   if (!Array.isArray(deck.laminas) || !deck.laminas.length) return ['falta «laminas» (una lista con al menos una lámina)'];
   if (deck.formato && !['16:9', '9:16', '1:1', '4:5'].includes(deck.formato)) e.push(`formato «${deck.formato}» no existe (usa 16:9, 9:16, 1:1 o 4:5)`);
   if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe (usa auto, apple o fluent)`);
+  if (deck.piel != null && !['🏻', '🏼', '🏽', '🏾', '🏿', 'ninguno'].includes(deck.piel)) e.push(`piel «${deck.piel}» no existe (usa 🏻, 🏼, 🏽, 🏾, 🏿 o "ninguno")`);
   e.push(...validarDatos(deck.datos));
   // `libre` vale null (sin rango): se valida que la clave EXISTA, sin tomar claves del prototipo («toString»)
   if (deck.pieza != null && (typeof deck.pieza !== 'string' || !Object.hasOwn(PIEZAS, deck.pieza))) e.push(`pieza «${deck.pieza}» no existe (usa ${Object.keys(PIEZAS).join(', ')})`);

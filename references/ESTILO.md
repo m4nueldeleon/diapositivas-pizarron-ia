@@ -42,9 +42,10 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
     ancho [15:20].
   - **Texto que se tiene que leer: ≥ 48 px** en 1920 (≈ 9 px en un celular de 360) y nunca por debajo
     de 36. Aplica al texto secundario: el sub de un nodo (52), el dato y el % de una pastilla (50 y
-    52), el post escrito (50). Se exceptúan los rótulos decorativos del calendario («DÍA», ~28 px), la
-    fuente de una captura y la firma, que en el original también van a ~28-30 px [ref_1760]. QA avisa
-    bajo 48 en el texto secundario y da error bajo 28 en cualquier texto.
+    52), el post escrito (50). Se exceptúan los rótulos decorativos del calendario («DÍA», ~28 px) y la
+    firma, que en el original también van a ~28-30 px [ref_1760]. La `fuente` de un dato o un estudio sí
+    se lee: sans gris a 40 px (36 en 9:16 y en la captura), y QA avisa bajo 36. QA avisa bajo 48 en el
+    texto secundario y da error bajo 28 en cualquier texto.
   - Cifra protagonista: 120 a 140 px.
 - Casi nunca hay título. La lámina ES la frase.
 - **Jerarquía entrada → remate** [18:30, 17:15]: «That's what I call a» en regular y, en su propio

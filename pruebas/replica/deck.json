@@ -1,6 +1,7 @@
 {
  "titulo": "replica",
  "emoji": "apple",
+ "piel": "🏻",
  "marca": {
   "texto": "Consulting.com"
  },
@@ -151,7 +152,8 @@
      "color": "amarillo"
     },
     {
-     "nombre": "PHASE 2 · Value Delivery",
+     "nombre": "PHASE 2",
+     "sub": "Value Delivery",
      "desde": 4,
      "hasta": 9,
      "color": "azul"

@@ -94,5 +94,9 @@ export const texto = (ctx, t, tam, k = 0, extra = '') => {
   return `<div class="t ${clases}"${px ? ` style="--t:${px}"` : ''}${ctx.P(k)}${extra}>${marcar(t)}</div>`;
 };
 
+// De dónde sale un dato o un estudio: «Autor, obra (año)», sans gris de 40 px al pie de la lámina (base.css .fuente). Una
+// sola jerarquía para la misma función: citar con `nota` (Caveat 60 px) daba tres estilos en un mismo deck.
+export const fuente = (ctx, t, k = 0) => (t ? `<div class="fuente"${ctx.P(k)}>${escapar(t)}</div>` : '');
+
 export const nota = (ctx, t, k, clase = '') =>
   t ? `<div class="nota ${clase}"${ctx.P(k)}>${marcar(t)}</div>` : '';

@@ -1,7 +1,7 @@
 // layouts-texto.mjs — diseños de idea, lista, flujo, pasos, bifurcación, cifra, cita, objeto, tarjetas.
 // Cada diseño devuelve el HTML interior del lienzo. Los pasos de revelado se asignan con ctx.P(k):
 // el paso 0 es lo que se ve al cortar a la lámina; cada paso siguiente suma UN elemento.
-import { marcar, escapar, texto, nota, bloque, pasoDe, estrellas } from './comun.mjs';
+import { marcar, escapar, texto, nota, fuente, bloque, pasoDe, estrellas } from './comun.mjs';
 import { tamTexto, palabras, plano } from './markup.mjs';
 
 // Etiqueta corta (≤ 3 palabras): no se parte en dos renglones («La / detecta», «Paso / 2»). Si con eso la fila
@@ -40,7 +40,7 @@ export function idea(l, ctx) {
   if (l.emoji_lado && !par) {
     return `<div class="pila">${rotulo('')}
       <div class="fila gap-s t ${tam}"${ctx.P(kTexto)}${ctx.A('texto')}><span${ctx.A('emoji')}>${emo.replace('class="emo ', 'class="emo en-linea ')}</span><span>${tacharDespues(marcar(l.texto), ctx, kTexto, l.tachar_paso)}</span></div>
-      ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
+      ${nota(ctx, l.nota, kNota, 'mt-m')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', kTexto))}</div>`;
   }
   // `estrellas: { valor, max }` en lugar del emoji: una fila suelta de estrellas sobre la frase [4:10]
   const est = !emo && !par && l.estrellas && typeof l.estrellas === 'object' ? (() => {
@@ -55,7 +55,7 @@ export function idea(l, ctx) {
     ${vis}
     ${entre ? rotulo(' entre') : ''}
     ${tacharDespues(texto(ctx, l.texto, tam + (hayEmo && !(entre && l.encabezado) ? ' mt-e' : ''), kTexto, ctx.A('texto')), ctx, kTexto, l.tachar_paso)}
-    ${nota(ctx, l.nota, kNota, 'mt-m')}</div>`;
+    ${nota(ctx, l.nota, kNota, 'mt-m')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', kTexto))}</div>`;
 }
 
 export const listaCentrada = l => l.alinear === 'centro' || (l.alinear !== 'izquierda' && Array.isArray(l.items) && l.items.length > 0
@@ -110,11 +110,12 @@ export function flujo(l, ctx) {
   // En horizontal, columnas IGUALES (todas del ancho del nodo más ancho): los emojis quedan equidistantes y las
   // flechas, que van de emoji a emoji, miden lo mismo aunque un nodo lleve un sub largo [17:00, 17:20].
   const fila = ctx.vertical ? `<div class="pila" style="gap:${gap}px;align-items:flex-start">`
-    : `<div class="fila fila-igual" style="gap:${gap}px">`;
+    : `<div class="fila fila-igual"${l.separacion ? ' data-sep-fija="1"' : ''} style="gap:${gap}px">`;
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     ${fila}${html}</div>
     ${texto(ctx, l.texto, tamTexto(l.texto, l.tam_texto || 'medio') + ' mt-l', pasoDe(l, 'texto_paso', Math.max(0, n - 1)))}
-    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', Math.max(0, n - 1)) + 1), 'mt-m')}</div>`;
+    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', Math.max(0, n - 1)) + 1), 'mt-m')}
+    ${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', Math.max(0, n - 1)))}</div>`;
 }
 
 // PASOS — teclas 1 2 3 unidas por una ruta punteada (el «sistema de N pasos»). Vuelve en cada sección
@@ -222,7 +223,7 @@ export function cifra(l, ctx) {
     ${l.arriba ? `<div class="nota" ${ctx.P(0)} style="margin-bottom:40px">${marcar(l.arriba)}</div>` : ''}
     ${html}
     ${l.abajo ? `<div class="etiqueta-chica"${ctx.P(0)}>${marcar(l.abajo)}</div>` : ''}
-    ${l.fuente ? `<div class="fuente"${ctx.P(k)}>${escapar(l.fuente)}</div>` : ''}
+    ${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', k))}
     ${l.texto ? texto(ctx, l.texto, 'medio mt-l', l.texto_paso ?? k) : ''}
     ${nota(ctx, l.nota, (l.nota_paso ?? k + 1), 'mt-m')}</div>`;
 }
@@ -233,7 +234,7 @@ export function cita(l, ctx) {
   return `<div class="pila">
     <div${ctx.P(0)}${ctx.A('icono')}>${ctx.emoji(l.emoji || '📝', l.emoji_tam, 'medio')}</div>
     <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px">${tacharDespues(marcar(l.texto), ctx, 0, l.tachar_paso)}</div>
-    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', 1), 'mt-m')}</div>`;
+    ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', 1), 'mt-m')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', 0))}</div>`;
 }
 
 // OBJETO — foto real recortada (sin fondo) o emoji gigante como protagonista.
@@ -272,11 +273,18 @@ export function oscura(l, ctx) {
 }
 
 // CUADRANTES — bloques de color a sangre (rojo = lo que NO necesitas, verde = lo que sí). Uno por paso.
+// El emoji crece con su bloque: ~24% del lado menor [ref_628: 130 px en un bloque de 960×540]. Con 2 bloques a lo alto
+// (960×1080) llega a 220; a 130 fijos flotaba chico en medio de la mitad.
+export function tamEmojiCuadro(W, H, n, cols) {
+  const filas = Math.max(1, Math.ceil(n / Math.max(1, cols)));
+  return Math.max(110, Math.min(220, Math.round(Math.min(H / filas, W / Math.max(1, cols)) * 0.24)));
+}
 export function cuadrantes(l, ctx) {
   const items = l.items || [];
   const cols = l.columnas || (items.length <= 2 ? items.length : 2);
+  const tamDef = tamEmojiCuadro(ctx.F.W, ctx.F.H, items.length, cols);
   const html = items.map((it, i) => `<div class="cuadro ${['r', 'v', 'n', 'g', 'a', 'b'].includes(it.tono) ? it.tono : 'g'}"${ctx.P(l.revelar === 'todo' ? 0 : i)}>
-      ${it.emoji ? `<div>${ctx.emoji(it.emoji, it.emoji_tam || 130)}</div>` : ''}<div>${marcar(it.texto || '')}</div></div>`).join('');
+      ${it.emoji ? `<div>${ctx.emoji(it.emoji, it.emoji_tam || tamDef)}</div>` : ''}<div>${marcar(it.texto || '')}</div></div>`).join('');
   return `<div class="cuadrantes" style="--cols:${cols}">${html}</div>`;
 }
 

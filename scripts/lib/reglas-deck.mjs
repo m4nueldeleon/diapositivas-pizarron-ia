@@ -494,10 +494,25 @@ export function reglasAfirmacionPropia(deck) {
   return { errores: [], avisos, porConfirmar };
 }
 
+// ---------- citas bibliográficas escritas como nota ----------
+// «Johansson y Hall, revista Science (2005)» en `nota` sale en Caveat de 60 px; la misma función en otra lámina salía
+// en la `fuente` gris de 40: dos jerarquías para lo mismo. En los diseños que aceptan `fuente`, una nota con forma de
+// cita (Autor … (año)) avisa. La atribución a mano sin año («Antonio Damasio, neurocientífico») sigue siendo nota.
+export const CON_FUENTE = new Set(['idea', 'flujo', 'grafica', 'cifra', 'cita']);
+export const RE_CITA = /[A-ZÁÉÍÓÚÑ][\p{L}'-]+(\s+(y|e|&)\s+[A-ZÁÉÍÓÚÑ][\p{L}'-]+|\s+et al\.)?.*\((1[89]|20)\d\d\)/u;
+export function reglasFuente(deck) {
+  const avisos = [];
+  deck.laminas.forEach((l, i) => {
+    if (!CON_FUENTE.has(l.tipo) || typeof l.nota !== 'string' || !RE_CITA.test(plano(l.nota))) return;
+    avisos.push(`${nombre(deck, i)}: la nota «${plano(l.nota).slice(0, 50)}» parece una cita: ponla en "fuente" (un solo estilo: Autor, obra (año); sans gris al pie)`);
+  });
+  return { errores: [], avisos };
+}
+
 // ---------- claves del deck que nadie lee ----------
 // `_datos`, `_marca`, `_duracion`: un aviso de entrega escondido en el deck no llega al usuario. Lo que el
 // usuario debe saber va en qa.json (datos propuestos, firma, duración) o en el mensaje de entrega.
-const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'datos', 'laminas', '_comentario']);
+const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'datos', 'laminas', 'piel', '_comentario']);
 export function reglasClaves(deck) {
   const avisos = [];
   Object.keys(deck).filter(k => !CLAVES_DECK.has(k)).forEach(k => avisos.push(k.startsWith('_')
@@ -519,7 +534,7 @@ export function revisarDeck(deck, pasos, { dirDeck } = {}) {
   const ritmo = reglasRitmo(deck, pasos), propia = reglasAfirmacionPropia(deck);
   const partes = [reglasFirma(deck), reglasDuracion(deck, pasos), reglasApertura(deck, pasos), reglasVoz(deck, palabrasProhibidas(dirDeck)),
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasCredibilidad(deck), reglasDescargo(deck), reglasIconos(deck),
-    reglasClaves(deck), ritmo, propia];
+    reglasClaves(deck), reglasFuente(deck), ritmo, propia];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),

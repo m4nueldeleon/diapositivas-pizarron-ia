@@ -138,6 +138,8 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
     set usar»);
   - `animacion`: `seco`, como la referencia, o `suave`, que añade notas que se escriben solas y
     emojis que brotan;
+  - `piel`: `🏻` (como el video), `🏼`, `🏽`, `🏾`, `🏿` o `ninguno`: el tono que reciben las personas sin tono
+    escrito (🧑‍⚕️ → 🧑🏻‍⚕️); las siluetas 👥 👤 no cambian. Sin el campo, las personas salen amarillas;
   - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
     **Omítela si no hay marca real.** Va abajo a la derecha; en 9:16 va arriba (abajo la tapan el
     caption y los botones de Reels). `"posicion": "arriba"` o `"abajo"` lo fuerza. Un valor de relleno

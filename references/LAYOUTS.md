@@ -8,7 +8,7 @@ ese diseño.
 
 - `titulo`, `formato` (`16:9`, `9:16`, `1:1`, `4:5`), `emoji` (`apple` o `fluent`; `auto` solo como respaldo
   heredado: cambia de set según la máquina y QA revisa los dos; ver EMOJIS.md, «Qué set usar»), `animacion`
-  (`seco`, `suave`), `idioma`.
+  (`seco`, `suave`), `idioma`, `piel` (🏻…🏿 o `ninguno`: el tono de piel de las personas; EMOJIS.md, «Personas»).
 - `marca`: `{ "texto": "<tu @ o dominio>", "sufijo": "<opcional>" }` o `{ "logo": "assets/logo.png" }`.
   **Omítela si no hay marca real**: las láminas salen sin firma. Un valor de relleno («tumarca.com»,
   «@tuusuario», «<…>») es error de QA.
@@ -117,6 +117,13 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   la derecha. `alinear: "centro"` lo fuerza en cualquier lista; `alinear: "izquierda"` lo quita. Las listas
   con encabezado («Sin:», razones) siguen a la izquierda y arriba [1:35, 3:30].
 
+### Fuente de un dato o un estudio (`idea`, `flujo`, `grafica`, `cifra`, `cita`)
+`"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
+40 px (36 en 9:16), sin cursiva: **un solo estilo** para citar, «Autor, obra (año)». Aparece con el dato (el paso
+del texto, del último nodo o de la última línea de la cifra); `fuente_paso` la mueve. No cites con `nota`: la nota
+es Caveat de 60 px y la misma función sale con otra jerarquía; QA avisa cuando una nota tiene forma de cita
+(Autor … (año)). La atribución a mano de una `cita` («Antonio Damasio, neurocientífico») sí va en `nota`.
+
 ### `cuadrantes` — bloques de color a sangre  ·  [10:20]
 Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un bloque por paso.
 ```json
@@ -124,7 +131,10 @@ Lo que NO necesitas va en rojo pálido y lo que SÍ en verde pálido. Aparece un
   { "emoji": "no:🎥", "texto": "Crear contenido", "tono": "r" },
   { "emoji": "si:💸", "texto": "**$0** de capital", "tono": "v" } ] }
 ```
-`tono`: `r`, `v`, `n`, `g`, `a` o `b` (blanco). `columnas`: por omisión 2.
+`tono`: `r`, `v`, `n`, `g`, `a` o `b` (blanco). `columnas`: por omisión 2. `revelar: "todo"` muestra los bloques
+juntos en el paso 0. El emoji mide ~24% del lado menor de su bloque (130 px con 4 bloques, como ref_628; 220 con 2
+a lo alto); `items[].emoji_tam` (px) lo fija a mano. Los bloques van saturados donde cae el texto, con un brillo
+blanco en la esquina inferior izquierda, y la letra a 84 px en peso medio con el emoji pegado a ella.
 
 ### `cita` — frase manuscrita con flecha roja desde un ícono  ·  [18:25]
 ```json
@@ -150,8 +160,9 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
   { "tipo": "cifra", "arriba": "Si mandas 10 mensajes al día por 10 días:", "lineas": [
     "100 × 10-20% = 10-20 pláticas", "× 30-50% = __3-10 clientes__"] }
   ```
-- `fuente`: de dónde sale un dato publicado (el tamaño de un mercado); sale chica y gris abajo y exime
-  la cuenta del aviso de proyección.
+- `fuente`: de dónde sale un dato publicado (el tamaño de un mercado); sale en sans gris de 40 px al pie y exime
+  la cuenta del aviso de proyección. Es la misma `fuente` de `idea`, `flujo`, `grafica` y `cita` (ver «Fuente de
+  un dato o un estudio»).
 - `[[palabra]]` pone una palabra en letra de mano dentro de la ecuación: `100-250 [[ventas]] × $100`.
 - Cada línea puede ser un objeto `{ "texto", "tam", "peso", "tono" }` para jerarquizar. **Precio con
   ancla** — el ancla es algo real que el público ya vio (la columna cara de la tabla, un sueldo, tu
@@ -413,7 +424,10 @@ fila por opción (emoji, nombre y 5 estrellas pálidas). La mano enciende las es
   saturado, con el nombre en blanco (~60 px); la pastilla del rango es blanca translúcida con la letra en
   el tono oscuro de la fase (QA avisa si baja de 3:1).
 - El título de la fase va en `nombre` («Fase 2») y el subtítulo en `sub` («Entregar valor»), que se pinta
-  aparte en regular. Nunca los unas con «·» dentro de `nombre`.
+  aparte en regular. Nunca los unas con «·» (ni «|», «-», «—») dentro de `nombre`: es error de contrato.
+- **Grande** [ref_1760]: en 16:9, sin anotaciones y con ≤ 15 días (3 filas de 5), la tarjeta usa casi todo el alto
+  (margen de 40 px), mide ~1250 de ancho, la barra ~160 con el nombre a ~64 px y las celdas son cuadradas (~228)
+  con 10 px de separación. Con notas al margen, en 9:16 o con más días, el calendario normal de 1400.
 - El `sub` de cada día va a 32 px (28 en un calendario angosto); «DÍA» es un rótulo decorativo (~28 px,
   como en el video).
 - Anotaciones: `tam` en px (56 por omisión, medido en m_1740) y `arriba` en px o en porcentaje

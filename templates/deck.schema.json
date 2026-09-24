@@ -9,6 +9,7 @@
     "titulo": { "type": "string" },
     "formato": { "enum": ["16:9", "9:16", "1:1", "4:5"], "default": "16:9" },
     "emoji": { "enum": ["auto", "apple", "fluent"], "default": "auto", "description": "auto = Apple en macOS, Fluent 3D (MIT) en lo demás" },
+    "piel": { "enum": ["🏻", "🏼", "🏽", "🏾", "🏿", "ninguno"], "description": "tono de piel que reciben las personas sin tono escrito (🧑‍⚕️ → 🧑🏻‍⚕️); las siluetas 👥 👤 no cambian" },
     "animacion": { "enum": ["seco", "suave"], "default": "seco" },
     "idioma": { "type": "string", "default": "es" },
     "pieza": { "enum": ["reel", "tutorial", "vsl-corto", "clase-corta", "video", "vsl", "clase", "webinar", "propuesta", "libre"], "description": "Tipo de pieza: fija el arco y el rango de duración (references/ARCOS.md). QA mide la voz contra él." },

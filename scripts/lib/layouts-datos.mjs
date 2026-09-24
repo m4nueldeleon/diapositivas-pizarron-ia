@@ -1,6 +1,6 @@
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
-import { marcar, escapar, texto, nota, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas } from './comun.mjs';
+import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas } from './comun.mjs';
 import { unirGuiones } from './markup.mjs';
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
@@ -142,7 +142,7 @@ export function grafica(l, ctx) {
   ctx.extraSobreBarras = null;
   return `<div class="pila grafica">${arriba ? `<div${ctx.P(0)} style="margin-bottom:30px">${arriba}</div>` : ''}
     <div${ctx.P(0)} style="position:relative;width:${W}px;height:${H + 60}px"><svg viewBox="0 0 ${W} ${H + 60}" width="${W}" height="${H + 60}" overflow="visible">${svg}</svg>${emojis}</div>
-    ${texto(ctx, l.texto, 'medio mt-m', l.texto_paso ?? 0)}${nota(ctx, l.nota, l.nota_paso ?? 1, 'mt-s')}</div>`;
+    ${texto(ctx, l.texto, 'medio mt-m', l.texto_paso ?? 0)}${nota(ctx, l.nota, l.nota_paso ?? 1, 'mt-s')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', 0))}</div>`;
 }
 
 // LÍNEA DE TIEMPO — marcas sobre una línea, tramos de color y llaves con nota manuscrita.
@@ -352,14 +352,21 @@ export function calendario(l, ctx) {
   // Con más de 20 días (4-6 semanas) van de 7 en 7; la fila se achica para que todo quepa en el alto útil
   const cols = l.columnas || (dias.length > 20 ? 7 : 5);
   const filas = Math.ceil(dias.length / cols);
-  const altoUtil = ctx.F.H - 2 * ctx.F.mv, barraH = 114, pad = 70;
-  const altoDia = Math.floor(Math.min(196, (altoUtil - barraH - pad - 20 * (filas - 1)) / filas));
+  // Calendario GRANDE [ref_1760]: 16:9, sin notas al margen y ≤ 15 días (3 filas de 5). La tarjeta usa casi todo el alto
+  // (1004 de 1080), mide ~1250 de ancho, la barra ~170 y las celdas son CUADRADAS (~234) con ~6-10 px de separación.
+  // Con los márgenes normales (alto útil 880) no cabían celdas cuadradas: aquí el alto útil es H − 80 (base.css).
+  const grande = !ctx.vertical && ctx.F.W > ctx.F.H && !(l.anotaciones || []).length && dias.length <= 15 && cols === 5;
+  const gapDia = grande ? 10 : 20;
+  const altoUtil = grande ? ctx.F.H - 80 : ctx.F.H - 2 * ctx.F.mv, barraH = grande ? 160 : 114, pad = grande ? 66 : 70;
+  const anchoGrande = 1250, celdaG = (anchoGrande - 68 - gapDia * (cols - 1)) / cols;
+  const altoDia = grande ? Math.floor(Math.min(celdaG, (altoUtil - barraH - pad - gapDia * (filas - 1)) / filas))
+    : Math.floor(Math.min(196, (altoUtil - barraH - pad - 20 * (filas - 1)) / filas));
   const compacto = altoDia < 110;
   const faseDe = d => fases.findIndex(f => d + 1 >= f.desde && d + 1 <= f.hasta);
   // El sub del día se lee (32 px), pero en un calendario angosto baja hasta 28 para que «Prueba social» quepa en su
   // celda en un renglón (2 palabras de hasta 14 letras no se parten)
-  const anchoCal = (l.anotaciones || []).length && !ctx.vertical ? 1080 : ctx.vertical ? 920 : 1400;
-  const celdaW = (anchoCal - 72 - (cols - 1) * 20) / cols;
+  const anchoCal = (l.anotaciones || []).length && !ctx.vertical ? 1080 : ctx.vertical ? 920 : grande ? anchoGrande : 1400;
+  const celdaW = (anchoCal - 72 - (cols - 1) * gapDia) / cols;
   const largoSub = Math.max(0, ...dias.map(d => { const t = String(d.sub || '').trim(), ps = t.split(/\s+/); return ps.length <= 2 ? t.length : Math.max(...ps.map(w => w.length)); }));
   const tamSub = largoSub ? Math.max(28, Math.min(32, Math.floor((celdaW - 8) / (0.5 * largoSub)))) : 32;
   // Sin fase activa los días van en gris neutro (la lámina que presenta el plan, 28:45).
@@ -372,7 +379,7 @@ export function calendario(l, ctx) {
     const apagada = activa && !encendida ? ` apagado${c ? ' tinte' : ''}` : '';
     // «10 / mensajes»: un subtítulo de 2 palabras cortas no se parte
     const sd = String(d.sub || '').trim(), corto = sd.split(/\s+/).length <= 2 && sd.length <= 14 ? ' class="corta"' : '';
-    return `<div class="dia${apagada}" style="width:calc((100% - ${(cols - 1) * 20}px)/${cols});${st}"${ctx.A('dia' + i)}><small>${escapar(d.titulo || l.palabra_dia || 'DÍA')}</small><b>${escapar(String(d.numero ?? i + 1))}</b>${d.sub ? `<span${corto}>${escapar(d.sub)}</span>` : ''}</div>`;
+    return `<div class="dia${apagada}" style="width:calc((100% - ${(cols - 1) * gapDia}px)/${cols});${st}"${ctx.A('dia' + i)}><small>${escapar(d.titulo || l.palabra_dia || 'DÍA')}</small><b>${escapar(String(d.numero ?? i + 1))}</b>${d.sub ? `<span${corto}>${escapar(d.sub)}</span>` : ''}</div>`;
   }).join('');
   (l.anotaciones || []).forEach((a, i) => ctx.con({ de: 'an' + i, a: 'dia' + (a.dia - 1), estilo: 'curva-roja', p: a.paso ?? 1 }));
   // `arriba`: px (número) o un porcentaje del alto («40%»); `tam` en px (52-58 en m_1740, 56 por omisión)
@@ -387,10 +394,11 @@ export function calendario(l, ctx) {
   // el nombre de la fase va a ~60 px [ref_1760]; en un calendario angosto un título largo baja para no partirse
   const nombre = activa ? activa.nombre : (l.titulo || 'Calendario');
   const libre = anchoCal - 80 - (String(pastilla).length * 40 * 0.66 + 60) - (sub ? String(activa.sub).length * 42 * 0.52 + 80 : 0);
-  const tamBarra = Math.max(44, Math.min(60, Math.floor(libre / (0.6 * Math.max(1, String(nombre).length)))));
-  const estilo = `--alto-dia:${altoDia}px;--t-sub-dia:${tamSub}px;--t-barra:${tamBarra}px;--c-fase:${TINTA_FASE[clave]}${angosto ? ';width:1080px' : ''}`;
-  return `<div class="calendario${compacto ? ' compacto' : ''}"${ctx.P(0)} style="${estilo}"><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})"><b>${escapar(nombre)}</b>${sub}<span>${escapar(pastilla)}</span></div>
-    <div class="dias" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px">${html}</div></div>${anot}`;
+  const tamBarra = Math.max(44, Math.min(grande ? 64 : 60, Math.floor(libre / (0.6 * Math.max(1, String(nombre).length)))));
+  const estilo = `--alto-dia:${altoDia}px;--t-sub-dia:${tamSub}px;--t-barra:${tamBarra}px;--c-fase:${TINTA_FASE[clave]}${angosto ? ';width:1080px' : ''}`
+    + (grande ? `;--ancho-cal:${anchoGrande}px;--barra-h:${barraH}px` : '');
+  return `<div class="calendario${compacto ? ' compacto' : ''}${grande ? ' grande' : ''}"${ctx.P(0)} style="${estilo}"><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})"><b>${escapar(nombre)}</b>${sub}<span>${escapar(pastilla)}</span></div>
+    <div class="dias" style="display:flex;flex-wrap:wrap;justify-content:center;gap:${gapDia}px">${html}</div></div>${anot}`;
 }
 
 // CALIFICACIÓN — opciones calificadas con estrellas antes de la tabla-marcador [4:45, 4:50]: un 🤔 arriba y una
@@ -424,7 +432,7 @@ export function calificacion(l, ctx) {
 export function boton(l, ctx) {
   ctx.clic = { a: 'boton', p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor === 'flecha' ? 'flecha' : 'mano' };
   const kt = pasoDe(l, 'texto_paso', 0);
-  return `<div class="pila"><div class="boton-ui"${ctx.P(0)}${ctx.A('boton')}><span class="boton-txt">${escapar(l.boton || '')}</span>${l.emoji ? ctx.emoji(l.emoji, 58) : ''}</div>
+  return `<div class="pila"><div class="boton-ui"${ctx.P(0)}${ctx.A('boton')}><span class="boton-txt">${escapar(l.boton || '')}</span>${l.emoji ? ctx.emoji(l.emoji, 68) : ''}</div>
     ${texto(ctx, l.texto, (l.tam_texto || 'medio') + ' mt-l', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-s')}</div>`;
 }
 
@@ -492,9 +500,11 @@ const TONO_PIEZA = { v: 'tono-bv', r: 'tono-br', n: 'tono-bn' };
 // sigue la rotación y salta a la siguiente que sí contrasta; con `color`, se respeta y QA avisa.
 const EMOJI_OSCURO = new Set(['🎓', '🕶', '🎩', '♟', '🖤', '⚫', '🐈‍⬛', '🦇', '🕷', '🎱']);
 const EMOJI_GRIS = new Set(['👥', '👤', '⚙', '🔧', '🛠', '🔩', '⛓', '🗿', '🐺', '🦏']);
-export function colorPieza(emoji, i) {
+// `previo`: el color de la pieza anterior; al saltar no se repite (el 🎓 saltaba de marino a naranja junto a otra naranja)
+export function colorPieza(emoji, i, previo = '') {
   const base = String(emoji || '').replace(/^(no|si):/, '').split('+')[0].replace(/\uFE0F/g, '');
   const evita = EMOJI_GRIS.has(base) ? ['marino', 'negro', 'verde', 'azul'] : EMOJI_OSCURO.has(base) ? ['marino', 'negro'] : [];
+  for (let j = 0; j < COLOR_PIEZA.length; j++) { const c = COLOR_PIEZA[(i + j) % COLOR_PIEZA.length]; if (!evita.includes(c) && c !== previo) return c; }
   for (let j = 0; j < COLOR_PIEZA.length; j++) { const c = COLOR_PIEZA[(i + j) % COLOR_PIEZA.length]; if (!evita.includes(c)) return c; }
   return COLOR_PIEZA[i % COLOR_PIEZA.length];
 }
@@ -502,15 +512,25 @@ export function stack(l, ctx) {
   const sangre = !ctx.vertical && ctx.F.W > ctx.F.H && l.sangre !== false;
   return sangre ? stackSangre(l, ctx) : stackPila(l, ctx);
 }
+// El ícono es el protagonista de la pieza [42:40: la imagen de «Dedicated Consultant» ocupa ~37-45% del alto]: ~40% del
+// alto de la pieza y ≤ 45% de su ancho (tope 220). Siempre deja lugar al rótulo de dos renglones (2 × 57), al `sub`
+// (58) y a 24 px de aire bajo el padding. Con el tope viejo de 120 px medía ~19% y se perdía contra el color.
+export function tamEmojiPieza(alto, ancho, conSub = false) {
+  const cabe = alto - 48 - 2 * 57 - (conSub ? 58 : 0) - 18 - 24;
+  return Math.max(72, Math.min(Math.round(alto * 0.40), Math.round(ancho * 0.45), 220, cabe));
+}
 function stackSangre(l, ctx) {
   const items = l.items || [];
   const cols = l.columnas || (items.length >= 7 ? 4 : 3);
   const celdas = items.reduce((s, it) => s + (it.doble ? 2 : 1) * (it.alto === 2 ? 2 : 1), 0);
   const filas = Math.max(1, Math.ceil(celdas / cols));
   const altoFila = Math.floor((ctx.F.H - 36 - (filas - 1) * 16) / filas);
-  const tamE = Math.min(120, Math.round(altoFila * 0.34));
+  const anchoCol = Math.floor((ctx.F.W - 36 - (cols - 1) * 16) / cols);
+  const usados = [];
   const piezas = items.map((it, i) => {
-    const color = COLOR_PIEZA.includes(it.color) ? it.color : !it.color && TONO_PIEZA[it.tono] ? '' : colorPieza(it.emoji, i);
+    const tamE = tamEmojiPieza(altoFila * (it.alto === 2 ? 2 : 1), anchoCol * (it.doble ? 2 : 1), Boolean(it.sub));
+    const color = COLOR_PIEZA.includes(it.color) ? it.color : !it.color && TONO_PIEZA[it.tono] ? '' : colorPieza(it.emoji, i, usados[i - 1]);
+    usados.push(color);
     const clase = color ? `c-${color}` : TONO_PIEZA[it.tono];
     const span = [it.doble ? 'grid-column:span 2' : '', it.alto === 2 ? 'grid-row:span 2' : ''].filter(Boolean).join(';');
     const vis = it.imagen ? `<img src="${ctx.img(it.imagen)}" style="height:${tamE}px;width:auto" alt="">` : it.emoji ? ctx.emoji(it.emoji, tamE) : '';

@@ -83,8 +83,10 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
   const CAJAS = TEXTO + ', .emo, img, table, .captura, .pastilla, .calendario, .rejilla, .medidor, .boton-ui';
   const PRINCIPAL = '.t, .item, .etiqueta, .burbuja, .tarjeta';
   // Texto secundario que se tiene que LEER (≥ 48 px a 1920, ≈ 9 px en un celular de 360). Los rótulos decorativos
-  // del calendario («DÍA»), la fuente y la firma quedan fuera: en el original también van a ~28-30 px [ref_1760].
+  // del calendario («DÍA») y la firma quedan fuera: en el original también van a ~28-30 px [ref_1760]. La `fuente` de un
+  // dato o un estudio SÍ se lee (es la prueba del dato): ≥ 36 px, con su propio umbral (FUENTE).
   const SECUNDARIO = '.sub-etiqueta, .pastilla .dato span, .pct, .post, .etiqueta-chica, .chat-hora';
+  const FUENTE = '.fuente';
   const MINIMO = '.calendario .dia span, .calendario .dia b, .calendario .barra b, .calendario .barra span, .bento-lleno span';
   const fueraClon = e => !e.closest('.escena.clon');
 
@@ -171,10 +173,11 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       // Marcas sin convertir
       lineas.forEach(({ n: nodo }) => { if (reMarca.test(nodo.nodeValue)) E(`marca sin cerrar o partida a la vista: «${corto(nodo.nodeValue, 40)}»`); });
       // Letra efectiva (el encaje reduce con zoom y getComputedStyle no lo descuenta)
-      const extra = [...lam.querySelectorAll(SECUNDARIO + ', ' + MINIMO)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && e.textContent.trim());
+      const extra = [...lam.querySelectorAll(SECUNDARIO + ', ' + MINIMO + ', ' + FUENTE)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && e.textContent.trim());
       for (const t of [...textos, ...extra]) {
         const ef = parseFloat(getComputedStyle(t).fontSize) * zoom(t);
         if (ef < 27.5) E(`letra de ${Math.round(ef)}px reales en «${corto(t.innerText, 24)}» (mínimo 28)`);
+        else if (t.matches(FUENTE) && ef < 36 * (W / 1920) - 0.5) A(`la fuente «${corto(t.innerText, 24)}» se ve a ${Math.round(ef)} px: en un celular no se lee (≥ ${Math.round(36 * W / 1920)})`);
         else if (t.matches(SECUNDARIO) && ef < 48 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» (texto secundario) se ve a ${Math.round(ef)}px reales: en un celular no se lee (ideal ≥ ${Math.round(48 * W / 1920)})`);
         else if (t.matches(PRINCIPAL) && !t.closest('.tabla, .grafica') && ef < 40 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» se ve a ${Math.round(ef)}px reales (ideal ≥ ${Math.round(40 * W / 1920)})`);
       }
@@ -387,12 +390,27 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     sets.slice(1).forEach(x => { if (flojos[x].size) AF(`deck en emoji "auto": en ${x} (${x === 'fluent' ? 'Linux, VPS, la nube' : 'una Mac'}) se pierde ${[...flojos[x]].join(', ')}; fija "emoji": "apple" o "fluent" (EMOJIS.md, «Qué set usar»)`); });
     if (impresos.size) AF(`emoji con texto impreso en ${modoEmoji}: ${[...impresos].join(' · ')} (EMOJIS.md, «Emojis con texto impreso»)`);
     if (cambia.size) AF(`emoji que cambia de sentido según el set: ${[...cambia].join(', ')} (EMOJIS.md)`);
+    // Insignia (+💵) diminuta en una rejilla: a ~45 px entre 70 figuras no se encuentra [r3, short 05-setenta]. El glifo
+    // de la insignia mide ~82% de su caja. Se sugiere apagar el resto o nombrar al destacado; nunca se cambia solo.
+    const insChicas = [...lam.querySelectorAll('.rejilla .emo .insignia:not(.izq)')].filter(e => visible(e) && fueraClon(e) && opac(e) > 0.5)
+      .map(e => caja(e, lam).w * 0.82).filter(w => w < (vertical ? 40 : 44) * (W / (vertical ? 1080 : 1920)));
+    if (insChicas.length) AF(`la insignia del destacado de la rejilla mide ${Math.round(Math.min(...insChicas))} px: casi no se distingue entre las demás; usa "apagar_resto": true o "etiqueta_destacado" (el «tú» encendido de 43:10)`);
     // ---- reglas de maquetación (estado final) ----
     const visibles = sel => [...lam.querySelectorAll(sel)].filter(e => visible(e) && fueraClon(e) && !e.closest('.escena:not(.lamina)'));
     // Contenido recortado por su contenedor (overflow hidden): el calendario que se comía la última fila
     window.recortes(lam, CAJAS + ', .calendario .dia').forEach(q => EF(`«${q.que}» recortado ${q.px} px por .${q.por}: el contenido no cabe en su caja`));
     // Texto suelto y negritas como hijos de un flex/grid: se pierde el espacio antes de la negrita
     window.flexMezclado(lam).forEach(t => EF(`«${t}»: el texto y su negrita quedaron como columnas de un flex (se pierde el espacio): envuélvelo en un solo <span>`));
+    // Etiquetas hermanas de una fila de flujo con distinto número de renglones («Le dan / la otra» entre dos de uno), o
+    // encimadas con la vecina (con columnas minmax(0, 1fr) el desborde ya no agranda la columna)
+    visibles('.fila-igual').forEach(f => {
+      const et = [...f.children].map(nd => nd.querySelector(':scope > .etiqueta')).filter(e => e && visible(e));
+      if (et.length < 2) return;
+      const ls = et.map(e => window.lineasPalabras(e));
+      if (new Set(ls.map(l => l.length)).size > 1) AF(`etiquetas hermanas con distinto número de renglones (${ls.map(l => `«${l.map(x => x.join(' ')).join(' / ')}»`).join(', ')}): acórtalas o baja «separacion»`);
+      const cj = et.map(e => caja(e, lam));
+      for (let i = 1; i < cj.length; i++) if (cj[i].x < cj[i - 1].x + cj[i - 1].w + 24) EF(`«${corto(et[i - 1].innerText, 20)}» y «${corto(et[i].innerText, 20)}» se enciman o quedan a menos de 24 px: acorta una etiqueta o sube «separacion»`);
+    });
     // «Paso 2» o la etiqueta del mapa partidos en dos renglones
     visibles('.rotulo-paso').forEach(e => {
       const ls = window.lineasPalabras(e);

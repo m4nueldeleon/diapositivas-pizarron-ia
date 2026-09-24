@@ -40,6 +40,20 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   La skill lo enseñaba así: «guion corto», el demo con «Ana (ejemplo)» y la firma de relleno.
 - **Cómo se detectó**: auditoría de mercadotecnia y usabilidad contra las hojas 14-18 y la transcripción.
 
+## 2026-09-24 · Íconos con volumen y del set, emoji protagonista de su bloque (loop, ronda 3, estilo e íconos)
+- **Regla**: se dibuja en SVG solo lo que en ESE set imprime texto, se confunde o se pierde. 📅 📆 🗓️ 🎟️ 🎫 van en
+  SVG solo en Apple («JUL 17», «ADMIT ONE»); en Fluent salen sus 3D nativos, sin texto y distintos entre sí. 📱 📲 📄
+  y ahora 💬 🗨️ (burbuja azul) se dibujan en los dos, y todo SVG de objeto lleva el volumen de su set: degradado,
+  brillo arriba y sombra (`svg.vol`). Las siluetas 👤 👥 y las insignias ✅ ❌ siguen planas, como en la referencia.
+  «Comenta [PALABRA]» es 💬; 📲 es «te llega al celular». El ícono ocupa ~40% de la pieza del stack y ~24% del lado
+  menor de un cuadrante; la insignia +💰 mide ~48% del glifo; `piel` da tono a las personas; la fuente de un estudio
+  va en `fuente` (sans gris 40 px), no en `nota`.
+- **Porqué**: el 📅 plano era el héroe del llamado en un deck Fluent 3D, la flecha del 📲 salía cortada por el
+  viewBox, el 🎓 medía 19% de su pieza y se fundía con el marino, los cuadrantes quedaban rosa casi blanco donde cae
+  el texto, las citas salían en tres estilos y las personas amarillas cuando el video usa 🏻.
+- **Cómo se detectó**: auditorías de diseño, íconos y fidelidad (r3) con muestreo de píxeles contra ref_10, ref_628,
+  ref_1760 y 42:40; la réplica pasa de 8/10 a 9/10 pares (r1760 cuadrado; r628 a ≤ 4 RGB del rojo y verde).
+
 ## 2026-09-24 · Íconos sin texto impreso y letra que se lee en el celular (loop, ronda 2)
 - **Regla**: 📅 📆 🗓️ se dibujan como un calendario SIN fecha, 🎟️ 🎫 como un boleto liso y 📲 como el
   celular con flecha, igual en Apple y Fluent (también dentro del texto). 🏪 y 🪪 imprimen texto: QA avisa.

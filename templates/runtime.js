@@ -359,6 +359,31 @@
 
   // Si el contenido no cabe en el lienzo (formatos verticales, textos largos), se reduce con zoom
   // real para que la capa a mano se dibuje sobre las posiciones finales. QA avisa desde 85% y da error bajo 70%.
+  // ---------- fila de nodos hermanos (flujo): todas las etiquetas con el mismo número de renglones ----------
+  // Con columnas iguales, una etiqueta de 4 palabras («Le dan la otra») era la única que podía partirse y la fila salía
+  // 1 / 2 / 1 renglones [r3, neuroventas 07]. Se mide cada etiqueta en un renglón; si la fila no cabe en el ancho útil,
+  // baja el hueco (hasta 90 px, salvo `separacion` del autor) y luego la letra de TODAS por igual (de 4 en 4 px, hasta
+  // 60 px con ≤ 3 nodos o la base con más); si ni así cabe, TODAS se parten balanceadas con la misma letra.
+  function igualarFilas(lam) {
+    lam.querySelectorAll('.fila-igual').forEach(fila => {
+      const nodos = [...fila.children], n = nodos.length; if (n < 2) return;
+      const etqs = nodos.map(nd => nd.querySelector(':scope > .etiqueta')).filter(Boolean); if (!etqs.length) return;
+      const lz = fila.closest('.lienzo'); if (!lz) return;
+      const cs = getComputedStyle(lz), util = lz.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const base = parseFloat(getComputedStyle(etqs[0]).fontSize) || 76, piso = n <= 3 ? Math.min(base, 60) : base;
+      let gap = parseFloat(getComputedStyle(fila).columnGap) || 0;
+      const fijo = fila.dataset.sepFija === '1';
+      etqs.forEach(e => e.classList.add('corta'));
+      const ancho = () => Math.max(...nodos.map(nd => Math.max(...[...nd.children].map(c => c.scrollWidth || c.offsetWidth))));
+      const cabe = () => n * ancho() + (n - 1) * gap <= util;
+      if (!cabe() && !fijo) { gap = Math.max(90, Math.min(gap, (util - n * ancho()) / (n - 1))); fila.style.gap = gap + 'px'; }
+      let te = base;
+      while (!cabe() && te - 4 >= piso) { te -= 4; nodos.forEach(nd => nd.style.setProperty('--te', te + 'px')); }
+      if (!cabe()) etqs.forEach(e => e.classList.remove('corta'));
+      fila.dataset.igualada = te + '';
+    });
+  }
+
   function encajar(lam) {
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
       const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes') || h.classList.contains('sangre')) return;
@@ -647,6 +672,7 @@
     const lams = [...document.querySelectorAll('.lamina')];
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     // Una lámina con un error no tumba al resto: se avisa y se sigue
+    lams.forEach(l => { try { igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     lams.forEach(l => { try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); } });
     lams.forEach(l => { try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); } });

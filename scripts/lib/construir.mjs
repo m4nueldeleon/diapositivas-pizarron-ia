@@ -151,7 +151,7 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   fs.mkdirSync(dirSalida, { recursive: true });
   const formato = FORMATOS[deck.formato || '16:9'] ? deck.formato || '16:9' : '16:9';
   const F = FORMATOS[formato];
-  const em = new Emojis({ modo: deck.emoji || 'auto', dirSalida });
+  const em = new Emojis({ modo: deck.emoji || 'auto', dirSalida, piel: deck.piel });
   const faltanFuentes = copiarFuentes(dirSkill, dirSalida);
   const comun = { em, dirDeck, dirSalida, formato, F };
   const ctxMarca = crearCtx(comun);

@@ -21,7 +21,7 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
   comparte para abrirse en otros equipos.
 - **Un solo set por deck**, escrito en el deck. `auto` (apple en Mac, fluent en lo demás) queda como respaldo
   heredado: el mismo deck cambia de familia según la máquina. Con `auto`, QA revisa los DOS sets y avisa lo
-  que se pierde en el otro («deck en emoji "auto": en fluent se pierde 💬 → 📲»).
+  que se pierde en el otro («deck en emoji "auto": en fluent se pierde 💭 → 💡»).
 - Lo que cambia de un set a otro está en «Ojo: se ven distinto según el modo» y en «Bajo contraste».
 
 ## Dinero y negocio
@@ -63,6 +63,13 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 | sin mostrar la cara | `no:🙅‍♂️` (ref_628: 🙅🏻‍♂️ con ❌ para «Showing your face online»; `no:🎥` es «sin grabar video») |
 | levanta la mano: pide algo, «te avisa», pasa a un humano | 🙋 |
 
+**Tono de piel.** En el video las personas protagonistas llevan tono humano y casi siempre la variante
+masculina: 👨🏻‍⚕️ [ref_10], 🙅🏻‍♂️ [ref_628], 💁🏻‍♂️ «You» [12:45], 🕵🏼 [17:20], 👨🏻‍💻 [35:40]. Las siluetas (👥 👤) y
+algún secundario van sin tono (el «Creator» 👨‍💻 amarillo junto al «You» con tono, 12:45): el video mezcla, así
+que QA no avisa por mezcla. Pon `"piel": "🏻"` en el deck (o tu tono): cada persona sin tono escrito lo recibe
+(🧑‍⚕️ → 🧑🏻‍⚕️, `no:🙅‍♂️` → 🙅🏻‍♂️, 🧑‍🤝‍🧑 → 🧑🏻‍🤝‍🧑🏻); las manos (🤝 👆 ✍️) no cambian; un tono escrito a mano en el deck siempre gana y `"ninguno"` lo apaga.
+En Fluent, si el tono no existe en el set, sale la forma sin tono.
+
 ## Acciones y proceso
 | Concepto | Emoji |
 |---|---|
@@ -74,9 +81,9 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 | pocos clics | 👆 (el 🖱️ de Apple es un mouse blanco sobre blanco) |
 | escribir, plan | 📝 |
 | tu método, el mapa del sistema | 🗺️ |
-| enviar mensaje, «te escriben» | 📲 (se lee «celular que recibe un mensaje»; se dibuja en SVG) · 📩 en Apple (el 💬 de Fluent es lila casi blanco) |
+| enviar mensaje, «te escriben» | 📲 (se lee «te llega al celular»; se dibuja en SVG con volumen) · 📩 en Apple |
 | llamada, videollamada, llamada de diagnóstico | 📞 · ☎️ en láminas oscuras (el 📞 de Apple se hunde en el negro) |
-| fecha, agenda, reunión agendada | 📅 (se dibuja en SVG, un calendario SIN fecha: el de Apple imprimía «JUL 17») |
+| fecha, agenda, reunión agendada | 📅 (en Apple se dibuja en SVG, un calendario SIN fecha: el de Apple imprimía «JUL 17»; en Fluent sale el 3D nativo, que no trae fecha) |
 | grabar video, hacer contenido | 🎥 [ref_628, «Creating Content»] · 📹 en lámina oscura con Apple (el 🎥 de Apple se hunde en el negro) |
 | orientación, rumbo: «te orientamos», tu plan | 🧭 |
 | aprender | 🧠 |
@@ -101,7 +108,7 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 | objeción | el emoji de lo que dice que le falta, negado: «No tengo dinero» → `no:💰` | la receta de GUION §2; 🙅‍♂️ es «sin mostrar la cara» |
 | garantía | 🛡️ | con plazo y condición medible (GUION §7) |
 | testimonio | sin emoji | es una `prueba` con captura real |
-| boleto, lugar apartado, cupos | 🎟️ | se dibuja liso (el de Apple dice «ADMIT ONE»); cupos solo si son reales, con `rejilla` (GUION §7). 🎫 sale igual: usa 🎟️ |
+| boleto, lugar apartado, cupos | 🎟️ | en Apple se dibuja liso (el de Apple dice «ADMIT ONE»); en Fluent sale el boleto 3D nativo, sin texto. Cupos solo si son reales, con `rejilla` (GUION §7). Usa 🎟️, no 🎫 |
 | descuento | ✂️ | el precio sigue siendo 💵 · 🏷️ |
 | compra en línea, carrito | 🛒 | |
 | tienda o negocio local | 🏠 o 🏬 | 🏪 trae «24» (Apple) o «24 H» (Fluent) impreso: QA lo avisa |
@@ -139,7 +146,7 @@ Separar en cuentas: una `rejilla` de 🐷 o de 💰 con etiquetas, no 🗂️ (b
 | pregunta difícil | 🌶️ | |
 | sin programar, sin código | `no:⌨️` | 💻 es «producto digital» y 🧑‍💻 es «tú» |
 | rol, perfil, personaje | 🎭 | 🪪 imprime «Jo Appleseed» en Apple |
-| documento, base de conocimiento, instrucciones | 📄 | se dibuja en SVG igual en los dos sets (hoja blanca, renglones oscuros, esquina azul): la hoja de los dos sets sale pálida. 📋 es «tarea» |
+| documento, base de conocimiento, instrucciones | 📄 | se dibuja en SVG igual en los dos sets (hoja con degradado y sombra, renglones gris pizarra, esquina azul): la hoja de los dos sets sale pálida. 📋 es «tarea» |
 
 ## Eventos
 | Concepto | Emoji | Notas |
@@ -154,7 +161,7 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 |---|---|---|
 | guardar | 📌 | 🔖 se lee distinto en cada modo |
 | compartir | 📤 | |
-| comentar una palabra | el mismo 📲 de «enviar mensaje» | el 💬 de Fluent casi desaparece sobre blanco |
+| comentar una palabra | 💬 | se dibuja en SVG igual en los dos sets: burbuja azul con tres puntos (la de Fluent era lila casi blanca y la de Apple se perdía en la tarjeta). 📲 es «te llega al celular», no «comenta» |
 | seguir la cuenta | ➕ | 🔔 ya es notificación |
 | me gusta | ❤️ | |
 
@@ -218,10 +225,10 @@ para una secuencia usa un `flujo`.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.
 - 👥 para «conversaciones»: se lee «personas».
-- 🎫: sale igual que 🎟️ (los dos se dibujan como el mismo boleto). Usa 🎟️.
+- 🎫: en Apple sale igual que 🎟️ (el mismo boleto dibujado). Usa 🎟️.
 - 🪪: en Apple imprime «Jo Appleseed». Para «rol» o «perfil», 🎭; para una persona, 👤.
 - 🗂️: beige y pálido en Apple. Para «separar», una `rejilla` con etiquetas.
-- 🗓️ y 📆: salen igual que 📅 (el mismo calendario en SVG). Usa 📅.
+- 🗓️ y 📆: en Apple salen igual que 📅 (el mismo calendario en SVG); en Fluent son 3D y distintos (argollas, espiral). Para «fecha» basta 📅.
 
 ## Parecidos: no los mezcles en un deck
 
@@ -231,7 +238,8 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 | Set | Grupo | Qué hacer |
 |---|---|---|
 | los dos | 🧑‍💼 👨‍💼 | cliente es 🧑‍💼; experto, 🧑‍🏫 |
-| los dos | 📅 🗓️ 📆 · 🎟️ 🎫 · 📄 📃 | se dibujan con el mismo SVG: usa el primero |
+| Apple | 📅 🗓️ 📆 · 🎟️ 🎫 | se dibujan con el mismo SVG: usa el primero (en Fluent salen nativos y distintos entre sí) |
+| los dos | 📄 📃 · 💬 🗨️ | se dibujan con el mismo SVG: usa el primero |
 | Fluent | 🏦 🏛️ | el mismo edificio gris: impuestos 🏛️ y el banco con su logo o 💳 |
 
 ## Ojo: se ven distinto según el modo
@@ -241,9 +249,10 @@ Se ven casi iguales, así que dos conceptos con ellos se confunden. QA avisa si 
 | 📲 | celular con flecha | tableta morada con apps, se confunde con 📅 | ya se dibuja en SVG igual en los dos modos (el mismo celular, con una flecha azul que entra) |
 | 🤔 | pensativo | con ojos de alarma | para la pregunta retórica en modo `fluent`, ❓ |
 | 🗣️ | perfil que habla | silueta negra | sirve en lámina clara, pero no junto a 👤 o 👥 grises |
-| 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | la misma rejilla lila | se dibujan en SVG, un calendario sin fecha, igual en los dos modos (también dentro del texto); usa 📅 |
-| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos lisos | se dibujan en SVG, un boleto rojo liso, igual en los dos modos |
+| 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | 3D, sin fecha, encabezado azul y distintos (liso, argollas, espiral) | en Apple se dibujan en SVG, un calendario sin fecha con volumen (también dentro del texto); en Fluent salen nativos. Usa 📅 |
+| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | en Apple se dibujan en SVG, un boleto rojo liso; en Fluent salen nativos |
 | 📄 📃 | hoja pálida | hoja pálida | se dibujan en SVG, una hoja con renglones y la esquina azul, igual en los dos modos |
+| 💬 🗨️ | burbuja blanca (se pierde en la tarjeta) | burbuja lila casi blanca | se dibujan en SVG, una burbuja azul con tres puntos, igual en los dos modos |
 
 ## Emojis con texto impreso
 
@@ -252,10 +261,10 @@ Algunos emojis traen letras: a tamaño de ícono se leen, en inglés o con una f
 
 | Emoji | Apple | Fluent | Qué pasa ahora |
 |---|---|---|---|
-| 📅 📆 | «JUL 17» | rejilla lila | se dibuja en SVG sin fecha |
-| 🗓️ | «JUL» | rejilla lila | se dibuja en SVG sin fecha |
-| 🎟️ | «ADMIT ONE» | liso | se dibuja en SVG liso |
-| 🎫 | «LIVE CONCERT TICKET / ZONE A / JAN 09» | liso | se dibuja en SVG liso |
+| 📅 📆 | «JUL 17» | 3D sin fecha | en Apple se dibuja en SVG sin fecha; en Fluent, nativo |
+| 🗓️ | «JUL» | 3D sin fecha | en Apple se dibuja en SVG sin fecha; en Fluent, nativo |
+| 🎟️ | «ADMIT ONE» | liso | en Apple se dibuja en SVG liso; en Fluent, nativo |
+| 🎫 | «LIVE CONCERT TICKET / ZONE A / JAN 09» | liso | en Apple se dibuja en SVG liso; en Fluent, nativo |
 | 🏪 | «24» | «24 H» | QA avisa (`TEXTO_IMPRESO`): usa 🏠 o 🏬 |
 | 🪪 | «Jo Appleseed» | tarjeta azul lisa | QA avisa en Apple: usa 👤 |
 | 🧾 | «RECEIPT» | recibo pálido | QA avisa en Apple: para «comprobante», 💵 o ✍️ |
@@ -276,13 +285,12 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 
 | Set | Fondo | Se pierden | Usa en su lugar |
 |---|---|---|---|
-| Fluent | blanco, tarjeta, cuadrantes | 💬 🗨️ 💭 ✉️ 📩 📨 (lila casi blanco) | mensaje (💬 🗨️ 📩) → 📲 · correo (✉️ 📨) → 📧 · pensamiento → 💡 |
+| Fluent | blanco, tarjeta, cuadrantes | 💭 ✉️ 📩 📨 (lila casi blanco) | «te llega» (📩) → 📲 · correo (✉️ 📨) → 📧 · pensamiento → 💡. 💬 🗨️ ya se dibujan (burbuja azul) |
 | Fluent | blanco, tarjeta | ⚙️ 🔧 (lila lavado) · 🗒️ | 🛠️ · 📄 |
 | Apple | blanco, tarjeta, rosa | 🏷️ (beige pálido), ✉️, 🖱️ (mouse blanco) | precio → 💵 · correo → 📧 · clic → 👆 |
-| Apple | tarjeta gris | 💬 (burbuja blanca) | 📲 |
 | los dos | claro | ☁️ | «en la nube» → 🌐 |
 | los dos | claro | 🤍 🏳️ 🧾 | ❤️ · 🚩 · 💵 |
-| Apple | oscura | 🗨️ 📞 💲 🎥 | 💬 · ☎️ · 💵 · 📹 (el mismo «grabar video») |
+| Apple | oscura | 📞 💲 🎥 | ☎️ · 💵 · 📹 (el mismo «grabar video») |
 | Fluent | oscura | 🗣️ | 🎤 |
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se

@@ -31,19 +31,29 @@ function qa(deck) {
 }
 const base = (laminas, extra = {}) => ({ emoji: 'apple', marca: false, ...extra, laminas });
 
-test('emoji: 📅 📆 🗓️ son un calendario SVG sin fecha, 🎟️ 🎫 un boleto liso y 📲 el celular con flecha, en los dos modos', () => {
+test('emoji: en apple 📅 📆 🗓️ son un calendario SVG sin fecha y 🎟️ 🎫 un boleto liso; en fluent salen nativos 3D; 📲 es SVG en los dos', () => {
+  const em = new Emojis({ modo: 'apple', dirSalida: tmp() });
+  const cal = em.html('📅');
+  assert.ok(cal.includes('<svg') && !cal.includes('<img') && !cal.includes('📅'));
+  assert.equal(em.html('📆'), cal.replace('📅', '📆'));
+  assert.equal(em.html('🗓️'), cal);
+  assert.ok(em.html('🎟️').includes('url(#pz-boleto)') && em.html('🎫').includes('url(#pz-boleto)'));
+  assert.ok(!/JUL|ADMIT/.test(cal + em.html('🎟️')));
+  const fl = new Emojis({ modo: 'fluent', dirSalida: tmp() });
+  // En Fluent el calendario y el boleto son 3D, sin texto y distintos entre sí: nada de clip-art plano [r3]
+  assert.match(fl.glifo('📅'), /^<img[^>]*src="emoji\/1f4c5\.webp"/);
+  assert.match(fl.glifo('📆'), /1f4c6\.webp/);
+  assert.match(fl.glifo('🗓️'), /1f5d3/);
+  assert.match(fl.glifo('🎟️'), /^<img[^>]*1f39f/);
+  assert.match(fl.glifo('🎫'), /^<img/);
   for (const modo of ['apple', 'fluent']) {
-    const em = new Emojis({ modo, dirSalida: tmp() });
-    const cal = em.html('📅');
-    assert.ok(cal.includes('<svg') && !cal.includes('<img') && !cal.includes('📅'), modo);
-    assert.equal(em.html('📆'), cal.replace('📅', '📆'));
-    assert.equal(em.html('🗓️'), cal);
-    assert.ok(em.html('🎟️').includes('url(#pz-boleto)') && em.html('🎫').includes('url(#pz-boleto)'));
-    const tel = em.html('📲️');
+    const e = new Emojis({ modo, dirSalida: tmp() });
+    for (const ch of ['📲', '📱', '📄', '💬']) assert.ok(e.glifo(ch).startsWith('<svg'), `${modo} ${ch}`);
+    const tel = e.html('📲️');
     assert.ok(tel.includes('url(#pz-pantalla)') && !tel.includes('<img'), '📲');
-    assert.ok(!/JUL|ADMIT/.test(cal + em.html('🎟️')));
   }
   assert.ok(esGlifoDibujado('🗓️') && esGlifoDibujado('📲') && !esGlifoDibujado('🏪'));
+  assert.ok(esGlifoDibujado('🗓️', 'apple') && !esGlifoDibujado('🗓️', 'fluent') && esGlifoDibujado('📲', 'fluent'));
   // en apple el texto conserva sus emojis, salvo los que imprimen una fecha o texto en inglés
   const ap = new Emojis({ modo: 'apple', dirSalida: tmp() });
   assert.ok(ap.enTexto('Hoy 📅').includes('<svg'));
@@ -165,4 +175,40 @@ test('QA: letra secundaria bajo 48 px avisa; emoji con texto impreso avisa; mapa
   assert.ok(r.avisos.some(e => /lámina 1 .*texto secundario\) se ve a \d+px/.test(e)), r.avisos.join('\n'));
   assert.ok(r.avisos.some(e => /lámina 2 .*emoji con texto impreso en apple: 🏪 dice «24»/.test(e)), r.avisos.join('\n'));
   assert.ok(!r.errores.some(e => /lámina 3 /.test(e)), r.errores.join('\n'));
+});
+
+// Ronda 3: cada figura de cada glifo SVG (con la mitad de su trazo) cabe en el viewBox. La cola de la flecha del 📲
+// arrancaba en x=0.9 con trazo de 4.2 y punta redonda: el viewBox la cortaba en seco.
+test('glifos SVG: ninguna figura (ni su trazo) se sale del viewBox; los de objeto llevan volumen', { timeout: 60_000 }, async () => {
+  const { TODOS_GLIFOS_SVG, DEFS_GLOBALES } = await import('../scripts/lib/emoji.mjs');
+  const { cargarPlaywright } = await import('../scripts/lib/playwright.mjs');
+  const { chromium } = cargarPlaywright(DIR_SKILL);
+  const b = await chromium.launch();
+  try {
+    const pg = await b.newPage();
+    const S = 240;
+    await pg.setContent(`<html><body style="margin:0">${DEFS_GLOBALES}${Object.entries(TODOS_GLIFOS_SVG).map(([k, s]) => `<div data-k="${k}" style="width:${S}px;height:${S}px;margin:40px">${s}</div>`).join('')}</body></html>`);
+    const fuera = await pg.evaluate(S => {
+      const out = [];
+      document.querySelectorAll('[data-k]').forEach(d => {
+        const svg = d.querySelector('svg'), R = svg.getBoundingClientRect(), k = S / 24;
+        svg.querySelectorAll('path, rect, circle').forEach(e => {
+          const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
+          const sw = cs.stroke && cs.stroke !== 'none' ? (parseFloat(e.getAttribute('stroke-width')) || 1) * k / 2 : 0;
+          const x0 = r.left - sw - R.left, y0 = r.top - sw - R.top, x1 = r.right + sw - R.left, y1 = r.bottom + sw - R.top;
+          if (x0 < -0.5 || y0 < -0.5 || x1 > S + 0.5 || y1 > S + 0.5) out.push(`${d.dataset.k} <${e.tagName}> ${[x0, y0, x1, y1].map(v => (v / k).toFixed(2)).join(',')}`);
+        });
+      });
+      return out;
+    }, S);
+    assert.deepEqual(fuera, []);
+  } finally { await b.close(); }
+  for (const ch of ['📅', '🎟', '📄', '📱', '📲', '💬']) {
+    const s = TODOS_GLIFOS_SVG[ch];
+    assert.ok(/class="vol"/.test(s) && /fill="url\(#pz-/.test(s), `${ch} con clase vol y degradado`);
+    const contornos = [...s.matchAll(/stroke="#[0-9a-f]{3,6}" stroke-width="([\d.]+)"/g)].filter(m => !/stroke="#fff"/.test(m[0]));
+    assert.ok(contornos.every(m => +m[1] <= 1.3), `${ch}: sin contorno grueso de clip-art`);
+  }
+  // 👤 👥 conservan las siluetas grises de la referencia (sin volumen brillante) y ✅ ❌ son insignias planas
+  for (const ch of ['👤', '👥', '✅', '❌']) assert.ok(!/class="vol"/.test(TODOS_GLIFOS_SVG[ch]), ch);
 });

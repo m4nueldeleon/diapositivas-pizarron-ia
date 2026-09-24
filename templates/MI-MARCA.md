@@ -13,6 +13,7 @@ Déjala vacía si no tienes marca: las láminas saldrán sin firma. **Nunca pong
 - Idioma: español
 - Emojis: `auto`
 - Animación: `seco`
+- Tono de piel de las personas (`piel`): `🏻`, como el video (o el tuyo: 🏼 🏽 🏾 🏿; `ninguno` las deja amarillas)
 
 ## Tu voz en las láminas
 - Palabras que usas siempre (el vocabulario de tu método):
