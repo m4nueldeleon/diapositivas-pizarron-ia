@@ -24,17 +24,27 @@ export const CURSOR_FLECHA = '<svg viewBox="0 0 26 38" width="100%" height="100%
 const EXT_IMG = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
 const entero = k => { const n = Math.floor(Number(k)); return Number.isFinite(n) && n >= 0 ? Math.min(n, 200) : 0; };
 
-export function crearCtx({ em, dirDeck, dirSalida, formato, revelarTodo = false, uid = 0 }) {
+// Dimensiones por omisión (16:9) si el ctx se crea sin formato (pruebas)
+const F_OMISION = { W: 1920, H: 1080, mv: 100, mh: 150 };
+// En 9:16 los tamaños con nombre del emoji crecen: el lienzo mide 1920 de alto y no 1080
+const ESCALA_VERTICAL = 1.25;
+
+export function crearCtx({ em, dirDeck, dirSalida, formato, F = F_OMISION, revelarTodo = false, uid = 0 }) {
   const ctx = {
-    em, dirDeck, dirSalida, formato, revelarTodo, uid,
+    em, dirDeck, dirSalida, formato, F, revelarTodo, uid,
     max: 0,
     conexiones: [],
     vertical: formato === '9:16',
+    // ancho útil del lienzo (sin márgenes): 1620 en 16:9, 900 en 9:16, 1:1 y 4:5
+    util: F.W - 2 * F.mh,
     P(k) { const v = ctx.revelarTodo ? 0 : entero(k); ctx.max = Math.max(ctx.max, v); return ` data-p="${v}"`; },
     paso(k) { const v = ctx.revelarTodo ? 0 : entero(k); ctx.max = Math.max(ctx.max, v); return v; },
     A(id) { return ` data-a="${escapar(id)}"`; },
     con(spec) { ctx.conexiones.push({ ...spec, p: ctx.revelarTodo ? 0 : entero(spec.p ?? 0) }); },
-    emoji(spec, tam, porOmision) { return em.html(spec, tamEmoji(tam, porOmision)); },
+    emoji(spec, tam, porOmision) {
+      const px = tamEmoji(tam, porOmision);
+      return em.html(spec, ctx.vertical && typeof tam !== 'number' ? Math.round(px * ESCALA_VERTICAL) : px);   // solo tamaños con nombre
+    },
     // Solo imágenes, y solo de la carpeta del deck (o URLs https / data:image). Nunca otro archivo del disco.
     img(src) {
       if (!src || typeof src !== 'string') return '';
@@ -55,6 +65,9 @@ export function crearCtx({ em, dirDeck, dirSalida, formato, revelarTodo = false,
   };
   return ctx;
 }
+
+// Paso de un elemento: el campo del deck (ya saneado a entero ≥ 0) o el valor por omisión del diseño
+export const pasoDe = (l, campo, porOmision) => (Number.isInteger(l[campo]) && l[campo] >= 0 ? l[campo] : porOmision);
 
 // Envuelve un fragmento para que aparezca en un paso dado
 export const bloque = (ctx, k, html, clase = '', extra = '') =>

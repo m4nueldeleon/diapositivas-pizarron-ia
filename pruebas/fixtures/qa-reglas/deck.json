@@ -1,0 +1,11 @@
+{ "titulo": "reglas de QA", "emoji": "apple", "marca": false,
+  "laminas": [
+    { "id": "cursor-tapa", "tipo": "boton", "boton": "Enviar mensaje", "clic_pos": [0.3, 0.35], "texto": "Solo das **clic**" },
+    { "id": "flecha-tacha", "tipo": "flujo", "encabezado": "Una frase larga que queda justo encima de los nodos", "flecha": "arco", "nodos": [{ "emoji": "🐷", "etiqueta": "Ahorros" }, { "emoji": "🎰", "etiqueta": "Apuesta" }] },
+    { "id": "marca-abierta", "tipo": "idea", "texto": "Una frase con **negrita sin cerrar" },
+    { "id": "pendiente", "tipo": "idea", "texto": "Hoy: **[PRECIO]**", "nota": "Garantía de [DÍAS] días" },
+    { "id": "plantilla", "tipo": "chat", "mensajes": [{ "de": "otro", "texto": "Hola [nombre], ¿cómo vas?" }] },
+    { "id": "azul", "tipo": "idea", "texto": "Un color {a:muy claro} sobre blanco" },
+    { "id": "sello-largo", "tipo": "idea", "texto": "Algo", "sello": "Esto es un sello larguísimo que de verdad no cabe aquí" },
+    { "id": "voz-corta", "tipo": "lista", "items": ["uno", "dos"], "voz": ["solo una"] }
+  ] }

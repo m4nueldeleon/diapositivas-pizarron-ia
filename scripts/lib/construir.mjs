@@ -39,11 +39,15 @@ function copiarFuentes(dirSkill, dirSalida) {
   return faltan;
 }
 
-function firma(marca, ctx) {
+// Firma: abajo a la derecha en horizontal; en 9:16 va ARRIBA por omisión (abajo la tapan el caption y
+// los botones de Reels). marca.posicion ('arriba' | 'abajo') lo fuerza.
+function firma(marca, ctx, vertical) {
   if (!marca || marca === false) return '';
-  if (marca.logo) { const src = ctx.img(marca.logo); if (src) return `<div class="firma"><img src="${src}" alt=""></div>`; }
+  const pos = marca.posicion || (vertical ? 'arriba' : 'abajo');
+  const cls = `firma${pos === 'arriba' ? ' arriba' : ''}`;
+  if (marca.logo) { const src = ctx.img(marca.logo); if (src) return `<div class="${cls}"><img src="${src}" alt=""></div>`; }
   if (!marca.texto) return '';
-  return `<div class="firma">${escapar(marca.texto)}${marca.sufijo ? `<small>${escapar(marca.sufijo)}</small>` : ''}</div>`;
+  return `<div class="${cls}">${escapar(marca.texto)}${marca.sufijo ? `<small>${escapar(marca.sufijo)}</small>` : ''}</div>`;
 }
 
 // Una lámina: HTML interior + pasos + conexiones + extras (sello, clic).
@@ -55,10 +59,16 @@ function armarLamina(l, i, deck, comun) {
   let extras = '';
   if (l.sello) {
     const k = ctx.paso(l.sello_paso ?? pasos);
-    extras += `<div class="sello" data-p="${k}">${escapar(l.sello)}</div>`;
+    // posición: centrado en un ancla (sello_sobre), en una zona del lienzo (sello_pos) o al centro; el
+    // runtime lo acota para que, girado, no se salga del lienzo y lo reduce si es muy largo
+    // En la rejilla el sello cae centrado SOBRE las cajas, como en la referencia [6:35 «A LOT OF SKILL»]
+    const sobre = l.sello_sobre || (l.tipo === 'rejilla' && !l.sello_pos ? 'rejilla' : '');
+    const pos = `${sobre ? ` data-sobre="${escapar(sobre)}"` : ''}${l.sello_pos ? ` data-pos="${escapar(l.sello_pos)}"` : ''}`;
+    extras += `<div class="sello" data-p="${k}"${pos}>${escapar(l.sello)}</div>`;
     pasos = Math.max(pasos, k + 1);
   }
   const clic = ctx.clic || (typeof l.clic === 'string' ? { a: l.clic, p: l.clic_paso ?? pasos, tipo: l.cursor || 'mano' } : null);
+  if (clic && Array.isArray(l.clic_pos)) clic.pos = l.clic_pos;
   if (clic) {
     const tipo = (clic.tipo || l.cursor) === 'flecha' ? 'flecha' : 'mano';
     clic.p = ctx.paso(clic.p);
@@ -68,7 +78,7 @@ function armarLamina(l, i, deck, comun) {
   const oscura = l.tipo === 'oscura' || l.oscura;
   return {
     interior, pasos, extras, oscura, conexiones: ctx.conexiones, avisos: ctx.avisos,
-    clic: clic ? JSON.stringify({ a: clic.a, p: clic.p }) : '',
+    clic: clic ? JSON.stringify({ a: clic.a, p: clic.p, ...(clic.pos ? { pos: clic.pos } : {}) }) : '',
   };
 }
 
@@ -80,21 +90,23 @@ const jsonSeguro = x => JSON.stringify(x).replace(/</g, '\\u003c');
 export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   const errores = validarDeck(crudo, Object.keys(LAYOUTS));
   if (errores.length) { const e = new Error('deck.json con errores:\n  · ' + errores.join('\n  · ')); e.errores = errores; throw e; }
-  const { deck, avisos: avisosSaneo } = sanearDeck(crudo);
+  const { deck, avisos: avisosSaneo, sugerencias } = sanearDeck(crudo);
   fs.mkdirSync(dirSalida, { recursive: true });
   const formato = FORMATOS[deck.formato || '16:9'] ? deck.formato || '16:9' : '16:9';
   const F = FORMATOS[formato];
   const em = new Emojis({ modo: deck.emoji || 'auto', dirSalida });
   const faltanFuentes = copiarFuentes(dirSkill, dirSalida);
-  const comun = { em, dirDeck, dirSalida, formato };
+  const comun = { em, dirDeck, dirSalida, formato, F };
   const ctxMarca = crearCtx(comun);
-  const marca = deck.marca === false ? '' : firma(deck.marca || {}, ctxMarca);
+  const marca = em.enTexto(deck.marca === false ? '' : firma(deck.marca || {}, ctxMarca, F.W < F.H));
   const avisos = [...avisosSaneo, ...ctxMarca.avisos];
   if (faltanFuentes.length) avisos.push(`Faltan tipografías (${faltanFuentes.join(', ')}): corre scripts/setup.sh`);
 
   const armadas = [];
   const secciones = deck.laminas.map((l, i) => {
-    const a = armarLamina(l, i, deck, comun);
+    let a;
+    try { a = armarLamina(l, i, deck, comun); }
+    catch (e) { throw new Error(`lámina ${i + 1} (${l.id || l.tipo}): ${e.message}`, { cause: e }); }
     armadas.push(a);
     avisos.push(...a.avisos.map(x => `lámina ${i + 1}: ${x}`));
     let cuerpo = `<div class="lienzo lz-${escapar(l.tipo)}">${a.interior}</div>`;
@@ -107,8 +119,8 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
     }
     const tipo = escapar(l.tipo);
     return `<section class="lamina escena${a.oscura ? ' oscura' : ''}" data-i="${i}" data-tipo="${tipo}" data-id="${escapar(l.id || tipo)}" data-pasos="${pasos}"${a.clic ? ` data-clic='${escapar(a.clic)}'` : ''}>
-  ${cuerpo}
-  <svg class="capa-mano"></svg>${a.extras}
+  ${em.enTexto(cuerpo)}
+  <svg class="capa-mano"></svg>${em.enTexto(a.extras)}
   ${l.tipo === 'camara' ? `<div class="lienzo"><div class="nota" style="color:#999">🎥 ${escapar(l.nota || 'A cámara')}</div></div>` : ''}
   ${marca && l.firma !== false && l.tipo !== 'camara' ? marca : ''}
   <script type="application/json" class="con">${jsonSeguro(a.conexiones)}</script>
@@ -119,6 +131,8 @@ export function construirHTML({ deck: crudo, dirDeck, dirSalida, dirSkill }) {
   const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8');
   const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO}}`;
   if (em.faltantes.size) avisos.push(`Emojis sin imagen Fluent (se usará la fuente del sistema): ${[...em.faltantes].join(' ')}`);
+  em.malformados.forEach((motivo, spec) => avisos.push(`emoji «${spec}»: ${motivo}`));
+  em.aproximados.forEach((usado, pedido) => sugerencias.push(`Emoji Fluent aproximado: ${pedido} → ${usado} (Fluent no tiene el original)`));
   const html = `<!doctype html>
 <html lang="${escapar(deck.idioma || 'es')}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -129,5 +143,5 @@ ${DEFS_GLOBALES}
 ${secciones.join('\n')}
 <script>${runtime}</script>
 </body></html>`;
-  return { html, avisos, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos) };
+  return { html, avisos, sugerencias, formato, W: F.W, H: F.H, modoEmoji: em.modo, deck, pasos: armadas.map(a => a.pasos) };
 }

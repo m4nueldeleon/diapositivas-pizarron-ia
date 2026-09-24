@@ -25,6 +25,20 @@ Copia este archivo a tu carpeta de trabajo y llénalo. Claude lo lee antes de ca
 | tu alumno o cliente | 🧑‍💻 |
 | tu método | 🗺️ |
 
+## Oferta (solo si el deck vende)
+Sin estos datos no hay lámina de oferta: no se inventan ni se deducen. Si falta uno, Claude lo pregunta
+una sola vez; si decides dejarlo para después, va como hueco en MAYÚSCULAS (`[PRECIO]`) y QA no deja
+llamar «final» al deck hasta que se llene.
+- Producto (nombre exacto):
+- Precio y moneda:
+- Precio ancla real y su fuente (si no existe, no se pone ancla):
+- Formas de pago o quincenas:
+- Garantía (plazo y condición):
+- Bonos:
+- Cupos o fecha límite reales:
+- Llamado (palabra clave y canal: WhatsApp, link o DM):
+- Credenciales o pruebas con permiso:
+
 ## Pruebas disponibles (solo reales y con permiso)
 - Carpeta de capturas: `assets/pruebas/`
 - Qué dato encerrar en cada una:

@@ -55,6 +55,28 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
   - ¿Hay un solo punto focal?
   - ¿El emoji dice el concepto?
 - Corrige y vuelve a renderizar hasta que el QA dé **90 o más, sin errores**.
+- Lo que el QA mide y tus ojos no siempre ven: marcas `**`/`~~` sin cerrar a la vista, sello o cursor
+  encima del texto, flechas que tachan una frase, letra reducida por el encaje, contraste bajo,
+  elementos vacíos, `voz` que no cuadra con los pasos y **datos pendientes** en MAYÚSCULAS entre
+  corchetes (`[PRECIO]`, `[WHATSAPP]`). Estos últimos son un error por dato, con sus láminas, y quedan
+  en `qa.json` → `pendientes`: se llenan antes de entregar.
+
+## 4b. Calibrar contra la referencia (solo quien mantiene la skill)
+
+```bash
+node scripts/comparar.mjs <deck-réplica> <carpeta-con-ref_SEG.jpg> --salida /tmp/comparar
+```
+
+- Empareja cada lámina `id: "r<seg>"` con `ref_<seg>.jpg` y usa su último paso. Avisa si una lámina
+  no tiene referencia o sobra una referencia (y sale con código 1).
+- Deja `comp_N.jpg` (5 pares por hoja, referencia a la izquierda) y `comparar.json`.
+- La métrica es la **caja de tinta** de cada lado: lo oscuro y poco saturado más la tinta roja, sin
+  fondos pálidos y sin la esquina de la marca de agua. Un par falla si x, y, ancho o alto difieren más
+  de 8 puntos del lienzo.
+- **Límite**: mide encuadre, no estilo. Dos láminas pueden pasar con tipografías distintas; la
+  revisión a ojo de `comp_N.jpg` sigue mandando.
+- Cada ronda del loop de mejora anota el número «pares que pasan / total» para ver si la réplica se
+  acerca o se aleja del video.
 
 ## 5. Entrega
 

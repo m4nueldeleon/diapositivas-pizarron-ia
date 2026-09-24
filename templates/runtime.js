@@ -25,10 +25,27 @@
     const b = { x: (r.left - L.left) / s, y: (r.top - L.top) / s, w: r.width / s, h: r.height / s };
     b.cx = b.x + b.w / 2; b.cy = b.y + b.h / 2; return b;
   }
+  // Un rectángulo por RENGLÓN de texto. Se miden solo los nodos de texto (no las cajas de los elementos
+  // hijos: el span de un ítem de lista, el emoji o un <b> anidado daban rayas de más) y se unen por renglón.
   function rectsTexto(el, lam) {
-    const rg = document.createRange(); rg.selectNodeContents(el);
-    const L = lam.getBoundingClientRect(), s = escala(lam);
-    return [...rg.getClientRects()].filter(r => r.width > 4).map(r => ({ x: (r.left - L.left) / s, y: (r.top - L.top) / s, w: r.width / s, h: r.height / s }));
+    const L = lam.getBoundingClientRect(), s = escala(lam), rs = [];
+    const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => (/\S/.test(n.nodeValue) && !(n.parentElement && n.parentElement.closest('.emo')) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
+    });
+    for (let n; (n = tw.nextNode());) {
+      const rg = document.createRange(); rg.selectNodeContents(n);
+      [...rg.getClientRects()].filter(r => r.width > 4).forEach(r => rs.push({ x: (r.left - L.left) / s, y: (r.top - L.top) / s, w: r.width / s, h: r.height / s }));
+    }
+    rs.sort((a, b) => a.y - b.y || a.x - b.x);
+    const grupos = [];
+    rs.forEach(r => {
+      const cy = r.y + r.h / 2;
+      const g = grupos.find(g => (cy >= g.y && cy <= g.y + g.h) || Math.abs(cy - (g.y + g.h / 2)) < Math.min(g.h, r.h) / 2);
+      if (!g) { grupos.push({ ...r }); return; }
+      const x1 = Math.max(g.x + g.w, r.x + r.w), y1 = Math.max(g.y + g.h, r.y + r.h);
+      g.x = Math.min(g.x, r.x); g.y = Math.min(g.y, r.y); g.w = x1 - g.x; g.h = y1 - g.y;
+    });
+    return grupos;
   }
   function borde(b, hacia, gap) {
     const dx = hacia[0] - b.cx, dy = hacia[1] - b.cy;
@@ -95,8 +112,11 @@
     e.setAttribute('stroke', o.color || C.rojo);
     e.setAttribute('stroke-width', o.ancho || 6);
     e.setAttribute('fill', o.relleno || 'none');
+    // La punta «llena» es maciza: el estilo en línea le gana a la regla de CSS que deja los trazos sin relleno
+    if (o.relleno) { e.style.fill = o.relleno; e.dataset.relleno = '1'; }
     if (o.textura !== false && !o.relleno) e.setAttribute('filter', `url(#${svg.dataset.filtro})`);
     e.dataset.p = o.p || 0;
+    if (o.clase) e.dataset.clase = o.clase;   // qa.mjs revisa que las flechas no crucen texto
     if (o.cabeza) { e.dataset.cabeza = '1'; }
     else if (o.dash) {
       e.setAttribute('stroke-dasharray', o.dash);
@@ -142,9 +162,13 @@
         break;
       }
       case 'codo': {
-        const izq = B.cx < A.cx;
-        const P = [izq ? A.x - 34 : A.x + A.w + 34, A.cy + 6], Q = [B.cx + (izq ? 20 : -20), B.y - 30];
-        pts = cuadratica(P, Q, [Q[0], P[1]]); color = C.negro; ancho = 8; cab = 'llena'; len = 34; break;
+        // Sale del costado del texto de origen y baja hacia la rama. Si la rama cae BAJO el texto (origen
+        // ancho, ramas juntas, 9:16), el tramo horizontal tacharía las letras: entonces nace del borde de
+        // abajo, un poco hacia el centro, y abre hacia fuera, como en la referencia [10:30].
+        const izq = B.cx < A.cx, Qx = B.cx + (izq ? 20 : -20), Q = [Qx, B.y - 30];
+        let P = [izq ? A.x - 34 : A.x + A.w + 34, A.cy + 6];
+        if (Qx > A.x - 20 && Qx < A.x + A.w + 20) P = [Math.min(A.x + A.w - 30, Math.max(A.x + 30, Qx + (izq ? 70 : -70))), A.y + A.h + 16];
+        pts = cuadratica(P, Q, [Qx, P[1]]); color = C.negro; ancho = 8; cab = 'llena'; len = 34; break;
       }
       case 'fina': {
         const P = borde(A, [B.cx, B.cy], 20), Q = borde(B, [A.cx, A.cy], 18);
@@ -192,10 +216,10 @@
         pts = linea(P, Q, r, 2.6); ancho = 7; len = 30;
       }
     }
-    trazo(svg, suave(pts), { color, ancho, p, dur: 300 });
+    trazo(svg, suave(pts), { color, ancho, p, dur: 300, clase: 'flecha' });
     const Q = pts[pts.length - 1], ang = angulo(pts);
-    if (cab === 'llena') trazo(svg, cabezaLlena(Q, ang, len), { relleno: color, color, ancho: 1, p, cabeza: true });
-    else trazo(svg, cabezaV(Q, ang, len, 0.5, r), { color, ancho, p, cabeza: true });
+    if (cab === 'llena') trazo(svg, cabezaLlena(Q, ang, len), { relleno: color, color, ancho: 1, p, cabeza: true, clase: 'punta' });
+    else trazo(svg, cabezaV(Q, ang, len, 0.5, r), { color, ancho, p, cabeza: true, clase: 'punta' });
     const M = pts[Math.floor(pts.length / 2)];
     if (c.tachada) equis(svg, M, r, p);
     if (c.etiqueta) texto(svg, M[0], M[1] - (c.tachada ? 44 : 26), c.etiqueta, { p });
@@ -256,14 +280,19 @@
     const el = ancla(esc, spec.a); if (!el) { avisos.push(`lámina ${+lam.dataset.i + 1}: el clic apunta a «${spec.a}», que no existe`); return; }
     const b = caja(el, lam), cur = esc.querySelector(':scope > .cursor'), onda = esc.querySelector(':scope > .onda');
     const mano = cur.dataset.tipo !== 'flecha', W = mano ? 104 : 72, H = mano ? 119 : 106;
-    const tx = b.x + b.w * (mano ? (b.w > 300 ? 0.84 : 0.6) : 0.74), ty = b.y + b.h * (mano ? 0.56 : 0.62);
+    let tx = b.x + b.w * (mano ? (b.w > 300 ? 0.84 : 0.6) : 0.74), ty = b.y + b.h * (mano ? 0.56 : 0.62);
+    if (Array.isArray(spec.pos)) { tx = b.x + b.w * spec.pos[0]; ty = b.y + b.h * spec.pos[1]; }   // clic_pos manda
+    else if (mano && el.classList.contains('boton-ui')) {
+      // botón: la punta del dedo en el relleno de la derecha, por debajo del emoji y sin tapar el texto
+      tx = b.x + b.w - Math.max(40, b.h * 0.35); ty = b.y + b.h * 0.72;
+    }
     const px = tx - W * (mano ? 0.41 : 0.08), py = ty - H * (mano ? 0.03 : 0.05);
     Object.assign(cur.style, { width: W + 'px', height: H + 'px', left: px + 'px', top: py + 'px' });
     Object.assign(onda.style, { left: tx + 'px', top: ty + 'px' });
   }
 
   // Si el contenido no cabe en el lienzo (formatos verticales, textos largos), se reduce con zoom
-  // real para que la capa a mano se dibuje sobre las posiciones finales. QA avisa si baja de 80%.
+  // real para que la capa a mano se dibuje sobre las posiciones finales. QA avisa desde 85% y da error bajo 70%.
   function encajar(lam) {
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
       const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes')) return;
@@ -280,6 +309,27 @@
       const k = Math.min(1, aw / w, (ah + 40) / hh);
       if (k < 0.995) { h.style.zoom = k.toFixed(3); if (esc === lam) lam.dataset.encaje = k.toFixed(2); }
     }));
+  }
+
+  // ---------- sello: tamaño y posición ----------
+  // Se mide sin escala; k lo reduce si, girado −5°, no cabe en el lienzo (sellos largos, 9:16). Se centra
+  // en un ancla (sello_sobre), en una zona (sello_pos) o en el lienzo, y se acota a los bordes.
+  const ZONAS = { centro: [0.5, 0.5], arriba: [0.5, 0.27], abajo: [0.5, 0.73], izquierda: [0.28, 0.5], derecha: [0.72, 0.5],
+    'arriba-izquierda': [0.28, 0.27], 'arriba-derecha': [0.72, 0.27], 'abajo-izquierda': [0.28, 0.73], 'abajo-derecha': [0.72, 0.73] };
+  function colocarSello(lam) {
+    const s = lam.querySelector(':scope > .sello'); if (!s) return;
+    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
+    const w = s.offsetWidth, h = s.offsetHeight;
+    const k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - 2 * m) / (w * Math.sin(a) + h * Math.cos(a)));
+    let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
+    if (s.dataset.sobre) {
+      const el = ancla(lam, s.dataset.sobre);
+      if (el) { const b = caja(el, lam); cx = b.cx; cy = b.cy; } else avisos.push(`lámina ${+lam.dataset.i + 1}: el sello va sobre «${s.dataset.sobre}», que no existe`);
+    }
+    const bw = (w * Math.cos(a) + h * Math.sin(a)) * k / 2, bh = (w * Math.sin(a) + h * Math.cos(a)) * k / 2;
+    cx = clamp(cx, m + bw, W - m - bw); cy = clamp(cy, m + bh, H - m - bh);
+    Object.assign(s.style, { left: cx + 'px', top: cy + 'px' });
+    s.dataset.k = k.toFixed(3);
   }
 
   function dibujar(lam) {
@@ -323,7 +373,7 @@
         if (k < 1) { sc = 1.9 - 0.9 * k * k; o = clamp(k * 2.5); }
         else { const d = t - 150; ox = d < 180 ? Math.sin(d / 14) * (1 - d / 180) * 7 : 0; }
       }
-      s.style.opacity = o; s.style.transform = `translate(-50%,-50%) translate(${ox}px,0) rotate(-5deg) scale(${sc})`;
+      s.style.opacity = o; s.style.transform = `translate(-50%,-50%) translate(${ox}px,0) rotate(-5deg) scale(${sc * (+s.dataset.k || 1)})`;
     }
     lam.querySelectorAll('.cursor[data-p]').forEach(cur => {
       const p = +cur.dataset.p, onda = cur.parentElement.querySelector(':scope > .onda');
@@ -367,6 +417,7 @@
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     lams.forEach(l => { try { dibujar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: capa a mano (${e.message})`); } });
+    lams.forEach(l => { try { colocarSello(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sello (${e.message})`); } });
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     return lams;
   }

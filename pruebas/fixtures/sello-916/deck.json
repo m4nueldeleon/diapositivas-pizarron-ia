@@ -1,0 +1,5 @@
+{ "formato": "9:16", "emoji": "apple", "marca": { "texto": "tumarca", "sufijo": ".com" },
+  "laminas": [
+    { "id": "sello-largo", "tipo": "rejilla", "emoji": "📦", "total": 30, "columnas": 5, "encabezado": "Error 2: **todo el catálogo**", "sello": "Ventas perdidas" },
+    { "id": "campos-ignorados", "tipo": "chat", "tam_texto": "60px", "sello_pos": "arriba", "mensajes": [ { "de": "otro", "texto": "¿Precio?" } ], "nota_paso": 3 }
+  ] }

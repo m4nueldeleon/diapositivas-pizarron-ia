@@ -14,13 +14,18 @@ SKILL.md.
 - `templates/base.css` guarda los tokens medidos en la referencia. Si cambias un tamaño,
   justifícalo contra ella.
 - `scripts/lib/tiempos.mjs` da el ritmo y la alineación global con la transcripción.
-- `scripts/qa.mjs` tiene reglas que cuentan. Cada regla nueva lleva su mensaje accionable.
+- `scripts/qa.mjs` tiene reglas que cuentan. Cada regla nueva lleva su mensaje accionable y una
+  prueba en `pruebas/qa-visual.test.mjs` (fixtures en `pruebas/fixtures/`).
+- `scripts/lib/contrato.mjs` guarda en `CAMPOS` lo que lee cada diseño. Si un layout lee un campo
+  nuevo, agrégalo ahí: la prueba lo exige, y un campo fuera de la tabla sale como aviso en QA.
+- `scripts/comparar.mjs` (+ `lib/tinta.mjs`) mide la réplica contra los cuadros del video: ver
+  PROTOCOLO §4b.
 
 ## Reglas de mantenimiento
 1. **Un diseño nuevo exige cinco cosas**:
    - la función en `layouts-*.mjs`;
    - su registro en `LAYOUTS`;
-   - sus campos obligatorios en `contrato.mjs`;
+   - sus campos obligatorios (`REQUERIDOS`) y los que lee (`CAMPOS`) en `contrato.mjs`;
    - su sección en `references/LAYOUTS.md`;
    - su lámina en `ejemplos/demo/deck.json`. La prueba `contrato.test.mjs` exige que el demo
      use todos los diseños.

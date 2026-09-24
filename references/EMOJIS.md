@@ -8,7 +8,7 @@ Regla: **literal, universal y constante**. Mismo concepto, mismo emoji en todo e
 | dinero, ganancia | 💰 | bolsa: el más usado |
 | dinero que se va, gasto | 💸 | billetes con alas |
 | efectivo, pago | 💵 | |
-| ingresos recurrentes | 🔁 + 💰 | como `flujo` |
+| ingresos recurrentes | `flujo` 🔁 → 💰 | dos nodos, no insignia |
 | crecimiento | 📈 | |
 | caída o pérdida | 📉 | |
 | métricas, datos | 📊 | |
@@ -77,6 +77,11 @@ Regla: **literal, universal y constante**. Mismo concepto, mismo emoji en todo e
 - ⭐ calificación (se ve bien en fila: ⭐⭐⭐⭐⭐).
 
 ## Compuestos útiles
+La sintaxis es `[no:|si:]base[+insignia]`, con **un solo «+»**. El prefijo pone ❌ o ✅ abajo a la
+izquierda y la insignia va abajo a la derecha; pueden ir juntos (`no:🧑‍⚕️+💰`). Tres partes
+(`🤖+💬+✅`), un prefijo inventado (`nop:`) o un «+» sin emoji a un lado son error de contrato:
+para una secuencia usa un `flujo`.
+
 | Escritura | Lectura |
 |---|---|
 | `🧑‍⚕️+💰` | gana como médico |
@@ -87,6 +92,15 @@ Regla: **literal, universal y constante**. Mismo concepto, mismo emoji en todo e
 | `no:💸` | sin invertir |
 | `si:🤝` | alianza cerrada |
 | `no:⏳` | sin perder tiempo |
+| `no:🧑‍⚕️+💰` | ganar como médico sin serlo |
+
+## Emojis dentro del texto y modo Fluent
+- En modo `fluent` los emojis escritos dentro de un texto (burbujas, etiquetas, tarjetas) también se
+  cambian por la imagen 3D, así la lámina usa una sola familia. En modo `apple` el texto no cambia.
+- Excepción: el texto manuscrito que se dibuja en SVG (la etiqueta de una flecha, los textos de una
+  gráfica) no admite imagen; ahí el emoji sale con la fuente del sistema. Evítalo.
+- Si Fluent no tiene un emoji con tono de piel o de Unicode 15.1, se usa el más cercano (🤝🏽 → 🤝,
+  🐦‍🔥 → 🐦) y QA lo avisa como «aproximado». © ® ™ nunca se vuelven imagen.
 
 ## Evita
 - Emojis ambiguos o de doble sentido, como 🍆 o 🍑.

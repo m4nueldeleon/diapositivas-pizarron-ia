@@ -162,6 +162,25 @@ instante en que se dice su palabra. Por eso el video se siente rápido sin senti
 - **Cámara en los momentos personales**: la historia, la confesión o la oferta. Tramos de unos
   4 s, cada 30 a 60 s.
 
+## 8b. Formato vertical (9:16, beta)
+
+El video original es 16:9. En vertical el lienzo mide 1080×1920: con los tamaños de 16:9 el contenido
+ocupaba 23-30% del alto. Equivalencias que aplica el motor:
+
+| Pieza | 16:9 | 9:16 |
+|---|---|---|
+| texto chico / medio / grande / enorme | 62 / 72 / 80 / 120 px | 78 / 88 / 100 / 140 px |
+| nota manuscrita | 64 px | 80 px |
+| burbuja de chat | 54 px | 58 px, hasta 820 px de ancho |
+| emoji con tamaño con nombre (`medio`, `heroe`…) | 110-300 px | ×1.25 |
+| lista | 58-72 px | ×1.2 |
+| encabezado gris | 50 px | 60 px |
+| firma | abajo a la derecha | arriba a la derecha |
+
+**Zona segura de Reels**: los ~320 px de abajo los tapan el caption y los botones, y la columna de
+botones ocupa unos 140 px a la derecha de la franja baja. QA avisa si algo entra ahí, y si una lámina
+de diagrama o lista ocupa menos del 35% del alto.
+
 ## 9. Lo que NO es este estilo
 
 - No lleva plantillas con título, viñetas y logo arriba.

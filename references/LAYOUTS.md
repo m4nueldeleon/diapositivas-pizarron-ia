@@ -11,8 +11,18 @@ ese diseño.
   tiempos, anclas y QA.
 - `dur`: segundos por paso, como número o como lista.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
-- `sello`: texto de sello de goma que cae en un paso extra.
+- `sello`: texto de sello de goma que cae en un paso extra. Por omisión va al centro del lienzo
+  (en `rejilla`, centrado sobre las cajas, como en [6:35]). Se mueve con:
+  - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas));
+  - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,
+    `arriba-derecha`, `abajo-izquierda` o `abajo-derecha`.
+  Siempre queda dentro del lienzo y, si es muy largo para el formato, se reduce (QA avisa bajo 70%:
+  un sello lleva 1 o 2 palabras).
 - `clic`: el ancla que el cursor va a presionar; `cursor` elige entre `mano` y `flecha`.
+  `clic_pos: [x, y]` (de 0 a 1 dentro del ancla) mueve la punta del dedo. En un `boton` la punta cae
+  por omisión en el relleno de la derecha, bajo el emoji y sin tapar el texto.
+- `_comentario` (o cualquier campo que empiece con `_`): notas tuyas; el motor las ignora. Un campo
+  que ese diseño no usa se ignora también, pero QA lo avisa y sugiere el nombre correcto.
 - `firma: false`: oculta la firma en esa lámina.
 - `anclas`: frases que disparan cada paso en el montaje.
 
@@ -102,6 +112,10 @@ Fondo negro con brillo violeta. Solo para el momento «esto es lo que vendo».
 - `hechos`: lista de pasos con ✅, por ejemplo `[1, 2]`.
 - `sobre: "✋"` pone un emoji arriba de cada tecla. `clic: 2` hace que el cursor presione la
   tecla 2. `ruta: false` quita la ruta punteada.
+- Por omisión teclas, texto y nota entran en un solo corte, como en la referencia [1:55]; el cursor
+  llega en el paso siguiente. Con `revelar: "pasos"` cada tecla entra en su propio paso, la ruta se
+  dibuja tramo por tramo y el texto llega al final (sin `activo` ni `hechos`).
+- `texto_paso`, `nota_paso` y `clic_paso` mueven el texto, la nota y el clic.
 
 ### `bifurcacion` — un origen y dos ramas, con llave  ·  [10:30]
 ```json
@@ -141,7 +155,11 @@ El recurso estrella: se llena columna por columna a lo largo de varias láminas.
 ```json
 { "tipo": "tarjetas", "encabezado": "Las 6 métricas:", "items": [{ "emoji": "💵", "texto": "Ganancia por venta" }] }
 ```
-Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta.
+Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto en `items` vale como
+`{ "texto": … }`.
+- El ancho sale del ancho útil del formato (1620 px en 16:9, 900 en vertical): hasta 4 tarjetas van
+  en una fila (4 en 16:9 miden ~378 px) y en vertical, con 4 o más, van de 2 en 2.
+- `columnas`, `ancho` (px por tarjeta) y `tam_texto` (px, por omisión 46) ajustan a mano.
 
 ### `grafica` — líneas, barras o crecimiento  ·  [6:15, 7:25, 16:15, 38:10]
 ```json
@@ -216,8 +234,9 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta.
 ```json
 { "tipo": "chat", "mensajes": [{ "de": "yo", "texto": "¿Quieres trabajar conmigo?" }, { "de": "otro", "texto": "¡Sí, me interesa!" }] }
 ```
-Un texto entre corchetes dentro de una burbuja sale en amarillo, como `[nombre]`: sirve para
-plantillas de mensaje.
+Un texto entre corchetes dentro de una burbuja se resalta, como `[nombre]`: sirve para plantillas
+de mensaje. En minúsculas es plantilla; en MAYÚSCULAS (`[PRECIO]`) es un dato pendiente y QA lo
+marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{ "texto": … }`.
 
 ### `prueba` — capturas reales o un post armado, con el dato encerrado  ·  [0:35, 15:45, 19:30]
 ```json
@@ -257,18 +276,34 @@ plantillas de mensaje.
 
 | Campo | Dónde | Qué hace |
 |---|---|---|
-| `nota_paso`, `texto_paso`, `banda_paso`, `anotacion_paso`, `destacado_paso`, `centro_paso`, `interior_paso`, `sello_paso`, `clic_paso` | varios diseños | En qué paso aparece ese elemento. Cuenta desde 0. |
+| `texto_paso` | idea, flujo, pasos, cifra, objeto, oscura, grafica, linea-tiempo, medidor, opciones, rejilla, prueba, boton, circulos | Paso en que aparece el texto. Cuenta desde 0. |
+| `nota_paso` | idea, lista, flujo, pasos, cifra, cita, objeto, tarjetas, oscura, grafica, linea-tiempo, medidor, boton, circulos | Paso de la nota manuscrita. Por omisión, el paso siguiente al texto (en `pasos`, el mismo). |
+| `clic_paso` | pasos, opciones, boton, y cualquier lámina con `clic` de texto | Paso en que llega el cursor. |
+| `sello_paso` | cualquiera con `sello` | Paso del sello; por omisión, uno extra al final. |
+| `banda_paso` · `anotacion_paso` · `destacado_paso` · `centro_paso` · `interior_paso` | grafica · rejilla · rejilla · circulos · circulos | Paso de ese elemento. |
 | `paso` | ítems de `marcas`, `tramos`, `anotaciones` | Lo mismo, por ítem. |
-| `tam_texto` | idea, lista, flujo, pasos, medidor, boton | `chico`, `medio`, `grande`, `enorme` o un tamaño en px (`"70px"`). |
+| `tam_texto` | idea, lista, flujo, pasos, objeto, tarjetas, medidor, boton | `chico`, `medio`, `grande`, `enorme` o un tamaño en px (`"70px"`). |
 | `tam` | cifra y foco | Tamaño de letra en px. |
 | `separacion` | lista, flujo, bifurcacion, reparto | Espacio entre elementos, en px. |
-| `alto`, `ancho` | objeto, flujo (nodo), prueba, rejilla | Tamaño en px. |
+| `alto`, `ancho` | objeto, flujo (nodo), prueba, rejilla, tarjetas (`ancho`) | Tamaño en px. |
 | `prefijo` | pasos con íconos | Texto antes del número. Por omisión «Paso»; con `false` se quita. |
 | `ancla` | cualquiera | Frase que dispara el paso 0 en el montaje (atajo de `anclas[0]`). |
 | `oscura: true` | cualquiera | Pinta esa lámina con el fondo oscuro de la oferta. |
+| `sello_sobre`, `sello_pos`, `clic_pos` | cualquiera | Mueven el sello y la punta del cursor (ver arriba). |
 
 Un valor fuera de rango o con tipo equivocado se descarta con aviso, y la revisión de calidad lo
-cuenta como error.
+cuenta como error. Un campo que el diseño no usa se ignora con aviso (−3), con sugerencia si parece
+un error de dedo.
+
+**`voz` y `anclas` como lista llevan un texto por paso, ni más ni menos.** Si no cuadran con los
+pasos de la lámina, QA da error: los cortes del montaje se desalinean y las frases de más se pierden.
+
+## Anclas
+
+`sello_sobre`, `clic` y las flechas apuntan a anclas. Las que existen por diseño:
+`texto` y `emoji` (idea), `i0`, `i1`… (lista), `n0`… (flujo), `k0`… (pasos), `o` y `r0`… (bifurcación),
+`l0`… (cifra), `icono` y `cita` (cita), `objeto`, `medidor`, `op0`… (opciones), `rejilla`, `anot` y
+`d<N>` (rejilla), `total` y `parte0`… (reparto), `dia0`… (calendario), `boton`.
 
 ## Marcas de texto
 
@@ -280,7 +315,7 @@ cuenta como error.
 | `~~frase~~` | tachón rojo |
 | `{v:texto}` `{r:}` `{n:}` `{g:}` `{a:}` | color semántico: verde, rojo, naranja, gris o azul |
 | `[[texto]]` | letra manuscrita dentro de la línea |
-| `\n` | salto de línea |
+| `\n` | salto de línea. Una marca puede abarcar el salto: `**mejor\nmodelo**` va en negrita en los dos renglones, y el subrayado o el tachón se dibujan renglón por renglón |
 
 ## Emoji compuesto
 
@@ -289,3 +324,6 @@ cuenta como error.
 | `"🧑‍⚕️+💰"` | base + insignia abajo a la derecha |
 | `"no:🎥"` | base + ❌ abajo a la izquierda |
 | `"si:💸"` | base + ✅ abajo a la izquierda |
+| `"no:🧑‍⚕️+💰"` | las dos: ❌ a la izquierda y 💰 a la derecha |
+
+Un solo «+». Tres partes o un prefijo que no sea `no:`/`si:` es error de contrato (ver EMOJIS.md).

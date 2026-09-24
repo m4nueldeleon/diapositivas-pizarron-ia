@@ -23,8 +23,9 @@
   --sombra: 0 22px 60px rgba(0, 0, 0, .13), 0 3px 10px rgba(0, 0, 0, .06);
   --sombra-suave: 0 6px 18px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .05);
   --radio: 20px;
-  --sans: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
-  --mano: 'Caveat', 'Bradley Hand', 'Comic Sans MS', cursive;
+  /* la fuente de emoji al final es la red de seguridad del texto (en modo fluent el emoji del texto ya es imagen) */
+  --sans: 'Figtree', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+  --mano: 'Caveat', 'Bradley Hand', 'Comic Sans MS', cursive, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,11 +44,13 @@ body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: an
   padding: var(--margen-v) var(--margen-h);
 }
 .capa-mano { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 5; }
-.capa-mano path, .capa-mano ellipse { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.capa-mano path, .capa-mano ellipse { stroke-linecap: round; stroke-linejoin: round; }
+.capa-mano path:not([data-relleno]), .capa-mano ellipse { fill: none; }   /* la punta «llena» sí va maciza */
 .firma {
   position: absolute; right: 44px; bottom: 30px; z-index: 6;
   font: 700 50px/1 var(--sans); letter-spacing: -.025em; color: var(--tinta);
 }
+.firma.arriba { bottom: auto; top: 44px; }
 .firma img { height: 58px; width: auto; display: block; }
 .firma small { font-weight: 500; font-size: .62em; letter-spacing: 0; }
 
@@ -90,6 +93,7 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .emo .insignia > .emo-txt { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; font-size: calc(var(--s) * .5); line-height: calc(var(--s) * .58); display: block; text-align: center; }
 .emo .insignia.izq > .emo-txt { font-size: calc(var(--s) * .4); line-height: calc(var(--s) * .46); }
 .emo.en-linea { --s: 1.15em; margin-right: .45em; transform: translateY(-.06em); }
+.emo.en-texto { vertical-align: -.18em; margin: 0 .06em; }   /* emoji escrito dentro del texto (modo fluent) */
 .emo.gira { animation: none; }
 
 /* tecla numérica (1 2 3) dibujada, para que se vea igual en cualquier sistema */
@@ -118,7 +122,7 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .tarjetas { display: grid; grid-template-columns: repeat(var(--cols, 3), var(--tw, 420px)); gap: 36px; justify-content: center; }
 .tarjeta { background: var(--tarjeta); border-radius: var(--radio); box-shadow: var(--sombra-suave);
   height: var(--th, 250px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
-  font-weight: 700; font-size: 46px; line-height: 1.15; padding: 18px; text-align: center; }
+  font-weight: 700; font-size: var(--tt, 46px); line-height: 1.15; padding: 18px; text-align: center; }
 .tarjeta .emo { --s: 118px; }
 .tarjeta.tono-bv { background: #c9f7c3; } .tarjeta.tono-br { background: #f7c9c9; } .tarjeta.tono-bn { background: #fbe0c4; }
 
@@ -178,7 +182,8 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .msj .yo-av, .msj .otro-av { width: 126px; height: 126px; border-radius: 50%; flex: none; display: grid; place-items: center; }
 .msj .yo-av { background: linear-gradient(180deg, #59b3f5, #2a8fe0); }
 .msj .otro-av { background: linear-gradient(180deg, #cfcfd4, #a9a9b0); }
-.burbuja .hueco { color: #ffe36b; }
+.burbuja .hueco { color: #fff3a0; font-weight: 700; }
+.msj.otro .burbuja .hueco { color: #9a5b00; font-weight: 700; }   /* el amarillo sobre gris no se lee (1.2:1) */
 
 /* ---------- prueba (capturas) ---------- */
 .pruebas { display: flex; align-items: center; justify-content: center; }
@@ -235,9 +240,20 @@ mark { background: none; color: inherit; font-weight: 700; padding: 0 .12em; mar
 .cursor { position: absolute; z-index: 8; width: 86px; height: 96px; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,.22)); }
 .onda { position: absolute; z-index: 7; width: 20px; height: 20px; border-radius: 50%; border: 4px solid rgba(62,166,242,.8); transform: translate(-50%, -50%); opacity: 0; }
 
-/* ---------- formato vertical (9:16) ---------- */
+/* ---------- formato vertical (9:16) ----------
+   El lienzo mide 1920 de alto: con los tamaños de 16:9 el contenido ocupaba 23-30% del alto. Todo crece
+   ~1.2-1.35× conservando la jerarquía; un tam_texto explícito del deck sigue mandando (va en línea). */
+.f-vertical .t { --t: 90px; }
+.f-vertical .t.chico { --t: 78px; }
+.f-vertical .t.medio { --t: 88px; }
+.f-vertical .t.grande { --t: 100px; }
+.f-vertical .t.enorme { --t: 140px; }
+.f-vertical .nota { font-size: var(--tn, 80px); }
+.f-vertical .encabezado { font-size: 60px; }
+.f-vertical .firma { right: 60px; }
+.f-vertical .firma.arriba { top: 96px; }
 .f-vertical .chat { width: 900px; }
-.f-vertical .msj .burbuja { font-size: 44px; max-width: 700px; }
+.f-vertical .msj .burbuja { font-size: 58px; max-width: 820px; padding: 36px 52px; }
 .f-vertical .msj .yo-av, .f-vertical .msj .otro-av { width: 96px; height: 96px; }
 .f-vertical .post { width: 900px; font-size: 38px; }
 .f-vertical .calendario { width: 920px; }

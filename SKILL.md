@@ -31,6 +31,10 @@ deducir.
    sobre todo lo demás.
 4. Busca `MI-MARCA.md` en la carpeta de trabajo, con la firma, el formato y el idioma. Si no
    existe, usa `templates/MI-MARCA.md` y los valores por omisión: firma vacía, 16:9, español.
+   Si el deck lleva oferta, toma sus datos de la sección «Oferta» de MI-MARCA o del guion. Si faltan
+   precio, garantía o llamado, pregúntalos **una sola vez**: no se inventan ni se deducen. Si el
+   usuario prefiere dejarlos para después, usa huecos en MAYÚSCULAS entre corchetes (`[PRECIO]`),
+   nunca cifras inventadas; QA los marca como error.
 5. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 25 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
@@ -89,12 +93,16 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   - `emoji`: `auto` (Apple en Mac, Fluent 3D con licencia MIT en lo demás), `apple` o `fluent`;
   - `animacion`: `seco`, como la referencia, o `suave`, que añade notas que se escriben solas y
     emojis que brotan;
-  - `marca`: `{ "texto": "tumarca", "sufijo": ".com" }` o `{ "logo": "assets/logo.png" }`.
+  - `marca`: `{ "texto": "tumarca", "sufijo": ".com" }` o `{ "logo": "assets/logo.png" }`. Va abajo
+    a la derecha; en 9:16 va arriba (abajo la tapan el caption y los botones de Reels).
+    `"posicion": "arriba"` o `"abajo"` lo fuerza. QA avisa si sigue la firma de ejemplo «tumarca».
 - El demo con los 25 diseños está en `ejemplos/demo/deck.json`.
 
 ## 4. Qué entregar al usuario
 
 - La ruta del presentador y de `hoja.jpg`, más la nota de QA.
+- Si `qa.json` trae `pendientes`, lístalos (el dato y sus láminas) y no llames «final» al deck hasta
+  que estén llenos.
 - Si hubo montaje, cuántas anclas se ubicaron y la ruta de `cortes.csv`.
 - Lo que quedó fuera o dudoso: fotos que faltan, pruebas que hay que conseguir o un corte que
   conviene revisar.

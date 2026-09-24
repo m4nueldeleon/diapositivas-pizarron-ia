@@ -29,3 +29,77 @@ test('códigos de emoji con y sin FE0F', () => {
   assert.equal(codigo('🧑‍⚕️'), '1f9d1-200d-2695-fe0f');
   assert.equal(codigo('🧑‍⚕️', false), '1f9d1-200d-2695');
 });
+
+import { sanearDeck, camposDesconocidos, CAMPOS, COMUNES } from '../scripts/lib/contrato.mjs';
+
+test('un null o un tipo raro en una lista es error con lámina, diseño y posición (no tumba el render)', () => {
+  const e = validarDeck({ laminas: [
+    { tipo: 'lista', items: [null, 'dos'] },
+    { tipo: 'flujo', nodos: [{ emoji: '🐷' }, null] },
+    { tipo: 'tarjetas', items: [{ tono: 'v' }] },
+    { tipo: 'chat', mensajes: [['hola']] },
+    { tipo: 'bifurcacion', origen: 'x', ramas: [{ valor: '1' }] },
+  ] }, tipos);
+  assert.ok(e.some(x => /lámina 1 \(lista\): items\[0\] es null/.test(x)));
+  assert.ok(e.some(x => /lámina 2 \(flujo\): nodos\[1\] es null/.test(x)));
+  assert.ok(e.some(x => /tarjetas\): items\[0\] está vacío/.test(x)));
+  assert.ok(e.some(x => /chat\): mensajes\[0\] debe ser un objeto/.test(x)));
+  assert.ok(e.some(x => /«origen» debe ser un objeto/.test(x)));
+});
+
+test('texto suelto en tarjetas, chat y cuadrantes se normaliza a { texto }', () => {
+  const { deck } = sanearDeck({ laminas: [
+    { tipo: 'tarjetas', items: ['texto suelto'] }, { tipo: 'chat', mensajes: ['hola'] }, { tipo: 'cuadrantes', items: ['a'] },
+    { tipo: 'tabla', columnas: ['A'], filas: [['Fila', 'x']] },
+  ] });
+  assert.deepEqual(deck.laminas[0].items, [{ texto: 'texto suelto' }]);
+  assert.deepEqual(deck.laminas[1].mensajes, [{ texto: 'hola' }]);
+  assert.deepEqual(deck.laminas[2].items, [{ texto: 'a' }]);
+  assert.deepEqual(deck.laminas[3].filas, [{ etiqueta: 'Fila', celdas: ['x'] }]);
+});
+
+test('campo que el diseño no usa: aviso suave con sugerencia (no error)', () => {
+  const s = camposDesconocidos({ tipo: 'pasos', sello_pso: 2, emoji_tamano: 300, tam_texto: 'medio' }, 0);
+  assert.equal(s.length, 2);
+  assert.ok(s.some(x => /«sello_pso».*¿quisiste decir «sello_paso»\?/.test(x)));
+  assert.deepEqual(camposDesconocidos({ tipo: 'chat', tam_texto: '60px', _comentario: 'x' }, 0).length, 1);
+  const { avisos, sugerencias } = sanearDeck({ laminas: [{ tipo: 'chat', mensajes: [{ texto: 'a' }], tam_texto: '60px' }] });
+  assert.equal(avisos.length, 0);
+  assert.equal(sugerencias.length, 1);
+});
+
+test('la tabla de campos cubre todo lo que leen los diseños, y el demo no dispara avisos de campo', () => {
+  const union = new Set([...COMUNES, ...Object.values(CAMPOS).flat()]);
+  for (const f of ['layouts-texto.mjs', 'layouts-datos.mjs']) {
+    const src = fs.readFileSync(new URL(`../scripts/lib/${f}`, import.meta.url), 'utf8');
+    for (const [, k] of src.matchAll(/\bl\.([a-z_]+)/g)) assert.ok(union.has(k), `«${k}» (${f}) falta en CAMPOS`);
+  }
+  const demo = JSON.parse(fs.readFileSync(new URL('../ejemplos/demo/deck.json', import.meta.url)));
+  assert.deepEqual(sanearDeck(demo).sugerencias, []);
+});
+
+test('sintaxis de emoji: más de un «+», prefijo inventado o parte vacía son error de contrato', () => {
+  const e = validarDeck({ laminas: [
+    { tipo: 'idea', emoji: '🤖+💬+✅', texto: 'x' },
+    { tipo: 'cuadrantes', items: [{ emoji: 'nop:🎥', texto: 'x' }] },
+    { tipo: 'pasos', iconos: ['🔍', '+💰'] },
+    { tipo: 'idea', emoji: 'no:🧑‍⚕️+💰', texto: 'ok' },
+  ] }, tipos);
+  assert.ok(e.some(x => /lámina 1.*3 partes/.test(x)));
+  assert.ok(e.some(x => /lámina 2.*prefijo «nop:»/.test(x)));
+  assert.ok(e.some(x => /lámina 3.*iconos.*sin emoji/.test(x)));
+  assert.ok(!e.some(x => /lámina 4/.test(x)));
+});
+
+test('clic_pos, sello_pos y sello_sobre pasan por listas cerradas', () => {
+  const { deck, avisos } = sanearDeck({ laminas: [
+    { tipo: 'boton', clic_pos: [2, -1], sello: 'x', sello_pos: 'arriba-derecha', sello_sobre: 'emoji' },
+    { tipo: 'boton', clic_pos: 'x', sello_pos: 'fuera', sello_sobre: '"><img>' },
+  ] });
+  assert.deepEqual(deck.laminas[0].clic_pos, [1, 0]);
+  assert.equal(deck.laminas[0].sello_pos, 'arriba-derecha');
+  assert.equal(deck.laminas[1].clic_pos, undefined);
+  assert.equal(deck.laminas[1].sello_pos, undefined);
+  assert.equal(deck.laminas[1].sello_sobre, undefined);
+  assert.equal(avisos.length, 3);
+});

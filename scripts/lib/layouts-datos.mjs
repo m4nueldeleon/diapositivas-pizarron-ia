@@ -1,6 +1,6 @@
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
-import { marcar, escapar, texto, nota, PERSONA, PIN } from './comun.mjs';
+import { marcar, escapar, texto, nota, pasoDe, PERSONA, PIN } from './comun.mjs';
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
 const HEX = { v: '#22a812', r: '#c8101e', n: '#d0661a', g: '#9a9a9a', a: '#3ea6f2', k: '#111111' };
@@ -135,7 +135,7 @@ export function lineaTiempo(l, ctx) {
       <text x="${x}" y="${y + 100}" text-anchor="middle" font-size="56" font-weight="${m.tono ? 700 : 500}" fill="${m.tono ? c : '#8a8a8a'}">${escapar(m.texto || '')}</text>
       ${m.arriba ? `<text x="${x}" y="${y - 56}" text-anchor="middle" font-size="50" font-weight="700" fill="${m.tono ? c : '#8a8a8a'}">${escapar(m.arriba)}</text>` : ''}</g>`;
   });
-  return `<div class="pila grafica">${texto(ctx, l.texto, 'medio', 0, ' style="margin-bottom:10px"')}
+  return `<div class="pila grafica">${texto(ctx, l.texto, 'medio', pasoDe(l, 'texto_paso', 0), ' style="margin-bottom:10px"')}
     <div${ctx.P(0)}><svg viewBox="0 0 ${W} 460" width="${W}" height="460" overflow="visible">${svg}</svg></div>
     ${nota(ctx, l.nota, l.nota_paso ?? (l.tramos || []).length + 1, 'mt-s')}</div>`;
 }
@@ -145,16 +145,16 @@ export function medidor(l, ctx) {
   const v = Math.max(0, Math.min(100, Number.isFinite(Number(l.valor)) ? Number(l.valor) : 85));
   const tono = l.tono || (v < 35 ? '#1fbf2d' : v < 65 ? '#f2a400' : '#e0182a');
   return `<div class="pila"><div class="medidor"${ctx.P(0)}${ctx.A('medidor')}><div style="position:absolute;left:${v}%;top:0">${PIN(tono)}</div></div>
-    ${texto(ctx, l.texto, (l.tam_texto || 'medio') + ' mt-e', 0)}${nota(ctx, l.nota, 1, 'mt-s')}</div>`;
+    ${texto(ctx, l.texto, (l.tam_texto || 'medio') + ' mt-e', pasoDe(l, 'texto_paso', 0))}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', pasoDe(l, 'texto_paso', 0) + 1), 'mt-s')}</div>`;
 }
 
 // OPCIONES — pastillas (Fácil / Medio / Difícil) y un cursor que elige una.
 export function opciones(l, ctx) {
   const items = l.items || [{ texto: 'FÁCIL', tono: 'v' }, { texto: 'MEDIO', tono: 'n' }, { texto: 'DIFÍCIL', tono: 'r' }];
   const el = l.elegida ?? items.length - 1;
-  ctx.clic = { a: 'op' + el, p: 0, tipo: l.cursor || 'flecha' };
+  ctx.clic = { a: 'op' + el, p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor || 'flecha' };
   return `<div class="pila gap-m"${ctx.P(0)}>${items.map((it, i) => `<div class="opcion ${['v', 'n', 'r'].includes(it.tono) ? it.tono : 'v'} ${i === el ? '' : 'apagada'}"${ctx.A('op' + i)}>${marcar(it.texto)}</div>`).join('')}
-    </div>${texto(ctx, l.texto, 'medio mt-l', 0)}`;
+    </div>${texto(ctx, l.texto, 'medio mt-l', pasoDe(l, 'texto_paso', 0))}`;
 }
 
 // REJILLA — cantidad hecha visible: 500 cajas, 99 puntos verdes y 1 rojo, una multitud y «tú».
@@ -259,15 +259,16 @@ export function calendario(l, ctx) {
   }).join('');
   (l.anotaciones || []).forEach((a, i) => ctx.con({ de: 'an' + i, a: 'dia' + (a.dia - 1), estilo: 'curva-roja', p: a.paso ?? 1 }));
   const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};top:${Number.isFinite(Number(a.arriba)) ? Number(a.arriba) : 300}px;--tn:46px;color:var(--tinta);max-width:300px">${marcar(a.texto)}</div>`).join('');
-  return `<div class="calendario"${ctx.P(0)}><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})">${escapar(activa ? activa.nombre : (l.titulo || 'Calendario'))}<span>${escapar(activa ? `DÍAS ${activa.desde}-${activa.hasta}` : (l.rango || `DÍAS 1-${dias.length}`))}</span></div>
+  return `<div class="calendario"${ctx.P(0)}><div class="barra" style="background:linear-gradient(90deg,${barra[0]},${barra[1]})">${escapar(activa ? activa.nombre : (l.titulo || 'Calendario'))}<span>${escapar(activa ? `${l.palabra_dia ? l.palabra_dia + 'S' : 'DÍAS'} ${activa.desde}-${activa.hasta}` : (l.rango || `DÍAS 1-${dias.length}`))}</span></div>
     <div class="dias" style="display:flex;flex-wrap:wrap;justify-content:center;gap:20px">${html}</div></div>${anot}`;
 }
 
 // BOTÓN — un botón de interfaz y el cursor que lo aprieta («solo tienes que dar clic»).
 export function boton(l, ctx) {
-  ctx.clic = { a: 'boton', p: 0, tipo: l.cursor === 'flecha' ? 'flecha' : 'mano' };
-  return `<div class="pila"><div class="boton-ui"${ctx.P(0)}${ctx.A('boton')}>${escapar(l.boton || 'Generar')}${l.emoji ? ctx.emoji(l.emoji, 58) : ''}</div>
-    ${texto(ctx, l.texto, (l.tam_texto || 'medio') + ' mt-l', 0)}${nota(ctx, l.nota, 1, 'mt-s')}</div>`;
+  ctx.clic = { a: 'boton', p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor === 'flecha' ? 'flecha' : 'mano' };
+  const kt = pasoDe(l, 'texto_paso', 0);
+  return `<div class="pila"><div class="boton-ui"${ctx.P(0)}${ctx.A('boton')}><span class="boton-txt">${escapar(l.boton || 'Generar')}</span>${l.emoji ? ctx.emoji(l.emoji, 58) : ''}</div>
+    ${texto(ctx, l.texto, (l.tam_texto || 'medio') + ' mt-l', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-s')}</div>`;
 }
 
 // CÍRCULOS — la audiencia: un anillo de personas y un círculo interior (quién sí / quién no).
@@ -285,9 +286,10 @@ export function circulos(l, ctx) {
   });
   const gente = pos.map(([x, y]) => `<div style="position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%)">${ctx.emoji(l.emoji || '🧑‍💼', 86)}</div>`).join('');
   const centro = l.centro ? `<div${ctx.P(l.centro_paso ?? 0)} style="position:absolute;left:${R}px;top:${R}px;transform:translate(-50%,-50%)">${ctx.emoji(l.centro, 140)}</div>` : '';
-  return `<div class="pila">${texto(ctx, l.texto, 'chico', 0, ' style="margin-bottom:40px"')}
+  const kt = pasoDe(l, 'texto_paso', 0);
+  return `<div class="pila">${texto(ctx, l.texto, 'chico', kt, ' style="margin-bottom:40px"')}
     <div${ctx.P(0)} style="position:relative;width:${2 * R}px;height:${2 * R}px">
       <div style="position:absolute;inset:0;border-radius:50%;background:${ext[0]};border:5px solid ${ext[1]}"></div>
       <div${ctx.P(l.interior_paso ?? 0)} style="position:absolute;left:${R - r}px;top:${R - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;background:${int[0]};border:5px solid ${int[1]}"></div>
-      ${gente}${centro}</div>${nota(ctx, l.nota, 1, 'mt-m')}</div>`;
+      ${gente}${centro}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-m')}</div>`;
 }

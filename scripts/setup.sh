@@ -24,6 +24,11 @@ if ! (cd "$AQUI" && NODE_PATH="$(npm root -g 2>/dev/null)" node -e "const p=requ
 else ok "Chromium listo"; fi
 grep -q PLAYWRIGHT_BROWSERS_PATH "$HOME/.zshrc" 2>/dev/null || echo "  · consejo: agrega 'export PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH' a tu ~/.zshrc"
 
+echo "▶ Fuente de emoji (para emojis dentro del texto fuera de Mac)"
+if [ "$(uname)" = "Darwin" ]; then ok "Apple Color Emoji"
+elif command -v fc-list >/dev/null 2>&1 && fc-list | grep -qi emoji; then ok "$(fc-list | grep -i emoji | head -1 | cut -d: -f2)"
+else mal "No hay fuente de emoji: instala fonts-noto-color-emoji (apt install fonts-noto-color-emoji). Con \"emoji\": \"fluent\" los íconos salen igual, pero un emoji en SVG podría salir como cuadro vacío."; fi
+
 echo "▶ ffmpeg (solo para video y montaje)"
 if command -v ffmpeg >/dev/null 2>&1; then ok "$(ffmpeg -version | head -1 | cut -d' ' -f1-3)"; else mal "Falta ffmpeg (Mac: brew install ffmpeg · Linux: apt install ffmpeg). Las láminas y el presentador funcionan sin él."; fi
 

@@ -1,0 +1,17 @@
+{ "titulo": "ciego", "emoji": "apple", "marca": { "texto": "tumarca", "sufijo": ".com" },
+  "laminas": [
+    { "id": "markup-salto", "tipo": "idea", "emoji": "🏆", "texto": "Si buscas el **mejor modelo\nde negocio** para empezar como **principiante**...", "voz": "Si buscas el mejor modelo de negocio para empezar" },
+    { "id": "sello-texto", "tipo": "idea", "emoji": "💰", "texto": "Esta frase **importante** queda\njusto debajo del sello", "sello": "Ojo aquí", "voz": ["Esta frase importante", "queda debajo del sello"] },
+    { "id": "cursor-texto", "tipo": "boton", "boton": "Enviar mensaje", "texto": "Solo das **clic**", "voz": "Solo das clic" },
+    { "id": "hueco-gris", "tipo": "chat", "mensajes": [ { "de": "yo", "texto": "¿Qué le escribo?" }, { "de": "otro", "texto": "Hola [nombre], vi tu [negocio] en [ciudad]" } ], "voz": ["Qué le escribo", "Hola nombre"] },
+    { "id": "tachado-2-renglones", "tipo": "lista", "vineta": "x", "items": [ { "texto": "Mandar el catálogo completo de cuarenta fotos con precios y medidas a cada persona que te escribe", "tachado": true }, "Otra cosa" ], "voz": ["Mandar el catálogo", "otra cosa"] },
+    { "id": "codo-cruza", "tipo": "bifurcacion", "origen": { "emoji": "🧑‍💼", "texto": "Tu cliente potencial de hoy" }, "ramas": [ { "emoji": "✅", "valor": "Jueves" }, { "emoji": "✅", "valor": "Viernes" } ], "separacion": 260, "voz": ["Tu cliente", "jueves o viernes"] },
+    { "id": "voz-de-mas", "tipo": "pasos", "n": 3, "texto": "Los **3 pasos**", "voz": ["Paso uno encuentra", "paso dos conversa", "paso tres cierra"] },
+    { "id": "tabla-firma", "tipo": "tabla", "esquina": "¿Quién?", "revelar": "todo", "columnas": ["Tú", "Recepción", "Chatbot", "IA"], "filas": [ { "etiqueta": "Velocidad", "celdas": ["Horas", "Minutos", "Segundos", "Segundos"] }, { "etiqueta": "Costo", "celdas": ["Tu tiempo", "Sueldo", "Bajo", { "texto": "Menos que un sueldo", "tono": "v", "circulo": true }] } ] },
+    { "id": "sub-anidado", "tipo": "idea", "emoji": "✅", "texto": "Un subrayado con __{v:color verde}__ adentro" },
+    { "id": "tarjetas-4", "tipo": "tarjetas", "items": [ { "emoji": "⚡", "texto": "Velocidad de respuesta" }, { "emoji": "🌙", "texto": "Horario completo" }, { "emoji": "👥", "texto": "Chats a la vez" }, { "emoji": "💵", "texto": "Costo al mes" } ] },
+    { "id": "oscura-tachon", "tipo": "cifra", "oscura": true, "lineas": ["{g:Valor: ~~[PRECIO ANCLA]~~}", "Hoy: __[PRECIO]__"] },
+    { "id": "hechos-apagados", "tipo": "pasos", "iconos": ["🔍", "💬", "🤝"], "etiquetas": ["Encuentra", "Conversa", "Cierra"], "activo": 2, "hechos": [1] },
+    { "id": "cifra-base", "tipo": "cifra", "lineas": ["1 venta × $1,500 × 30 días", "= __$45,000 al mes__"] },
+    { "id": "foco-encima", "tipo": "foco", "texto": "No te falta vender.\nTe falta contestar.", "tam": "90px" }
+  ] }

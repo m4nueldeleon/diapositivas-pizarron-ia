@@ -6,7 +6,9 @@
 //   ~~tachado~~        tachón rojo a mano
 //   {v:texto}          color semántico: v verde · r rojo · n naranja · g gris · a azul · k negro
 //   [[nota]]           la misma frase en letra manuscrita (Caveat) dentro de la línea
-//   \n                 salto de línea forzado
+//   \n                 salto de línea forzado. Una marca puede abarcar el salto: «**mejor\nmodelo**»
+//                      sale en negrita en los dos renglones (el subrayado y el tachón se dibujan
+//                      renglón por renglón).
 //
 // Todo se escapa primero: el texto del usuario nunca entra como HTML.
 
@@ -21,11 +23,13 @@ const TONOS = new Set(['v', 'r', 'n', 'g', 'a', 'k']);
 export function marcar(texto) {
   let h = escapar(texto);
   h = h.replace(/\{([vrngak]):([^{}]+?)\}/g, (m, t, x) => (TONOS.has(t) ? `<span class="tono-${t}">${x}</span>` : m));
-  h = h.replace(/\[\[(.+?)\]\]/g, '<span class="mano">$1</span>');
-  h = h.replace(/__(.+?)__/g, '<b class="sub" data-sub>$1</b>');
-  h = h.replace(/==(.+?)==/g, '<mark>$1</mark>');
-  h = h.replace(/~~(.+?)~~/g, '<s class="tachon" data-tachar>$1</s>');
-  h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  // [\s\S] y no «.»: una marca puede cruzar un salto de línea real (el \n de un deck.json). El salto
+  // se vuelve <br> al final, así queda DENTRO de <b>, <s> o <mark>.
+  h = h.replace(/\[\[([\s\S]+?)\]\]/g, '<span class="mano">$1</span>');
+  h = h.replace(/__([\s\S]+?)__/g, '<b class="sub" data-sub>$1</b>');
+  h = h.replace(/==([\s\S]+?)==/g, '<mark>$1</mark>');
+  h = h.replace(/~~([\s\S]+?)~~/g, '<s class="tachon" data-tachar>$1</s>');
+  h = h.replace(/\*\*([\s\S]+?)\*\*/g, '<b>$1</b>');
   h = h.replace(/\\n|\n/g, '<br>');
   return h;
 }
@@ -59,8 +63,12 @@ export function tamTexto(texto, forzado) {
 export function enfasis(texto) {
   const s = String(texto ?? '');
   return {
-    subrayados: (s.match(/__(.+?)__/g) || []).length,
-    resaltados: (s.match(/==(.+?)==/g) || []).length,
-    negritas: (s.match(/\*\*(.+?)\*\*/g) || []).length,
+    subrayados: (s.match(/__([\s\S]+?)__/g) || []).length,
+    resaltados: (s.match(/==([\s\S]+?)==/g) || []).length,
+    negritas: (s.match(/\*\*([\s\S]+?)\*\*/g) || []).length,
   };
 }
+
+// Marcas que quedaron sin convertir en el texto que se VE (una marca sin cerrar, o partida). La usa qa.mjs
+// dentro del navegador: por eso es una cadena de regex y no una RegExp compartida.
+export const MARCA_LITERAL = String.raw`\*\*|~~|__|\[\[|\]\]|==\S[\s\S]*?==|\{[vrngak]:`;
