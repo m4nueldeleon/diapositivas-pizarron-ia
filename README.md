@@ -11,10 +11,11 @@ Gadzhi.
 
 ## Qué hace
 
-- **27 diseños**: idea, lista, flujo, sistema de pasos 1-2-3, bifurcación, tabla-marcador escrita
-  a mano, gráficas, línea de tiempo, medidor, rejillas de cantidad, chat, capturas de prueba con
-  el dato encerrado, reparto, calendario de fases, calificación con estrellas, botón con cursor,
-  stack de la oferta a sangre y más.
+- **29 diseños** (27 de lámina más `foco` y `camara`): idea, lista, flujo, sistema de pasos 1-2-3,
+  bifurcación, audiencia en círculos, tabla-marcador escrita a mano, gráficas, línea de tiempo,
+  medidor, rejillas de cantidad, meses que pasan a valores, chat, capturas de prueba con el dato
+  encerrado, reparto, calendario de fases, calificación con estrellas, botón con cursor, la
+  videollamada del mentor, stack de la oferta a sangre y más. En 16:9 y en 9:16 (reel).
 - **Revelado por acumulación**: cada frase suma un elemento sin mover nada. Es el ritmo de la
   referencia: un cambio visual cada 2.5 segundos.
 - **Cuatro salidas**:
@@ -25,8 +26,9 @@ Gadzhi.
      cae.
   4. **Montaje sincronizado sobre tu grabación a cámara**: la lámina aparece justo cuando dices
      su frase.
-- **Revisión automática** con nota de 0 a 100: detecta desbordes, textos encimados, exceso de
-  palabras, exceso de énfasis y falta de variedad.
+- **Revisión automática** con nota de 0 a 100: detecta desbordes, textos encimados, nodos fuera de
+  eje, exceso de palabras, exceso de énfasis, falta de variedad, datos sin confirmar y, en piezas de
+  venta, el orden de la oferta. Dice el estado (`listo`, `borrador`…) y qué falta para el final.
 - **Conocimiento destilado** del video de referencia en [`references/`](references/):
   - la biblia del estilo, con medidas;
   - el método para traducir un guion a láminas;
@@ -86,7 +88,7 @@ agrega `"pieza"` (`reel`, `tutorial`, `vsl-corto`, `video`, `vsl`, `clase-corta`
 minutos ([`references/ARCOS.md`](references/ARCOS.md)).
 
 El catálogo completo de diseños y campos está en [`references/LAYOUTS.md`](references/LAYOUTS.md).
-El demo con los 27 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). Los modelos de
+El demo con los 29 diseños (un catálogo), en [`ejemplos/demo/deck.json`](ejemplos/demo/deck.json). Los modelos de
 guion que se copian, cada uno con su `guion.md`: para vender (VSL corto con la promesa antes del segundo 25, la
 objeción antes de la revelación y el mismo llamado dos veces) en [`ejemplos/vsl-corto/`](ejemplos/vsl-corto/guion.md);
 para una propuesta (los 9 bloques) en [`ejemplos/propuesta/`](ejemplos/propuesta/guion.md), y para una clase express

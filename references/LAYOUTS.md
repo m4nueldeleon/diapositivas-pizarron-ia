@@ -4,6 +4,9 @@ Cada lámina de `deck.json` es un objeto con `tipo` más sus campos. Todo texto 
 [markup](#marcas-de-texto). Entre corchetes va el momento del video de referencia donde aparece
 ese diseño.
 
+Son **29 diseños**: 27 de lámina (texto e ideas, procesos y relaciones, datos, interfaz y prueba) y 2 especiales,
+`foco` y `camara`. `ejemplos/demo/deck.json` los usa todos.
+
 **Campos del deck** (arriba de `laminas`)
 
 - `titulo`, `formato` (`16:9`, `9:16`, `1:1`, `4:5`), `emoji` (`apple` o `fluent`; `auto` solo como respaldo
@@ -850,7 +853,7 @@ modelo completo es `ejemplos/reel/`.
 |---|---|
 | `pasos` con `iconos` | íconos de 200 (`emoji_tam`), etiqueta ~62 y «Paso N» ~62 con 3 pasos: el motor los ajusta a la columna. Con 4 o más pasos, parte el mapa o usa un `flujo` vertical |
 | `tarjetas` | hasta 3: una columna de 860 con el rótulo a 64 y el emoji a 150 (por omisión); 4 o más: 2 columnas |
-| `flujo` | se apila en vertical; con un `sub` por nodo, baja `emoji_tam` a ~140 para que el último nodo no caiga en los 320 px de abajo |
+| `flujo` | se apila en vertical, cada nodo (emoji + etiqueta) centrado en el eje de la columna y las flechas rectas; con un `sub` por nodo, baja `emoji_tam` a ~140 para que el último nodo no caiga en los 320 px de abajo. QA avisa un nodo a más de 2% del eje |
 | `chat` | 2-3 burbujas; la del prompt (`de: "yo"`) con la instrucción literal y corta (≤ 20 palabras) |
 | `idea` | frase de 2-3 renglones: una línea que llega al borde derecho (x > 940) cae bajo los botones de Reels; parte la frase |
 

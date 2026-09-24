@@ -79,7 +79,7 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Porqué**: el modelo vsl-corto sacaba 67 y el VSL de la ronda 4 llegó a 90 quitando el caso y su fuente; en
   sin-mostrar-cara el foco dejaba los 3 errores sin tachar y se leían como la recomendación, con la frase pegada
   abajo como pie de foto. En el video [15:20-15:23, h_pill] la frase cruza el fondo atenuado al centro.
-- **Cómo se detectó**: auditorías de mercadotecnia, técnica y diseño (r4), reproducidas en /private/tmp/pz-loop/r4.
+- **Cómo se detectó**: auditorías de mercadotecnia, técnica y diseño (r4), reproducidas en la carpeta temporal de la ronda.
 
 ## 2026-09-24 · La oferta en su orden y la promesa al principio (loop, ronda 4, conocimiento)
 - **Regla**: en un `vsl` o `vsl-corto`, nada de «aplica» antes de decir qué se vende: objeción y respuesta →
@@ -112,7 +112,7 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
   pendiente salía negro y en negrita sobre amarillo, igual que la plantilla; la firma de 342 px cruzaba la línea de la
   tabla; tres puntas apiladas a 100 px de una pregunta de 45 px; el ábaco tachado se leía «no calcules».
 - **Cómo se detectó**: auditorías de diseño, fidelidad, íconos, mercadotecnia, técnica y usabilidad (r5) con cortes
-  contra hoja_04, hoja_07, hoja_17, c_0545, c_1045, c_1315 y 42:50; verificadas en /private/tmp/pz-loop/r6/verif.
+  contra hoja_04, hoja_07, hoja_17, c_0545, c_1045, c_1315 y 42:50; verificadas con un render aparte de cada arreglo.
 
 ## 2026-09-24 · El mapa no va y viene, la respuesta demuestra y el reel enseña el cómo (loop, ronda 5, conocimiento)
 - **Regla**: el mapa 1-2-3 entra una vez con `activo: 1` y vuelve con el titular de su bloque en `texto`; un regreso vacío
@@ -136,3 +136,36 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Porqué**: al re-renderizar precios-premium con el motor de r5, «Se pueden ir 5 de 30» (lám 9) pedía fuente aunque
   sale del «Pongamos: treinta clientes» de la lámina 7; un falso positivo que bajaba la nota sin tope de 97 a 94.
 - **Cómo se detectó**: comparación ANTES | DESPUÉS de los 3 decks de la ronda (integrador r5).
+
+## 2026-09-24 · Lo que el ojo reprueba se vuelve una medida (cierre del ciclo de mejora, iniciado el 2026-09-23)
+- **Regla**: cada defecto de alineación que encuentra la revisión visual se convierte en una medición geométrica de QA con
+  su prueba (centros de nodos contra el eje de su columna, con tolerancia en % del lienzo). El flujo vertical (9:16) va
+  con cada nodo, su ícono y su etiqueta centrados en el eje, y las flechas rectas; `ejesFlujo` avisa a más de 2%.
+- **Porqué**: en `ejemplos/reel` 03-minuta, «La minuta» y 📝 quedaban 9% a la izquierda (la pila iba en `flex-start`) y la
+  segunda flecha salía torcida, y QA daba 100/100. Una nota que premia lo que el ojo reprueba entrena al loop a no mirar.
+- **Cómo se detectó**: el juez de la ronda 5 sobre la hoja del reel. Con el motor viejo la regla nueva da 97 y señala la
+  lámina 3; con el arreglo, 100 (prueba en `pruebas/ejes-flujo.test.mjs`).
+
+## 2026-09-24 · La vitrina del repo es parte del motor (cierre del ciclo de mejora)
+- **Regla**: al cerrar una ronda que cambia el estilo se regeneran `docs/galeria.jpg` (16 láminas finales del demo, 4×4,
+  640×360, fondo #e4e4e4, separación 14 px) y `docs/animacion.gif` (5 láminas con `dur` 1.6, 12 fps, 720 px, paleta
+  optimizada), sin láminas que parezcan maqueta (un `hueco` o la `camara` gris). El número de diseños que dicen README,
+  SKILL y LAYOUTS lo vigila una prueba contra `LAYOUTS` (hoy 29: 27 de lámina más `foco` y `camara`).
+- **Porqué**: tras cinco rondas la galería seguía siendo la del primer commit: el estilo de antes y la firma
+  «tumarca.com», que la skill ya marca como error de QA. README y SKILL decían 27 diseños cuando la ronda 5 ya había
+  sumado `llamada` y `meses`. Quien llega al repo juzga por la vitrina.
+
+## 2026-09-24 · Los tonos de Fluent se miden, no se confían (loop, ronda 4, estilo e íconos)
+- **Regla**: Fluent Emoji 3D 1.1.0 trae 🏼 y 🏽 cruzados en casi todas las personas y manos; `corregirTono` pide el archivo
+  que de verdad tiene el tono según `tonos-fluent.json` (medido con `scripts/medir-tonos-fluent.mjs`). Una secuencia sin
+  medir se intercambia y sale como aproximada. Si cambia la versión del CDN, se vuelve a medir.
+- **Porqué**: con `piel: "🏼"` las personas salían con el tono de al lado, y nadie lo notaba sin muestrear el color.
+
+## 2026-09-24 · Una propuesta tiene su arco, no el de un VSL (loop, ronda 3, conocimiento)
+- **Regla**: una `propuesta` sigue los 9 bloques de ARCOS.md: diagnóstico con los números del cliente, costo de no hacer
+  nada, solución, quién la imparte y su prueba, metas medibles, alcance (qué incluye y qué NO), inversión anclada al
+  costo, garantía o condición de salida, y siguiente paso con fecha y vigencia. Los números del cliente van como huecos
+  declarados, nunca «pongamos que…», y se manda con `laminas-notas.pdf` (la voz como texto). La escasez sin dato es
+  error; la garantía y los bonos se preguntan, no se proponen.
+- **Porqué**: las propuestas de las primeras rondas copiaban el orden de un VSL, no decían qué quedaba fuera ni hasta
+  cuándo valía el precio, y llegaban a la junta sin la voz para quien no estuvo.

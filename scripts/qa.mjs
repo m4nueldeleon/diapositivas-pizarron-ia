@@ -529,6 +529,9 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     // **Negrita** que no se distingue de su frase (mismo color, peso casi igual): ESTILO §2 pide contraste por peso
     const planas = window.negritasPlanas(lam);
     if (planas.length) AF(`la negrita ${planas.map(x => `«${x.texto}»`).join(', ')} no se distingue del resto de su frase (${planas[0].mano ? 'Caveat: 400 → 700' : 'Figtree: al menos 200 de peso'}); baja el peso de la frase o quita la negrita`);
+    // Flujo vertical: nodos, íconos y etiquetas en el eje de la columna (tolerancia 2% del ancho) [r5, reel 03-minuta]
+    const fueraEje = window.ejesFlujo(lam);
+    if (fueraEje.length) AF(`flujo vertical fuera de eje: ${fueraEje.slice(0, 3).map(x => `${x.que} a ${x.dx > 0 ? '+' : ''}${x.dx}% del centro`).join(', ')}: cada nodo va centrado en la columna (la flecha sale torcida)`);
     // Texto suelto y negritas como hijos de un flex/grid: se pierde el espacio antes de la negrita
     window.flexMezclado(lam).forEach(t => EF(`«${t}»: el texto y su negrita quedaron como columnas de un flex (se pierde el espacio): envuélvelo en un solo <span>`));
     // Etiquetas hermanas de una fila de flujo con distinto número de renglones («Le dan / la otra» entre dos de uno), o

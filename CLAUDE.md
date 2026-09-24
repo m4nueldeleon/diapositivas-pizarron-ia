@@ -67,7 +67,8 @@ SKILL.md.
   ronda (`comp_N.jpg` con métrica y el sha256 del deck + `comparar.json` con `deck_sha`); un deck.json junto a los cuadros
   se ignora con aviso. Con un solo argumento (la carpeta de cuadros) compara `pruebas/replica`.
 - `scripts/lib/medidas-dom.mjs`: medidas que QA hace dentro de Chromium (palabras por renglón, recortes, flex
-  con texto y negrita, negritas que no se distinguen de su frase: `negritasPlanas`, 200 de peso en Figtree, 300 en Caveat). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
+  con texto y negrita, negritas que no se distinguen de su frase: `negritasPlanas`, 200 de peso en Figtree, 300 en Caveat; nodos del
+  flujo vertical fuera del eje de su columna: `ejesFlujo`, 2% del ancho). Son autocontenidas: qa.mjs y las pruebas las inyectan con `inyectable()`.
 - `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
   sets, tres fondos) y `rojo` (% del glifo en el rojo de la tinta, también para los SVG de la skill: QA avisa un emoji
   rojo negado con `no:` o tachado). Córrelo al agregar emojis a EMOJIS.md. Sobre un fondo de COLOR (pieza del stack, cuadro,

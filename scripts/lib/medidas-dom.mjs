@@ -85,5 +85,29 @@ export function negritasPlanas(lam) {
   return out;
 }
 
-export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado, negritasPlanas];
+// Flujo vertical (9:16): cada nodo, su ícono y su etiqueta se centran en el eje de la columna. Con la pila en flex-start los
+// nodos angostos quedaban pegados a la izquierda («La minuta» y 📝 en el reel 03-minuta) y la flecha salía torcida, y QA
+// daba 100 [r5, juez]. Mide el centro de cada pieza contra el centro de la columna y devuelve las que se salen más de
+// `tol` (fracción del ancho de la lámina; 2% por omisión): [{ que, dx }], uno por nodo, con dx en % del ancho.
+export function ejesFlujo(lam, tol = 0.02) {
+  const out = [];
+  const W = lam.getBoundingClientRect().width || 1;
+  const visible = e => { const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && !e.closest('.oculto, .escena.clon') && e.getClientRects().length; };
+  const cx = e => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; };
+  lam.querySelectorAll('.pila.fila-flujo').forEach(col => {
+    if (!visible(col)) return;
+    const eje = cx(col);
+    [...col.children].filter(n => n.classList.contains('nodo') && visible(n)).forEach(n => {
+      const et = n.querySelector(':scope > .etiqueta');
+      const nombre = (et ? et.textContent : '').replace(/\s+/g, ' ').trim().slice(0, 30) || 'nodo';
+      const piezas = [['nodo', n], ['ícono', n.firstElementChild], ['etiqueta', et]].filter(([, e]) => e && visible(e));
+      // una entrada por nodo, con la pieza que más se sale (el nodo entero, su ícono o su etiqueta)
+      const peor = piezas.map(([que, e]) => ({ que, dx: (cx(e) - eje) / W })).sort((a, b) => Math.abs(b.dx) - Math.abs(a.dx))[0];
+      if (peor && Math.abs(peor.dx) > tol) out.push({ que: `${peor.que} de «${nombre}»`, dx: Math.round(peor.dx * 1000) / 10 });
+    });
+  });
+  return out;
+}
+
+export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado, negritasPlanas, ejesFlujo];
 export const inyectable = () => FUNCIONES_DOM.map(f => `window.${f.name} = ${f.toString()};`).join('\n');

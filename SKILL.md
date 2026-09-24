@@ -85,7 +85,7 @@ deducir.
    cambias la pieza en silencio. No fuerces
    `duracion_objetivo` sobre una pieza larga ni rellenes con tramos `camara` de `dur` largo (QA avisa ambas
    cosas; más de 60% en tramos es error aunque sea en vivo).
-6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 27 diseños y sus campos) y
+6. Ten a mano **[references/LAYOUTS.md](references/LAYOUTS.md)** (los 29 diseños y sus campos) y
    **[references/EMOJIS.md](references/EMOJIS.md)**.
 
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
@@ -100,7 +100,7 @@ las tipografías.
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
 | **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
 | **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
-| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>`: el deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
+| **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>` (o `render.mjs --qa`). **La primera corrida nunca es la entrega**: corrige cada error y aviso que QA ya conoce (el mapa que vuelve vacío tras un bloque corto, una objeción que solo se responde con una frase, «sin prueba real», una tasa sin origen, un `no:` que niega un paso del mapa), vuelve a renderizar y a correr QA, y entrega con la salida de la ÚLTIMA corrida. El deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
 
@@ -171,7 +171,7 @@ node $S/scripts/video.mjs mi-video --sobre crudo.mp4 --transcripcion crudo.json 
   - `pieza`, `duracion_objetivo` y `en_vivo`: la pieza y su duración (ARCOS.md);
   - `datos`: `{ "PRECIO": "$4,997" }`, y `{{PRECIO}}` en cualquier texto; un dato sin confirmar va como
     `{ "valor": …, "propuesto": true }` (LAYOUTS.md, «Datos que se llenan una vez»).
-- `ejemplos/demo/deck.json` es el **catálogo** de los 27 diseños, no un modelo de guion. El modelo que se copia
+- `ejemplos/demo/deck.json` es el **catálogo** de los 29 diseños, no un modelo de guion. El modelo que se copia
   (deck.json + guion.md) depende de la pieza:
 
   | Pieza | Modelo |

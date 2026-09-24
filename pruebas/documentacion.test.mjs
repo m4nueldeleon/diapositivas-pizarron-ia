@@ -38,3 +38,13 @@ test('las recetas JSON de LAYOUTS, SKILL, GUION, ARCOS y PROTOCOLO pasan el cont
   }
   assert.ok(n >= 30, `solo ${n} recetas`);
 });
+
+test('README, SKILL y LAYOUTS dicen el mismo número de diseños que registra construir.mjs', () => {
+  const n = Object.keys(LAYOUTS).length;
+  for (const f of ['README.md', 'SKILL.md', 'references/LAYOUTS.md']) {
+    const md = fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+    const dichos = [...md.matchAll(/(\d+) diseños/g)].map(m => Number(m[1]));
+    assert.ok(dichos.length, `${f} no dice cuántos diseños hay`);
+    assert.deepEqual([...new Set(dichos)], [n], `${f} dice ${dichos.join(', ')} diseños; construir.mjs registra ${n}`);
+  }
+});

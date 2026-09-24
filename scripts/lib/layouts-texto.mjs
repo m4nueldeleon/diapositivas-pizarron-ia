@@ -160,7 +160,7 @@ export function flujo(l, ctx) {
   const arriba = rets.some(r => r.hasta !== 'aparte' && r.lado !== 'abajo');
   // En horizontal, columnas IGUALES (todas del ancho del nodo más ancho): los emojis quedan equidistantes y las
   // flechas, que van de emoji a emoji, miden lo mismo aunque un nodo lleve un sub largo [17:00, 17:20].
-  const fila = ctx.vertical ? `<div class="pila fila-flujo" style="gap:${gap}px;align-items:flex-start;position:relative">`
+  const fila = ctx.vertical ? `<div class="pila fila-flujo" style="gap:${gap}px;align-items:center;position:relative">`
     : `<div class="fila fila-igual fila-flujo"${l.separacion ? ' data-sep-fija="1"' : ''} style="gap:${gap}px;position:relative${arriba ? ';margin-top:190px' : ''}${ap ? ';row-gap:120px' : ''}">`;
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     ${fila}${html}${aparte}${signos.join('')}${etqs}</div>

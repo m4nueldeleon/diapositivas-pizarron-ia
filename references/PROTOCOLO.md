@@ -126,7 +126,7 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
 ## 4b. Calibrar contra la referencia (solo quien mantiene la skill)
 
 ```bash
-node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /private/tmp/pz-loop/r<N>/comparar
+node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/comparar
 # igual a: node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> …  (npm run replica -- <carpeta>)
 ```
 
@@ -162,7 +162,7 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /private/tmp/pz-loo
   Ronda 3: **8/10** (fallan r260 —alto +8.9— y r1760 —ancho +9.4, alto −12.2—). Las hojas de la ronda 3
   que emparejaban ref_255, ref_628, ref_1040 y ref_1760 con otras escenas salieron del deck viejo de
   `pizarron-ref/replica/deck.json`: no cuentan. Ronda 4: **9/10** con el comparador (falla r260 —alto +8.9, el 💰
-  1.5× más grande que en el cuadro—); las hojas de `/private/tmp/pz-loop/r4/replica` salieron otra vez del deck viejo
+  1.5× más grande que en el cuadro—); las hojas de `/tmp/pz-loop/r4/replica` salieron otra vez del deck viejo
   y no cuentan (por eso la guarda ya no aborta: ignora ese deck y sella la hoja con el sha). Con `emoji_tam: 150` en
   r260: **10/10**.
 
