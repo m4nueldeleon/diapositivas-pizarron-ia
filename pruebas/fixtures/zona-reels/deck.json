@@ -1,0 +1,42 @@
+{
+ "formato": "9:16",
+ "emoji": "apple",
+ "marca": false,
+ "laminas": [
+  {
+   "id": "error2",
+   "tipo": "rejilla",
+   "encabezado": "{g:Error 2:} **todo el catálogo**",
+   "emoji": "🖼️",
+   "total": 40,
+   "columnas": 5,
+   "ancho": 600,
+   "alto": 860,
+   "sello": "Demasiadas",
+   "voz": [
+    "Error dos: mandar todo el catálogo.",
+    "Cuarenta fotos y no elige ninguna.",
+    "Demasiadas."
+   ],
+   "texto": "40 fotos… y no elige ninguna.",
+   "texto_paso": 1,
+   "dur": [
+    2.4,
+    2.4,
+    1.6
+   ]
+  },
+  {
+   "id": "guardalo",
+   "tipo": "idea",
+   "emoji": "📌",
+   "emoji_tam": "heroe",
+   "texto": "__Guárdalo__ para\ntu próxima venta",
+   "nota": "y mándaselo a quien vende contigo",
+   "voz": [
+    "Guárdalo para tu próxima venta",
+    "y mándaselo a quien vende contigo."
+   ]
+  }
+ ]
+}

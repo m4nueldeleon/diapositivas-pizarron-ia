@@ -239,7 +239,13 @@ const porLamina = await page.evaluate(([W, H, MARCA, BAJO]) => {
           if ((e.closest('svg') && e.tagName !== 'svg') || !visible(e)) return;
           const b = caja(e, lam); if (!b.w || !b.h) return;
           y0 = Math.min(y0, b.y); y1 = Math.max(y1, b.y + b.h);
-          if (!zona && e.childElementCount === 0 && (b.y + b.h > H - 320 || (b.y + b.h > H - 700 && b.x + b.w > W - 140))) zona = corto(e.textContent || e.className, 24);
+          if (zona || e.childElementCount !== 0) return;
+          // Con texto se mide la tinta (renglones reales), no la caja: un bloque centrado de ancho
+          // completo llega al borde derecho aunque sus letras queden lejos de los botones de Reels
+          const rg = document.createRange(); rg.selectNodeContents(e);
+          const rs = /\S/.test(e.textContent || '') ? [...rg.getClientRects()].filter(q => q.width > 3 && q.height > 3).map(q => rel(q, L)) : [];
+          const t = rs.length ? rs : [b];
+          if (t.some(q => q.y + q.h > H - 320 || (q.y + q.h > H - 700 && q.x + q.w > W - 140))) zona = corto(e.textContent || e.className, 24);
         });
         const ocupa = (y1 - y0) / H;
         if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)`);

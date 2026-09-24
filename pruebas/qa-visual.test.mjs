@@ -49,6 +49,13 @@ test('QA: sello sobre el texto y firma sobre una celda de la tabla (deck de defe
   assert.ok(!r.errores.some(e => /marca sin cerrar|cursor tapa|flecha atraviesa/.test(e)), r.errores.join('\n'));
 });
 
+test('QA 9:16: un texto centrado arriba de la franja de Reels no se marca por la caja de ancho completo (ronda 1)', { timeout: 120_000 }, () => {
+  // «40 fotos… y no elige ninguna» y «y mándaselo a quien vende contigo»: la tinta queda lejos de los
+  // botones, pero la caja del bloque llegaba al borde derecho y disparaba el aviso
+  const r = qa(fx('zona-reels'));
+  assert.ok(!r.avisos.some(e => /zona que tapan/.test(e)), r.avisos.join('\n'));
+});
+
 test('QA: el demo no dispara ninguna regla de sello, cursor, flecha, marcas ni contraste', { timeout: 180_000 }, () => {
   const r = qa(path.join(DIR_SKILL, 'ejemplos', 'demo'));
   assert.deepEqual(r.errores, []);
