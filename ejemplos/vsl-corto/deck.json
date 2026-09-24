@@ -101,7 +101,7 @@
    "arriba": "Si te escriben 10 personas de noche:",
    "lineas": [
     "10 × {{TASA_ABANDONO}} se van con otro",
-    "= __{{CITAS_PERDIDAS}} citas perdidas por noche__"
+    "Son __{{CITAS_PERDIDAS}} citas perdidas por noche__"
    ],
    "voz": [
     "Pongamos que te escriben diez de noche: una parte se va con otro.",
@@ -459,7 +459,7 @@
    "id": "llamado-2",
    "tipo": "boton",
    "boton": "Aplica aquí",
-   "emoji": "👆",
+   "emoji": "📝",
    "texto": "Contestas **3 preguntas**\ny te llega la invitación",
    "llamado": true,
    "voz": "Da clic en aplica aquí: tres preguntas y te llega la invitación."

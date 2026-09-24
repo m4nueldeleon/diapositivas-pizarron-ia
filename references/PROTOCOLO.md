@@ -108,7 +108,7 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
   salir de borrador**: decláralo con `pendiente: true` y lístalo. Un loop juzga por `estado` y `falta_para_final`.
 - Lee `qa.json → iconos`: cada emoji trae entre paréntesis su concepto de EMOJIS.md («💬 (comentar una palabra)»).
   Confirma que cada lámina donde aparece dice ESE concepto; si no, cámbialo por el emoji del suyo (💬 «Te preguntan»
-  → 📲; 🤳 «Su audiencia» → 👥). «(fuera del diccionario)» pide uno del diccionario o agregarlo con su concepto.
+  → 📲; un brazo con celular «Su audiencia» → 👥). «(fuera del diccionario)» pide uno del diccionario o agregarlo con su concepto.
 - Lo que el QA mide y tus ojos no siempre ven: marcas `**`/`~~` sin cerrar a la vista, sello o cursor
   encima del texto, flechas que tachan una frase, letra reducida por el encaje, contraste bajo,
   elementos vacíos, `voz` que no cuadra con los pasos y **datos pendientes** en MAYÚSCULAS entre

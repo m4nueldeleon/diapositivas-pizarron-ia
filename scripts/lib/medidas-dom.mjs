@@ -28,7 +28,7 @@ export function lineasPalabras(el) {
 export function recortes(lam, selector) {
   const out = [];
   const visible = e => { const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && e.getClientRects().length; };
-  [...lam.querySelectorAll(selector)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && !e.closest('.cuadrantes')).forEach(e => {
+  [...lam.querySelectorAll(selector)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && !e.closest('.cuadrantes, .rejilla-sangre')).forEach(e => {
     const b = e.getBoundingClientRect();
     for (let a = e.parentElement; a && a !== lam && !a.classList.contains('lienzo'); a = a.parentElement) {
       const cs = getComputedStyle(a);

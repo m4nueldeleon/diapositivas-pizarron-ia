@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { escapar } from './markup.mjs';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/@lobehub/fluent-emoji-3d@1.1.0/assets/';
+export const CDN_FLUENT = CDN;
 const CACHE = path.join(os.homedir(), '.cache', 'diapositivas-pizarron-ia', 'fluent');
 
 export function modoEmoji(pedido = 'auto') {
@@ -57,17 +58,37 @@ function variantes(cps) {
 const EQUIVALENTES = { '1faf1-200d-1faf2': '1f91d' };   // 🫱‍🫲 (dos manos) → 🤝 apretón de manos
 const TONO = /^1f3f[b-f]$/;
 
+// ---------- tonos 🏼/🏽 cruzados en Fluent 1.1.0 ----------
+// En casi todas las personas y manos del paquete el archivo 1f3fc (🏼) es MÁS oscuro que el 1f3fd (🏽): con `piel: "🏼"`
+// el «tú» 🧑‍💻 salía rubio y el mentor 🧑‍🏫 moreno [r4]. scripts/medir-tonos-fluent.mjs mide cada secuencia y deja en
+// tonos-fluent.json cuáles vienen cruzadas y cuáles en orden (las de 💻 y 🧑‍🤝‍🧑). Una secuencia sin medir se intercambia:
+// es lo normal en 1.1.0. El intercambio es EXACTO (el tono que se pide es el que se ve), no una aproximación.
+export const patronTono = nombre => String(nombre).split('-').filter(c => c !== 'fe0f').map(c => (TONO.test(c) ? '{t}' : c)).join('-');
+let tonosFluent = null;
+function tablaTonos() {
+  if (tonosFluent) return tonosFluent;
+  try { const t = JSON.parse(fs.readFileSync(new URL('./tonos-fluent.json', import.meta.url), 'utf8')); tonosFluent = { cruzados: new Set(t.cruzados || []), correctos: new Set(t.correctos || []) }; }
+  catch { tonosFluent = { cruzados: new Set(), correctos: new Set() }; }
+  return tonosFluent;
+}
+export function corregirTono(cps) {
+  if (!cps.some(c => c === '1f3fc' || c === '1f3fd')) return cps;
+  if (tablaTonos().correctos.has(patronTono(cps.join('-')))) return cps;
+  return cps.map(c => (c === '1f3fc' ? '1f3fd' : c === '1f3fd' ? '1f3fc' : c));
+}
+
 // Nombres a probar en el CDN, en orden y sin repetir:
 //   1) la secuencia tal cual (muchos tonos de piel sí existen, como 👍🏽 1f44d-1f3fd);
 //   2) la misma secuencia sin tonos de piel (🧑🏻‍🤝‍🧑🏿 → 🧑‍🤝‍🧑, 🤝🏽 → 🤝);
 //   3) una equivalencia de sentido (🫱🏼‍🫲🏿 → 🤝);
 //   4) si es una secuencia ZWJ: su primer componente sin tono (⛓️‍💥 → ⛓️, 🐦‍🔥 → 🐦, 🙂‍↔️ → 🙂).
 //      Los pasos 3 y 4 pierden matiz: resolverFluent lo reporta como «aproximado».
+//   Pasar de un emoji con tono a su forma sin tono (paso 2) también pierde matiz: se reporta como «aproximado».
 export function candidatos(ch) {
-  const cps = [...ch].map(c => c.codePointAt(0).toString(16));
+  const cps = corregirTono([...ch].map(c => c.codePointAt(0).toString(16)));
   const sinTono = cps.filter(c => !TONO.test(c));
   const lista = [...variantes(cps), ...variantes(sinTono)];
-  const exactos = new Set(lista);
+  const exactos = new Set(variantes(cps));
   const base = sinTono.filter(c => c !== 'fe0f').join('-');
   if (EQUIVALENTES[base]) lista.push(...variantes(EQUIVALENTES[base].split('-')));
   if (sinTono.includes('200d')) lista.push(...variantes(sinTono.slice(0, sinTono.indexOf('200d'))));
@@ -108,7 +129,7 @@ const SIL = (x, s = 1) => `<circle cx="${12 * s + x}" cy="${8 * s}" r="${4.6 * s
 // que pone base.css (`.emo svg.vol`). Plano, el SVG se veía clip-art junto a los emojis 3D [r3: 📅 del llamado].
 const DEG = (id, a, b, x2 = 0, y2 = 1) => `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
 export const DEFS_GLOBALES = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
-  + DEG('pz-sil', '#90a6be', '#5c7390') + DEG('pz-ok', '#45c91f', '#1f9a0d') + DEG('pz-pantalla', '#5b8def', '#9b6ee0')
+  + DEG('pz-sil', '#90a6be', '#5c7390') + DEG('pz-sil-claro', '#ffffff', '#dfe6f2') + DEG('pz-ok', '#45c91f', '#1f9a0d') + DEG('pz-pantalla', '#5b8def', '#9b6ee0')
   + DEG('pz-boleto', '#ff7a8a', '#e0182a', 1, 1) + DEG('pz-cal-cab', '#ff7a7e', '#d8343a') + DEG('pz-cal-cuerpo', '#ffffff', '#e2e7ee')
   + DEG('pz-anillo', '#b9c0cb', '#6f7784') + DEG('pz-hoja', '#ffffff', '#dde3ec') + DEG('pz-doblez', '#7aaaff', '#2f68e6')
   + DEG('pz-marco', '#4a4a4f', '#0d0d0f') + DEG('pz-chat', '#45a8ff', '#0a66dc') + DEG('pz-flecha', '#52b2ff', '#1466dc')
@@ -366,6 +387,10 @@ export function bajoContraste(ch, modo, fondo) {
   const m = ((contrasteMedido()[modo] || {})[fondo === 'oscura' ? 'oscura' : fondo === 'tarjeta' ? 'tarjeta' : 'claro'] || {})[k];
   return m != null && m < UMBRAL_CONTRASTE && !(VISTOS_OK[modo] || []).includes(k) ? SUGERIDO[k] || '?' : '';
 }
+
+// Manos (👆 👉 ✍️ 🖱…): en un `boton` con cursor de mano serían dos manos [23:15]. Sin tono ni FE0F.
+const MANO_EMOJI = /^(👆|👉|👇|👈|☝|✍|🖐|🤚|✋|👋|🫵|👌|🤞|🤙|👍|🖱)/u;
+export const esMano = e => MANO_EMOJI.test(String(e || '').replace(/^(no|si):/, '').replace(/[\u{1F3FB}-\u{1F3FF}\uFE0F]/gu, ''));
 
 // ---------- campos de emoji del deck (una sola lista para el contrato y para QA) ----------
 // Todo campo que se dibuja como ícono: `emoji`, `iconos`, la viñeta de una lista, los avatares del chat, `sobre`

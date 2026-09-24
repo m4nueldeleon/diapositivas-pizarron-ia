@@ -20,7 +20,7 @@
   --amarillo: #f9d932;       /* resaltador */
   --azul: #3ea6f2;           /* burbujas de chat, «tú» en interfaces */
   --pastilla-verde: #c2f8c2;
-  --tarjeta: #f3f3f3;
+  --tarjeta: #e4e4e4;        /* tarjetas de criterios [9:25: RGB 228 medido en ref_0925] */
   --sombra: 0 22px 60px rgba(0, 0, 0, .13), 0 3px 10px rgba(0, 0, 0, .06);
   --sombra-suave: 0 6px 18px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .05);
   --radio: 20px;
@@ -107,6 +107,7 @@ s.tachon, .tachon { text-decoration: none; }
 .gap-s { gap: 24px; } .gap-m { gap: 44px; } .gap-l { gap: 80px; }
 .mt-s { margin-top: 28px; } .mt-m { margin-top: 56px; } .mt-l { margin-top: 90px; }
 .mt-e { margin-top: 84px; }
+.mb-l { margin-bottom: 90px; }
 .mt-t { margin-top: 240px; }   /* frase bajo las teclas 1 2 3: ~266 px de aire en ref_115 */
 /* Listas y tarjetas que crecen: arrancan arriba y el hueco de abajo anuncia que viene más [ref_95, 3:25, 9:25] */
 .lienzo.arriba { justify-content: flex-start; padding-top: 150px; }
@@ -189,15 +190,15 @@ s.tachon, .tachon { text-decoration: none; }
   height: auto; min-height: var(--th, 250px); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 24px;
   font-weight: 700; font-size: var(--tt, 46px); line-height: 1.15; padding: 44px 18px 40px; text-align: center; }
 .tarjeta .rotulo { min-height: 2.3em; display: block; text-align: center; text-wrap-style: balance; }   /* bloque de texto: un flex partía «en **una frase**» en columnas y se comía el espacio */
-.tarjeta .emo { --s: 118px; }
 .tarjeta.tono-bv { background: #c9f7c3; } .tarjeta.tono-br { background: #f7c9c9; } .tarjeta.tono-bn { background: #fbe0c4; }
 
 /* ---------- tabla a mano ---------- */
 .lienzo.lz-tabla { padding: 30px 40px; }   /* la tabla-marcador ocupa la lámina completa, como en la referencia */
 .tabla { border-collapse: collapse; font-family: var(--mano); table-layout: fixed; }
 .tabla td, .tabla th { border: 0; text-align: center; vertical-align: middle; padding: 6px 12px; line-height: 1.02; }
-.tabla th { font-weight: 600; font-size: var(--tt, 50px); color: var(--tinta); }
-.tabla td { font-weight: 600; font-size: var(--td, 44px); }
+/* plumón grueso [c_0545: trazo de ~5 px]: Caveat 700 (la fuente es variable 400-700); el rótulo de la esquina sigue en 500 */
+.tabla th { font-weight: 700; font-size: var(--tt, 50px); color: var(--tinta); }
+.tabla td { font-weight: 700; font-size: var(--td, 44px); }
 .tabla td.fila-et { color: var(--tinta); font-size: var(--tde, 46px); }
 /* 9:16: si ni con la letra en el piso cabe la palabra, se parte (último recurso; QA avisa si algo sale de su celda) */
 .tabla.parte td, .tabla.parte th { overflow-wrap: anywhere; }
@@ -206,7 +207,8 @@ s.tachon, .tachon { text-decoration: none; }
 .tabla td + td, .tabla th + th, .tabla td + th, .tabla th + td { border-left: 4px solid var(--linea); }
 
 /* ---------- cifra ---------- */
-.cifra { font-size: var(--tc, 80px); font-weight: 500; letter-spacing: -.02em; line-height: 1.25; }
+.cifra { font-size: var(--tc, 80px); font-weight: 500; letter-spacing: -.02em; line-height: 1.25; max-width: var(--ancho-texto); }
+.cifra[data-cifra-partida] { text-wrap: balance; }
 .cifra b { font-weight: 800; }
 .etiqueta-chica { font-size: 52px; color: var(--tinta-suave); margin-top: 6px; }
 
@@ -245,6 +247,13 @@ s.tachon, .tachon { text-decoration: none; }
 .bento-lleno.c-verde { background: linear-gradient(160deg, #37b24d, #2b8a3e); }
 .bento-lleno.c-azul { background: linear-gradient(160deg, #339af0, #1971c2); }
 .bento-lleno.c-negro { background: linear-gradient(160deg, #3a3a3a, #161616); }
+/* Siluetas 👤 👥 sobre una pieza de color o la lámina oscura: el gris pizarra (#90a6be→#5c7390) es iso-luminante con el
+   morado y el naranja (0% del glifo a 2:1) y se veía «deshabilitado» junto a los emojis 3D [r4, 22-incluye]. Ahí van en
+   blanco con la sombra de volumen de los glifos dibujados; sobre blanco y tarjetas claras siguen en gris. */
+.bento-lleno:is(.c-morado, .c-marino, .c-naranja, .c-verde, .c-azul, .c-negro) .emo svg [fill="url(#pz-sil)"],
+.lamina.oscura .emo svg [fill="url(#pz-sil)"] { fill: url(#pz-sil-claro); }
+.bento-lleno:is(.c-morado, .c-marino, .c-naranja, .c-verde, .c-azul, .c-negro) .emo > svg:has([fill="url(#pz-sil)"]),
+.lamina.oscura .emo > svg:has([fill="url(#pz-sil)"]) { overflow: visible; filter: drop-shadow(0 calc(var(--s) * .03) calc(var(--s) * .035) rgb(0 0 0 / .28)); }
 /* el remate entra en su paso sobre un lienzo limpio: en la referencia es una lámina aparte [42:50] */
 .stack-remate { position: absolute; inset: 0; z-index: 4; background: var(--blanco); display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
@@ -297,7 +306,9 @@ s.tachon, .tachon { text-decoration: none; }
 /* [huecos] de plantilla: resaltador amarillo con tinta negra, legible en la burbuja azul y en la gris (13:1) */
 /* También los datos pendientes ([PRECIO]) en cualquier texto, sobre blanco o sobre la lámina oscura */
 .hueco, .burbuja .hueco { color: #111; background: var(--amarillo); font-weight: 700; border-radius: .25em; padding: 0 .15em;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; white-space: nowrap; }
+/* un hueco corto («[el problema]») no se parte en dos pastillas; uno de más de 3 palabras sí puede cortarse */
+.hueco.largo { white-space: normal; }
 
 /* ---------- prueba (capturas) ---------- */
 .pruebas { display: flex; align-items: center; justify-content: center; }
@@ -314,13 +325,15 @@ s.tachon, .tachon { text-decoration: none; }
 .post.ejemplo { position: relative; padding-top: 72px; }
 .sello-ejemplo { position: absolute; right: 44px; top: -34px; transform: rotate(-6deg); background: #fff; padding: 5px; border-radius: 20px; }
 .sello-ejemplo .sello-tinta { font-size: 54px; border-width: 6px; border-radius: 16px; outline-width: 3px; outline-offset: -15px; }
-/* hueco para una prueba que todavía no tienes: tarjeta punteada, vacía, con la frase a mano */
-.captura.hueco-prueba { box-shadow: none; background: transparent; border: 5px dashed #b9b9b9; border-radius: 26px;
+/* Captura POR CONSEGUIR (el deck queda en borrador): se lee como un pendiente a propósito, con el lenguaje de los huecos
+   de la skill (la frase con el resaltador amarillo y tinta negra, el borde punteado en tinta), no como una lámina rota
+   en gris [r4]. La del espectador (`plantilla`) es el marco a mano de abajo. */
+.captura.hueco-prueba { box-shadow: none; background: transparent; border: 5px dashed #4a4a4a; border-radius: 26px;
   width: 1000px; height: 440px; display: grid; place-items: center; }
-.captura.hueco-prueba .mano { font-size: 84px; color: #8a8a8a; }
+.captura.hueco-prueba .mano { font-size: 84px; color: var(--tinta); background: var(--amarillo); padding: 0 .25em; border-radius: .2em; }
 /* plantilla (el lugar para la captura del espectador): marco trazado a mano en tinta, sin punteado gris */
 .captura.hueco-prueba.plantilla { border: none; }
-.captura.hueco-prueba.plantilla .mano { color: var(--tinta); position: relative; }
+.captura.hueco-prueba.plantilla .mano { color: var(--tinta); position: relative; background: none; padding: 0; }
 .marco-mano { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 /* Fuente de un dato o un estudio («Autor, obra (año)»): sans gris sobria pero legible. A 30 px quedaba en ~5.6 px en un
    celular de 360; 40 px da ~7.5 (QA avisa bajo 36). En la captura va pegada al post, un poco más chica. */
@@ -339,6 +352,19 @@ s.tachon, .tachon { text-decoration: none; }
 .rejilla .punto.r { background: radial-gradient(circle at 35% 30%, #ff5f5f, #d11414); }
 .rejilla .punto.g { background: #d9d9d9; }
 .rejilla .apagado { opacity: .25; filter: grayscale(1); }
+/* multitud «tú» [14:55, 15:05]: a sangre, filas escalonadas (runtime no mide nada: posiciones fijas en px) */
+.multitud.sangre { position: absolute; inset: 0; }
+.multitud-prota { position: absolute; left: 50%; top: 60px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.multitud-prota .rotulo-prota { font-size: 60px; font-weight: 700; letter-spacing: -.015em; line-height: 1; }
+.f-vertical .multitud-prota { top: 240px; }
+.f-vertical .multitud-prota .rotulo-prota { font-size: 72px; }
+.rejilla-sangre { position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; }
+.rejilla.multitud { display: block; position: absolute; inset: 0; }
+.rejilla.multitud .celda { position: absolute; width: var(--c); height: var(--c); }
+/* [15:05]: la multitud en gris muy claro y UNA silueta oscura */
+.rejilla.multitud .celda.apagada { opacity: .32; filter: grayscale(1) brightness(1.45); }
+.rejilla.multitud .celda.oscuro.encendido { filter: brightness(.5) saturate(1.1); }
+.nota.nota-multitud { position: absolute; transform: translate(-50%, -100%); --tn: 66px; color: var(--verde); font-weight: 700; white-space: nowrap; z-index: 2; }
 
 /* ---------- línea de tiempo y gráficas ---------- */
 .grafica svg text { font-family: var(--sans); }

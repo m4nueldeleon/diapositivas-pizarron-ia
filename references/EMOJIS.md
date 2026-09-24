@@ -54,7 +54,8 @@ asistencia es «vacío»: no puede salir después como `si:🪑` «sí llegaron�
 |---|---|
 | tú, el alumno | 🧑‍💻 (resaltado en la multitud) |
 | audiencia, comunidad | 👥 · una `rejilla` de 👤 |
-| creador de contenido | 🤳 |
+| creador de contenido | `🧑+🎥` (una persona con cámara: el «Creator» del video es una persona entera [12:45]; con `piel` la persona lleva el tono; en lámina oscura con Apple, 🧑 con 📹) |
+| creador sin cara, faceless | `👤+🎥` |
 | experto, consultor o maestro | 🧑‍🏫 |
 | médico o profesionista | 🧑‍⚕️ |
 | principiante | 🐣 |
@@ -68,7 +69,11 @@ masculina: 👨🏻‍⚕️ [ref_10], 🙅🏻‍♂️ [ref_628], 💁🏻‍�
 algún secundario van sin tono (el «Creator» 👨‍💻 amarillo junto al «You» con tono, 12:45): el video mezcla, así
 que QA no avisa por mezcla. Pon `"piel": "🏻"` en el deck (o tu tono): cada persona sin tono escrito lo recibe
 (🧑‍⚕️ → 🧑🏻‍⚕️, `no:🙅‍♂️` → 🙅🏻‍♂️, 🧑‍🤝‍🧑 → 🧑🏻‍🤝‍🧑🏻); las manos (🤝 👆 ✍️) no cambian; un tono escrito a mano en el deck siempre gana y `"ninguno"` lo apaga.
-En Fluent, si el tono no existe en el set, sale la forma sin tono.
+En Fluent, si el tono no existe en el set, sale la forma sin tono y QA lo avisa como «aproximado».
+**Fluent 1.1.0 trae 🏼 y 🏽 cruzados** en casi todas las personas y manos (el archivo 🏼 de 🧑‍🏫 es moreno y el 🏽
+rubio; solo 🧑‍💻 👨‍💻 👩‍💻 y 🧑‍🤝‍🧑 vienen en orden). La skill pide el archivo correcto con `scripts/lib/tonos-fluent.json`
+(medido por `node scripts/medir-tonos-fluent.mjs`; vuelve a correrlo si cambia la versión del CDN): ya no hace falta
+el rodeo de usar 🏾.
 
 ## Acciones y proceso
 | Concepto | Emoji |
@@ -78,7 +83,7 @@ En Fluent, si el tono no existe en el set, sale la forma sin tono.
 | construir | 🛠️ |
 | lanzar | 🚀 |
 | automatizar, IA | 🤖 |
-| pocos clics | 👆 (el 🖱️ de Apple es un mouse blanco sobre blanco) |
+| pocos clics | 👆 (suelto o como nodo de un `flujo`; nunca dentro de un `boton`, donde el cursor ya es la mano. El 🖱️ de Apple es un mouse blanco sobre blanco) |
 | escribir, plan | 📝 |
 | tu método, el mapa del sistema | 🗺️ |
 | enviar mensaje, «te escriben» | 📲 (se lee «te llega al celular»; se dibuja en SVG con volumen) · 📩 en Apple |
@@ -165,6 +170,17 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | seguir la cuenta | ➕ | 🔔 ya es notificación |
 | me gusta · emoción, lo que se siente | ❤️ | en un deck, un solo sentido: o «me gusta» (reel) o «emoción» (clase de ventas), nunca los dos |
 
+## Creación de contenido
+| Concepto | Emoji | Notas |
+|---|---|---|
+| voz, narrar, podcast | 🗣️ · 🎤 en lámina oscura con Fluent | 🎙️ en Fluent es gris pálido |
+| grabar la pantalla (del celular) | `📱+🔴` | 🖥️ es un monitor de escritorio |
+| tomas, clips de video, stock | 🎞️ | 🎥 es «grabar video» |
+| música de fondo | 🎵 | 🔊 se lee «volumen» |
+| borrar, descartar | 🗑️ | |
+| cámara de fotos o profesional | 📸 | |
+| manos trabajando, contenido solo con las manos | 🤲 | |
+
 ## Psicología y decisión
 | Concepto | Emoji | Notas |
 |---|---|---|
@@ -184,7 +200,7 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | estrategia | ♟️ | |
 | la pieza que falta, la solución | 🧩 | |
 | competencia, el rival | 🥊 | |
-| en vivo (sesión, transmisión) | 🔴 | |
+| en vivo (sesión, transmisión) | `🎥+🔴` | 🔴 sola no dice nada (en Fluent es una esfera rosa 3D): va como insignia de «grabando» |
 | lección, módulo, sesión del programa | 📖 | 📚 es «recursos, material»; 🎓 el programa completo |
 | logro, meta cumplida | 🏅 | 🏆 es «el mejor» |
 
@@ -256,7 +272,13 @@ para una secuencia usa un `flujo`.
 - 👨‍💼 junto a 🧑‍💼: se ven casi iguales en los dos modos. Cliente es 🧑‍💼; experto, 🧑‍🏫.
 - 🤵 para «vendedor»: en Apple es casi igual a 🧑‍💼 (rubio con traje negro). Vendedor es 👤; cliente, 🧑‍💼.
 - 🧑‍✈️ para «líder»: se lee «piloto». Líder es 👑.
-- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», 🔴.
+- 🎧 y 🎙️ en Fluent: grises pálidos. Para «en vivo», `🎥+🔴`; para voz, 🗣️.
+- 🔴 sola: un círculo sin significado (en Fluent, una esfera rosa). Va como insignia: `🎥+🔴` en vivo, `📱+🔴` grabar la pantalla.
+- 🤳 para «creador»: en los dos sets es un brazo suelto con el celular, sin persona; se lee «selfie» o «mostrar la
+  cara», lo contrario de un deck sin cara. Creador es `🧑+🎥`; sin cara, `👤+🎥`.
+- 🖥️ para «graba tu pantalla» del celular: es un monitor de escritorio. Usa `📱+🔴`.
+- Una mano (👆 ✍️ 👉) como emoji de un `boton` con cursor de mano: son dos manos [23:15, 38:15]. El botón lleva un
+  objeto (🤖 📝 🚀 📞); QA lo avisa. Si tiene que ser una mano, `"cursor": "flecha"`.
 - 👨‍👩‍👧‍👦 para equipo: en Apple es un mosaico gris de siluetas. Usa 🧑‍🤝‍🧑.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.

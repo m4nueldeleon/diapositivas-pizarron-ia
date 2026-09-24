@@ -149,7 +149,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     for (let p = 0; p < n; p++) {
       window.PZ.mostrar(lam, p, Infinity);
       const E = m => r.errores.push(`paso ${p + 1}: ${m}`), A = m => r.avisos.push(`paso ${p + 1}: ${m}`);
-      const cajas = [...lam.querySelectorAll(CAJAS)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && !e.closest('.cuadrantes'));
+      // la multitud «tú» va a sangre a propósito [14:55]: sus siluetas se salen del lienzo
+      const cajas = [...lam.querySelectorAll(CAJAS)].filter(e => visible(e) && !e.closest('.escena:not(.lamina)') && !e.closest('.cuadrantes, .rejilla-sangre'));
       for (const e of cajas) {
         const b = caja(e, lam);
         if (b.x < -2 || b.y < -2 || b.x + b.w > W + 2 || b.y + b.h > H + 2) E(`«${corto(e.innerText || e.className || e.tagName, 40)}» se sale del lienzo`);
@@ -416,7 +417,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
     // Fondo REAL de cada emoji (el primer ancestro con color o degradado): sobre las piezas de color del stack, los
     // cuadros o el botón, la tabla de 3 fondos neutros no sirve. Esos se rasterizan aparte (fuera de esta página) y se
     // mide qué % del glifo se distingue de ESE fondo.
-    const neutro = c => [[255, 255, 255], [243, 243, 243], [11, 11, 14]].some(n => n.every((v, j) => Math.abs(v - c[j]) <= 8));
+    const neutro = c => [[255, 255, 255], [243, 243, 243], [228, 228, 228], [11, 11, 14]].some(n => n.every((v, j) => Math.abs(v - c[j]) <= 8));
     const fondoReal = el => {
       for (let a = el.parentElement; a && a.nodeType === 1; a = a.parentElement) {
         const cs = getComputedStyle(a);
@@ -447,7 +448,11 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       if (!g) return;
       const tipo = g.tagName === 'IMG' ? 'img' : g.tagName.toLowerCase() === 'svg' ? 'svg' : 'txt';
       const ch = tipo === 'img' ? g.getAttribute('alt') : tipo === 'txt' ? g.textContent : '';
-      r.medir.push({ tipo, ch: String(ch || '').replace(/\uFE0F/g, ''), src: tipo === 'img' ? g.getAttribute('src') : '', svg: tipo === 'svg' ? g.outerHTML : '', fondos });
+      // la silueta se mide con el relleno que de verdad se pinta ahí (pz-sil-claro sobre color, por CSS)
+      const sil = tipo === 'svg' && g.querySelector('[fill="url(#pz-sil)"]');
+      const claro = sil && /pz-sil-claro/.test(getComputedStyle(sil).fill);
+      const svg = tipo === 'svg' ? (claro ? g.outerHTML.replace(/url\(#pz-sil\)/g, 'url(#pz-sil-claro)') : g.outerHTML) : '';
+      r.medir.push({ tipo, ch: String(ch || '').replace(/\uFE0F/g, ''), src: tipo === 'img' ? g.getAttribute('src') : '', svg, fondos });
     });
     const fondoTxt = oscura ? 'fondo oscuro' : 'fondo claro';
     if (flojos[modoEmoji].size) AF(`emoji de bajo contraste en ${modoEmoji} sobre ${fondoTxt}; cámbialo: ${[...flojos[modoEmoji]].join(', ')}`);
@@ -512,6 +517,17 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT]) => {
       if (aire < 24) AF(`«${corto(e.innerText, 28)}» queda a ${Math.round(aire)} px del borde de abajo de su tarjeta (ideal ≥ 24)`);
     });
     if (cortas.size) AF(`etiqueta corta partida en dos renglones: «${[...cortas].join('», «')}»; acórtala o dale más espacio (separacion)`);
+    // Ecuación partida (la cifra ya se encogió hasta su piso) y resaltado corto partido en dos pastillas o dos trozos
+    visibles('.cifra').forEach(e => {
+      const ls = window.lineasPalabras(e);
+      if (ls.length > 1) AF(`la ecuación «${corto(e.innerText, 36)}» se parte en ${ls.length} renglones: acórtala o ponla en dos líneas del deck (lineas: […]), cada una una cuenta completa [3:15]`);
+    });
+    const partidos = new Set();
+    visibles('.hueco, mark, [data-sub]').filter(e => !e.closest('.cifra')).forEach(e => {
+      const ls = window.lineasPalabras(e);
+      if (ls.length > 1 && ls.flat().length <= 3) partidos.add(ls.map(l => l.join(' ')).join(' / '));
+    });
+    if (partidos.size) AF(`resaltado corto partido en dos renglones: «${[...partidos].join('», «')}»; acorta la frase para que el resaltado quede entero`);
     if (huerfanos.size) AF(`renglón huérfano «${[...huerfanos].join('», «')}»: reparte la frase o acórtala`);
     // ~~tachado~~: solo el trazo rojo; y que el texto se alcance a leer antes de tacharlo
     lam.querySelectorAll('[data-tachar]').forEach(e => {

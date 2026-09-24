@@ -89,7 +89,8 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 ```
 - `emoji_tam`: `chico` (150), `medio` (230, por omisión), `grande` (290), `heroe` (360) o un número.
   Es la caja: el glifo se ve ~85% (medio ≈ 197 visibles, como el 🏆 de ref_90).
-- `emoji_lado: true` pone el emoji a la izquierda en la misma línea [10:15] (170 px por omisión).
+- `emoji_lado: true` pone el emoji a la izquierda en la misma línea [10:15], a ≈1.15× la letra de la frase (≈97 px
+  con la frase `medio` de 84): en el video el 👥 mide ~66 px junto a una frase de ~60, no el doble. `emoji_tam` lo fija.
 - **Par antes/después** [10:55]: `"emoji": ["no:📚", "si:🤖"]` pone dos emojis en fila;
   `apagar_emoji: 0` atenúa el primero (el negado) y `emoji_paso: 1` revela el segundo después.
   Solo en `idea`.
@@ -157,9 +158,14 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
 ### `cifra` — números y ecuaciones grandes, una línea por paso  ·  [3:10, 14:10]
 ```json
 { "tipo": "cifra", "arriba": "Si te contrata el 0.1-0.3%:",
-  "lineas": ["1 millón × **0.1-0.3%** = 1-3 mil", "× $25,000 = __$25-75 millones__"] }
+  "lineas": ["1 millón × **0.1-0.3%** = 1-3 mil", "1-3 mil × $25,000 = __$25-75 millones__"] }
 ```
-- Con una sola línea sale enorme, a 140 px.
+- Con una sola línea sale enorme, a 140 px. Con dos o más, la última (el resultado) va a ~1.2× (100 px) [3:15] y lo
+  que se destaca va con `**negrita**` o `__subrayado__`.
+- **Cada línea es una cuenta completa** («1,000 × $25,000 = __$25M__»), centrada por su cuenta: una línea que empieza
+  con «=», «×» o «+» cuelga de la anterior y QA la avisa. Una ecuación de una línea **se encoge** (hasta 96 px; 72 si
+  son varias) antes de partirse; si ni así cabe, se parte balanceada y QA lo avisa: escríbela en dos líneas del deck.
+- El sello de una cifra se acomoda solo debajo de la cuenta (no la tapa); `sello_pos` lo fija.
 - **Algo que se descarta** [4:05]: `{ "texto": "~~Más horas = más dinero~~", "tachar_paso": 1 }` como línea:
   se lee primero y el tachón rojo llega en el paso siguiente (`tachar_paso` en la lámina vale para todas).
 - `arriba`: nota manuscrita encima. `abajo`: etiqueta chica, como «Seguidores».
@@ -168,7 +174,7 @@ cambia); un rango de cifras («$10k–50k») nunca se parte en el guion.
   «Supuesto:» vacío; QA lo avisa, y también una cuenta que no trae NINGÚN rango (GUION §3.8 b):
   ```json
   { "tipo": "cifra", "arriba": "Si mandas 10 mensajes al día por 10 días:", "lineas": [
-    "100 × {{TASA_RESPUESTA}} = {{PLATICAS}} pláticas", "× {{TASA_CIERRE}} = __{{CLIENTES}} clientes__"] }
+    "100 × {{TASA_RESPUESTA}} = {{PLATICAS}} pláticas", "{{PLATICAS}} × {{TASA_CIERRE}} = __{{CLIENTES}} clientes__"] }
   ```
   Las tasas NO se inventan: salen de `datos` con su origen real (`"TASA_RESPUESTA": "10-20%"` medido en tus
   últimos 100 mensajes) o se declaran pendientes; con eso, el total sale en rango. Una tasa escrita a mano en la
@@ -250,7 +256,7 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   en el vértice, del lado de afuera. Cada retorno entra en su propio paso después del último nodo. En 9:16 se
   ignoran (aviso).
   ```json
-  { "tipo": "flujo", "nodos": [{ "emoji": "🤳", "etiqueta": "Creador" }, { "emoji": "📦", "etiqueta": "Producto" },
+  { "tipo": "flujo", "nodos": [{ "emoji": "🧑+🎥", "etiqueta": "Creador" }, { "emoji": "📦", "etiqueta": "Producto" },
     { "emoji": "👥", "etiqueta": "Su audiencia" }, { "emoji": "💰", "etiqueta": "Dinero" }],
     "aparte": { "emoji": "🙋", "etiqueta": "Tú" },
     "retornos": [{ "desde": 3, "hasta": 0, "tono": "n", "etiqueta": "70%", "emoji": "💵" },
@@ -308,15 +314,26 @@ van en blanco. Sobre negro el subrayado y las flechas salen en blanco, el tachó
   texto sin pasar de su extremo interior.
 - `tam_texto` (px) cambia la frase del origen: 88 px en 16:9, 76 en 9:16. `emoji_tam` cambia los
   emojis (124). `separacion` sigue mandando sobre la distancia entre ramas.
+- La **llave** roja es alta [c_0635]: las puntas ~24 px bajo el centro de cada rama, los brazos bajan en curva
+  (~9% del alto) hasta el tramo horizontal y el pico baja otro ~5%; mide ~14% del alto de la lámina. La nota va
+  debajo, chica (54 px; 60 en 9:16), roja y **subrayada**, como «Same Work».
 
 ### `circulos` — la audiencia: anillo de personas y círculo interior  ·  [10:45, 14:05]
 ```json
 { "tipo": "circulos", "texto": "Reservada para **unos pocos**", "tono": "r", "tono_interior": "v", "personas": 12, "emoji": "🧑‍💼", "centro": "⭐" }
 ```
 - `radio` (360) y `radio_interior` (130), en px, cambian el tamaño de los dos círculos.
-- Las personas van parejas en 1 o 2 anillos dentro de la corona, sin tocarse (≥ 1.15 × su tamaño) [10:45]. Si no
-  caben, el emoji se achica (86 → 64 px) y, si ni así, se dibujan las que caben y la construcción avisa: sube
-  `radio` o baja `personas`. QA da error si dos emojis de una lámina se enciman.
+- Las personas van **dispersas** por la corona, sin tocarse (≥ 1.15 × su tamaño) y sin formar un anillo de reloj
+  [10:45] (semilla fija: el mismo dibujo en cada render). Si no caben, el emoji se achica (86 → 64 px); si ni así, van
+  en anillos parejos y, si tampoco, se dibujan las que caben y la construcción avisa: sube `radio` o baja `personas`.
+  QA da error si dos emojis de una lámina se enciman.
+- `adentro: N` (0-5) pone N personas del mismo emoji y tamaño **dentro** del círculo interior (salen con
+  `interior_paso`). `tono_paso: k`: en el paso k la corona toma el tono del interior y el borde interior desaparece,
+  sin mover a nadie [10:50].
+- **Reservada para unos pocos → ahora cambió** [10:45, 10:50]:
+  ```json
+  { "tipo": "circulos", "texto": "Reservada para **unos pocos**", "tono": "r", "tono_interior": "v", "personas": 12, "adentro": 2, "tono_paso": 1 }
+  ```
 
 ## Datos
 
@@ -342,6 +359,9 @@ queda junto a la pregunta): desde otra, las flechas cruzan las celdas y QA lo ma
 angostas (80 px), el ancho se reparte según la palabra más larga de cada columna y la letra baja por tabla hasta 34 px
 (td) / 38 (th); si una tabla de más de 3 columnas de datos ni así cabe, avisa: pártela con `fijas`. QA da error si el
 texto de una celda sale de su caja (se monta en la vecina).
+La letra es plumón grueso (Caveat 700) [c_0545]. Con 3 filas o menos la fila se topa en 190 px y la letra crece con
+ella (0.34 × el alto de la fila, de 44 a 64 px): una tabla corta ya no flota en celdas vacías. Si la tabla no cabe o
+una celda llega a 3 renglones, el motor baja la letra de 4 en 4 hasta 40 (primero la columna de etiquetas).
 ```json
 { "tipo": "tabla", "esquina": "Métrica", "vacias": 1,
   "columnas": ["Ventas high ticket", "Dropshipping"],
@@ -371,6 +391,9 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 - `columnas`, `ancho` (px por tarjeta) y `tam_texto` (px, por omisión 46) ajustan a mano.
 - El emoji va arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia
   abajo [9:25]. Las tarjetas arrancan arriba de la lámina (`anclar`).
+- El emoji crece con la tarjeta: 150 px con hasta 3 tarjetas, 130 con 4 y 104 con 5 o más (en [9:25] es más grande
+  que el rótulo). `emoji_tam` (en la lámina) o `items[].emoji_tam` (en una tarjeta) lo fijan a mano, igual que en
+  `cuadrantes`. La tarjeta es gris #e4e4e4 (medido en ref_0925).
 - La negrita a media frase («Tu oferta en **una frase**») conserva su espacio: el rótulo es un bloque de
   texto. QA da error si un contenedor flex mezcla texto suelto y negritas (se comía el espacio).
 
@@ -420,6 +443,14 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
 { "tipo": "opciones", "items": [{ "texto": "FÁCIL", "tono": "v" }, { "texto": "MEDIO", "tono": "n" }, { "texto": "DIFÍCIL", "tono": "r" }], "elegida": 2 }
 ```
 - `items` es obligatorio (la lista de pastillas va en `items`, no en `opciones`).
+- Las no elegidas se atenúan **en el paso del clic** (`clic_paso`, 0 por omisión, como en [4:30]): con el clic en un
+  paso posterior, primero se ven todas a color y el clic revela la respuesta.
+- `texto_pos: "arriba"` pone el `texto` antes de las pastillas (por omisión va debajo).
+- **Encuesta** (pregunta → opciones → el clic elige):
+  ```json
+  { "tipo": "opciones", "texto": "¿Te pasa esto?", "texto_pos": "arriba", "clic_paso": 1, "cursor": "mano",
+    "items": [{ "texto": "SÍ, ME PASA", "tono": "v" }, { "texto": "NO", "tono": "r" }], "elegida": 0 }
+  ```
 
 ### `rejilla` — cantidad hecha visible  ·  [6:35, 14:45, 14:55]
 - **Muchas cajas**:
@@ -430,10 +461,22 @@ Un ítem acepta `tono` (`v`, `r` o `n`) para pintar la tarjeta. Un texto suelto 
   ```json
   { "tipo": "rejilla", "punto": true, "total": 100, "columnas": 20, "destacar": [99], "texto": "¿El **99%**?" }
   ```
-- **«Tú» en la multitud**:
+- **«Tú» en la multitud** (`multitud: true`), dos láminas [14:55, 15:05]. El protagonista **nunca** va dentro de
+  la multitud: rótulo en negrita arriba y su emoji (~170 px) debajo, aparte y sin flecha. La multitud es enorme:
+  siluetas de ~190 px (150 en 9:16) en filas escalonadas medio paso que arrancan a ~44% del alto y se salen por los
+  lados y por abajo (`total` es solo el tope; QA no cuenta ese recorte como desborde).
   ```json
-  { "tipo": "rejilla", "emoji": "👤", "total": 40, "columnas": 10, "destacar": [14], "emoji_destacado": "🧑‍💻", "etiqueta_destacado": "Tú" }
+  { "tipo": "rejilla", "multitud": true, "emoji": "👤", "total": 60, "etiqueta_destacado": "Tú", "emoji_etiqueta": "🧑‍💻" }
   ```
+  La segunda [15:05]: la misma multitud; en `destacado_paso` se apaga a gris muy claro y UNA silueta (`destacar`,
+  por omisión la del centro de la primera fila) queda oscura, con `nota_destacado` manuscrita en verde encima (en
+  `nota_destacado_paso`, por omisión el mismo). La multitud NO se apaga por omisión: en [14:55] va a color.
+  ```json
+  { "tipo": "rejilla", "multitud": true, "emoji": "👤", "total": 60, "etiqueta_destacado": "Tú", "emoji_etiqueta": "🧑‍💻",
+    "destacar": [4], "apagar_resto": true, "destacado_paso": 1, "nota_destacado": "«Sí»" }
+  ```
+- Sin `multitud`, una rejilla contable (40 personas, «1 de cada 10») con `destacar` + `emoji_destacado` pone a la
+  destacada dentro de la rejilla.
 - Con `apagar_resto: true` todo lo que no está destacado queda gris. `tono` y `tono_destacado` (`v`, `r`,
   `g`) pintan los puntos; `emoji_etiqueta` pone un emoji sobre la `etiqueta_destacado`; `aspecto` (ancho/alto,
   1.55 por omisión) decide las columnas si no das `columnas`.
@@ -542,9 +585,10 @@ marca como error hasta que lo llenes. Un texto suelto en `mensajes` vale como `{
 - `circulo` y `tachar` van en porcentaje de la imagen: x, y, ancho, alto.
 - **Regla 9: nunca inventes testimonios, capturas ni cifras.** Usa solo resultados reales, con permiso,
   y tacha los datos personales. Si todavía no tienes la prueba, no la finjas:
-  - `{ "hueco": "Tu captura va aquí" }`: tarjeta punteada y vacía = una captura **por conseguir**. QA la pone en
-    `por_confirmar` como `CAPTURA_N` y el deck queda en borrador hasta cambiarla por la real: un recuadro gris
-    nunca va en un entregable.
+  - `{ "hueco": "Tu captura va aquí" }`: recuadro punteado en tinta con la frase en el resaltador amarillo de
+    los huecos = una captura **por conseguir** (un pendiente a la vista, no una ilustración). QA la pone en
+    `por_confirmar` como `CAPTURA_N` y el deck queda en borrador hasta cambiarla por la real: nunca va en un
+    entregable.
   - `{ "hueco": "La tuya va aquí", "plantilla": true }`: el lugar para la captura **del espectador** (un tutorial
     que le dice «así se ve la tuya»). Sale con un marco trazado a mano en tinta, sin punteado, y el deck puede
     ser final. `plantilla` sin `hueco` es error de contrato. Para ENSEÑAR un formato con contenido, usa la maqueta

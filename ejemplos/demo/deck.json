@@ -351,10 +351,10 @@
   {
    "id": "cuentas",
    "tipo": "cifra",
-   "arriba": "Si te contrata el 0.1-0.3%:",
+   "arriba": "Si te contrata el 0.1-0.3% de 1 millón:",
    "lineas": [
-    "1 millón × **0.1-0.3%** = 1-3 mil",
-    "× $25,000 = __$25-75 millones__"
+    "**1-3 mil** clientes",
+    "1-3 mil × $25,000 = __$25-75M__"
    ]
   },
   {
@@ -617,7 +617,8 @@
    "tono": "r",
    "tono_interior": "v",
    "personas": 12,
-   "emoji": "🧑‍💼"
+   "emoji": "🧑‍💼",
+   "adentro": 2
   },
   {
    "id": "promesa",
@@ -640,14 +641,25 @@
    "id": "tu",
    "tipo": "rejilla",
    "emoji": "👤",
-   "total": 40,
-   "columnas": 10,
+   "total": 60,
+   "etiqueta_destacado": "Tú",
+   "multitud": true,
+   "emoji_etiqueta": "🧑‍💻"
+  },
+  {
+   "id": "tu-si",
+   "tipo": "rejilla",
+   "emoji": "👤",
+   "multitud": true,
+   "total": 60,
+   "etiqueta_destacado": "Tú",
+   "emoji_etiqueta": "🧑‍💻",
    "destacar": [
     4
    ],
-   "emoji_destacado": "🧑‍💻",
-   "etiqueta_destacado": "Tú",
-   "alto": 520
+   "apagar_resto": true,
+   "destacado_paso": 1,
+   "nota_destacado": "«Sí»"
   },
   {
    "id": "foco",
@@ -833,7 +845,7 @@
    "id": "llamado",
    "tipo": "boton",
    "boton": "Aplica aquí",
-   "emoji": "👆",
+   "emoji": "📝",
    "texto": "**2 minutos** de preguntas y te llega la invitación a la llamada",
    "llamado": true,
    "voz": "Clic en aplica aquí: dos minutos y te llega la invitación."

@@ -6,7 +6,7 @@
 //              valor raro se descarta con aviso en lugar de romper el render. Además normaliza los ítems
 //              escritos como texto suelto (tarjetas, chat, cuadrantes, nodos…) y devuelve `sugerencias`:
 //              avisos suaves (campo que ese diseño no usa, emoji dudoso) que QA cuenta como aviso, no error.
-import { analizarCompuesto, esEmojiTexto, specsDeCampo } from './emoji.mjs';
+import { analizarCompuesto, esEmojiTexto, specsDeCampo, esMano } from './emoji.mjs';
 import { palabras, plano } from './markup.mjs';
 import { validarDatos } from './datos.mjs';
 import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
@@ -43,7 +43,7 @@ export const CAMPOS = {
   cifra: ['lineas', 'valor', 'tam', 'arriba', 'abajo', 'fuente', 'fuente_paso', 'texto', 'texto_paso', 'nota', 'nota_paso', 'tachar_paso'],
   cita: ['texto', 'tam_texto', 'emoji', 'emoji_tam', 'nota', 'nota_paso', 'tachar_paso', 'fuente', 'fuente_paso'],
   objeto: ['imagen', 'alto', 'emoji', 'emoji_tam', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'encabezado', 'nota', 'nota_paso'],
+  tarjetas: ['items', 'columnas', 'ancho', 'tam_texto', 'emoji_tam', 'encabezado', 'nota', 'nota_paso'],
   oscura: ['imagen', 'alto', 'emoji', 'emoji_tam', 'titulo', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   cuadrantes: ['items', 'columnas'],
   tabla: ['columnas', 'filas', 'vacias', 'fijas', 'esquina', 'ancho_etiqueta', 'converger'],
@@ -51,16 +51,17 @@ export const CAMPOS = {
     'fuente', 'fuente_paso'],
   'linea-tiempo': ['marcas', 'tramos', 'texto', 'texto_paso', 'nota', 'nota_paso'],
   medidor: ['valor', 'tono', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  opciones: ['items', 'elegida', 'texto', 'texto_paso'],
+  opciones: ['items', 'elegida', 'texto', 'texto_paso', 'texto_pos'],
   rejilla: ['total', 'aspecto', 'columnas', 'ancho', 'alto', 'destacar', 'emoji', 'punto', 'emoji_destacado', 'apagar_resto', 'tono',
     'tono_destacado', 'anotacion', 'anotacion_paso', 'etiqueta_destacado', 'flecha_etiqueta', 'destacado_paso', 'emoji_etiqueta', 'encabezado', 'encabezado_estilo',
+    'multitud', 'nota_destacado', 'nota_destacado_paso',
     'texto', 'texto_paso'],
   prueba: ['capturas', 'encabezado', 'encabezado_estilo', 'texto', 'texto_paso'],
   chat: ['mensajes', 'encabezado', 'encabezado_estilo', 'tam_texto', 'avatar_yo', 'avatar_otro'],
   reparto: ['total', 'partes', 'separacion', 'titulo'],
   calendario: ['fases', 'fase_activa', 'color', 'dias', 'n', 'columnas', 'palabra_dia', 'anotaciones', 'titulo', 'rango'],
   boton: ['boton', 'emoji', 'texto', 'texto_paso', 'tam_texto', 'nota', 'nota_paso'],
-  circulos: ['radio', 'radio_interior', 'tono', 'tono_interior', 'personas', 'emoji', 'centro', 'centro_paso', 'interior_paso', 'texto',
+  circulos: ['radio', 'radio_interior', 'tono', 'tono_interior', 'personas', 'adentro', 'tono_paso', 'emoji', 'centro', 'centro_paso', 'interior_paso', 'texto',
     'texto_paso', 'nota', 'nota_paso'],
   // `vivo: true`: tramo en vivo de una clase (actividad, demostración, preguntas) con su consigna para el público
   camara: ['nota', 'vivo', 'texto', 'items', 'emoji'],
@@ -313,14 +314,14 @@ const ENUMS = {
   lado: ['izquierda', 'derecha', 'arriba', 'abajo'], signo: ['+', '=', '−', '×'], entra: ['izquierda', 'derecha', 'arriba', 'abajo'], grafica: ['lineas', 'barras', 'crecimiento'], de: ['yo', 'otro'],
   revelar: ['todo', 'columnas', 'celdas', 'filas', 'ramas', 'series', 'barras', 'pasos'],
   sello_pos: ['centro', 'arriba', 'abajo', 'izquierda', 'derecha', 'arriba-izquierda', 'arriba-derecha', 'abajo-izquierda', 'abajo-derecha'],
-  posicion: ['arriba', 'abajo'], alinear: ['izquierda', 'centro'],
+  posicion: ['arriba', 'abajo'], alinear: ['izquierda', 'centro'], texto_pos: ['arriba', 'abajo'],
   forma: ['recta', 'exponencial', 'curva', 'plana', 's', 'baja'],
 };
 const TAM_TEXTO = new Set(['compacto', 'chico', 'medio', 'grande', 'enorme']);
 // Campos numéricos con su rango [mín, máx, entero]
 const NUMEROS = {
   separacion: [0, 1200], alto: [20, 1800], ancho: [100, 1900], aspecto: [0.2, 5], columnas: [1, 40, 1], vacias: [0, 8, 1],
-  total: [1, 1200, 1], radio: [60, 520], radio_interior: [0, 480], personas: [0, 60, 1],
+  total: [1, 1200, 1], radio: [60, 520], radio_interior: [0, 480], personas: [0, 60, 1], adentro: [0, 5, 1],
   opacidad: [0, 1], ancho_etiqueta: [0.05, 0.5], elegida: [0, 20, 1], activo: [0, 20, 1], clic: [0, 20, 1], n: [1, 12, 1],
   fase_activa: [0, 20, 1], desde: [0, 1e9], hasta: [0, 1e9], dia: [1, 400, 1], pos: [0, 1], emoji_tam: [16, 700],
   apagar_emoji: [0, 1, 1], peso: [300, 900, 1], paso_ref: [-1, 200, 1], max: [1, 10, 1], estrellas: [0, 10, 1],
@@ -429,6 +430,12 @@ export function sugerenciasDiseno(l, i, formato = '16:9') {
   ir(l, null);
   largas.forEach(w => out.push(`${n}: palabra de ${[...w].length} letras («${w.slice(0, 32)}…»): se parte a media palabra o se sale de su caja; acorta el link (sin https://, www ni utm) o pártela`));
   if (l.tipo === 'flujo' && formato === '9:16' && ((Array.isArray(l.retornos) && l.retornos.length) || l.aparte)) out.push(`${n}: «retornos» y «aparte» del flujo se ignoran en 9:16 (la fila va en columna): usa 16:9 o parte la idea en dos láminas`);
+  // cifra: cada línea es una cuenta completa [3:15]; una línea que arranca con el operador cuelga de la anterior
+  if (l.tipo === 'cifra' && Array.isArray(l.lineas)) l.lineas.forEach((x, j) => {
+    const t = plano(typeof x === 'object' && x ? x.texto : x).trim();
+    if (j > 0 && /^[=×x+−\-÷*](\s|$)/u.test(t)) out.push(`${n}: lineas[${j}] «${t.slice(0, 30)}» empieza con el operador y cuelga de la línea anterior: junta la cuenta en una línea completa («1-3 mil × $25,000 = $25-75 millones»), como la referencia [3:15]`);
+  });
+  if (l.tipo === 'boton' && l.cursor !== 'flecha' && esMano(l.emoji)) out.push(`${n}: el botón lleva ${l.emoji}, una mano, y el cursor ya es otra mano: usa un emoji de objeto (🤖 📝 🚀 📞) como en [23:15], o "cursor": "flecha"`);
   if (l.tipo === 'chat' && l.sello && !l.sello_sobre) out.push(`${n}: el sello del chat queda suelto; pégalo a la burbuja culpable con "sello_sobre": "m0"…"mN" (se cuentan desde 0)`);
   return out;
 }

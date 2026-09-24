@@ -27,7 +27,13 @@ export function tabla(l, ctx) {
   const wEt = Math.round(W * (l.ancho_etiqueta || (ctx.vertical ? 0.24 : 0.155)));
   const wC = Math.round((W - wEt) / nCols);
   const anchos = tablaAnchos(l, ctx, W, wEt);
-  const hF = Math.round(H / (filas.length + 1));
+  // Plumón grueso que llena la celda [c_0545: cifras de ~52 px en celdas de ~145]. Con pocas filas (≤ 3 + encabezado)
+  // la fila medía ~250 px y la letra de 44 flotaba en una celda vacía: la fila se topa en 190 px y la letra crece con
+  // ella (0.34 × el alto, de 44 a 64). Con 4 filas o más, la de siempre (44). runtime.js (ajustarTablas) la baja de 4 en
+  // 4 hasta 40 si la tabla no cabe o una celda llega a 3 renglones.
+  const nF = filas.length + 1, pocas = !ctx.vertical && !anchos && nF <= 4;
+  const hF = pocas ? Math.min(Math.round(H / nF), 190) : Math.round(H / nF);
+  const tt = pocas ? Math.round(Math.max(44, Math.min(64, 0.34 * hF))) : 0;
   // «fijas»: columnas que ya se vieron en láminas anteriores (la tabla crece de lámina en lámina)
   const fijas = Math.min(cols.length, Math.max(0, Math.floor(Number(l.fijas) || 0)));
   let paso = 0;
@@ -50,7 +56,8 @@ export function tabla(l, ctx) {
       const col = COLOR[c.tono] || 'var(--tinta)';
       return `<td style="color:${col}"><span${ctx.P(pasoCel[fi][ci])}${ctx.A(`c${fi}-${ci}`)}${c.circulo ? ' data-circulo' : ''}>${marcar(c.texto || '')}</span></td>`;
     }).join('')}${Array.from({ length: vacias }, () => '<td></td>').join('')}</tr>`).join('');
-  const tablaHtml = `<table class="tabla${anchos && anchos.parte ? ' parte' : ''}"${ctx.P(0)} style="width:${W}px${anchos ? `;--tt:${anchos.th}px;--td:${anchos.td}px;--tde:${anchos.td + 2}px` : ''}">${cab}${cuerpo}</table>`;
+  const letra = anchos ? `;--tt:${anchos.th}px;--td:${anchos.td}px;--tde:${anchos.td + 2}px` : tt ? `;--tt:${Math.round(tt * 1.1)}px;--td:${tt}px;--tde:${tt}px` : '';
+  const tablaHtml = `<table class="tabla${anchos && anchos.parte ? ' parte' : ''}"${ctx.P(0)} data-ajusta style="width:${W}px${letra}">${cab}${cuerpo}</table>`;
   if (!conv) return tablaHtml;
   const kc = pasoDe(conv, 'paso', ctx.max + 1);
   filas.forEach((_, fi) => ctx.con({ de: `c${fi}-${conv.columna}`, a: 'conv', estilo: 'converge', i: fi, n: filas.length, p: kc }));
@@ -240,17 +247,55 @@ export function medidor(l, ctx) {
 }
 
 // OPCIONES — pastillas (Fácil / Medio / Difícil) y un cursor que elige una.
+// Las no elegidas se atenúan EN EL PASO DEL CLIC: con `clic_paso: 1` (una encuesta) el paso 0 muestra todas a color y el
+// clic revela la respuesta. Con el clic en el paso 0 ya salen atenuadas, como en [4:30]. `texto_pos: "arriba"` pone la
+// pregunta antes de las opciones (la encuesta se lee pregunta → opciones); por omisión va abajo.
 export function opciones(l, ctx) {
   const items = l.items || [];   // obligatorio (contrato.mjs): sin contenido de demo que se cuele en un deck real
   const el = l.elegida ?? items.length - 1;
-  ctx.clic = { a: 'op' + el, p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor || 'flecha' };
+  const kClic = pasoDe(l, 'clic_paso', 0);
+  ctx.clic = { a: 'op' + el, p: kClic, tipo: l.cursor || 'flecha' };
+  const apaga = i => (i === el ? '' : kClic ? ` data-apagar-p="${ctx.paso(kClic)}"` : '');
+  const arriba = l.texto_pos === 'arriba';
+  const frase = texto(ctx, l.texto, `medio ${arriba ? 'mb-l' : 'mt-l'}`, pasoDe(l, 'texto_paso', 0));
   // en 9:16 las pastillas crecen ×1.45: a su tamaño de 16:9 quedaban en una franja chica del alto
-  return `<div class="pila gap-m"${ctx.P(0)}${ctx.vertical ? ' style="zoom:1.45"' : ''}>${items.map((it, i) => `<div class="opcion ${['v', 'n', 'r'].includes(it.tono) ? it.tono : 'v'} ${i === el ? '' : 'apagada'}"${ctx.A('op' + i)}><span>${marcar(it.texto)}</span></div>`).join('')}
-    </div>${texto(ctx, l.texto, 'medio mt-l', pasoDe(l, 'texto_paso', 0))}`;
+  return `${arriba ? frase : ''}<div class="pila gap-m"${ctx.P(0)}${ctx.vertical ? ' style="zoom:1.45"' : ''}>${items.map((it, i) => `<div class="opcion ${['v', 'n', 'r'].includes(it.tono) ? it.tono : 'v'}${i === el || kClic ? '' : ' apagada'}"${apaga(i)}${ctx.A('op' + i)}><span>${marcar(it.texto)}</span></div>`).join('')}
+    </div>${arriba ? '' : frase}`;
+}
+
+// MULTITUD «tú» [14:55, 15:05] (`multitud: true`): el protagonista va APARTE y arriba (rótulo en negrita y su emoji a
+// ~170 px, sin flecha: nunca dentro de la multitud) y la multitud es enorme: siluetas de ~190 px (150 en 9:16) en filas
+// escalonadas medio paso, que arrancan a ~44% del alto y se salen por los lados y por abajo (`total` es solo el tope).
+// Segundo tiempo [15:05]: `destacar: [N]` + `apagar_resto: true` apaga la multitud a gris claro en `destacado_paso` y la
+// silueta N queda oscura, con `nota_destacado` manuscrita en verde encima (en `nota_destacado_paso`).
+export const MULTITUD = { celda: 190, celdaV: 150, paso: 230, pasoV: 180, arranque: 0.44 };
+export function multitud(l, ctx) {
+  const W = ctx.F.W, H = ctx.F.H, V = ctx.vertical;
+  const c = V ? MULTITUD.celdaV : MULTITUD.celda, paso = V ? MULTITUD.pasoV : MULTITUD.paso;
+  const y0 = Math.round(H * MULTITUD.arranque);
+  const cols = Math.ceil(W / paso) + 1, filas = Math.ceil((H - y0) / paso) + 1;
+  const n = Math.min(l.total || cols * filas, cols * filas);
+  const kDest = pasoDe(l, 'destacado_paso', 0);
+  const pos = i => { const f = Math.floor(i / cols), k = i % cols; return [W / 2 + (k - (cols - 1) / 2) * paso + (f % 2 ? paso / 2 : 0) - paso / 4, f * paso + c / 2]; };
+  // el destacado por omisión (si hay nota o apagar_resto sin `destacar`): la silueta más al centro de la primera fila
+  const centro = Array.from({ length: Math.min(cols, n) }, (_, i) => i).sort((a, b) => Math.abs(pos(a)[0] - W / 2) - Math.abs(pos(b)[0] - W / 2))[0];
+  const dest = new Set((l.destacar || []).length ? l.destacar : (l.nota_destacado || l.apagar_resto) ? [centro] : []);
+  const unico = ctx.emoji(l.emoji || '👤', c);
+  const celdas = Array.from({ length: n }, (_, i) => {
+    const [x, y] = pos(i), d = dest.has(i);
+    const estado = d ? ` class="celda oscuro"${l.apagar_resto ? ` data-oscuro-p="${ctx.paso(kDest)}"` : ''}` : l.apagar_resto ? ` class="celda" data-apagar-p="${ctx.paso(kDest)}"` : ' class="celda"';
+    return `<div${estado}${d ? ctx.A('d' + i) : ''} style="left:${Math.round(x - c / 2)}px;top:${Math.round(y - c / 2)}px">${unico}</div>`;
+  }).join('');
+  const prota = l.etiqueta_destacado ? `<div class="multitud-prota"${ctx.P(0)}${ctx.A('etq')}><div class="rotulo-prota">${marcar(l.etiqueta_destacado)}</div>${l.emoji_etiqueta ? ctx.emoji(l.emoji_etiqueta, V ? 190 : 170) : ''}</div>` : '';
+  const iNota = [...dest][0];
+  const kNota = pasoDe(l, 'nota_destacado_paso', kDest);
+  const notaD = l.nota_destacado && iNota != null ? (() => { const [x, y] = pos(iNota); return `<div class="nota nota-multitud"${ctx.P(kNota)} style="left:${Math.round(x)}px;top:${Math.round(y0 + y - c / 2 - 14)}px">${marcar(l.nota_destacado)}</div>`; })() : '';
+  return `<div class="multitud sangre"${ctx.P(0)}>${prota}<div class="rejilla-sangre" style="top:${y0}px"><div class="rejilla multitud"${ctx.A('rejilla')} style="--c:${c}px">${celdas}</div></div>${notaD}</div>`;
 }
 
 // REJILLA — cantidad hecha visible: 500 cajas, 99 puntos verdes y 1 rojo, una multitud y «tú».
 export function rejilla(l, ctx) {
+  if (l.multitud === true) return multitud(l, ctx);
   const total = Math.min(l.total || 100, 1200);
   const aspecto = l.aspecto || 1.55;
   const cols = l.columnas || Math.max(1, Math.round(Math.sqrt(total * aspecto)));
@@ -365,7 +410,8 @@ export function chat(l, ctx) {
   const html = ms.map((m, i) => {
     const yo = (m.de || 'yo') === 'yo';
     // [x] en minúsculas = lo que personalizas en el mensaje; los [MAYÚSCULAS] ya los marcó marcar()
-    const cuerpo = marcar(m.texto).replace(/(?<!class="hueco">)\[([^\[\]<>]+)\]/g, '<span class="hueco">[$1]</span>');
+    // un hueco corto no se parte en dos pastillas; uno de más de 3 palabras sí puede cortarse dentro de la burbuja
+    const cuerpo = marcar(m.texto).replace(/(?<!class="hueco">)\[([^\[\]<>]+)\]/g, (_, t) => `<span class="hueco${t.trim().split(/\s+/).length > 3 ? ' largo' : ''}">[${t}]</span>`);
     const av = avatar(m, yo), k = l.revelar === 'todo' ? 0 : i;
     // `hora`: el separador gris centrado de un chat real, en el mismo paso que su mensaje. Así el gancho se entiende
     // sin audio (11:40 pm … 9:05 am). Cada burbuja es un ancla m0…mN (sello_sobre: "m2", flechas).
@@ -493,6 +539,8 @@ export function calificacion(l, ctx) {
 }
 
 // BOTÓN — un botón de interfaz y el cursor que lo aprieta («solo tienes que dar clic»).
+// En [23:15, 38:15] el botón dice «Generate 🤖»: la única mano es el cursor. Una mano DENTRO del botón junto al cursor
+// de mano son dos manos: contrato.mjs (sugerenciasDiseno) lo avisa, no se quita en silencio.
 export function boton(l, ctx) {
   ctx.clic = { a: 'boton', p: pasoDe(l, 'clic_paso', 0), tipo: l.cursor === 'flecha' ? 'flecha' : 'mano' };
   const kt = pasoDe(l, 'texto_paso', 0);
@@ -501,55 +549,88 @@ export function boton(l, ctx) {
     ${texto(ctx, l.texto, (l.tam_texto || (ctx.vertical ? 'grande' : 'medio')) + ' mt-l', kt)}${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-s')}</div>`;
 }
 
-// CÍRCULOS — la audiencia: un anillo de personas y un círculo interior (quién sí / quién no).
-// Las personas van en 1 o 2 anillos concéntricos dentro de la corona (r+60 … R−60), a intervalos iguales con un
-// temblor chico (≤ 0.12 rad, y nunca tanto que se toquen): en la referencia se ven chicas, parejas y sin tocarse
-// [hoja_05 10:45-10:50]. Cada par queda a ≥ 1.15 × el tamaño del emoji; si no caben, el emoji se achica (86 → 64) y,
-// si ni así, se dibujan las que caben y se avisa. Semilla fija: el mismo dibujo en cada render.
+// CÍRCULOS — la audiencia: una corona de personas y un círculo interior (quién sí / quién no).
+// Las personas van DISPERSAS por la corona (r+60 … R−60), como en [hoja_05 10:45]: nada de anillos a intervalos iguales
+// (se leían como las horas de un reloj). Muestreo del mejor candidato con semilla fija (Mitchell: de 40 puntos al azar,
+// uniformes por ÁREA, gana el más lejano de los ya puestos) y distancia mínima de 1.15 × el emoji entre cualquier par. Si no
+// caben, el emoji se achica (86 → 64); si ni así, se reparten en anillos parejos (lo más denso) y, si tampoco, se dibujan
+// las que caben y se avisa. `adentro: N` pone N personas del mismo emoji y tamaño DENTRO del círculo interior («unos
+// pocos» [10:45]), con la misma distancia contra todas. Semilla fija: el mismo dibujo en cada render.
 export const SEPARACION_PERSONAS = 1.15;
-export function repartirPersonas({ n = 12, R = 360, r = 130, tam = 86, tamMin = 64 } = {}) {
-  let semilla = 7;
-  const rnd = () => ((semilla = (semilla * 16807) % 2147483647) / 2147483647);
+function azarSemilla(s0 = 7) { let s = s0; return () => ((s = (s * 16807) % 2147483647) / 2147483647); }
+function dispersar({ n, adentro, R, r, t }) {
+  const rnd = azarSemilla(7), min = SEPARACION_PERSONAS * t, pos = [];
+  const lejos = (x, y) => Math.min(Infinity, ...pos.map(([a, b]) => Math.hypot(a - x, b - y)));
+  const poner = (k, rIn, rOut) => {
+    for (let i = 0; i < k; i++) {
+      let mejor = null, dMejor = -1;
+      for (let j = 0; j < 40; j++) {
+        const rad = Math.sqrt(rIn * rIn + rnd() * (rOut * rOut - rIn * rIn)), ang = rnd() * 2 * Math.PI;   // r² uniforme: pareja por área
+        const x = R + Math.cos(ang) * rad, y = R + Math.sin(ang) * rad, d = lejos(x, y);
+        if (d > dMejor) { dMejor = d; mejor = [x, y]; }
+      }
+      if (!mejor || dMejor < min) return false;
+      pos.push(mejor);
+    }
+    return true;
+  };
+  const rDentro = Math.max(0, r - t / 2 - 10);
+  if (adentro && !poner(adentro, 0, rDentro)) return null;
+  return poner(n, r + 60, R - 60) ? pos : null;
+}
+function anillos({ n, R, r, t }) {
+  const rnd = azarSemilla(7);
   const dIn = r + 60, dOut = R - 60;
-  const anillos = t => (dOut - dIn >= SEPARACION_PERSONAS * t ? [dIn, dOut] : [(dIn + dOut) / 2]);
-  const cap = (d, t) => Math.max(1, Math.floor((2 * Math.PI * d) / (1.25 * t)));
-  let t = tam;
-  const capTotal = x => anillos(x).reduce((a, d) => a + cap(d, x), 0);
-  while (t > tamMin && capTotal(t) < n) t = Math.max(tamMin, t - 4);
-  const total = capTotal(t), m = Math.min(n, total);
-  // reparto proporcional a la capacidad de cada anillo (con un solo anillo si alcanza)
-  const ds = m <= cap((dIn + dOut) / 2, t) ? [(dIn + dOut) / 2] : anillos(t);
-  const caps = ds.map(d => cap(d, t)), sumCap = caps.reduce((a, b) => a + b, 0);
+  const ds0 = dOut - dIn >= SEPARACION_PERSONAS * t ? [dIn, dOut] : [(dIn + dOut) / 2];
+  const cap = d => Math.max(1, Math.floor((2 * Math.PI * d) / (1.25 * t)));
+  const m = Math.min(n, ds0.reduce((a, d) => a + cap(d), 0));
+  const ds = m <= cap((dIn + dOut) / 2) ? [(dIn + dOut) / 2] : ds0;
+  const caps = ds.map(cap), sumCap = caps.reduce((a, b) => a + b, 0);
   let resto = m;
   const cuantos = caps.map((c, i) => { const q = i === caps.length - 1 ? resto : Math.min(c, Math.round((m * c) / sumCap)); resto -= q; return q; });
   const pos = [];
   ds.forEach((d, a) => {
     const k = cuantos[a]; if (!k) return;
     const paso = (2 * Math.PI) / k, necesita = 2 * Math.asin(Math.min(1, (SEPARACION_PERSONAS * t) / (2 * d)));
-    const jit = Math.max(0, Math.min(0.12, (paso - necesita) / 2 - 0.01));
-    const desfase = a % 2 ? paso / 2 : 0;
-    for (let i = 0; i < k; i++) {
-      const ang = -Math.PI / 2 + desfase + i * paso + (rnd() - 0.5) * 2 * jit;
-      pos.push([R + Math.cos(ang) * d, R + Math.sin(ang) * d]);
-    }
+    const jit = Math.max(0, Math.min(0.12, (paso - necesita) / 2 - 0.01)), desfase = a % 2 ? paso / 2 : 0;
+    for (let i = 0; i < k; i++) { const ang = -Math.PI / 2 + desfase + i * paso + (rnd() - 0.5) * 2 * jit; pos.push([R + Math.cos(ang) * d, R + Math.sin(ang) * d]); }
   });
-  return { pos, tam: t, dibujadas: m, pedidas: n };
+  return pos;
+}
+export function repartirPersonas({ n = 12, R = 360, r = 130, tam = 86, tamMin = 64, adentro = 0 } = {}) {
+  for (let t = tam; t >= tamMin; t = t === tamMin ? -1 : Math.max(tamMin, t - 4)) {
+    const pos = dispersar({ n, adentro, R, r, t });
+    if (pos) return { pos: pos.slice(adentro), dentro: pos.slice(0, adentro), tam: t, dibujadas: n, pedidas: n, disperso: true };
+  }
+  // no caben dispersas: anillos parejos (lo más denso), sin gente adentro
+  let t = tam;
+  const capRing = x => anillos({ n: 1e4, R, r, t: x }).length;
+  while (t > tamMin && capRing(t) < n) t = Math.max(tamMin, t - 4);
+  const pos = anillos({ n, R, r, t });
+  return { pos, dentro: [], tam: t, dibujadas: pos.length, pedidas: n, disperso: false };
 }
 export function circulos(l, ctx) {
   const R = l.radio || 360, r = l.radio_interior || 130;
   const tonos = { r: ['#fde3e3', '#f19a9a'], v: ['#dcf9d6', '#8fe08a'], g: ['#f1f1f1', '#cfcfcf'], a: ['#dff0ff', '#8cc8f5'], n: ['#fff1d6', '#f5c56b'] };
   const ext = tonos[l.tono] || tonos.r, int = tonos[l.tono_interior] || tonos.v;
-  const rep = repartirPersonas({ n: l.personas ?? 12, R, r });
+  const adentro = Math.max(0, Math.min(5, Math.round(Number(l.adentro) || 0)));
+  const rep = repartirPersonas({ n: l.personas ?? 12, R, r, adentro });
   if (rep.dibujadas < rep.pedidas) ctx.avisos.push(`círculos: ${rep.pedidas} personas no caben sin encimarse en el anillo; se dibujan ${rep.dibujadas} (sube «radio» o baja «personas»)`);
-  const pos = rep.pos;
-  const gente = pos.map(([x, y]) => `<div style="position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%)">${ctx.emoji(l.emoji || '🧑‍💼', rep.tam)}</div>`).join('');
+  if (adentro && rep.dentro.length < adentro) ctx.avisos.push(`círculos: ${adentro} personas no caben dentro del círculo interior; sube «radio_interior»`);
+  const persona = ([x, y]) => `<div style="position:absolute;left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;transform:translate(-50%,-50%)">${ctx.emoji(l.emoji || '🧑‍💼', rep.tam)}</div>`;
+  const gente = rep.pos.map(persona).join('');
+  const kIn = pasoDe(l, 'interior_paso', 0);
+  const dentro = rep.dentro.length ? `<div${ctx.P(kIn)} style="position:absolute;inset:0">${rep.dentro.map(persona).join('')}</div>` : '';
+  // `tono_paso`: la corona toma el tono del interior y el borde interior se desvanece, sin mover a nadie [10:50]
+  const kTono = Number.isInteger(l.tono_paso) && l.tono_paso > 0 ? l.tono_paso : 0;
   const centro = l.centro ? `<div${ctx.P(l.centro_paso ?? 0)} style="position:absolute;left:${R}px;top:${R}px;transform:translate(-50%,-50%)">${ctx.emoji(l.centro, 140)}</div>` : '';
   const kt = pasoDe(l, 'texto_paso', 0);
   return `<div class="pila">${texto(ctx, l.texto, 'chico', kt, ' style="margin-bottom:40px"')}
     <div${ctx.P(0)} style="position:relative;width:${2 * R}px;height:${2 * R}px">
       <div style="position:absolute;inset:0;border-radius:50%;background:${ext[0]};border:5px solid ${ext[1]}"></div>
-      <div${ctx.P(l.interior_paso ?? 0)} style="position:absolute;left:${R - r}px;top:${R - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;background:${int[0]};border:5px solid ${int[1]}"></div>
-      ${gente}${centro}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-m')}</div>`;
+      ${kTono ? `<div${ctx.P(kTono)} style="position:absolute;inset:0;border-radius:50%;background:${int[0]};border:5px solid ${int[1]}"></div>` : ''}
+      <div${ctx.P(kIn)}${kTono ? ` data-hasta="${ctx.paso(kTono - 1)}"` : ''} style="position:absolute;left:${R - r}px;top:${R - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;background:${int[0]};border:5px solid ${int[1]}"></div>
+      ${gente}${dentro}${centro}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', kt + 1), 'mt-m')}</div>`;
 }
 
 // STACK — lo que incluye la oferta [42:30-42:45]. En 16:9 va A SANGRE: el bento llena la lámina de borde a borde
@@ -564,7 +645,8 @@ const TONO_PIEZA = { v: 'tono-bv', r: 'tono-br', n: 'tono-bn' };
 // 🎓 sobre marino da 16% del glifo visible y la 🕶️ sobre negro 8% (contraste-color.mjs). Sin `color` explícito, la pieza
 // sigue la rotación y salta a la siguiente que sí contrasta; con `color`, se respeta y QA avisa.
 const EMOJI_OSCURO = new Set(['🎓', '🕶', '🎩', '♟', '🖤', '⚫', '🐈‍⬛', '🦇', '🕷', '🎱']);
-const EMOJI_GRIS = new Set(['👥', '👤', '⚙', '🔧', '🛠', '🔩', '⛓', '🗿', '🐺', '🦏']);
+// (👤 👥 ya no: sobre una pieza de color la silueta dibujada va en blanco con sombra, base.css → pz-sil-claro)
+const EMOJI_GRIS = new Set(['⚙', '🔧', '🛠', '🔩', '⛓', '🗿', '🐺', '🦏']);
 // `previo`: el color de la pieza anterior; al saltar no se repite (el 🎓 saltaba de marino a naranja junto a otra naranja)
 export function colorPieza(emoji, i, previo = '') {
   const base = String(emoji || '').replace(/^(no|si):/, '').split('+')[0].replace(/\uFE0F/g, '');

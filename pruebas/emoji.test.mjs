@@ -10,7 +10,7 @@ const primero = ch => candidatos(ch).find(c => indice.has(c));
 
 test('candidatos Fluent: tonos de piel, Unicode 15.1 y equivalencias caen en un archivo que existe', () => {
   assert.equal(primero('🤝🏽'), '1f91d');
-  assert.equal(primero('👍🏽'), '1f44d-1f3fd');                       // el tono existe: se respeta
+  assert.equal(primero('👍🏽'), '1f44d-1f3fc');                       // el tono existe: 🏼/🏽 vienen cruzados en 1.1.0
   assert.equal(primero('🧑🏻‍🤝‍🧑🏿'), '1f9d1-200d-1f91d-200d-1f9d1');     // sin tonos, la secuencia completa
   assert.equal(primero('🫱🏼‍🫲🏿'), '1f91d');                             // dos manos → apretón
   assert.equal(primero('⛓️‍💥'), '26d3-fe0f');
@@ -18,6 +18,26 @@ test('candidatos Fluent: tonos de piel, Unicode 15.1 y equivalencias caen en un 
   assert.equal(primero('🕵️‍♂️'), '1f575-fe0f-200d-2642-fe0f');
   assert.ok(indice.has(primero('1️⃣')));
   for (const e of ['🙂‍↔️', '🚶‍➡️', '🍋‍🟩', '🍄‍🟫', '🧑‍🧒']) assert.ok(primero(e), `sin archivo para ${e}`);
+});
+
+test('tonos Fluent: 🏼/🏽 se piden al archivo que de verdad tiene ese tono (medido en tonos-fluent.json)', () => {
+  assert.equal(primero('🧑🏼‍🏫'), '1f9d1-1f3fd-200d-1f3eb');   // cruzado en el paquete: se intercambia
+  assert.equal(primero('🧑🏽‍🎓'), '1f9d1-1f3fc-200d-1f393');
+  assert.equal(primero('👩🏼‍🍳'), '1f469-1f3fd-200d-1f373');
+  assert.equal(primero('🧑🏼‍💻'), '1f9d1-1f3fc-200d-1f4bb');   // 💻 viene en orden: no se toca
+  assert.equal(primero('🧑🏻‍🏫'), '1f9d1-1f3fb-200d-1f3eb');   // 🏻 🏾 🏿 nunca se tocan
+  assert.equal(primero('🧑🏼‍🤝‍🧑🏼'), '1f9d1-1f3fc-200d-1f91d-200d-1f9d1-1f3fc');
+  // perder el tono (🤝🏽 → 🤝) ya no es «exacto»: QA lo reporta como aproximado (EMOJIS.md, «Tono de piel»)
+  assert.ok(!candidatos('🤝🏽').exactos.has('1f91d'));
+  assert.ok(candidatos('🤝').exactos.has('1f91d'));
+  const t = JSON.parse(fs.readFileSync(new URL('../scripts/lib/tonos-fluent.json', import.meta.url), 'utf8'));
+  for (const p of ['1f9d1-{t}-200d-1f3eb', '1f468-{t}-200d-1f393', '1f469-{t}-200d-1f373', '1f9d1-{t}']) assert.ok(t.cruzados.includes(p), p);
+  // con la corrección, la piel medida baja en orden de 🏻 a 🏿 en todas las secuencias
+  for (const [p, L] of Object.entries(t.medidas)) {
+    if (!L) continue;
+    const c = t.cruzados.includes(p) ? [L[0], L[2], L[1], L[3], L[4]] : L;
+    assert.ok(c.every((x, i) => !i || x < c[i - 1]), `${p}: ${c}`);
+  }
 });
 
 test('emoji compuesto: [no:|si:]base[+insignia] sin descartar nada en silencio', () => {

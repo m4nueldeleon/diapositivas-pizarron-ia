@@ -7,7 +7,8 @@
 //   · img (Fluent): el archivo copiado a la salida;
 //   · svg (los glifos dibujados: 👥 👤 📱 ✅…): su outerHTML con los degradados globales (#pz-sil, #pz-ok…) adentro;
 //   · texto (Apple): fillText con Apple Color Emoji, solo en macOS (fuera de macOS no se mide).
-// Métrica (0-100): de los píxeles opacos del glifo, el % con contraste ≥ 2:1 o ΔE76 (Lab) ≥ 40 contra ESE fondo. En
+// Métrica (0-100): de los píxeles opacos del glifo, el % con contraste ≥ 2:1, o ΔE76 (Lab) ≥ 40 con color propio (croma ≥ 35) o
+// con al menos 1.5:1, contra ESE fondo. En
 // un degradado se toma la PEOR de sus paradas y su promedio. Bajo UMBRAL_COLOR, QA avisa; sobre un PASTEL (todas las
 // paradas con luminancia > 0.6: cuadrantes, cuadros, tarjetas de tono) el glifo se ve como sobre la tarjeta #f3f3f3 y
 // vale el umbral de la tabla neutra (UMBRAL_CONTRASTE): el 📧 de Apple da 20% en blanco y 17% en el verde pastel.
@@ -44,7 +45,9 @@ export function puntuarGlifo(datos, [br, bg, bb]) {
     const r = datos[i] * a + br * (1 - a), g = datos[i + 1] * a + bg * (1 - a), b = datos[i + 2] * a + bb * (1 - a);
     const l = lum(r, g, b), k = (Math.max(l, lf) + 0.05) / (Math.min(l, lf) + 0.05);
     const L = lab(r, g, b), de = Math.hypot(L[0] - Lf[0], L[1] - Lf[1], L[2] - Lf[2]);
-    if (k >= 2 || de >= 40) ve++;
+    // ΔE ≥ 40 cuenta si el píxel tiene color propio (croma ≥ 35: el amarillo de ⚠️ o 💡 sobre gris claro se ve) o algo de
+    // contraste de luz (≥ 1.5:1). Una silueta gris azulada (croma ~17) sobre morado da ΔE ≥ 40 con 1.1:1 y se ve apagada.
+    if (k >= 2 || (de >= 40 && (k >= 1.5 || Math.hypot(L[1], L[2]) >= 35))) ve++;
   }
   return op ? Math.round((ve / op) * 100) : null;
 }

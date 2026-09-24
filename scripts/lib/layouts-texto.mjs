@@ -30,9 +30,10 @@ function parEmoji(l, ctx) {
 export function idea(l, ctx) {
   const tam = tamTexto(l.texto, l.tam_texto);
   const par = Array.isArray(l.emoji);
-  // al lado del texto el emoji va a ~2 veces la letra (170 px en 16:9), no al tamaño de protagonista
-  const tamE = l.emoji_lado && !l.emoji_tam ? (ctx.vertical ? 210 : 170) : l.emoji_tam;
-  const emo = !l.emoji ? '' : par ? '' : ctx.emoji(l.emoji, tamE, 'medio');
+  // Al lado del texto el emoji va a ~1.15× la letra y escala con ella [10:15: 👥 de ~66 px junto a una frase de ~60]: a
+  // 170 px fijos el ícono le ganaba a la frase [r4, demo 05-audiencias]. `emoji_tam` sigue mandando.
+  const lado = l.emoji_lado && !par && l.emoji && !l.emoji_tam;
+  const emo = !l.emoji ? '' : par ? '' : lado ? ctx.em.html(l.emoji, '1.15em') : ctx.emoji(l.emoji, l.emoji_tam, 'medio');
   const kTexto = pasoDe(l, 'texto_paso', 0);
   const kNota = pasoDe(l, 'nota_paso', l.texto ? kTexto + 1 : 0);
   const entre = l.encabezado_pos === 'entre';
@@ -222,6 +223,9 @@ export function bifurcacion(l, ctx) {
   const kLlave = l.revelar === 'ramas' ? ramas.length + 1 : 2;
   if (l.llave) ctx.con({ de: 'r0', a: 'r' + (ramas.length - 1), via: 'llave-et', estilo: 'llave', p: kLlave });
   const tamE = l.emoji_tam || 124;
+  // La nota de la llave [c_0635 «Same Work»]: chica (~54 px), roja y subrayada, ~40 px bajo el pico de una llave que
+  // mide ~14% del alto (runtime.js, case 'llave'): el hueco bajo las ramas es 24 + 0.14 × alto + 60.
+  const mLlave = Math.round(24 + 0.14 * ctx.F.H + 60);
   const tamT = l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : ctx.vertical ? '76px' : '88px';
   const rs = ramas.map((r, i) => `<div class="nodo"${ctx.P(l.revelar === 'ramas' ? 1 + i : 1)}${ctx.A('r' + i)}>
       ${r.emoji ? ctx.emoji(r.emoji, tamE) : ''}
@@ -231,7 +235,7 @@ export function bifurcacion(l, ctx) {
     <div class="nodo"${ctx.P(0)}>${o.emoji ? ctx.emoji(o.emoji, tamE) : ''}
       <div class="t grande"${ctx.A('o')} style="font-size:${tamT}">${marcar(o.texto || '')}</div></div>
     <div class="fila" style="gap:${l.separacion || (ctx.vertical ? 200 : 640)}px;margin-top:100px;align-items:flex-start">${rs}</div>
-    ${l.llave ? `<div class="nota roja"${ctx.P(kLlave)}${ctx.A('llave-et')} style="margin-top:120px;--tn:76px;font-weight:600">${marcar(l.llave)}</div>` : ''}</div>`;
+    ${l.llave ? `<div class="nota roja"${ctx.P(kLlave)}${ctx.A('llave-et')} style="margin-top:${mLlave}px;--tn:${ctx.vertical ? 60 : 54}px;font-weight:600"><span class="sub" data-sub>${marcar(l.llave)}</span></div>` : ''}</div>`;
 }
 
 // CIFRA — números y ecuaciones grandes. Una línea por paso. Cada línea puede ser texto o un objeto
@@ -242,9 +246,14 @@ export function cifra(l, ctx) {
   const unica = lineas.length === 1 && !l.tam;
   const tc = l.tam || (unica ? '140px' : '84px');
   const peso = unica ? 800 : 500;
+  // Con 2+ líneas y sin tamaños del autor, el RESULTADO (la última línea) va ~1.2× [3:15: la segunda cuenta es apenas
+  // más grande]; el peso se queda en 500 y lo que se destaca va con **negrita** o __subrayado__. Cada línea es una cuenta
+  // completa y centrada. runtime.js (ajustarCifras) encoge la ecuación antes de partirla en dos renglones.
+  const ultimaMayor = lineas.length >= 2 && !l.tam;
   const html = lineas.map((x, i) => {
     const col = TONO_LINEA[x.tono] ? `color:${TONO_LINEA[x.tono]};` : '';
-    return `<div class="cifra"${ctx.P(i)}${ctx.A('l' + i)} style="--tc:${x.tam || tc};font-weight:${x.peso || peso};${col}${i ? 'margin-top:34px' : ''}">${tacharDespues(marcar(x.texto), ctx, i, x.tachar_paso ?? l.tachar_paso)}</div>`;
+    const t = x.tam || (ultimaMayor && i === lineas.length - 1 ? '100px' : tc);
+    return `<div class="cifra"${ctx.P(i)}${ctx.A('l' + i)} style="--tc:${t};font-weight:${x.peso || peso};${col}${i ? 'margin-top:34px' : ''}">${tacharDespues(marcar(x.texto), ctx, i, x.tachar_paso ?? l.tachar_paso)}</div>`;
   }).join('');
   const k = Math.max(0, lineas.length - 1);
   return `<div class="pila">
@@ -278,14 +287,18 @@ export function objeto(l, ctx) {
 // TARJETAS — criterios o métricas en tarjetas gris suave con emoji. Una por paso.
 // El ancho de cada tarjeta sale del ancho útil del formato (1620 en 16:9, 900 en vertical): 4 tarjetas en
 // 16:9 caben en una fila de ~378 px sin que el encaje tenga que reducir la letra.
+// El emoji crece con la tarjeta [9:25: ~95-120 px, más grande que el rótulo]: 150 px con hasta 3 tarjetas, 130 con 4 y
+// 104 con 5 o más. `emoji_tam` (la lámina) o `items[].emoji_tam` (una tarjeta) lo fijan a mano.
+export const tamEmojiTarjeta = n => (n <= 3 ? 150 : n === 4 ? 130 : 104);
 export function tarjetas(l, ctx) {
   const items = l.items || [];
+  const tamDef = tamEmojiTarjeta(items.length);
   const angosto = ctx.util < 1200;
   const cols = l.columnas || (angosto && items.length >= 4 ? 2 : items.length <= 4 ? items.length : 3);
   const tw = Math.min(l.ancho || (items.length <= 3 ? 520 : 480), Math.floor((ctx.util - (cols - 1) * 36) / Math.max(1, cols)));
   const tt = l.tam_texto && /px$/.test(l.tam_texto) ? `;--tt:${l.tam_texto}` : '';
   // Emoji arriba y a la misma altura en toda la fila; un rótulo de dos renglones crece hacia abajo [9:25]
-  const html = items.map((it, i) => `<div class="tarjeta ${['v', 'r', 'n'].includes(it.tono) ? 'tono-b' + it.tono : ''}"${ctx.P(i)}>${it.emoji ? ctx.emoji(it.emoji, 104) : ''}<div class="rotulo">${marcar(it.texto)}</div></div>`).join('');
+  const html = items.map((it, i) => `<div class="tarjeta ${['v', 'r', 'n'].includes(it.tono) ? 'tono-b' + it.tono : ''}"${ctx.P(i)}>${it.emoji ? ctx.emoji(it.emoji, it.emoji_tam || l.emoji_tam || tamDef) : ''}<div class="rotulo">${marcar(it.texto)}</div></div>`).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
     <div class="tarjetas" style="--cols:${cols};--tw:${tw}px;--th:${items.length <= 3 ? 320 : 280}px${tt}">${html}</div>
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', items.length), 'mt-l')}</div>`;

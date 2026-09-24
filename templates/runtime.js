@@ -280,13 +280,19 @@
       case 'llave': {
         const eV = c.via && ancla(esc, c.via); if (!eV) return;
         const V = caja(eV, lam);
-        const P = [A.cx, A.y + A.h + 30], Q = [B.cx, B.y + B.h + 30], M = [V.cx, V.y - 26], y = M[1] - 38;
-        const iz = cubica(P, [P[0], y + 10], [P[0] + 70, y], [M[0] - 40, y], 20).concat(cubica([M[0] - 40, y], [M[0] - 12, y], [M[0] - 4, y + 10], M, 6).slice(1));
-        const de = cubica(Q, [Q[0], y + 10], [Q[0] - 70, y], [M[0] + 40, y], 20).concat(cubica([M[0] + 40, y], [M[0] + 12, y], [M[0] + 4, y + 10], M, 6).slice(1));
+        // Llave alta [c_0635]: las puntas ~24 px bajo el centro de cada rama, los brazos bajan en curva amplia ~9% del alto
+        // hasta el tramo horizontal y el pico baja otro ~5% hasta ~36 px sobre la nota. La altura sale del alto de la
+        // lámina (el hueco lo reserva bifurcacion() en layouts-texto.mjs), no del hueco: antes medía ~65 px y se veía chata.
+        const H = lam.offsetHeight, Wl = lam.offsetWidth;
+        const P = [A.cx, A.y + A.h + 24], Q = [B.cx, B.y + B.h + 24], M = [V.cx, V.y - 36];
+        const y = Math.max(Math.max(P[1], Q[1]) + 40, M[1] - 0.05 * H), ab = Math.max(40, Math.min(90, (M[1] - y) * 1.2));
+        const brazo = (O, s) => cubica(O, [O[0], y - 10], [O[0] + s * 0.06 * Wl, y], [M[0] - s * ab, y], 22)
+          .concat(cubica([M[0] - s * ab, y], [M[0] - s * ab * 0.35, y], [M[0] - s * 6, M[1] - (M[1] - y) * 0.3], M, 8).slice(1));
+        const iz = brazo(P, 1), de = brazo(Q, -1);
         trazo(svg, suave(iz), { color: C.rojo, ancho: 5, p, dur: 420 });
         trazo(svg, suave(de), { color: C.rojo, ancho: 5, p, dur: 420 });
-        trazo(svg, cabezaV(P, -Math.PI / 2, 22, 0.55, r), { color: C.rojo, ancho: 5, p, cabeza: true });
-        trazo(svg, cabezaV(Q, -Math.PI / 2, 22, 0.55, r), { color: C.rojo, ancho: 5, p, cabeza: true });
+        trazo(svg, cabezaV(P, -Math.PI / 2, 20, 0.45, r), { color: C.rojo, ancho: 5, p, cabeza: true });
+        trazo(svg, cabezaV(Q, -Math.PI / 2, 20, 0.45, r), { color: C.rojo, ancho: 5, p, cabeza: true });
         return;
       }
       default: { // recta: plumón rojo
@@ -485,6 +491,47 @@
     });
   }
 
+  // ---------- tabla-marcador: la letra baja (de 4 en 4, hasta 40 px) si la tabla no cabe en el lienzo o una celda
+  // llega a 3 renglones. Así la letra grande de las tablas cortas nunca rompe una tabla densa [r4, c_0545].
+  function ajustarTablas(lam) {
+    lam.querySelectorAll('table.tabla[data-ajusta]').forEach(t => {
+      const lz = t.closest('.lienzo'); if (!lz) return;
+      const cs = getComputedStyle(lz), alto = lz.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      const tam = sel => parseFloat(getComputedStyle(t.querySelector(sel) || t).fontSize) || 44;
+      const tres = sel => [...t.querySelectorAll(sel)].some(e => rectsTexto(e, lam).length >= 3);
+      // primero la columna de etiquetas sola (una etiqueta larga en una columna angosta no encoge toda la tabla)…
+      let tde = tam('td.fila-et'), td = tam('td:not(.fila-et)'), guard = 0;
+      while (tres('td.fila-et') && tde - 4 >= 40 && guard++ < 12) { tde -= 4; t.style.setProperty('--tde', tde + 'px'); }
+      // …luego todo, si la tabla no cabe o una celda de datos llega a 3 renglones
+      const sobra = () => t.offsetHeight > alto + 2 || tres('td:not(.fila-et), th');
+      while (sobra() && td - 4 >= 40 && guard++ < 24) {
+        td -= 4; tde = Math.min(tde, td);
+        t.style.setProperty('--td', td + 'px'); t.style.setProperty('--tde', tde + 'px'); t.style.setProperty('--tt', Math.max(Math.round(td * 1.1), 44) + 'px');
+      }
+    });
+  }
+
+  // ---------- cifra: la ecuación va en UN renglón [3:10, 3:15] ----------
+  // «2 × 4 semanas = 8 videos al mes» a 140 px bajaba «al mes» solo y el subrayado salía en dos trozos. Antes de medir y
+  // dibujar la capa a mano, cada cifra se prueba sin cortes; si no cabe en el ancho útil, TODAS las líneas de la cifra
+  // bajan juntas (de 4% en 4%, conservando la jerarquía) hasta 96 px la línea más grande (72 si son varias). Si ni así
+  // cabe, se parte balanceada y queda marcada (data-cifra-partida) para QA.
+  function ajustarCifras(lam) {
+    const grupos = new Set([...lam.querySelectorAll('.cifra')].map(c => c.parentElement));
+    grupos.forEach(g => {
+      const cs = [...g.children].filter(c => c.classList.contains('cifra')); if (!cs.length) return;
+      const lz = g.closest('.lienzo'); if (!lz) return;
+      const st = getComputedStyle(lz), util = lz.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
+      cs.forEach(c => { c.style.whiteSpace = 'nowrap'; });
+      const tams = cs.map(c => parseFloat(getComputedStyle(c).fontSize) || 84);
+      const piso = cs.length > 1 ? 72 : 96, mayor = Math.max(...tams);
+      const cabe = () => cs.every(c => c.scrollWidth <= Math.min(util, c.clientWidth || util) + 1);
+      let k = 1;
+      while (!cabe() && mayor * k * 0.96 >= piso) { k *= 0.96; cs.forEach((c, i) => c.style.setProperty('--tc', (tams[i] * k).toFixed(1) + 'px')); }
+      if (!cabe()) cs.forEach(c => { if (c.scrollWidth > (c.clientWidth || util) + 1) { c.style.whiteSpace = ''; c.dataset.cifraPartida = '1'; } });
+    });
+  }
+
   function encajar(lam) {
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
       const h = lz.firstElementChild; if (!h || h.classList.contains('cuadrantes') || h.classList.contains('sangre')) return;
@@ -570,6 +617,9 @@
     // data-hasta: el elemento se va DESPUÉS de su paso (la mano y las estrellas de una calificación que no acumula)
     lam.querySelectorAll('[data-hasta]').forEach(e => e.classList.toggle('pasado', paso > +e.dataset.hasta));
     lam.querySelectorAll('[data-atenuar]').forEach(e => e.classList.toggle('atenuado-paso', paso >= +e.dataset.atenuar));
+    // opciones: las no elegidas se apagan en el paso del clic (antes, la encuesta ya mostraba la respuesta)
+    lam.querySelectorAll('[data-apagar-p]').forEach(e => e.classList.toggle('apagada', paso >= +e.dataset.apagarP));
+    lam.querySelectorAll('[data-oscuro-p]').forEach(e => e.classList.toggle('encendido', paso >= +e.dataset.oscuroP));
     // En modo seco (el del video) la tinta a mano ENTRA COMPLETA con su elemento, en el mismo cuadro del corte
     // [ráfagas k_underline 0:41.2, c_alcancia 1:44.5, f_flechas 7:30.1]. Solo crece la ruta punteada que arrastra la
     // mano (su máscara) [d_123 1:55.6-1:55.9]. El dibujado progresivo queda para `animacion: "suave"`.
@@ -668,6 +718,8 @@
     lams.forEach(l => { try { igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
+    lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });
+    lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     lams.forEach(l => { try { acomodarFoco(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: foco (${e.message})`); } });
     lams.forEach(l => { try { colocarAnotaciones(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: anotaciones (${e.message})`); } });

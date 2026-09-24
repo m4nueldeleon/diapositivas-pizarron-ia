@@ -54,6 +54,9 @@ SKILL.md.
 - `scripts/medir-emojis.mjs` → `scripts/lib/contraste-emojis.json`: el contraste medido de cada emoji (dos
   sets, tres fondos). Córrelo al agregar emojis a EMOJIS.md. Sobre un fondo de COLOR (pieza del stack, cuadro,
   botón) QA rasteriza el glifo en cada corrida contra el color real (`scripts/lib/contraste-color.mjs`).
+- `scripts/medir-tonos-fluent.mjs` → `scripts/lib/tonos-fluent.json`: Fluent 1.1.0 trae 🏼/🏽 cruzados en casi todas las
+  personas y manos; `emoji.mjs → corregirTono` pide el archivo que de verdad tiene el tono (una secuencia sin medir se
+  intercambia). Vuelve a correrlo si cambia la versión del CDN.
 - `scripts/lib/emoji-diccionario.mjs` lee EMOJIS.md y da el concepto de cada emoji (`conceptoDe`): qa.json → iconos
   sale como «💬 (comentar una palabra)».
 - `contrato.mjs → resolverComo`: `"como": "<id>"` (pasos, calendario, tabla) hereda los campos del objeto que vuelve

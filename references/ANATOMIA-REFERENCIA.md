@@ -75,7 +75,7 @@ Colores muestreados:
 | 10:10 | Seis ✅ + «one single solution» | `idea` |
 | 10:20-10:25 | Cuadrantes rojo y verde a sangre con emojis tachados o palomeados | `cuadrantes` |
 | 10:30 | 1 Partnership → $2,000 / $50,000 + llave «Same Work» | `bifurcacion` |
-| 10:45-10:50 | Círculo rojo lleno de personas, luego verde: «CHANGED» | `circulos` |
+| 10:45-10:50 | Círculo rojo lleno de personas (2 dentro del verde), luego verde: «CHANGED» | `circulos` + `adentro` + `tono_paso` |
 | 11:00 | Manos ✋ sobre las teclas 1 2 3 (emoji animado) | `pasos` + `sobre` |
 | 11:15 | Línea Now / 12 / 24 meses en verde | `linea-tiempo` |
 | 11:25-11:30 | Artículos de prensa como captura con subrayado | `prueba` |
@@ -83,7 +83,8 @@ Colores muestreados:
 | 13:55-14:00 | Teléfonos con perfiles de creadores | `prueba` |
 | 14:25 | Perfil con «Last 24 hours $15,763» encerrado y flecha roja | `prueba` + `circulo` + `anotaciones` (`entra` para la flecha que entra desde fuera) |
 | 14:45 | 99 puntos verdes y 1 rojo | `rejilla` + `punto` |
-| 14:55 | Multitud de siluetas y «You» | `rejilla` + `destacar` |
+| 14:55 | Multitud de siluetas a sangre y «You» + 🧑‍💻 aparte, arriba | `rejilla` + `multitud` + `etiqueta_destacado` + `emoji_etiqueta` |
+| 15:05 | La multitud en gris claro, una silueta oscura y «"Yes"» en verde | `rejilla` + `multitud` + `destacar` + `apagar_resto` + `nota_destacado` |
 | 15:20 | Lámina anterior atenuada + frase manuscrita encima | `foco` |
 | 15:25-15:30 | Pastilla «5k Audience · $30,000» que se parte en 70% gris y 30% verde | `reparto` |
 | 16:05 | Línea de años con $1B, $2B y $3B | `linea-tiempo` |
