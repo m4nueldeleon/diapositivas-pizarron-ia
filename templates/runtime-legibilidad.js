@@ -45,6 +45,16 @@ function ampliarListas(lam) {
     contraste.style.gap='90px';
     listas.filter(l=>!l.dataset.gapExplicito).forEach(l=>l.style.setProperty('--gap-lista','56px'));
   }
+  if (vertical && !contraste) {
+    // R19 [juez, item 6]: 2-3 ítems cortos en PALABRAS pero largos en caracteres («Un solo lugar para pagar») se
+    // armaban al tamaño fijo de layouts-texto.mjs (144/112 px) y cada palabra caía en su propio renglón en la
+    // columna angosta de 9:16. Si un ítem pasa de 2 renglones, la letra baja de 4 en 4 hasta el piso de 64 px.
+    const propios = listas.flatMap(l => l.dataset.tamExplicito ? [] : [...l.children]);
+    if (propios.length) {
+      let t = Math.max(...propios.map(e => parseFloat(getComputedStyle(e).fontSize) || 84));
+      for (; t > 64 && propios.some(e => rectsTexto(e, lam).length > 2); t -= 4) propios.forEach(e => e.style.fontSize = (t - 4) + 'px');
+    }
+  }
   // R18 [juez r18, 9:16]: con una llave que agrupa la lista, los renglones van juntos (la llave y su nota, debajo, completan
   // el alto). Separados ~500 px, la llave parecía agrupar solo el último ítem.
   const conLlave = vertical && !contraste && lam.querySelector(':scope > .anotacion[data-llave-hasta]');
