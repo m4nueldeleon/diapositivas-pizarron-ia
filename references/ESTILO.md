@@ -26,7 +26,7 @@ todo lo que no es la idea, y la lámina lo aplica al extremo.
 
 ## 2. Tipografía: dos voces
 
-El encabezado arranca la frase que completan los ítems y termina en «:», «…», «...» o «?». Excepciones: `encabezado_pos: "entre"` con #N/Paso N, listas mapa (`activo`, `hechos`, `como`, `oscura`) y `encabezado_estilo: "frase"`. Nunca metadatos (semana, módulo, fecha, N personas, « · »), nombre de sección ni estados («por confirmar», «pendiente», «ficticio», «ejemplo»). La procedencia va en `fuente` o nota, nunca en un `procedencia` que idea/chat ignoran. Usa «No incluye:». QA avisa los metadatos, la puntuación ausente y más de 25% de encabezados no exentos.
+El encabezado arranca la frase que completan los ítems y termina en «:», «…», «...» o «?». Excepciones: `encabezado_pos: "entre"` con #N/Paso N, listas mapa (`activo`, `hechos`, `como`, `oscura`) y `encabezado_estilo: "frase"`. Nunca metadatos (semana, módulo, fecha, N personas, « · »), nombre de sección ni estados («por confirmar», «pendiente», «ficticio», «ejemplo»). La procedencia no va en el encabezado: en `idea`, en `fuente` o nota; en `chat`, `foto` y `prueba`, con `procedencia` (pie «Ejemplo ficticio»). Usa «No incluye:». QA avisa los metadatos, la puntuación ausente y más de 25% de encabezados no exentos.
 
 
 | Voz | Letra | Uso |

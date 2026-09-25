@@ -45,9 +45,15 @@ function ampliarListas(lam) {
     contraste.style.gap='90px';
     listas.filter(l=>!l.dataset.gapExplicito).forEach(l=>l.style.setProperty('--gap-lista','56px'));
   }
+  // R18 [juez r18, 9:16]: con una llave que agrupa la lista, los renglones van juntos (la llave y su nota, debajo, completan
+  // el alto). Separados ~500 px, la llave parecía agrupar solo el último ítem.
+  const conLlave = vertical && !contraste && lam.querySelector(':scope > .anotacion[data-llave-hasta]');
+  if (conLlave) listas.filter(l=>!l.dataset.gapExplicito).forEach(l=>{
+    const letra=Math.max(...[...l.children].map(e=>parseFloat(getComputedStyle(e).fontSize)||84));
+    l.style.setProperty('--gap-lista',Math.max(40,Math.round(letra*.6))+'px'); });
   const objetivo = lam.offsetHeight*.5;
   const actual = bloque.getBoundingClientRect().height/escala(lam);
-  if (actual < objetivo && listas[0].children.length>1 && !(listas[0].dataset.gapExplicito && actual/alto>=.45)) {
+  if (!conLlave && actual < objetivo && listas[0].children.length>1 && !(listas[0].dataset.gapExplicito && actual/alto>=.45)) {
     const n = Math.max(...listas.map(l=>l.children.length));
     // R17 [juez r16, demo 54]: con DOS ítems el hueco entero caía en un solo intervalo (~440 px entre «Responsable» y
     // «Fecha»): ya no se leían como lista. El intervalo se topa en 2.4× la letra; el bloque queda centrado.

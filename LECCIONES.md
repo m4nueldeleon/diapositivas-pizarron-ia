@@ -405,3 +405,14 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   empeoró el reel aprobado (el verbo arriba y la frase en negrita abajo era un diseño bueno): se revirtió.
 - **Regla:** QA no premia nombrar el tema. «El precio es importante» no responde «¿cuánto cuesta?», «Vamos a ver una
   demostración» no demuestra y un sello VENDIDO es un resultado aunque lo diga «yo».
+
+## 2026-09-25 · Mencionar no es responder, anunciar no es demostrar (juez r18)
+
+- **Regla:** cada parte de una objeción pide su tipo de respuesta: un valor para el precio, una duración o un día para el
+  plazo y lo que trae para «qué incluye». «El precio merece atención» o «¿Qué precio te gustaría?» no lo dan.
+- **Regla:** «Enseguida veremos una demostración» y «Hola [nombre], revisamos tu pedido el lunes» no demuestran nada; un guion
+  demuestra con una variable de plantilla ([día], [monto]), un enlace o un mensaje específico de 10+ palabras.
+- **Porqué:** el juez escribió variantes nuevas de los mismos casos y pasaban: la regla anterior buscaba palabras, no la
+  respuesta. Cada arreglo se prueba contra las variantes del juez Y contra los decks aprobados (la regla estricta de modales
+  rompió «La A. Puedes continuar», una decisión legítima, y se corrigió antes de publicar).
+- **Regla:** una guardia que suma toda la tinta roja no ve perder un subrayado junto a un emoji rojo grande: se mide por celdas.

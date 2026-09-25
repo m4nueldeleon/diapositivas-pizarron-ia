@@ -515,6 +515,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
           const t = rs.length ? rs : [b];
           if (t.some(q => q.y + q.h > H - 320 || (q.y + q.h > H - 700 && q.x + q.w > W - 140))) zona = corto(e.textContent || e.className, 24);
         });
+        // R18: la nota de una llave bajo la lista (9:16) es parte de la composición
+        lam.querySelectorAll(':scope > .anotacion[data-llave-bajo]').forEach(n => { if (visible(n)) { const b = caja(n, lam); y0 = Math.min(y0, b.y); y1 = Math.max(y1, b.y + b.h); } });
         const ocupa = (y1 - y0) / H;
         r.composicion_vertical = { ocupacion_pct: +(ocupa * 100).toFixed(1), centro_pct: +((y0 + y1) / (2 * H) * 100).toFixed(1) };
         // idea, cita, cifra, objeto y botón son un solo punto focal: centrados y grandes, no llenan el alto a propósito

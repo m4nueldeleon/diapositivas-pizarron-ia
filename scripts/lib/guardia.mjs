@@ -77,20 +77,27 @@ export async function rojoPNG(page, dirLaminas) {
       const img = new Image(); img.src = src; await img.decode();
       const w = 480, h = Math.round(480 * img.height / img.width), c = document.createElement('canvas'); c.width = w; c.height = h;
       const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-      const d = ctx.getImageData(0, 0, w, h).data; let n = 0;
-      for (let i = 0; i < d.length; i += 4) if (d[i] > 150 && d[i + 1] < 110 && d[i + 2] < 110) n++;
-      return n;
+      // R18 [juez r18]: por celdas (6 × 4). Un 📌 rojo grande escondía la pérdida del subrayado en el total (10390 → 9960).
+      const d = ctx.getImageData(0, 0, w, h).data, celdas = Array(24).fill(0);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (d[i] > 150 && d[i + 1] < 110 && d[i + 2] < 110) celdas[Math.min(3, Math.floor(y * 4 / h)) * 6 + Math.min(5, Math.floor(x * 6 / w))]++;
+      }
+      return celdas;
     }, datos);
   }
   return rojo;
 }
 
-// Una lámina con tinta roja (≥ 40 px a 480) que pierde o gana más del 30% cambió su capa roja.
+// Una celda con tinta roja (≥ 40 px a 480) que pierde o gana más del 30% cambió su capa roja. Acepta la foto vieja (un total).
 export function diferenciasRojo(antes = {}, ahora = {}) {
-  const difs = [];
+  const difs = [], suma = v => Array.isArray(v) ? v.reduce((a, b) => a + b, 0) : v;
   for (const [archivo, n] of Object.entries(antes)) {
     const m = ahora[archivo]; if (m === undefined) continue;
-    if (Math.max(n, m) >= 40 && Math.abs(m - n) > .3 * Math.max(n, 1)) difs.push(`${archivo}: tinta roja ${n} → ${m} px`);
+    const pares = Array.isArray(n) && Array.isArray(m) ? n.map((x, i) => [x, m[i], i]) : [[suma(n), suma(m), -1]];
+    for (const [a, b, i] of pares) if (Math.max(a, b) >= 40 && Math.abs(b - a) > .3 * Math.max(a, 1)) {
+      difs.push(`${archivo}: tinta roja ${a} → ${b} px${i >= 0 ? ` (celda ${i % 6 + 1},${Math.floor(i / 6) + 1})` : ''}`); break;
+    }
   }
   return difs;
 }

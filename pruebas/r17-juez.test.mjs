@@ -42,6 +42,10 @@ test('r17 guardia: perder o ganar más del 30% de la tinta roja de una lámina f
   assert.deepEqual(diferenciasRojo({ 'a.png': 113 }, { 'a.png': 1 }), ['a.png: tinta roja 113 → 1 px']);
   assert.deepEqual(diferenciasRojo({ 'a.png': 113 }, { 'a.png': 100 }), []);
   assert.deepEqual(diferenciasRojo({ 'a.png': 10 }, { 'a.png': 0 }), [], 'bajo 40 px es ruido');
+  // R18: por celdas. El 📌 rojo (celda 1) no esconde la pérdida del subrayado (celda 8)
+  const c = (i, v) => { const a = Array(24).fill(0); a[0] = 9000; a[i] = v; return a; };
+  assert.deepEqual(diferenciasRojo({ 'b.png': c(8, 430) }, { 'b.png': c(8, 0) }), ['b.png: tinta roja 430 → 0 px (celda 3,2)']);
+  assert.deepEqual(diferenciasRojo({ 'b.png': c(8, 430) }, { 'b.png': c(8, 420) }), []);
 });
 
 test('r17: dos palabras cortas seguidas se pegan las dos («no·se·pide»)', () => {
@@ -103,4 +107,37 @@ test('r17 9:16: una marca corta que es casi toda la frase baja hasta 84 px para 
   assert.equal(r[0].renglones, 1, JSON.stringify(r));
   assert.ok(r[0].letra >= 84, JSON.stringify(r));
   assert.ok(r[1].letra >= 84, 'la larga no se encoge por debajo de 84');
+});
+
+test('r18: ningún documento dice que el chat ignora la procedencia (LAYOUTS y ESTILO dicen lo mismo que el motor)', async () => {
+  const { DIR_SKILL } = await import('../scripts/lib/pipeline.mjs');
+  for (const doc of ['references/LAYOUTS.md', 'references/ESTILO.md', 'SKILL.md', 'REGLAS-DEL-AUTOR.md', 'references/ARRANQUE.md']) {
+    const t = fs.readFileSync(path.join(DIR_SKILL, doc), 'utf8');
+    assert.ok(!/(idea\/chat ignoran|se ignora en idea\/chat|chat ignora\w* (la )?procedencia)/.test(t), doc);
+  }
+});
+
+test('r18: una objeción pide valor, plazo o contenido; «merece atención» o una contrapregunta no responden', () => {
+  const T = (q, r) => revisarComponentes(q, r).map(x => x.tema);
+  const Q = '¿Cuánto cuesta, cuánto tarda y qué incluye?';
+  assert.deepEqual(T(Q, ['El precio es importante para todos. El plazo es importante para todos. Lo que incluye es importante para todos.']), ['cuesta', 'tarda', 'incluye']);
+  assert.deepEqual(T(Q, ['El precio merece atención. El plazo merece atención. Lo que incluye merece atención.']), ['cuesta', 'tarda', 'incluye']);
+  assert.deepEqual(T(Q, ['¿Qué precio te gustaría pagar? ¿Qué plazo te gustaría tener? ¿Qué incluye para tu equipo?']), ['cuesta', 'tarda', 'incluye']);
+  assert.deepEqual(T(Q, ['Cuesta 490 pesos. Lo entregas en tres días. Incluye tres plantillas.']), []);
+  assert.deepEqual(T('¿No tengo tiempo ni ganas?', ['Diez segundos al día.', 'Las ganas llegan al ver el primer resultado.']), []);
+});
+
+test('r18: un anuncio o un saludo con fecha no demuestran; una salida vaga tampoco', () => {
+  assert.equal(demuestra({ tipo: 'camara', demuestra: 'Enseguida veremos una demostración de todo esto' }), false);
+  assert.equal(demostracionChat({ tipo: 'chat', guion: true, mensajes: [{ de: 'yo', texto: 'Hola [nombre], revisamos tu pedido el lunes.' }] }), false);
+  assert.equal(demostracionChat({ tipo: 'chat', mensajes: [{ de: 'otro', texto: '¿Cuánto cuesta y cuándo entregas?' }, { de: 'yo', texto: 'Puedes revisar todo tranquilamente.' }] }), false);
+  assert.equal(demostracionChat({ tipo: 'chat', mensajes: [{ de: 'otro', texto: '¿Cuánto cuesta y cuándo entregas?' }, { de: 'yo', texto: 'Cuesta 900 pesos y te lo entrego el viernes.' }] }), true);
+});
+
+test('r18 9:16: con llave, los renglones de la lista van juntos y la llave los abraza a los dos', async t => {
+  const p = await pagina(t, [{ tipo: 'lista', items: ['Piso 3', 'Junto al elevador'], anotaciones: [{ llave: ['i0', 'i1'], texto: 'Sin confusiones' }] }]); if (!p) return;
+  const r = await p.evaluate(`(() => { const C = ${cajas}; const l = window.PZ.lams[0]; return { items: C(l, '.lista > *'), nota: C(l, '.anotacion')[0] }; })()`);
+  const hueco = r.items[1].y - (r.items[0].y + r.items[0].h);
+  assert.ok(hueco <= r.items[0].f * .9, `hueco de ${hueco} px con letra de ${r.items[0].f}`);
+  assert.ok(r.nota.y > r.items[1].y + r.items[1].h);
 });

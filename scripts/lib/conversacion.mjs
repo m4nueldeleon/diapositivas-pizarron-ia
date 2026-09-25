@@ -14,13 +14,19 @@ export function demostracionChat(l) {
   const dato = t => /\[[^\]]+\]|\d|https?:|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|aqui|enlace|link)\b/.test(normal(t).replace(/\[(nombre|cliente|name|tu nombre|persona)\]/g, ''));
   const accion = t => /\b(enlace|link|archivo|pagina|cotizacion|propuesta|pago|anticipo|entrega|revision|resena|precio|fecha|hora|cajas?|pedido|mando|mandar|dejo|dejas|envio|te comparto|aqui esta|agenda\w*|reserv\w*|apart\w*|pag\w*|compr\w*|confirm\w*|entreg\w*|llevaste|salieron)\b/.test(normal(t));
   const util = t => dato(t) && accion(t);
-  if (l.guion === true && mensajes.some(m => palabras(m.texto).length >= 4 && util(m.texto))) return true;
+  // R18 [juez r18]: «Hola [nombre], revisamos tu pedido el lunes» pasaba por el día. Un guion demuestra si trae una variable
+  // de plantilla que no es el saludo ([día], [monto]), un enlace o «aquí», o si es largo y específico (10+ palabras).
+  const plantilla = t => /\[(?!(nombre|cliente|name|tu nombre|persona)\])[^\]]+\]|https?:|\b(aqui|enlace|link)\b/.test(normal(t));
+  if (l.guion === true && mensajes.some(m => palabras(m.texto).length >= 4 && util(m.texto) && (plantilla(m.texto) || palabras(m.texto).length >= 10))) return true;
   return mensajes.some((entrada,i) => mensajes.slice(i+1).some(salida => {
     const a=normal(entrada.texto), b=normal(salida.texto);
     if(entrada.de===salida.de || palabras(a).length<4 || palabras(b).length<3 || a===b) return false;
     if(/vamos a mostrar|haremos una demostracion|te ensenare|puedes mostrar/.test(a+' '+b))return false;
     const concreto=/\?|\d|portada|archivo|pagina|mensaje|precio|revision|fecha|testimonio|publicar|descuento/.test(a);
-    const util=/\b(incluye|cotiza\w*|entreg\w*|confirm\w*|aprueb\w*|autoriza\w*|puedes|procede\w*|acepto|elige|envia\w*|public\w*|acuerd\w*|cambia|cuesta|vence|sera|sera|queda|fue|me ayudo)\b|\b(?:lunes|martes|miercoles|jueves|viernes)\b|\d/.test(b);
+    // R18 [juez r18]: «Puedes revisar todo tranquilamente» no responde «¿cuánto cuesta y cuándo entregas?»: si la entrada
+    // pregunta cuánto o cuándo, la salida trae el valor o el plazo («La A. Puedes continuar» sí decide una elección).
+    const util=/\b(incluye|cotiza\w*|entreg\w*|confirm\w*|aprueb\w*|autoriza\w*|puedes|procede\w*|acepto|elige|envia\w*|public\w*|acuerd\w*|cambia|cuesta|vence|sera|queda|fue|me ayudo)\b|\b(?:lunes|martes|miercoles|jueves|viernes)\b|\d/.test(b)
+      && (!/\bcuant[oa]s?\b|\bcuando\b/.test(a) || VALOR.test(b) || PLAZO.test(b));
     const nuevas=palabras(b).filter(w=>w.length>2&&!palabras(a).includes(w));
     return concreto&&util&&nuevas.length>=2;
   }));
@@ -39,9 +45,16 @@ const TEMAS = [
 // R17 [juez r17]: «El precio es importante» nombra el tema sin responderlo: una frase que solo lo valora (es importante,
 // es clave) y no trae ningún dato concreto (cifra, plazo, día, cantidad, sí/no, límite o alternativa) no cuenta.
 const CONCRETA = /\d|\b(un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte|treinta|cien|mil|gratis|nada|todo|todos|ningun\w*|si|no|sin|solo|hasta|desde|cada|antes|despues|hoy|manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|semana\w*|dia|dias|hora\w*|minuto\w*|mes|meses|aqui|cuando|siempre|nunca|ya|usa|usas|basta|alcanza|puedes|sirve|en lugar|en vez)\b/;
-const VALORA=/\b(es|son|resulta|parece|sera)\s+(muy\s+|lo mas\s+|super\s+)?(importante\w*|clave|fundamental\w*|relevante\w*|necesari\w*|basic\w*|esencial\w*|interesante\w*|buen\w*|mal\w*|lo de menos|lo primero)\b/;
+const VALORA=/\b(es|son|resulta|parece|sera)\s+(muy\s+|lo mas\s+|super\s+)?(importante\w*|clave|fundamental\w*|relevante\w*|necesari\w*|basic\w*|esencial\w*|interesante\w*|buen\w*|mal\w*|lo de menos|lo primero)\b|\b(merece\w*|requiere\w*) (atencion|cuidado|analisis)|\bes un tema\b|\bhay que ver(lo)?\b|\bdepende\b|\blo (vemos|platicamos|revisamos) (luego|despues|con calma)/;
+// R18 [juez r18]: mencionar el tema no basta. Precio → un valor; plazo → una duración, un día o un momento; lo que incluye →
+// lo que trae («incluye una revisión»). Una contrapregunta («¿Qué precio te gustaría pagar?») no da el valor.
+const NUMERO='\\d|\\b(un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte|treinta|cuarenta|cincuenta|cien|mil|millon\\w*|media|medio)\\b';
+const VALOR=new RegExp(NUMERO+'|\\b(gratis|sin costo|nada|mitad|doble)\\b');
+const PLAZO=new RegExp('('+NUMERO+').{0,24}\\b(segund\\w*|minut\\w*|hora\\w*|dia\\w*|seman\\w*|mes\\w*|ano\\w*)\\b|\\b(hoy|manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|al terminar|al final|antes de|despues de|en cuanto|inmediat\\w*|el mismo dia)\\b');
+const CONTENIDO=/\b(inclu\w*|trae|viene\w*|contiene)\b\s+(\d|un|una|unos|unas|dos|tres|cuatro|cinco|el|la|los|las|tu|su|sus|tus|todo)\b/;
+const PIDE={precio:VALOR,plazo:PLAZO,incluye:CONTENIDO};
 const VACIAS=new Set(['puedo','puedes','quiero','tengo','tienes','hacer','algo','esto','como','cuando','donde','porque','pero','para','sobre','entre','mucho','muchos','todo','todos','cada','cuanto','cuanta','importa','mejor']);
-const FAMILIAS=[['cuest','preci','cobr','pag','cost','inver'],['tard','plaz','tiemp','dias','seman','entreg','cuand'],['inclu','trae','vien','conti'],
+const FAMILIAS=[['cuest','preci','cobr','pag','cost','inver'],['tard','plaz','tiemp','dias','seman','entreg','cuand','segund','minut','hora'],['inclu','trae','vien','conti'],
   ['funcio','result','sirv'],['molest','incomod'],['compr','pedi','orden'],['disen','diseñ'],['garant','devol','reemb']];
 export function revisarComponentes(pregunta,respuestas) {
   const partes=componentesObjecion(pregunta);
@@ -61,6 +74,7 @@ function genericos(pregunta,respuestas,sueltas,partes){
   if(!sueltas.length)return [];
   const clave=c=>(c.match(/[a-zñ]+/g)||[]).filter(w=>w.length>=4&&!VACIAS.has(w)).sort((a,b)=>b.length-a.length)[0];
   const familia=k=>{const f=FAMILIAS.find(f=>f.some(r=>k.startsWith(r)));return f||[k.slice(0,5)];};
+  const tipo=k=>{const i=FAMILIAS.findIndex(f=>f.some(r=>k.startsWith(r)));return ['precio','plazo','incluye'][i]||null;};
   // Una pregunta cuenta si AGREGA contenido (2+ palabras que la objeción no tenía: «¿Qué te gusta de donde compras
   // ahora?»); la que solo repite la objeción es eco («¿Te molesta? ¿Compras en otro lado?») y no responde.
   const deLaObjecion=new Set((normal(pregunta).match(/[a-zñ]{4,}/g)||[]));
@@ -68,11 +82,12 @@ function genericos(pregunta,respuestas,sueltas,partes){
   const afirmaciones=respuestas.flatMap(t=>normal(t).split(/(?<=[.!?])\s+|\n+/)).filter(f=>f.trim()&&(!/\?\s*$/.test(f.trim())||aporta(f)));
   // Una frase que solo valora el tema («El precio es importante») sin ningún dato no lo responde
   const vacia=f=>VALORA.test(f)&&!CONCRETA.test(f);
-  const responde=r=>afirmaciones.some(f=>f.includes(r)&&!vacia(f));
+  const responde=(r,k)=>{ const pide=PIDE[tipo(k)];
+    return afirmaciones.some(f=>f.includes(r)&&!vacia(f)&&(!pide||(pide.test(f)&&!/\?\s*$/.test(f.trim())))); };
   // Opciones con artículo («¿Qué importa más, el diseño o el plazo?»): el interrogativo no es un componente aparte
   const conArticulo=partes.filter(p=>/^(el|la|los|las|un|una|tu|tus)\s/.test(normal(p).replace(/^[^a-z]+/,''))).length;
   const interrogativa=p=>/^(que|cual|cuales|como|cuanto|cuanta|cuando|donde|por que|quien)\b/.test(normal(p).replace(/^[^a-z]+/,''));
   return sueltas.filter(p=>!(conArticulo>=2&&interrogativa(p))).map(p=>({p,k:clave(normal(p))}))
-    .filter(x=>x.k&&!familia(x.k).some(responde))
+    .filter(x=>x.k&&!familia(x.k).some(r=>responde(r,x.k)))
     .map(x=>({tema:x.k,componentes:[x.p],generico:true}));
 }

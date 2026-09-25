@@ -7,7 +7,7 @@ const tokens = x => normal(x).split(' ').filter(w => w.length > 3);
 // Familias explícitas: evitar un stemmer agresivo que equipare precio y precisión.
 // R17: «a tiempo» se responde con un plazo concreto (fecha, día, semana, horas): la familia 8 los reúne.
 export function raicesTexto(x) {
-  const familias = [/^entreg/, /^defin/, /^pag/, /^termin/, /^cambi/, /^revis/, /^cost|^car[oa]s?$|^precio/, /^tecnolog/, /^tiemp|^plaz|^fecha|^tard[ae]|^dias$|^seman|^horas?$|^minut|^lunes|^martes|^miercol|^jueves|^viern|^sabad|^doming|^meses$/, /^aprend/, /^comprob/];
+  const familias = [/^entreg/, /^defin/, /^pag/, /^termin/, /^cambi/, /^revis/, /^cost|^car[oa]s?$|^precio/, /^tecnolog/, /^tiemp|^plaz|^fecha|^tard[ae]|^dias$|^seman|^horas?$|^minut|^segund|^lunes|^martes|^miercol|^jueves|^viern|^sabad|^doming|^meses$/, /^aprend/, /^comprob/];
   const vacias = new Set(['para','como','puedo','puede','puedes','quiero','tengo','todo','cada','rato','esta','estas','este','estos','pero','solo','nunca','siempre','ahora','hacer','tiene','tienes','seria','quien','cual','cuando','donde','porque']);
   return tokens(x).filter(w => !vacias.has(w)).map(w => {
     const i = familias.findIndex(r => r.test(w));

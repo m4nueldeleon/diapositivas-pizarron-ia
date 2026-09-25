@@ -159,7 +159,7 @@ El embudo no tiene emoji: usa el diseño `flujo`.
 | tarea, ejercicio, práctica | 📋 | pálido sobre blanco (31–47): en un nodo de `flujo`, prefiere 🎯 si representa la meta de la práctica u otro ícono literal con contraste ≥80 |
 | examen, evaluación | 💯 | 📝 ya es «escribir, plan» |
 | certificado | 📜 | |
-| recursos, material | 📚 | |
+| recursos, material de estudio | 📚 | |
 | progreso, niveles, ascenso, puesto nuevo | 🪜 | en Fluent oscura mide 42: requiere halo para esta aplicación; sin halo, úsalo en claro |
 | ejemplo, «mira esto» | 👀 | |
 
@@ -241,7 +241,7 @@ el boleto o el apartado 🎟️ y «tu plan» 🧭.
 | la pieza que falta, la solución | 🧩 | |
 | competencia, el rival | 🥊 | |
 | transmisión en vivo abierta (live, webinar, directo en redes) | `🎥+🔴` | una llamada o sesión DEL PROGRAMA es 📞. 🔴 sola no dice nada (en Fluent es una esfera rosa 3D): va como insignia de «grabando» |
-| lección, módulo, clase grabada del programa | 📖 | la sesión EN VIVO es 📞; 📚 es «recursos, material»; 🎓 el programa completo |
+| lección, módulo, clase grabada del programa | 📖 | la sesión EN VIVO es 📞; 📚 es «recursos, material de estudio»; 🎓 el programa completo |
 | logro, meta cumplida | 🏅 | 🏆 es «el mejor» |
 | delegar | `flujo` | 👑 → 👤: del líder a una persona del equipo |
 | conversación 1 a 1, retroalimentación | `👤+💬` | cara a cara; confirma en render que se ve la insignia. `📱+💬` es chat |

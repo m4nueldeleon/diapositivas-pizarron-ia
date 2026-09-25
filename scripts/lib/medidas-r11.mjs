@@ -106,7 +106,9 @@ export function medidasR11(lam) {
     if(listas.length && listas.every(l=>l.children.length<=5) && items.every(e=>e.textContent.trim().split(/\s+/).length<=10)) {
       const cs=getComputedStyle(lienzo), alto=H-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
       medidas.lista_letra_px1920=Math.min(...items.map(tam));
-      medidas.lista_alto_util_pct=caja(lienzo.firstElementChild).h/alto*100;
+      // R18: la llave bajo la lista (9:16) y su nota cuentan en la ocupación del conjunto
+      const bajoL=[...lam.querySelectorAll(':scope > .anotacion[data-llave-bajo]')].map(caja), bL=caja(lienzo.firstElementChild);
+      medidas.lista_alto_util_pct=(Math.max(bL.y+bL.h,...bajoL.map(x=>x.y+x.h))-bL.y)/alto*100;
       if(medidas.lista_letra_px1920<64)avisos.push(`lista corta: renglón de ${medidas.lista_letra_px1920.toFixed(1)} px (mínimo 64 px a 1920); aumenta la letra antes de encoger`);
       // R17: dos renglones no llenan el 45% sin desarmarse (el intervalo se topa en 2.4× la letra): su mínimo es 36%
       const minimo=Math.max(...listas.map(l=>l.children.length))<=2?36:45;

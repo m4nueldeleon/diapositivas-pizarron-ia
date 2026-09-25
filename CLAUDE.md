@@ -315,3 +315,10 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   el sello de chat evita `.procedencia` y prueba montarse arriba de la burbuja. Objeciones: una frase que solo valora el tema
   («es importante») no responde, y las partes genéricas se revisan aunque haya un tema conocido. `demuestra`: un anuncio
   («Vamos a ver una demostración») no cuenta; `[nombre]` no es dato. La guardia cuenta la tinta roja por PNG (`rojoPNG`).
+- Juez r18 (Codex, 87.65 sobre 69663ba): `revisarComponentes` pide lo que cada parte pregunta (precio → valor, plazo →
+  duración o día, incluye → contenido; `PIDE`) y una contrapregunta no lo da; `VALORA` suma «merece atención», «depende».
+  `demostracionChat`: el guion necesita una variable de plantilla que no sea el saludo, un enlace o 10+ palabras; si la
+  entrada pregunta cuánto o cuándo, la salida trae valor o plazo. `ANUNCIO` suma enseguida, veremos, todo… La guardia cuenta
+  la tinta roja en 6 × 4 celdas (`rojoPNG`). En 9:16 una lista con llave compacta sus renglones (0.6× la letra) y QA cuenta la
+  nota de la llave en la ocupación. `unirEnfasisCorto` baja la frase 9:16 hasta 84 px para no partir una marca corta.
+  📚 es «material de estudio» (no «material» a secas).

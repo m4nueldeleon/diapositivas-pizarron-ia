@@ -543,7 +543,7 @@ export function huecosDePrueba(deck) {
 const PIEZAS_ENSENAN = ['tutorial', 'clase', 'clase-corta'];
 // R17 [juez r17]: «Vamos a ver una demostración» anuncia, no enseña: quitando el anuncio (vamos a ver, te muestro, demo…)
 // y las palabras vacías, deben quedar dos palabras con contenido («lleno la cotización en vivo»).
-const ANUNCIO = new Set(['vamos','voy','ver','veamos','mostrar','muestro','ensenar','enseno','demostracion','demo','ahora','aqui','continuacion','te','les','os','hacer','hago','esto','eso']);
+const ANUNCIO = new Set(['vamos','voy','ver','veamos','veremos','veras','veran','mostrar','muestro','mostrare','ensenar','enseno','ensenare','demostracion','demostrare','demo','ahora','aqui','continuacion','te','les','os','hacer','hago','esto','eso','todo','enseguida','luego','despues','siguiente','momento','rato','poco','pronto']);
 const VACIAS_DEMO = new Set(['a','al','una','un','unos','unas','la','el','los','las','de','del','en','y','o','que','como','para','con','tu','mi','su','se','lo','le','es','muy']);
 const soloAnuncio = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z0-9]+/g)
   ?.filter(w => !ANUNCIO.has(w) && !VACIAS_DEMO.has(w)).length < 2;
