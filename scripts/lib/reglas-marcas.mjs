@@ -113,12 +113,17 @@ export function reglasCapaExpresiva(deck, tiposPorLamina) {
   const tipos = deck.laminas.map(l => new Set(tiposRojos(l)));
   const avisos = [], distintos = new Set(tipos.flatMap(t => [...t]));
   const visibles = deck.laminas.filter(l => l.tipo !== 'camara');
-  if (visibles.length >= 12 && distintos.size < 3) avisos.push('capa expresiva roja: el deck usa menos de 3 tipos de marca roja; añade llave, flecha, óvalo, tachón o sello según el momento (ESTILO §5)');
+  // R14 (juez r14): la regla escala a las piezas cortas. Un reel (6–12 láminas) salía con 100 y 8 láminas sin un solo
+  // trazo rojo porque todo esto empezaba en 12. De 6 a 11: tope de 3 seguidas y al menos 2 tipos.
+  // Las piezas cortas se reconocen por su `pieza` (reel, video…): un catálogo de casos sin pieza no es una pieza corta.
+  const n = visibles.length, corta = n >= 6 && n < 12 && !!deck.pieza, tope = n >= 12 ? 4 : corta ? 3 : Infinity;
+  if (n >= 12 && distintos.size < 3) avisos.push('capa expresiva roja: el deck usa menos de 3 tipos de marca roja; añade llave, flecha, óvalo, tachón o sello según el momento (ESTILO §5)');
+  else if (corta && distintos.size < 2) avisos.push('capa expresiva roja: una pieza corta usa menos de 2 tipos de marca roja; __subraya__ la tesis y añade una flecha, un tachón o un sello donde el guion cambia de idea (ESTILO §5)');
   let tramo = 0;
   deck.laminas.forEach((l,i) => {
     if (l.tipo === 'camara') return;
     tramo = tipos[i].size ? 0 : tramo + 1;
-    if (visibles.length >= 12 && tramo === 4) avisos.push(`4 láminas seguidas sin capa roja (hasta la lámina ${i+1}): añade subrayado, llave o flecha; una nota gris o tabla no cuentan (ESTILO §5)`);
+    if (tramo === tope) avisos.push(`${tope} láminas seguidas sin capa roja (hasta la lámina ${i+1}): __subraya__ la frase que es la tesis o añade llave o flecha; una nota gris o tabla no cuentan (ESTILO §5)`);
   });
   deck.laminas.forEach((l, i) => {
     const t = textos(l).join(' ');

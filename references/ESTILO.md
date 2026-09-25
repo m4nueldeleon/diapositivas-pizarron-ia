@@ -134,7 +134,7 @@ imagen y por la palabra al mismo tiempo.
 
 ## 5. La capa a mano: el profesor en el pizarrón
 
-Meta en el momento clave: ~1 golpe fuerte cada 3-4 láminas; sigue valiendo máximo un énfasis por lámina. En el arco completo se pide uno cada 4-6 (GUION §5). La capa ROJA —subrayado, flecha, anotación, sello, círculo/óvalo/encerrado, tachón, llave, ✕— es distinta de una nota gris o tabla. Referencia aproximada: ~1 de cada 2 láminas con marca roja; en decks de 12+ QA avisa menos de tres tipos o cuatro láminas seguidas sin rojo, sin contar `camara`.
+Meta en el momento clave: ~1 golpe fuerte cada 3-4 láminas; sigue valiendo máximo un énfasis por lámina. En el arco completo se pide uno cada 4-6 (GUION §5). La capa ROJA —subrayado, flecha, anotación, sello, círculo/óvalo/encerrado, tachón, llave, ✕— es distinta de una nota gris o tabla. Referencia aproximada: ~1 de cada 2 láminas con marca roja; en decks de 12+ QA avisa menos de tres tipos o cuatro láminas seguidas sin rojo; en piezas de 6 a 11 (un reel), menos de dos tipos o tres seguidas sin rojo; nunca cuenta `camara`.
 
 | Momento de una propuesta | Marca que pide |
 |---|---|

@@ -182,7 +182,9 @@ export function medidasR11(lam) {
     medidas.anotaciones_x ||= [];
     medidas.anotaciones_x.push({texto:corto(e.textContent),x,principal,proporcion:principal ? x/principal : null});
     if(principal && x/principal < .75) errores.push(`anotación «${corto(e.textContent)}»: altura x ${(100*x/principal).toFixed(1)}% del texto principal (mínimo 75%); aumenta Caveat y reserva espacio antes de encajar`);
-    if((e.dataset.llaveHasta || e.matches('.nota.roja')) && window.lineasPalabras(e).length>1) errores.push(`nota junto a llave «${corto(e.textContent)}» partida: mantenla en un renglón y reserva su anchura real`);
+    // R14: se admiten DOS renglones balanceados (2+ palabras cada uno); más, o un renglón de una palabra, es error.
+    { const ls=window.lineasPalabras(e);
+      if((e.dataset.llaveHasta || e.matches('.nota.roja')) && (ls.length>2 || (ls.length===2 && ls.some(l=>l.length<2)))) errores.push(`nota junto a llave «${corto(e.textContent)}» partida en ${ls.length} renglones: máximo dos balanceados de 2+ palabras; reserva su anchura real`); }
     // R14: ni renglones de una palabra ni pegada al borde lateral [r13, clase 36: «Evita / publicar / un error»]
     const lineas=window.lineasPalabras(e), pal=lineas.flat().length;
     if(pal>=3 && lineas.length>1 && (lineas.length>3 || pal/lineas.length<2)) errores.push(`anotación «${corto(e.textContent)}» en renglones mínimos (${lineas.map(l=>l.length).join('/')} palabras): dale ancho para 1-3 renglones de 2+ palabras o muévela debajo`);
@@ -218,10 +220,19 @@ export function medidasR11(lam) {
     const dx = Math.max(b.x-p.x, 0, p.x-b.x-b.w), dy = Math.max(b.y-p.y, 0, p.y-b.y-b.h);
     return dx || dy ? Math.hypot(dx,dy) : Math.min(p.x-b.x,b.x+b.w-p.x,p.y-b.y,b.y+b.h-p.y);
   };
+  const punto = (p, t) => { const q = p.getPointAtLength(t), m = p.getScreenCTM(); return { x: (q.x*m.a+q.y*m.c+m.e-L.left)/escala, y: (q.x*m.b+q.y*m.d+m.f-L.top)/escala }; };
   for (const p of lam.querySelectorAll(':scope > .capa-mano path[data-clase="flecha"]')) {
     if (!visible(p) || !p.getTotalLength()) continue;
-    const q = p.getPointAtLength(0), m = p.getScreenCTM();
-    const origen = { x: (q.x*m.a+q.y*m.c+m.e-L.left)/escala, y: (q.x*m.b+q.y*m.d+m.f-L.top)/escala };
+    // R14: el conector recto (flujo) va CENTRADO en el hueco entre sus dos anclas [c_1045]; no se le pide origen pegado.
+    if (p.dataset.estilo === 'recta' && p.dataset.de && p.dataset.a) {
+      const ea = lam.querySelector(`[data-a="${p.dataset.de}"]`), eb = lam.querySelector(`[data-a="${p.dataset.a}"]`);
+      if (ea && eb) {
+        const da = distancia(punto(p, 0), caja(ea)), db = distancia(punto(p, p.getTotalLength()), caja(eb));
+        if (Math.min(da, db) > 0 && Math.max(da, db) / Math.min(da, db) > 1.5 && (Math.max(da, db) - Math.min(da, db)) * a1920 > 24) avisos.push(`flecha descentrada: ${(da*a1920).toFixed(0)} px del origen y ${(db*a1920).toFixed(0)} px del destino (máximo 1.5:1): va centrada en el hueco entre los dos elementos [c_1045]`);
+        continue;
+      }
+    }
+    const origen = punto(p, 0);
     const d = Math.min(...candidatos.map(e => distancia(origen,caja(e)))) * a1920;
     if (d > 24) avisos.push(`flecha huérfana: inicio a ${Number.isFinite(d) ? d.toFixed(1) : 'más de 24'} px del contorno más cercano (máximo 24 px a 1920): ánclala al borde del origen u omítela`);
   }

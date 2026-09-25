@@ -503,6 +503,8 @@ s.tachon, .tachon { text-decoration: none; }
   background: #fff; padding: 7px; border-radius: 32px; white-space: nowrap; }
 .sello-tinta { padding: .29em .58em; border: 9px solid var(--rojo); border-radius: 26px; color: var(--rojo);
   font: 700 104px/1 'Sello', 'Rockwell', serif; letter-spacing: .02em; text-transform: uppercase;
+  /* R14 [juez r14]: Zilla Slab trae cifras de estilo antiguo; «0 RESEÑAS» se leía «o RESEÑAS». Cifras alineadas. */
+  font-variant-numeric: lining-nums;
   outline: 4px solid var(--rojo); outline-offset: -26px;
   mask-image: var(--grano-suave); -webkit-mask-image: var(--grano-suave); mask-size: 420px; -webkit-mask-size: 420px; }
 

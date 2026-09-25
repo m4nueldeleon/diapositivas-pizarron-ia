@@ -256,4 +256,10 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
 - `runtime-legibilidad.js → PISO_CHAT_VERTICAL` (64 px): el chat 9:16 no se encoge bajo el piso; `medidas-r11.mjs` avisa
   y pide partir la conversación. `runtime-filas.js → ampliarTarjetasVertical`: hasta 3 tarjetas en 9:16 al 84% del ancho,
   rótulo 84→64 px en ≤ 2 renglones; si no caben apiladas, `.tarjetas-fila` (emoji al lado).
+- Juez r14 (Claude, 85.80): `colocarAnotaciones` hace sitio a la nota de una llave (corre el bloque, parte la nota en dos
+  renglones balanceados, encoge hasta el piso de 64 px); el conector recto del flujo va CENTRADO en el hueco y QA mide su
+  centrado (1.5:1), no su origen; `reglasCapaExpresiva` exige capa roja también en piezas de 6 a 11 láminas con `pieza`;
+  `.sello-tinta` usa cifras alineadas; `infoConceptoIdea` informa (sin restar) el emoji de una `idea` fuera de su concepto
+  o repetido con otra frase. `pruebas/r14-aprobados.test.mjs` re-renderiza `pruebas/fixtures/aprobados/*` y exige cero
+  errores: un deck aprobado no puede empeorar en silencio.
 

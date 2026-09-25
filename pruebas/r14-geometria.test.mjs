@@ -66,3 +66,20 @@ test('r14: en 9:16 hasta tres tarjetas crecen por ocupación y QA avisa si queda
  assert.ok(r.bien.medidas.tarjetas_letra_nativa>=60,JSON.stringify(r.bien.medidas));
  assert.ok(r.mal.avisos.some(a=>/tarjetas 9:16/.test(a)),JSON.stringify(r.mal.avisos));
 });
+test('r14: el sello usa cifras alineadas (el 0 no se lee como «o»)',async t=>{
+ const p=await pagina(t,[{tipo:'idea',emoji:'⭐',texto:'Tu negocio en Google',sello:'0 RESEÑAS'}]);if(!p)return;
+ const r=await p.evaluate(()=>{const s=window.PZ.lams[0].querySelector('.sello-tinta');const c=getComputedStyle(s);return {num:c.fontVariantNumeric,
+   // alto del 0 contra la O mayúscula en la misma letra: con cifras antiguas el 0 mide ~70% de la O
+   rel:(()=>{const ctx=document.createElement('canvas').getContext('2d');ctx.font=`${c.fontWeight} 104px ${c.fontFamily}`;ctx.fontVariantNumeric='lining-nums';return null;})()};});
+ assert.match(r.num,/lining-nums/,JSON.stringify(r));
+});
+test('r14: el conector recto del flujo queda centrado en el hueco entre sus emojis [c_1045]',async t=>{
+ const p=await pagina(t,[{tipo:'flujo',nodos:[{emoji:'🕵️',etiqueta:'Identificar'},{emoji:'🤝',etiqueta:'Aliarte'}]}]);if(!p)return;
+ const r=await p.evaluate(()=>{const l=window.PZ.lams[0];window.PZ.mostrar(l,99,Infinity);const q=window.medidasR11(l);
+   const f=l.querySelector('.capa-mano path[data-clase="flecha"]'),L=l.getBoundingClientRect(),s=L.width/l.offsetWidth;
+   const pt=t=>{const a=f.getPointAtLength(t),m=f.getScreenCTM();return (a.x*m.a+a.y*m.c+m.e-L.left)/s;};
+   const ea=l.querySelector(`[data-a="${f.dataset.de}"]`).getBoundingClientRect(),eb=l.querySelector(`[data-a="${f.dataset.a}"]`).getBoundingClientRect();
+   return {avisos:q.avisos,izq:pt(0)-(ea.right-L.left)/s,der:(eb.left-L.left)/s-pt(f.getTotalLength())};});
+ assert.ok(Math.max(r.izq,r.der)/Math.min(r.izq,r.der)<=1.5,JSON.stringify(r));
+ assert.ok(!r.avisos.some(a=>/flecha (huérfana|descentrada)/.test(a)),JSON.stringify(r.avisos));
+});

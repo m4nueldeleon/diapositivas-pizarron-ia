@@ -332,3 +332,12 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   chats. Se corrigió con un piso de 64 px y un aviso que pide partir la conversación; el mismo reel reveló tarjetas de
   46 px en 9:16 (ahora crecen al 84% del ancho y pasan a tarjeta-renglón si no caben). Un 100 automático no sustituye
   mirar la hoja: esa revisión es la que encontró los dos defectos.
+- **Regresión silenciosa (juez r14):** la propuesta de la ronda 11 bajó de 100 a 49 cuando las listas crecieron sin
+  reservar la nota de su llave. Ninguna prueba re-renderizaba decks aprobados. Ahora `pruebas/fixtures/aprobados/` los
+  guarda y `r14-aprobados` exige cero errores. Cada pieza que el juez apruebe entra ahí.
+- **Una regla de QA puede torcer el estilo:** la ronda 11 ancló la flecha del flujo al origen para calmar la regla de flecha
+  huérfana y la sacó del centro del hueco, que es como la dibuja el video. Una regla nueva se prueba contra la réplica y el
+  demo, no solo contra el caso que la motivó.
+- **Chromium:** asignar `textWrap` después de `whiteSpace` borra el `nowrap` (comparten `text-wrap-mode`). Primero
+  `textWrap`, luego `whiteSpace`.
+

@@ -362,12 +362,15 @@
         // [c_1045, 12:35, 13:20]: la flecha mide ~250 px (el 55% del hueco entre los dos emojis, de 140 a 260), va
         // centrada en el hueco con un asta de ~9 px y una punta en V grande (brazos de ~60 px, abierta ~33°, alto de la
         // punta ≈ 25-30% del largo). De borde a borde (~460 px) con punta de 30 se leía como un palito [r5].
-        const P0 = borde(A, [B.cx, B.cy], 0), Q0 = borde(B, [A.cx, A.cy], 12);
+        // Hueco borde a borde (sin reservar la punta de un solo lado): centrada, deja el mismo aire en los dos extremos.
+        const P0 = borde(A, [B.cx, B.cy], 0), Q0 = borde(B, [A.cx, A.cy], 0);
         const dx = Q0[0] - P0[0], dy = Q0[1] - P0[1], hueco = Math.hypot(dx, dy) || 1, u = [dx / hueco, dy / hueco];
         const L = Math.max(0, Math.min(hueco - 24, Math.min(260, Math.max(140, 0.55 * hueco))));
+        // R14 [juez r14, c_1045]: centrada en el hueco. La ronda 11 la ancló al borde del origen para la regla de
+        // flecha huérfana, pero el conector recto de la referencia flota centrado entre los dos emojis; QA ahora le
+        // pide centrado (no origen pegado).
         const M = [(P0[0] + Q0[0]) / 2, (P0[1] + Q0[1]) / 2];
-        const aireOrigen = 24 * Math.min(1, lam.offsetWidth / 1920);
-        const P = [P0[0] + u[0] * aireOrigen, P0[1] + u[1] * aireOrigen], Q = [P[0] + u[0] * L, P[1] + u[1] * L];
+        const P = [M[0] - u[0] * L / 2, M[1] - u[1] * L / 2], Q = [M[0] + u[0] * L / 2, M[1] + u[1] * L / 2];
         pts = linea(P, Q, r, 2.6); ancho = 9; len = Math.max(40, Math.min(62, 0.25 * L)); abre = 0.58;
       }
     }
@@ -632,13 +635,39 @@
         const fin = ancla(lam, n.dataset.llaveHasta); if (!fin) return;
         const a = caja(el, lam), b = caja(fin, lam), entre = [];
         if (el.parentElement === fin.parentElement) for (let h = el.nextElementSibling; h && h !== fin; h = h.nextElementSibling) entre.push(caja(h, lam));
-        n.style.left = (Math.max(a.x+a.w, b.x+b.w, ...entre.map(e => e.x+e.w))+100) + 'px';
-        n.style.top = ((Math.min(a.y,b.y)+Math.max(a.y+a.h,b.y+b.h))/2-n.offsetHeight/2) + 'px';
-        const exceso = parseFloat(n.style.left)+n.offsetWidth-(W-60);
-        if(exceso>0){
-          const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
-          if(bloque && caja(bloque,lam).x-exceso>=60){bloque.style.position='relative';bloque.style.left=-exceso+'px';n.style.left=(parseFloat(n.style.left)-exceso)+'px';}
-        }
+        // R14: la lista creció por ocupación (r13) sin reservar la nota: «La clínica lo comprueba» salía 296 px fuera del
+        // lienzo [juez r14, propuesta 12]. En orden: correr el bloque a la izquierda, partir la nota en DOS renglones
+        // balanceados de 2+ palabras, y encoger el bloque sin bajar la lista del piso de 64 px.
+        const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
+        const pal=((n.textContent||'').trim().match(/\S+/g)||[]).length, f0=parseFloat(getComputedStyle(el).fontSize)||84;
+        const colocar=()=>{
+          const a = caja(el, lam), b = caja(fin, lam), entre = [];
+          if (el.parentElement === fin.parentElement) for (let h = el.nextElementSibling; h && h !== fin; h = h.nextElementSibling) entre.push(caja(h, lam));
+          n.style.left = (Math.max(a.x+a.w, b.x+b.w, ...entre.map(e => e.x+e.w))+100) + 'px';
+          n.style.top = ((Math.min(a.y,b.y)+Math.max(a.y+a.h,b.y+b.h))/2-n.offsetHeight/2) + 'px';
+          return parseFloat(n.style.left)+n.offsetWidth-(W-60);
+        };
+        const partir=()=>{
+          if(pal<4) return false;
+          const disponible=W-60-parseFloat(n.style.left);
+          Object.assign(n.style,{whiteSpace:'normal',maxWidth:Math.max(160,disponible)+'px',textWrap:'balance'});
+          const ok=colocar()<=0 && rectsTexto(n,lam).length<=2;
+          // textWrap ANTES que whiteSpace: en Chromium comparten text-wrap-mode y vaciar textWrap después borraba el nowrap
+          if(!ok){ n.style.textWrap=''; n.style.maxWidth='none'; n.style.whiteSpace='nowrap'; }
+          return ok;
+        };
+        // En cada nivel de encogimiento (1 → piso de 64 px): correr el bloque lo que se pueda (hasta 60 px del borde) y,
+        // si aún no cabe, partir la nota en dos renglones.
+        const intentar=(z)=>{
+          if(bloque){ if(z<1) bloque.style.zoom=z.toFixed(3); bloque.style.left=''; }
+          let ex=colocar();
+          if(ex>0 && bloque){ const corre=Math.min(ex, Math.max(0, caja(bloque,lam).x-60)); if(corre>0){ bloque.style.position='relative'; bloque.style.left=(-corre/(z||1))+'px'; ex=colocar(); } }
+          if(ex>0 && partir()) ex=0;
+          return ex;
+        };
+        let exceso=intentar(1);
+        const zmin=Math.min(1,64/f0);
+        for(let z=.96; exceso>0 && bloque && z>=zmin-1e-6; z-=.04) exceso=intentar(z);
         puestas.push(caja(n,lam)); return;
       }   // la conexión avisa que falta el ancla
       // sobre una captura, la nota va FUERA de ella (al lado del ancla, a la altura de lo que señala) [28:35]

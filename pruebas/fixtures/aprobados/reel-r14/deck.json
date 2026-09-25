@@ -1,0 +1,146 @@
+{
+ "titulo": "Qué contestar cuando te piden descuento",
+ "formato": "9:16",
+ "emoji": "apple",
+ "piel": "🏻",
+ "pieza": "reel",
+ "persona": "tu",
+ "marca": false,
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "9:40 pm",
+     "texto": "¿Me lo dejas más barato?"
+    }
+   ],
+   "voz": "Te piden descuento y sientes que tienes que ceder."
+  },
+  {
+   "id": "pregunta",
+   "tipo": "idea",
+   "texto": "No contestes con un ~~«no»~~:\n__contesta con una pregunta__",
+   "voz": [
+    "No contestes con un no.",
+    "Contesta con una pregunta."
+   ],
+   "tachar_paso": 1,
+   "tam_texto": "grande"
+  },
+  {
+   "id": "literal",
+   "tipo": "chat",
+   "encabezado": "Le escribes:",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "¿Qué ajustamos: el precio o lo que incluye?"
+    }
+   ],
+   "voz": "Le escribes: ¿qué ajustamos, el precio o lo que incluye?"
+  },
+  {
+   "id": "alcance",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "Solo necesito 2 de las 3 piezas."
+    },
+    {
+     "de": "yo",
+     "texto": "Entonces son 2 piezas y te las entrego el viernes."
+    }
+   ],
+   "voz": [
+    "Si te dice que necesita menos,",
+    "ajustas lo que incluye, y el precio baja con el alcance."
+   ]
+  },
+  {
+   "id": "igual",
+   "tipo": "idea",
+   "emoji": "💵",
+   "texto": "Si quiere lo mismo por menos:\n__el precio se queda__",
+   "voz": "Si quiere lo mismo por menos, el precio se queda."
+  },
+  {
+   "id": "objecion",
+   "tipo": "idea",
+   "emoji": "🤔",
+   "encabezado": "Objeción #1",
+   "encabezado_pos": "entre",
+   "texto": "«¿Me haces descuento si pago hoy y en efectivo?»",
+   "voz": "¿Y si te pregunta si hay descuento por pagar hoy y en efectivo?"
+  },
+  {
+   "id": "respuesta",
+   "tipo": "tarjetas",
+   "items": [
+    {
+     "emoji": "📅",
+     "texto": "Pagar hoy: **asegura tu fecha**"
+    },
+    {
+     "emoji": "💵",
+     "texto": "En efectivo: **sin descuento**"
+    }
+   ],
+   "voz": [
+    "Pagar hoy le asegura su fecha de entrega.",
+    "Y en efectivo, el precio no tiene descuento."
+   ]
+  },
+  {
+   "id": "resumen",
+   "tipo": "lista",
+   "encabezado": "Guarda esto:",
+   "vineta": "numero",
+   "items": [
+    "Pregunta **qué ajustar**",
+    "Cambia **el alcance**",
+    "El precio __se queda__"
+   ],
+   "voz": [
+    "Guarda esto: pregunta qué ajustar.",
+    "Cambia el alcance.",
+    "Y el precio se queda."
+   ]
+  },
+  {
+   "id": "pago",
+   "tipo": "chat",
+   "como": "gancho",
+   "paga": "gancho",
+   "sello": "SIN CEDER",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "9:40 pm",
+     "texto": "¿Me lo dejas más barato?"
+    },
+    {
+     "de": "yo",
+     "hora": "9:41 pm",
+     "texto": "¿Qué ajustamos: el precio o lo que incluye?"
+    }
+   ],
+   "voz": [
+    "La próxima vez que te lo pidan,",
+    "ya sabes qué contestar: ¿qué ajustamos, el precio o lo que incluye?",
+    "Sin ceder en el precio."
+   ],
+   "sello_sobre": "m1"
+  },
+  {
+   "id": "llamado",
+   "tipo": "idea",
+   "emoji": "📌",
+   "texto": "Guarda este reel para tu **próxima cotización**",
+   "voz": "Guarda este reel para tu próxima cotización."
+  }
+ ]
+}

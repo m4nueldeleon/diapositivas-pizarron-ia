@@ -1025,6 +1025,27 @@ export function reglasProductoIconos(deck) {
   });
   return { errores: [], avisos };
 }
+// R14 (juez r14): el emoji de una `idea` no pasa por conceptoRotulo (su texto es una frase, no un rótulo). Se INFORMA,
+// sin restar ni bloquear, cuando ninguna raíz de su concepto del diccionario aparece en el texto o la voz (🛡️ «garantía»
+// para «el precio se queda») y cuando el mismo emoji encabeza dos `idea` con frases distintas (🤔 para «contesta con una
+// pregunta» y para la objeción). La coincidencia por palabras da falsos positivos (🛡️ en una garantía descrita sin la
+// palabra): por eso es información para el autor y no un aviso que empuje a rellenar.
+const VACIAS_CONCEPTO = new Set(['para','como','solo','cuando','sobre','entre','desde','antes','este','esta','algo','otra','otro','que']);
+export function infoConceptoIdea(deck) {
+  const info = [], vistos = new Map();
+  const norm = x => sinAcentos(plano(String(x || ''))).toLowerCase();
+  (deck.laminas || []).forEach((l, i) => {
+    if (l?.tipo !== 'idea' || typeof l.emoji !== 'string' || /[+:]/.test(l.emoji) || l.como) return;
+    const c = conceptoDe(l.emoji); if (!c) return;
+    const ctx = norm([l.texto, l.nota, l.encabezado, ...[].concat(l.voz || [])].join(' '));
+    const raices = norm(c).split(/[^a-zñ]+/).filter(w => w.length > 3 && !VACIAS_CONCEPTO.has(w)).map(w => w.slice(0, 5));
+    if (raices.length && !raices.some(r => ctx.includes(r))) info.push(`${nombre(deck, i)}: ${l.emoji} en el diccionario es «${c}»; si la lámina dice otra cosa, busca su emoji en EMOJIS.md`);
+    const base = sinSelector(l.emoji), previo = vistos.get(base);
+    if (previo != null && norm(deck.laminas[previo].texto) !== norm(l.texto)) info.push(`${nombre(deck, i)}: ${l.emoji} ya encabeza la ${nombre(deck, previo)} con otra frase; ¿es el mismo concepto? (EMOJIS.md, «un emoji = un concepto»)`);
+    else vistos.set(base, i);
+  });
+  return { errores: [], avisos: [], info };
+}
 export function reglasConceptosIconos(deck) {
   const avisos = [...reglasIconosInversa(deck).avisos], anteriores = new Map(), reportados = new Set();
   const declarados = Object.values(deck.conceptos || {}).filter(c => typeof c === 'string').map(c => sinAcentos(plano(c))).filter(Boolean);
@@ -1335,7 +1356,7 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck, { crudo, credenciales }), reglasDescargo(deck), reglasIconos(deck),
     reglasDatosAnunciados(deck), reglasQuienEntrega(deck), reglasAtribucionRevista(deck), reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck), reglasPagoGancho(deck), reglasNotasPonente(deck, pasos), reglasAnclaPrecio(deck, { crudo }),
-    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasEyebrows(deck), reglasVinetasPlan(crudo || deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo }), reglasEditoriales(deck)];
+    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasEyebrows(deck), reglasVinetasPlan(crudo || deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo }), reglasEditoriales(deck), infoConceptoIdea(deck)];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
