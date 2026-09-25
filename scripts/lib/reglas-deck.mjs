@@ -1,3 +1,4 @@
+import { CAMPOS_RAIZ } from './contrato.mjs';
 import { reglaNoNegociable, validarAceptaciones } from './contrato-superficies.mjs';
 import { reglasMarcasYSuperficies, reglasEscalaTiempo, reglasIconosInversa, reglasCapaExpresiva } from './reglas-marcas.mjs';
 import { avisosProcedencia } from './imagenes.mjs';
@@ -1218,7 +1219,7 @@ export function reglasFuente(deck, { crudo } = {}) {
 // ---------- claves del deck que nadie lee ----------
 // `_datos`, `_marca`, `_duracion`: un aviso de entrega escondido en el deck no llega al usuario. Lo que el
 // usuario debe saber va en qa.json (datos propuestos, firma, duración) o en el mensaje de entrega.
-const CLAVES_DECK = new Set(['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'garantia', 'avisos_aceptados', 'datos', 'laminas', 'piel', '_comentario']);
+const CLAVES_DECK = new Set(CAMPOS_RAIZ);
 export function reglasClaves(deck) {
   const avisos = [];
   Object.keys(deck).filter(k => !CLAVES_DECK.has(k)).forEach(k => avisos.push(k.startsWith('_')
@@ -1378,9 +1379,11 @@ function coincideAceptacion(aviso, aceptacion) {
   return typeof texto === 'string' && texto.trim() && String(aviso).includes(texto);
 }
 export function fichaReglasCliente(deck, avisos = []) {
-  const { aceptados } = clasificarAvisos(avisos, deck.avisos_aceptados);
-  const rechazadas = (deck.avisos_aceptados || []).filter(a => a.decision === 'rechazada');
-  return [...rechazadas, ...aceptados.map(a => ({ ...a, decision: 'aceptada', estado: 'excepción pedida por el cliente' }))];
+  const ficha = deck.reglas_cliente ?? deck.avisos_aceptados ?? [];
+  const { aceptados } = clasificarAvisos(avisos, ficha);
+  const rechazadas = ficha.filter(a => a.decision === 'rechazada');
+  const sinAplicar = ficha.filter(a => a.decision !== 'rechazada' && !aceptados.some(b => b.motivo === a.motivo && b.regla === a.regla && b.texto === a.texto));
+  return [...rechazadas, ...sinAplicar.map(a => ({ ...a, estado: 'sin aviso coincidente' })), ...aceptados.map(a => ({ ...a, decision: 'aceptada', estado: 'excepción pedida por el cliente' }))];
 }
 
 export function clasificarAvisos(avisos = [], aceptaciones = []) {

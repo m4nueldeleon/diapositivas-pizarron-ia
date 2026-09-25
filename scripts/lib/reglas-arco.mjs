@@ -3,6 +3,7 @@
 // revelación y los llamados en %). reglas-deck.mjs las suma en revisarDeck. Pruebas en pruebas/arco-r5.test.mjs.
 import { plano } from './markup.mjs';
 import { tiposRojos } from './reglas-marcas.mjs';
+import { analizarCompuesto } from './emoji.mjs';
 import { tiemposSecuenciales, duracionTotal, mmss } from './tiempos.mjs';
 import { sinAcentos, nombre, textosVisibles, conTexto, esLlamadoVisible, inicioOferta, esObjecion } from './reglas-deck.mjs';
 
@@ -177,6 +178,13 @@ export function reglasPagoGancho(deck) {
   const apuntaGancho = id => indice(id) >= 0 && indice(id) < limiteGancho;
   L.forEach((l, i) => {
     if (l.paga != null && !apuntaGancho(l.paga)) avisos.push(`${nombre(deck, i)}: paga apunta fuera del primer 20 % o a un id inexistente; usa el id del objeto del gancho (ARCOS.md, siembra y pago)`);
+    if (l.paga != null && apuntaGancho(l.paga)) {
+      const origen = L[indice(l.paga)];
+      if (indice(l.paga) >= i) avisos.push(`${nombre(deck, i)}: paga debe retomar una lámina anterior, no pagarse a sí misma`);
+      const bases = x => [].concat(x.emoji || []).flatMap(e => { const c = analizarCompuesto(e); return [c.base, c.insignia].filter(Boolean).map(s => s.replace(/\uFE0F|[\u{1F3FB}-\u{1F3FF}]/gu, '')); });
+      const a = bases(origen), b = bases(l);
+      if (origen.tipo === l.tipo && a.length && b.length && !a.some(e => b.includes(e))) avisos.push(`${nombre(deck, i)}: el pago del gancho cambia todos sus íconos; conserva el objeto de «${l.paga}» para que se reconozca al volver`);
+    }
   });
   if (!L.slice(inicioCierre).some(l => apuntaGancho(l.paga) || apuntaGancho(l.como))) avisos.push('falta el pago del gancho: en el último 25 % retoma un objeto del primer 20 % con paga o como, el mismo diseño y emoji, resuelto o reafirmado (ARCOS.md, siembra y pago; GUION §6)');
   return { errores: [], avisos };

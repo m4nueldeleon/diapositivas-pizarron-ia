@@ -5,6 +5,7 @@
   "description": "Contrato de un deck. Detalle de cada diseño en references/LAYOUTS.md.",
   "type": "object",
   "required": ["laminas"],
+  "not": {"required": ["reglas_cliente", "avisos_aceptados"]},
   "properties": {
     "titulo": { "type": "string" },
     "formato": { "enum": ["16:9", "9:16", "1:1", "4:5"], "default": "16:9" },
@@ -19,6 +20,14 @@
     "persona": {"enum": ["tu", "ustedes"]},
     "persona_excepciones": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Frases exceptuadas de persona, sin distinguir mayúsculas ni acentos."},
     "conceptos": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1, "maxLength": 80}},
+    "reglas_cliente": {"type": "array", "description": "Ficha congelada del pedido; alternativa a avisos_aceptados, nunca ambas. No se edita para silenciar QA.", "items": {"type": "object", "required": ["motivo"], "properties": {
+      "regla": {"enum": ["laminas_fijadas", "duracion", "revelacion", "firma_relleno", "prueba_inventada", "cifra_inventada", "oscura_regla_8"]},
+      "texto": {"type": "string", "minLength": 1, "maxLength": 500},
+      "pedido": {"type": "string", "minLength": 1, "maxLength": 500},
+      "decision": {"enum": ["aceptada", "rechazada"]},
+      "motivo": {"type": "string", "minLength": 1, "maxLength": 500},
+      "laminas": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 1, "maximum": 10000}}
+    }, "anyOf": [{"required": ["regla"]}, {"required": ["texto"]}], "additionalProperties": false}},
     "clase": { "type": "boolean", "description": "Un tutorial que es clase express o taller (< 15 min): QA exige la tarea y el puente a la próxima clase o la comunidad en el cierre." },
     "datos": { "type": "object", "propertyNames": { "pattern": "^[A-ZÁÉÍÓÚÑÜ0-9_][A-ZÁÉÍÓÚÑÜ0-9 _-]{0,30}$" }, "additionalProperties": { "oneOf": [{ "type": ["string", "number"] }, { "type": "object", "required": ["valor"], "properties": { "valor": { "type": ["string", "number"] }, "propuesto": { "type": "boolean" } }, "additionalProperties": false }, { "type": "object", "required": ["pendiente", "motivo"], "properties": { "pendiente": { "const": true }, "motivo": { "type": "string" }, "muestra": { "type": "string", "maxLength": 120 } }, "additionalProperties": false }] }, "description": "Datos que se llenan una vez: {{CLAVE}} en cualquier texto. Sin valor sale como hueco [CLAVE] y QA lo cuenta como error. Un dato sin confirmar va como { \"valor\", \"propuesto\": true } y un hueco a propósito como { \"pendiente\": true, \"motivo\" } (qa.json → por_confirmar, borrador)." },
     "marca": {

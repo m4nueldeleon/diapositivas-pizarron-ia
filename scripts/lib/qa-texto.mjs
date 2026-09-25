@@ -3,6 +3,7 @@ import { manoDesdeHTML, pendientesDesdeHTML } from './mano-html.mjs';
 import { revisarDeck, notaQA, infoPersona, reglasDeckCompleto, clasificarAvisos, fichaReglasCliente } from './reglas-deck.mjs';
 import { infoConceptos } from './emoji-diccionario.mjs';
 import { errorVozPasos } from './pasos-mapa.mjs';
+import { glosarioDatos } from './datos.mjs';
 
 export const VISUALES_PENDIENTES = ['contraste', 'desbordes', 'geometría de la capa a mano', 'emojis', 'hoja'];
 export function informeSinMedir(errores = [], resto = {}) {
@@ -38,7 +39,7 @@ export function revisarTexto(prep) {
   const porConfirmar = { ...prep.declarados, ...propuestos, ...revision.porConfirmar };
   const clasificacion = clasificarAvisos(avisos,deck.avisos_aceptados);
   return informeSinMedir(errores, { nota_provisional: notaQA({ errores, avisos:clasificacion.pendientes, porConfirmar }), avisos:clasificacion.pendientes, avisos_aceptados: clasificacion.aceptados,
-    reglas_cliente:fichaReglasCliente(deck,avisos), datos_fuentes:prep.fuentes || {}, datos_por_confirmar:porConfirmar,
+    reglas_cliente:fichaReglasCliente(deck,avisos), glosario:glosarioDatos(crudo), datos_fuentes:prep.fuentes || {}, datos_por_confirmar:porConfirmar,
     info: [...infoPersona(deck), infoConceptos(deck), ...clasificacion.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`)].filter(Boolean), iconos:revision.iconos, por_confirmar: porConfirmar, pendientes, ritmo: revision.ritmo, arco: revision.arco,
     falta_para_final: revision.faltaParaFinal, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0),
     mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])),

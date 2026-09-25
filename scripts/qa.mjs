@@ -68,6 +68,8 @@ import { rutaGlobal } from './lib/marca.mjs';
 import { mmss, minutosObjetivo, duracionPorTipo } from './lib/tiempos.mjs';
 import { medirSobreColor, UMBRAL_COLOR } from './lib/contraste-color.mjs';
 import { errorVozPasos } from './lib/pasos-mapa.mjs';
+import { glosarioDatos } from './lib/datos.mjs';
+import { registrarQA } from './lib/evidencia-calidad.mjs';
 
 try {
 const NOTA_FINAL = 90;   // SKILL §6: 90 o más y cero errores
@@ -100,7 +102,7 @@ if (flag('--sin-navegador')) {
     informe.info.forEach(e => console.log('  ℹ ' + e));
     console.log(informe.advertencia);
   }
-  process.exit(informe.errores.length ? (flag('--estricto') ? 3 : 1) : 0);
+  process.exit(flag('--estricto') ? 3 : informe.errores.length ? 1 : 0);
 }
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
 await page.addScriptTag({ content: inyectable() + `;window.medidasTrazos = ${medidasTrazos.toString()};window.avisosGeometriaSello = ${avisosGeometriaSello.toString()};window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
@@ -109,7 +111,7 @@ const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_C
 const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, datosMuestra, enVivo]) => {
   const out = [];
   const reMarca = new RegExp(MARCA);
-  const rePendiente = /\[[A-ZÁÉÍÓÚÑÜ0-9][A-ZÁÉÍÓÚÑÜ0-9 _\-]{1,30}\]/g;
+  const rePendiente = /\[[A-ZÁÉÍÓÚÑÜ0-9_][A-ZÁÉÍÓÚÑÜ0-9 _\-]{0,30}\]/g;
   const vertical = H > W;
   const visible = e => { const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && !e.closest('.oculto') && e.getClientRects().length; };
   const caja = (e, lam) => { const r = e.getBoundingClientRect(), L = lam.getBoundingClientRect(); return { x: r.left - L.left, y: r.top - L.top, w: r.width, h: r.height }; };
@@ -951,11 +953,12 @@ const infoContraste = [
 ];
 const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
 info.push(...revisionAvisos.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`));
-const informe = { medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
+const informe = { glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: porConfirmar, datos_fuentes: prep.fuentes || {}, reglas_cliente: reglasCliente, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   tinta: porLamina.map(r => ({ lamina: r.i + 1, rojo: r.rojo, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
+registrarQA(dirSalida, informe, prep.html_sha);
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
   if (borrador) console.log(`BORRADOR: ${Object.keys(porConfirmar).length} dato(s) por confirmar (${Object.keys(porConfirmar).join(', ')}); la nota no pasa de ${TOPE_BORRADOR} hasta confirmarlos; ${avis.length} aviso(s), sin tope sería ${sinTope}; listo salvo datos: ${listoSalvoDatos ? 'sí' : 'no'}`);

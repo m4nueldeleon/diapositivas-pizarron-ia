@@ -88,6 +88,11 @@ Criterio de salida: una lista de láminas con su diseño y la voz de cada paso.
 
 ## 4. Render y revisión visual
 
+Antes del primer PNG sigue [Calidad antes del primer render](CALIDAD-PRIMER-RENDER.md):
+`node scripts/armar.mjs mi-video --corregir`. El agente corrige la cola y repite; las decisiones
+del cliente siguen pendientes. Solo con el filtro limpio el comando ejecuta render y QA.
+Los comandos directos siguientes quedan para calibración y borradores explícitos.
+
 ```bash
 node scripts/render.mjs mi-video          # PNG por paso + presentador + hoja de contacto
 node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que corregir
@@ -130,7 +135,8 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
 ## Desde Codex / sandbox
 
 Chromium necesita permiso para arrancar: en macOS, Codex con `-s workspace-write` puede bloquearlo.
-Ejecuta render y QA con permiso completo (`-s danger-full-access` o escalando el comando).
+Si está bloqueado, Claude o el orquestador hace el render y revisa las hojas en su entorno habilitado.
+Codex conserva el sandbox y entrega el filtro previo; no relanza con permisos distintos.
 Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`: es solo un filtro previo,
 con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.
 Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes renderizar, entrega
@@ -197,7 +203,7 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
 
 En Keynote usa transición **ninguna** dentro de la lámina y **disolver 0.3 s** entre láminas. Pega `notas-por-paso.md` en las notas: incluye voz, `accion` y `si_falla`. `--pdf-pasos` es incompatible con `--finales`; `--pasos` solo imprime el mapa y sale antes de abrir el navegador.
 
-Para guion numerado con recortes por duración (60/45), Keynote y show, remite a la capa de escenario `conferencia-escenario-ia`; no se implementan aquí.
+Para guion numerado con recortes por duración (60/45), Keynote y show, remite a la capa de escenario; no se implementan aquí.
 
 Teclas del presentador:
 
@@ -269,7 +275,7 @@ ejemplo. La siguiente vez se aplica sin que lo pida.
 
 Antes de presentar, abre la URL corta y estable del `qr` y prueba el código proyectado con iPhone y Android desde unos 15 m. Conserva cuatro módulos blancos alrededor y al menos 10 px por módulo a 1920. El cierre lleva QR, URL corta grande o palabra clave; un dominio de relleno impide la entrega. Usa `accion` para dar tiempo de escanear y `si_falla` para dictar la URL o la palabra clave.
 
-El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha`; cada aviso restante se corrige o entra en `avisos_aceptados` con su motivo. `garantia: false` requiere una lámina de condición de salida si hay precio público.
+El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha` y se revisaron todas las hojas; cada aviso restante se corrige o corresponde a una excepción explícita congelada en `reglas_cliente` (alias `avisos_aceptados`). `garantia: false` requiere una lámina de condición de salida si hay precio público.
 
 Las láminas marcadas NO-VALE nunca son evidencia.
 

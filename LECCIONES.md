@@ -199,3 +199,9 @@ en el momento en que el usuario corrige algo, con la regla, el porqué y la fech
 - **Regla**: los modelos alternan golpes fuertes (sello confirmado, tachón, llave, anotación con flecha, óvalo, objeto y escala), no solo listas e ideas. Un golpe cada 4-6 láminas y ~3-4 en el momento clave, un énfasis por lámina.
 - **Porqué**: quien copia un modelo copia su ritmo; cambiar el texto de una sucesión de listas conserva la monotonía. La nota gris no sustituye una marca roja.
 - **Verificación**: QA cuenta golpes y capa roja desde el deck, también sin navegador; los datos todavía sin confirmar permanecen como huecos, sin sello de garantía.
+## 2026-09-24 · La primera nota necesita evidencia de la captura
+
+Una nota de texto o de un QA posterior no es la nota del primer render. Guarda la primera
+medición asociada a sus huellas de deck y HTML; si no existe, reporta que falta. Antes de
+renderizar, corrige avisos conocidos y detén el armado ante datos pendientes. La autocorrección
+de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o deja el caso al autor.

@@ -29,12 +29,48 @@ const esValor = v => (typeof v === 'string' && v.trim() !== '') || (typeof v ===
 const esPropuesta = v => v && typeof v === 'object' && !Array.isArray(v) && v.pendiente !== true;
 const esPendiente = v => v && typeof v === 'object' && !Array.isArray(v) && v.pendiente === true;
 
+// Un marcador mal escrito no debe viajar hasta el primer PNG como texto normal.
+export function validarMarcadores(deck) {
+  const errores = [];
+  const ir = (x, ruta) => {
+    if (typeof x === 'string') {
+      const resto = x.replace(RE_CLAVE, '');
+      if (/\{\{|\}\}/.test(resto)) errores.push(`${ruta}: marcador sin cerrar o inválido; usa {{CLAVE}} en MAYÚSCULAS y decláralo en datos`);
+    } else if (Array.isArray(x)) x.forEach((v, i) => ir(v, `${ruta}[${i}]`));
+    else if (x && typeof x === 'object') Object.entries(x).filter(([k]) => !k.startsWith('_')).forEach(([k, v]) => ir(v, `${ruta}.${k}`));
+  };
+  ir(deck.laminas, 'laminas');
+  ir(deck.titulo, 'titulo');
+  return errores;
+}
+
+// Glosario derivado, sin segunda copia editable de las cifras. Incluye voz, notas y fuentes.
+export function glosarioDatos(deck) {
+  const usos = new Map();
+  const ir = (x, lamina, campo) => {
+    if (typeof x === 'string') for (const [, clave] of x.matchAll(RE_CLAVE)) {
+      usos.set(clave, [...(usos.get(clave) || []), { lamina, campo }]);
+    }
+    else if (Array.isArray(x)) x.forEach((v, i) => ir(v, lamina, `${campo}[${i}]`));
+    else if (x && typeof x === 'object') Object.entries(x).filter(([k]) => !k.startsWith('_')).forEach(([k, v]) => ir(v, lamina, campo ? `${campo}.${k}` : k));
+  };
+  (deck.laminas || []).forEach((l, i) => ir(l, i + 1, ''));
+  return Object.fromEntries([...usos].map(([clave, sitios]) => {
+    const d = Object.hasOwn(deck.datos || {}, clave) ? deck.datos[clave] : undefined;
+    const valor = esPropuesta(d) ? d.valor : d;
+    const estado = esPendiente(d) ? 'pendiente' : esPropuesta(d) && d.propuesto === true ? 'propuesto' : esValor(valor) ? 'confirmado' : 'sin_declarar';
+    return [clave, { estado, ...(esValor(valor) ? { valor } : {}), ...(d?.fuente ? { fuente: d.fuente } : {}), usos: sitios }];
+  }));
+}
+
 // Errores de contrato del bloque «datos» (claves en MAYÚSCULAS, valores de texto o número)
 export function validarDatos(datos) {
   if (datos == null) return [];
   if (typeof datos !== 'object' || Array.isArray(datos)) return ['«datos» debe ser un objeto { "PRECIO": "$4,997", … }'];
   const e = [];
   for (const [k, v] of Object.entries(datos)) {
+    const literal = esPropuesta(v) ? v.valor : v;
+    if (typeof literal === 'string' && /\{\{|\}\}|\[[A-ZÁÉÍÓÚÑÜ0-9_][A-ZÁÉÍÓÚÑÜ0-9 _-]*\]/.test(literal)) e.push(`datos.${k}: valor contiene otro marcador; pon el dato real o pendiente: true, no se resuelven alias`);
     if (!CLAVE_VALIDA.test(k)) e.push(`datos: la clave «${k}» va en MAYÚSCULAS (letras, números, _ o -), como {{PRECIO}}`);
     if (v && typeof v === 'object' && !Array.isArray(v)) {
       if (v.tipo != null && !TIPOS_DATO.includes(v.tipo)) e.push(`datos.${k}: tipo debe ser ${TIPOS_DATO.join('|')}`);

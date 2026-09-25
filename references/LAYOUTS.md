@@ -1304,16 +1304,18 @@ con `procedencia: "ejemplo"`; esa excepción didáctica no representa a una pers
 
 El QA de composición cuenta desde el deck: `arco.golpes` publica `{total, laminas:[{lamina, tipos}], mayorTramoSin}`. La lista cerrada de golpes y sus umbrales están en GUION §5. El conteo de capa roja usa subrayado, flecha roja, llave, círculo/óvalo, tachón, sello y cruz roja; excluye fuentes, voz, procedencia, notas grises, tablas y flechas negras/verdes. En 12+ láminas sin `camara`, avisa menos de tres tipos o cuatro seguidas sin rojo. `lista` por encima de 25% tiene aviso propio. Sin navegador queda pendiente la **geometría** de la tinta, no su conteo; el render medido además publica `tinta[].rojo`.
 
-`garantia: false` declara que no hay garantía comercial, pero con precio visible exige una lámina que explique qué pasa si no funciona. `avisos_aceptados` reutiliza la ficha de reglas del cliente; no se crea un campo paralelo en el deck.
+`garantia: false` declara que no hay garantía comercial, pero con precio visible exige una lámina que explique qué pasa si no funciona. `reglas_cliente` congela la ficha de reglas del cliente. `avisos_aceptados` es el alias heredado del mismo contrato; usar ambos da error.
 
 ```json
-{"avisos_aceptados":[{"regla":"duracion","pedido":"Una pieza de 90 segundos","decision":"aceptada","motivo":"El canal exige ese máximo"},{"regla":"firma_relleno","pedido":"Usar una firma inventada","decision":"rechazada","motivo":"La firma debe ser real"}]}
+{"reglas_cliente":[{"regla":"duracion","pedido":"Una pieza de 90 segundos","decision":"aceptada","motivo":"El canal exige ese máximo"},{"regla":"firma_relleno","pedido":"Usar una firma inventada","decision":"rechazada","motivo":"La firma debe ser real"}]}
 ```
 
 `regla` usa ids cerrados negociables: `laminas_fijadas`, `duracion`, `revelacion`. `pedido`, `decision` (`aceptada` o `rechazada`) y `motivo` conservan la decisión; `laminas: [2]` limita opcionalmente su alcance. Una aceptada pasa a información como «excepción pedida por el cliente», sin descuento. `firma_relleno`, `prueba_inventada`, `cifra_inventada` y `oscura_regla_8` solo admiten rechazo; aceptarlas da error «esta regla no se exceptúa; regístrala como rechazada».
-Se mantiene el formato anterior `{ "texto": "subcadena del aviso", "laminas": [2], "motivo": "justificación concreta" }` para revisión motivada, sin saltarse reglas no negociables. El motivo siempre es obligatorio. `qa.json → reglas_cliente` lista rechazadas y excepciones aplicadas. En la entrega: «Pediste X; lo hice Y porque Z».
+Se mantiene el formato anterior `{ "texto": "subcadena del aviso", "laminas": [2], "motivo": "justificación concreta" }` para revisión motivada, sin saltarse reglas no negociables. El motivo siempre es obligatorio. `qa.json → reglas_cliente` lista rechazadas, excepciones aplicadas y pedidos sin aviso coincidente. En la entrega: «Pediste X; lo hice Y porque Z».
 Un aviso sin resolver impide `estado: listo`, aunque la nota sea mayor de 90.
 
 ### Símbolo propio que vuelve
 
 Los campos que aceptan emoji (`idea`, `pasos`, `flujo`, `stack`, `lista`) admiten `trazo:triangulo|MÉTODO`, `trazo:circulo|MÉTODO` y `trazo:marco|MÉTODO`. Solo para términos acuñados sin emoji literal, con 1–2 rótulos por deck, repetidos con figura idéntica; véase EMOJIS, «Término acuñado sin emoji literal». Para una metáfora física, usa `objeto` con `imagen: "assets/objeto.svg"`; su grupo vuelve con `como`, conservando imagen y medidas, sin heredar texto ni voz.
+
+El preflight, `tipo_arreglo`, los criterios de paro, el historial del primer render y `glosario` derivado de `datos` se documentan en [Calidad antes del primer render](CALIDAD-PRIMER-RENDER.md).

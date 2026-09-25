@@ -98,20 +98,20 @@ las tipografías.
 
 Antes de escribir, congela el trato y las reglas del cliente; declara `persona` y conserva la misma persona en pantalla y voz (GUION §1).
 
-Antes del guion, copia a `avisos_aceptados` todo lo explícito del encargo que choque con una regla: es la ficha de reglas del cliente, con pedido, decisión y motivo (LAYOUTS, «Cierre de QA»). No hay un segundo campo `reglas_cliente`.
+Antes del guion, congela en `reglas_cliente` lo explícito del encargo que choque con una regla, con pedido, decisión y motivo (LAYOUTS, «Cierre de QA»). `avisos_aceptados` sigue como alias heredado: usa solo uno.
 
 | Fase | Qué haces | Sale |
 |---|---|---|
 | **1. Entrada** | Tema → escribe el guion completo de su pieza y duración (ARCOS.md), en beats, con voz humana (VOZ-HUMANA.md). Guion → pártelo. Grabación → transcríbela (PROTOCOLO §6). En `vsl`, `vsl-corto` y `webinar`, ANTES de los beats, la **ficha de venta** en 8 líneas: público y dolor con sus palabras · la promesa (resultado + plazo + «sin…») · el mecanismo con nombre · la prueba disponible · **promesa → qué la prueba → qué mide esa fuente** (si mide otra cosa, la voz la dice como dato del mercado y la lámina nombra lo que se midió) · una objeción real y cómo se DEMUESTRA la respuesta · un solo llamado (botón o palabra clave) · **quién entrega: yo, mi equipo o un asesor/mentor**, guardado en `datos.QUIEN_ENTREGA` (`"yo"`, `"equipo"` o `"asesor"`), nunca como clave de raíz. Lo que falte va como dato pendiente, igual que un `{{…}}`. | beats |
 | **2. Beats → diseños** | Cada beat de 2 a 3 s es un paso. Mismo tema, mismo paso de la misma lámina; tema nuevo, lámina nueva. Elige el diseño con la tabla de GUION-A-LAMINAS §2. **Fija el diccionario del deck antes de escribir**: un emoji por concepto (EMOJIS.md), y que ninguno diga lo contrario en otra lámina (la silla vacía de una rejilla no es «llegó» después). | lista de láminas |
 | **3. deck.json** | Escríbelo en `<proyecto>/deck.json` con `voz` en cada lámina. Aplica las reglas de texto: comprimir, ≤ 22 palabras, una negrita, un énfasis. | deck.json |
-| **4. Render** | `node <skill>/scripts/render.mjs <proyecto>` | PNG por paso, `hoja.jpg`, presentador |
+| **4. Preflight y render** | `node <skill>/scripts/armar.mjs <proyecto> --corregir` (en Codex, añade `--sin-navegador`). Corrige la cola de `armado.json` y repite; no genera PNG mientras queden avisos o datos pendientes. | `qa-texto.json`, `armado.json`; con filtro limpio, render + QA |
 | **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
 | **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>` (o `render.mjs --qa`). **La primera corrida nunca es la entrega**: corrige cada error y aviso que QA ya conoce (el mapa que vuelve vacío tras un bloque corto, una objeción que solo se responde con una frase, «sin prueba real», una tasa sin origen, un `no:` que niega un paso del mapa), vuelve a renderizar y a correr QA, y entrega con la salida de la ÚLTIMA corrida. El deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `avisos-pendientes` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
 
-Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**.
+Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**. El ciclo obligatorio, las autocorrecciones acotadas y el criterio de paro están en **[Calidad antes del primer render](references/CALIDAD-PRIMER-RENDER.md)**.
 
 ## 2. Las 10 reglas que no se rompen
 
@@ -249,10 +249,11 @@ Para el cierre en vivo, `idea`, `lista` y `boton` aceptan `qr: {url, rotulo?}` (
 ## Desde Codex / sandbox
 
 Chromium necesita permiso para arrancar: en macOS, Codex con `-s workspace-write` puede bloquearlo.
-Ejecuta render y QA con permiso completo (`-s danger-full-access` o escalando el comando).
+Si está bloqueado, Claude o el orquestador hace el render y revisa las hojas en su entorno habilitado.
+Codex conserva el sandbox y entrega el filtro previo; no relanza con permisos distintos.
 Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`: es solo un filtro previo,
 con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.
 Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes renderizar, entrega
 `deck.json` + `qa-texto.json` + **«SIN RENDER, revisión visual pendiente»**.
 
-El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha`; cada aviso restante se corrige o entra en `avisos_aceptados` con su motivo. `garantia: false` requiere una lámina de condición de salida si hay precio público.
+El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `deck_sha` y se revisaron todas las hojas; cada aviso restante se corrige o corresponde a una excepción explícita congelada en `reglas_cliente` (alias `avisos_aceptados`). `garantia: false` requiere una lámina de condición de salida si hay precio público.

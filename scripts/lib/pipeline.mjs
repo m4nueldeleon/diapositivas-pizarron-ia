@@ -15,7 +15,7 @@ for (const s of [process.stdout, process.stderr]) s.on('error', e => { if (e.cod
 export const DIR_SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 // Banderas que nunca llevan valor (así «--finales carpeta» no se come la carpeta)
-const BOOLEANAS = new Set(['--forzar', '--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--pdf-pasos', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa', '--sin-navegador']);
+const BOOLEANAS = new Set(['--forzar', '--finales', '--sin-hoja', '--solo-html', '--json', '--conservar-cuadros', '--pdf', '--pdf-pasos', '--notas', '--sin-notas', '--estricto', '--pasos', '--qa', '--sin-navegador', '--corregir']);
 
 export function argumentos(argv) {
   const args = argv.slice(2);
@@ -51,7 +51,7 @@ export function prepararSalida(entrada, salida, { forzar = false } = {}) {
   const htmlPath = path.join(dirSalida, 'index.html');
   fs.writeFileSync(htmlPath, r.html);
   // `crudo`: el deck.json con los `como` ya resueltos, antes de sustituir `datos` (las reglas leen de ahí los {{MARCADORES}})
-  return { ...r, credenciales: buscarMarca(dirDeck)?.credenciales || [], crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
+  return { ...r, html_sha: crypto.createHash('sha256').update(r.html).digest('hex'), credenciales: buscarMarca(dirDeck)?.credenciales || [], crudo: { ...base, laminas: r.crudoResuelto.laminas }, jsonPath, dirDeck, dirSalida, htmlPath, firmaDe: f.ruta, fichaMarca: f.ficha,
     evidencia: evidenciaReplica(leido, jsonPath, fs.readFileSync(jsonPath), { forzar }), avisoFirma: f.aviso, infoDatosFicha: p.info, avisoReplica: avisoReplica(leido, jsonPath) };
 }
 
@@ -95,7 +95,7 @@ export class ErrorNavegador extends Error {
 export function clasificarErrorNavegador(error) {
   const mensaje = String(error?.message || error);
   if (/bootstrap_check_in|MachPortRendezvous|Permission denied|SIGTRAP|Target page, context or browser has been closed/i.test(mensaje)) {
-    return new ErrorNavegador('Chromium no puede arrancar dentro de este sandbox (p. ej. Codex con -s workspace-write en macOS). Corre este comando con permiso completo (Codex: -s danger-full-access o escalar el comando); mientras, usa qa.mjs --sin-navegador', 'sandbox');
+    return new ErrorNavegador('Chromium no puede arrancar dentro de este sandbox (p. ej. Codex con -s workspace-write en macOS). El orquestador o Claude debe renderizar y revisar las hojas fuera del sandbox; mientras, usa qa.mjs --sin-navegador. SIN RENDER, revisión visual pendiente', 'sandbox');
   }
   if (/falta el navegador|Executable doesn.t exist|executable.*(not found|does not exist)|No encuentro playwright/i.test(mensaje)) {
     return new ErrorNavegador(mensaje, 'falta');

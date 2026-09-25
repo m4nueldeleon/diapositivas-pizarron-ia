@@ -27,7 +27,7 @@ export function escapar(s) {
 }
 
 // Dato pendiente a la vista: [PRECIO], [WHATSAPP], [DÍAS] (solo MAYÚSCULAS; «[nombre]» es plantilla de chat)
-export const RE_HUECO = /\[([A-ZÁÉÍÓÚÑÜ0-9][A-ZÁÉÍÓÚÑÜ0-9 _\-]{1,30})\]/g;
+export const RE_HUECO = /\[([A-ZÁÉÍÓÚÑÜ0-9_][A-ZÁÉÍÓÚÑÜ0-9 _\-]{0,30})\]/g;
 
 const TONOS = new Set(['v', 'r', 'n', 'g', 'a', 'k', 'o']);
 

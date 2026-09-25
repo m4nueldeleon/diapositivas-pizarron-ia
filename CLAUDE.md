@@ -123,6 +123,17 @@ SKILL.md.
 
 Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROTOCOLO.md#desde-codex--sandbox); `--sin-navegador` no sustituye render, QA medidos ni revisión de la hoja.
 
+### Ronda 8 · Primer render y evidencia
+- `scripts/armar.mjs` es la entrada de producción: preflight, autocorrecciones acotadas con respaldo,
+  relectura del archivo corregido y render+QA solo sin pendientes. No inventa datos ni excepciones.
+- `lib/autocorregir.mjs`, `ciclo-calidad.mjs` y `evidencia-calidad.mjs` separan correcciones,
+  cola con `tipo_arreglo`/paro e historial de la primera nota medida. `html_sha` ata QA a capturas.
+- `CAMPOS_RAIZ` registra el contrato raíz; `reglas_cliente` se valida y sanea como alias exclusivo
+  de `avisos_aceptados`. Los layouts no leen un campo nuevo.
+- `datos.mjs` valida marcadores y deriva el glosario de usos; ambos QA lo publican.
+- Protocolo y límites: `references/CALIDAD-PRIMER-RENDER.md`. Regresiones: `pruebas/calidad-r8.test.mjs`.
+- Con Chromium bloqueado, la revisión visual pasa a Claude/orquestador; no se cambia el sandbox.
+
 ### Ronda 7 · Estilo e íconos
 - `emoji.mjs` valida `trazo:figura|RÓTULO` y `tinta.mjs` produce su geometría determinista; `reglas-deck.mjs` revisa reuso, identidad del producto, viñetas de plan y eyebrows.
 - `layouts-texto.mjs` comparte la viñeta numérica y el reloj de segmentos con el tramo en vivo; `runtime.js → actualizarReloj` actualiza la misma geometría en presentador y captura. `pasos-mapa.mjs` cuenta también el óvalo diferido.

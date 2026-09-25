@@ -192,7 +192,8 @@ test('S: mapa repetido difiere de avance vacío, las citas y decisiones presenci
 });
 
 test('G/Q/C: texto oculto no es pendiente, los rangos se respetan y las notas también llevan anclas', t => {
-  assert.deepEqual(pendientesDesdeHTML('<section><div>[PRECIO-BASE] [PRECIO BASE] [X]</div><div class="pz-oculto">[OCULTO]</div><div class="escena clon">[CLON]</div></section>'),[['PRECIO-BASE','PRECIO BASE']]);
+  // Una clave de una letra también es un dato pendiente; ocultos y clones siguen excluidos.
+  assert.deepEqual(pendientesDesdeHTML('<section><div>[PRECIO-BASE] [PRECIO BASE] [X]</div><div class="pz-oculto">[OCULTO]</div><div class="escena clon">[CLON]</div></section>'),[['PRECIO-BASE','PRECIO BASE','X']]);
   assert.equal(clasificarAvisos(['láminas 2–4: ejemplo'],[{texto:'ejemplo',motivo:'Adrede',laminas:[2]}]).pendientes.length,1);
   const l=idea('((2032))',{anotaciones:[{a:'ovalo',texto:'((Otro dato))'}]});
   assert.ok(reglasMarcasYSuperficies({laminas:[l]}).errores.some(e => /más de un óvalo/.test(e)));

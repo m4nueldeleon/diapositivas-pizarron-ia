@@ -10,7 +10,7 @@ import { validarQr } from './qr.mjs';
 //              avisos suaves (campo que ese diseño no usa, emoji dudoso) que QA cuenta como aviso, no error.
 import { analizarCompuesto, esEmojiTexto, specsDeCampo, esMano } from './emoji.mjs';
 import { palabras, plano } from './markup.mjs';
-import { validarDatos } from './datos.mjs';
+import { validarDatos, validarMarcadores } from './datos.mjs';
 import { PIEZAS, minutosObjetivo } from './tiempos.mjs';
 import { etiquetasBarras, tablaAislada } from './layouts-datos.mjs';
 
@@ -28,6 +28,9 @@ const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barra
 
 // Campos que lee cada diseño (además de los COMUNES). Si agregas un campo a un layout, agrégalo aquí:
 // pruebas/contrato.test.mjs revisa que todo «l.campo» de layouts-*.mjs esté en esta tabla.
+// Contrato de raíz; los campos de diseño siguen en CAMPOS.
+export const CAMPOS_RAIZ = ['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'garantia', 'reglas_cliente', 'avisos_aceptados', 'datos', 'laminas', 'piel', '_comentario'];
+
 export const COMUNES = ['id', 'tipo', 'como', 'paga', 'voz', 'accion', 'si_falla', 'excepcion_persona', 'credibilidad', 'dur', 'ancla', 'anclas', 'revelar', 'sello', 'sello_paso', 'sello_pos', 'sello_sobre',
   'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar',
   // `llamado: true` marca una lámina como llamado visible (reglas-deck.mjs); `paso_ref` elige el paso que
@@ -313,7 +316,11 @@ export function validarDeck(deck, tipos) {
   if (deck.formato && !['16:9', '9:16', '1:1', '4:5'].includes(deck.formato)) e.push(`formato «${deck.formato}» no existe (usa 16:9, 9:16, 1:1 o 4:5)`);
   if (deck.emoji && !['auto', 'apple', 'fluent'].includes(deck.emoji)) e.push(`emoji «${deck.emoji}» no existe: usa "apple" (Mac, lo más fiel) o "fluent" (Linux, nube, HTML compartido); "auto" solo en decks heredados`);
   if (deck.piel != null && !['🏻', '🏼', '🏽', '🏾', '🏿', 'ninguno'].includes(deck.piel)) e.push(`piel «${deck.piel}» no existe (usa 🏻, 🏼, 🏽, 🏾, 🏿 o "ninguno")`);
-  e.push(...validarDatos(deck.datos), ...validarAceptaciones(deck.avisos_aceptados));
+  e.push(...validarDatos(deck.datos), ...validarMarcadores(deck), ...validarAceptaciones(deck.avisos_aceptados));
+  if (deck.reglas_cliente != null) e.push(...validarAceptaciones(deck.reglas_cliente).map(x => x.replaceAll('avisos_aceptados', 'reglas_cliente')));
+  if (deck.reglas_cliente != null && deck.avisos_aceptados != null) e.push('usa reglas_cliente o avisos_aceptados, no ambos: una sola ficha congelada');
+  const ids = deck.laminas.map(l => l?.id).filter(x => x != null);
+  if (new Set(ids).size !== ids.length) e.push('id de lámina repetido: como y paga exigen una referencia única');
   // `libre` vale null (sin rango): se valida que la clave EXISTA, sin tomar claves del prototipo («toString»)
   if (deck.pieza != null && (typeof deck.pieza !== 'string' || !Object.hasOwn(PIEZAS, deck.pieza))) e.push(`pieza «${deck.pieza}» no existe (usa ${Object.keys(PIEZAS).join(', ')})`);
   if (deck.duracion_objetivo != null && minutosObjetivo(deck.duracion_objetivo) == null) e.push(`duracion_objetivo «${deck.duracion_objetivo}» no se entiende: minutos (45) o "mm:ss" ("0:45")`);
@@ -593,7 +600,8 @@ export function sanearDeck(deck) {
   const persona_excepciones = Array.isArray(deck.persona_excepciones) ? deck.persona_excepciones.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : [];
   if (deck.persona_excepciones != null && (!Array.isArray(deck.persona_excepciones) || persona_excepciones.length !== deck.persona_excepciones.length)) avisos.push('persona_excepciones: conserva solo frases de texto no vacías (VOZ-HUMANA.md)');
   const conceptos = deck.conceptos && typeof deck.conceptos === 'object' && !Array.isArray(deck.conceptos) ? Object.fromEntries(Object.entries(deck.conceptos).filter(([k, v]) => k.trim() && typeof v === 'string' && v.trim() && v.length <= 80)) : undefined;
-  const avisos_aceptados = deck.avisos_aceptados == null ? undefined : sanearAceptaciones(deck.avisos_aceptados,avisos);
+  const ficha = deck.reglas_cliente ?? deck.avisos_aceptados;
+  const avisos_aceptados = ficha == null ? undefined : sanearAceptaciones(ficha,avisos);
   const garantia = typeof deck.garantia === 'boolean' ? deck.garantia : undefined;
-  return { deck: { ...deck, ...(deck.avisos_aceptados != null ? {avisos_aceptados} : {}), ...(deck.garantia != null ? {garantia} : {}), ...(deck.persona_excepciones != null ? { persona_excepciones } : {}), ...(deck.conceptos != null ? { conceptos } : {}), ...(deck.sala != null ? { sala } : {}), ...(deck.persona != null ? { persona } : {}), marca, laminas }, avisos, sugerencias };
+  return { deck: { ...deck, ...(ficha != null ? {avisos_aceptados} : {}), ...(deck.reglas_cliente != null ? {reglas_cliente: avisos_aceptados} : {}), ...(deck.garantia != null ? {garantia} : {}), ...(deck.persona_excepciones != null ? { persona_excepciones } : {}), ...(deck.conceptos != null ? { conceptos } : {}), ...(deck.sala != null ? { sala } : {}), ...(deck.persona != null ? { persona } : {}), marca, laminas }, avisos, sugerencias };
 }

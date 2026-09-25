@@ -32,6 +32,7 @@ import { rutaGlobal } from './lib/marca.mjs';
 import { exportarPdf, exportarPdfPasos, conNotas } from './lib/pdf.mjs';
 import { duracionVivo } from './lib/construir.mjs';
 import { mensajeSinFirma } from './lib/reglas-deck.mjs';
+import { registrarRender } from './lib/evidencia-calidad.mjs';
 
 try {
 const { opt, flag, pos } = argumentos(process.argv);
@@ -171,6 +172,7 @@ if (flag('--pdf-pasos')) {
 }
 if (errores.length) console.error('✗ errores de la página:\n  ' + errores.join('\n  '));
 await browser.close();
+if (!errores.length && !prep.evidencia.invalido) registrarRender(dirSalida, { ...prep.evidencia, html_sha: prep.html_sha });
 console.log(`Presentador: abre ${htmlPath} (→ avanza, ← regresa, N notas, O vista de ensayo, B negro, 5 G salta, ? ayuda)`);
 // --qa: corre QA sobre la misma salida al terminar (ESTADO, falta_para_final y la línea del arco: contrato, revelación y
 // llamados en %), para que la entrega salga de qa.json y no de juntar a mano (SKILL §4)

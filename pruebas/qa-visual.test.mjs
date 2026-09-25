@@ -8,6 +8,23 @@ import { spawnSync } from 'node:child_process';
 import { prepararSalida, abrir, DIR_SKILL } from '../scripts/lib/pipeline.mjs';
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'pz-qa-'));
+
+test('QA r8: marcador de una letra en el stack intermedio e historial del primer render real', { timeout: 120_000 }, t => {
+  const dir = tmp(); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ marca: false, emoji: 'apple', laminas: [
+    { tipo: 'stack', id: 'oferta', items: [{ emoji: '🎁', texto: '[X]' }, { emoji: '📋', texto: 'Plan' }], remate: 'Todo junto' },
+  ] }));
+  const r = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts/render.mjs'), dir, '--qa'], { encoding: 'utf8' });
+  assert.ok(fs.existsSync(path.join(dir, 'salida/qa.json')), r.stderr || r.stdout);
+  const q = JSON.parse(fs.readFileSync(path.join(dir, 'salida/qa.json')));
+  assert.ok(q.errores.some(e => /\[X\]/.test(e)), 'el remate no esconde el dato del paso anterior');
+  assert.ok(q.pendientes_por_paso.some(p => p.datos['[X]']?.length));
+  const h = JSON.parse(fs.readFileSync(path.join(dir, 'salida/calidad-historial.json')));
+  assert.equal(h.qa_primer_render.nota, q.nota);
+  assert.equal(h.qa_primer_render.deck_sha, q.deck_sha);
+  assert.equal(h.renders[0].html_sha, q.html_sha);
+});
+
 function qa(deckDir) {
   const r = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts', 'qa.mjs'), deckDir, '--salida', tmp(), '--json'], { encoding: 'utf8' });
   const i = r.stdout.indexOf('{');
