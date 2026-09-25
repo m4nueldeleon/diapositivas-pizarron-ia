@@ -670,22 +670,22 @@
         const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
         // R17 [reel 9:16]: en el lienzo alto no cabe la nota a la derecha (salía 440 px fuera y la lista bajaba a 52 px).
         // La llave va HORIZONTAL bajo los renglones que agrupa y la nota centrada debajo, como la llave de una columna.
-        if (H > W) {
+        const llaveAbajo=(objetivo=.47)=>{
           Object.assign(n.style,{textWrap:'balance',whiteSpace:'normal',maxWidth:Math.round(W*.84)+'px',textAlign:'center'});
           n.dataset.llaveBajo='1';
           const cs=[el,fin].map(e=>caja(e,lam)).concat(entre), x0=Math.min(...cs.map(b=>b.x)), x1=Math.max(...cs.map(b=>b.x+b.w));
           const y1=Math.max(...cs.map(b=>b.y+b.h)), mb=H*.06;
           let top=y1+100+H*.05;
           if(bloque){
-            // El conjunto (lista + llave + nota) se centra al 47% del alto sin salir de los márgenes
+            // El conjunto (lista + llave + nota) se centra sin salir de los márgenes (47% en 9:16; ver R19 en 16:9)
             const arriba=caja(bloque,lam).y, abajo=top+n.offsetHeight;
-            const dy=Math.min((H-mb)-abajo, Math.max(mb-arriba, H*.47-(arriba+abajo)/2));
+            const dy=Math.min((H-mb)-abajo, Math.max(mb-arriba, H*objetivo-(arriba+abajo)/2));
             const z=parseFloat(getComputedStyle(bloque).zoom)||1;
             if(Math.abs(dy)>1){ bloque.style.position='relative'; bloque.style.top=((parseFloat(bloque.style.top)||0)+dy/z)+'px'; top+=dy; }
           }
           n.style.left=((x0+x1)/2-n.offsetWidth/2)+'px'; n.style.top=top+'px';
-          puestas.push(caja(n,lam)); return;
-        }
+        };
+        if (H > W) { llaveAbajo(); puestas.push(caja(n,lam)); return; }
         const pal=((n.textContent||'').trim().match(/\S+/g)||[]).length, f0=parseFloat(getComputedStyle(el).fontSize)||84;
         const colocar=()=>{
           const a = caja(el, lam), b = caja(fin, lam), entre = [];
@@ -723,6 +723,20 @@
             const izq=Math.min(...textos.map(t=>t.x)), der=Math.max(N.x+N.w, ...textos.map(t=>t.x+t.w));
             const dx=Math.min((izq+der)/2-W/2, izq-60), z=parseFloat(bloque.style.zoom)||1;
             if(dx>20){ bloque.style.position='relative'; bloque.style.left=((parseFloat(bloque.style.left)||0)-dx/z)+'px'; colocar(); }
+          }
+        }
+        // R19 [juez, bug 16:9]: ni el corrimiento ni el piso de 64 px bastan con ítems largos — la nota se salía del
+        // lienzo en vez de replegarse. Cae al mismo repliegue horizontal que ya usa 9:16 (llave bajo la lista, nota
+        // centrada debajo); si el conjunto sigue sin caber, encoge la lista (no la nota) hasta el mismo piso de 64 px.
+        if(exceso>0){
+          if(bloque){ bloque.style.position=''; bloque.style.left=''; bloque.style.top=''; }
+          n.style.whiteSpace='nowrap'; n.style.maxWidth='none';
+          const mb2=H*.06;
+          for(let z=1; z>=zmin-1e-6; z-=.06){
+            if(bloque) bloque.style.zoom = z<1 ? z.toFixed(3) : '';
+            llaveAbajo(.47);
+            const cab=caja(bloque,lam), N=caja(n,lam);
+            if(cab.y>=mb2-1 && N.y+N.h<=H-mb2+1) break;
           }
         }
         puestas.push(caja(n,lam)); return;
