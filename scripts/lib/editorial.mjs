@@ -129,8 +129,10 @@ export function reglasEditoriales(deck) {
     }
     // R14 [juez r14]: «Que no tenga que ~~buscarte en Google~~» niega dos veces: el tachón ya dice «no».
     for (const t of [l.texto, l.encabezado, ...(Array.isArray(l.items) ? l.items.map(x => typeof x === 'string' ? x : x?.texto) : [])].filter(x => typeof x === 'string')) {
-      for (const frase of t.split(/[.!?;:\n]|\\n/)) {
-        const m = frase.match(/~~[^~]+~~/); if (!m) continue;
+      // R15 [juez r15]: la frase se revisa ENTERA aunque cruce un salto de renglón («Que no tenga que\n~~buscarte…~~»); un
+      // tachón sobre un término citado («No contestes con un ~~«no»~~») no es doble negación.
+      for (const frase of t.replace(/\\n|\n/g, ' ').split(/[.!?;:]/)) {
+        const m = frase.match(/~~([^~]+)~~/); if (!m || /^\s*[«"“]/.test(m[1])) continue;
         const antes = frase.slice(0, m.index).trim().split(/\s+/).slice(-4).join(' ');
         if (/(^|\s)(no|nunca|sin|ni|jamás|jamas)(\s|$)/i.test(antes)) avisos.push(`lámina ${i + 1}: doble negación «${frase.trim().slice(0, 60)}»: el tachón ya niega; quita el «no» o no taches`);
       }

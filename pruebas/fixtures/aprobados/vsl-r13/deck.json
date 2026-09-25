@@ -1,0 +1,558 @@
+{
+  "titulo": "Kit para cobrar a tiempo",
+  "pieza": "vsl-corto",
+  "formato": "16:9",
+  "emoji": "apple",
+  "marca": false,
+  "persona": "tu",
+  "_comentario": "Ejercicio de oferta autorizado. Treinta láminas equivalen aproximadamente a cuatro minutos: se usa vsl-corto. No hay cifras de clientes ni resultados comerciales confirmados. La muestra y su demostración son originales de esta pieza; una salida utilizable no acredita cobros reales.",
+  "ficha_oferta": {
+    "ejemplo": true,
+    "producto": "Kit para cobrar a tiempo",
+    "publico": "Profesionales que venden servicios por proyecto",
+    "resultado": "Dejar cada cobro con fecha, responsable y siguiente acción",
+    "entrega": "Tres formatos editables y una guía de uso; descarga tras solicitar acceso",
+    "responsable": "El equipo autor del kit de ejemplo",
+    "precio": "Sin precio público; revisión del alcance antes de contratar",
+    "garantia": "Sin compra automática; puedes rechazar el alcance tras revisar la muestra",
+    "bonos": "Ninguno",
+    "llamado": "Botón Solicitar el kit",
+    "siguiente": "Recibes la muestra y una propuesta de alcance por correo",
+    "evidencia": "Muestra del formato, demostración didáctica y mensaje terminado; sin resultados comerciales medidos",
+    "fuente": "Ejercicio ficticio autorizado en el encargo de la ronda 13"
+  },
+  "datos": {
+    "QUIEN_ENTREGA": "equipo",
+    "ENTREGABLE": "Muestra del kit y propuesta de alcance por correo",
+    "OBJECION_1": "¿Y si cambia la fecha de pago?"
+  },
+  "laminas": [
+    {
+      "id": "gancho",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¿Pudiste revisar el pago?",
+          "ejemplo": true
+        },
+        {
+          "de": "otro",
+          "texto": "Lo veo en estos días.",
+          "ejemplo": true
+        }
+      ],
+      "sello": "SIN FECHA",
+      "voz": [
+        "Entregaste el trabajo y escribes para cobrar.",
+        "Responden que lo verán en estos días.",
+        "Tienes una respuesta, pero todavía no una fecha."
+      ],
+      "sello_sobre": "m1"
+    },
+    {
+      "id": "promesa",
+      "tipo": "idea",
+      "emoji": "📅",
+      "texto": "Cada cobro con fecha,\n__sin perseguir mensajes__",
+      "nota": "El acuerdo queda escrito",
+      "voz": [
+        "Puedes dejar cada cobro con fecha sin perseguir mensajes.",
+        "El primer cambio es que el acuerdo quede escrito."
+      ]
+    },
+    {
+      "id": "mecanismo",
+      "tipo": "pasos",
+      "n": 3,
+      "etiquetas": [
+        "Fecha",
+        "Responsable",
+        "Acción"
+      ],
+      "activo": 1,
+      "texto": "Método __Cobro acordado__",
+      "voz": [
+        "Lo llamamos Cobro acordado: fecha, responsable y siguiente acción."
+      ]
+    },
+    {
+      "id": "filtro",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "Sirve para:",
+          "items": [
+            "Servicios por proyecto",
+            "Pagos acordados"
+          ]
+        },
+        {
+          "titulo": "No sustituye:",
+          "items": [
+            "Resolver disputas",
+            "Asesoría jurídica"
+          ]
+        }
+      ],
+      "voz": [
+        "Sirve si vendes servicios por proyecto.",
+        "Y ya acordaste qué va a pagar.",
+        "No sustituye resolver disputas con tu cliente.",
+        "Tampoco sustituye la asesoría de un profesional."
+      ]
+    },
+    {
+      "id": "problema",
+      "tipo": "cita",
+      "emoji": "💬",
+      "texto": "~~«Te aviso cuando pueda»~~",
+      "tachar_paso": 1,
+      "voz": [
+        "Te aviso cuando pueda deja la acción abierta.",
+        "Tacha esa respuesta como compromiso de pago."
+      ]
+    },
+    {
+      "id": "vacio",
+      "tipo": "bifurcacion",
+      "origen": {
+        "emoji": "🤔",
+        "texto": "¿Quién sigue?"
+      },
+      "ramas": [
+        {
+          "texto": "Tú insistes"
+        },
+        {
+          "texto": "El cliente confirma"
+        }
+      ],
+      "llave": "Una fecha evita otra vuelta",
+      "voz": [
+        "Cuando no hay fecha, nadie sabe quién sigue.",
+        "Puedes insistir o pedir al cliente una confirmación concreta.",
+        "Una fecha evita volver a preguntar lo mismo."
+      ]
+    },
+    {
+      "id": "campos",
+      "tipo": "lista",
+      "encabezado": "Antes de escribir:",
+      "vineta": "numero",
+      "items": [
+        "Entrega acordada",
+        "Fecha de pago",
+        "Responsable del pago"
+      ],
+      "voz": [
+        "Ubica qué entrega acordaste con el cliente.",
+        "Recupera la fecha de pago de ese acuerdo.",
+        "Confirma quién autoriza el pago en su negocio."
+      ]
+    },
+    {
+      "id": "muestra",
+      "tipo": "prueba",
+      "capturas": [
+        {
+          "src": "assets/muestra.svg",
+          "ejemplo": true
+        }
+      ],
+      "fuente": "Formato original de esta pieza; muestra sin resultados comerciales",
+      "voz": [
+        "Esta es la muestra: campos para registrar el acuerdo."
+      ]
+    },
+    {
+      "id": "entrada",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "La entrega está aprobada. Marta autoriza el pago el viernes.",
+          "ejemplo": true
+        },
+        {
+          "de": "yo",
+          "texto": "Registro: aprobación recibida, Marta responsable, pago el viernes.",
+          "ejemplo": true
+        }
+      ],
+      "voz": [
+        "Ya tienes una aprobación y una responsable.",
+        "Copias esos datos sin cambiar lo que acordaron."
+      ]
+    },
+    {
+      "id": "decision",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Aprobación"
+        },
+        {
+          "etiqueta": "Marta"
+        },
+        {
+          "etiqueta": "Viernes"
+        }
+      ],
+      "texto": "El mensaje sale del __acuerdo__",
+      "voz": [
+        "La aprobación identifica el trabajo aceptado.",
+        "Marta es quien autoriza el pago.",
+        "El viernes es la fecha para confirmar."
+      ]
+    },
+    {
+      "id": "mensaje",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Marta, la entrega quedó aprobada. ¿Confirmas el pago acordado para el viernes?",
+          "ejemplo": true
+        },
+        {
+          "de": "otro",
+          "texto": "Sí, te confirmo el viernes.",
+          "ejemplo": true
+        }
+      ],
+      "voz": [
+        "Escribes a Marta con la entrega y fecha acordadas.",
+        "Su respuesta confirma un día que puedes registrar.",
+        "Esa respuesta permite registrar el compromiso."
+      ],
+      "anotaciones": [
+        {
+          "a": "m1",
+          "texto": "Permite registrar el compromiso"
+        }
+      ]
+    },
+    {
+      "id": "salida",
+      "tipo": "objeto",
+      "imagen": "assets/acuerdo-completo.svg",
+      "texto": "Un registro __utilizable__",
+      "fuente": "Documento de práctica completado; no acredita cobros reales",
+      "voz": [
+        "El formato terminado guarda los datos de la conversación."
+      ]
+    },
+    {
+      "id": "objecion",
+      "tipo": "idea",
+      "emoji": "🤔",
+      "encabezado": "Objeción #1",
+      "encabezado_pos": "entre",
+      "texto": "«{{OBJECION_1}}»",
+      "voz": [
+        "¿Y si cambia la fecha de pago?"
+      ]
+    },
+    {
+      "id": "respuesta",
+      "tipo": "chat",
+      "tam_texto": "84px",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Si cambia la fecha de pago, ¿qué día puedes comprometer sin cambiar el importe?",
+          "ejemplo": true
+        },
+        {
+          "de": "otro",
+          "texto": "El martes. Se conserva el importe acordado.",
+          "ejemplo": true
+        }
+      ],
+      "voz": [
+        "Pide otra fecha de pago; conserva el importe.",
+        "El cliente propone el martes con el mismo importe."
+      ]
+    },
+    {
+      "id": "condicion",
+      "tipo": "lista",
+      "encabezado": "Se conserva:",
+      "items": [
+        "El importe acordado",
+        "La nueva fecha",
+        "El trato respetuoso"
+      ],
+      "nota": "Otro día, mismo importe",
+      "voz": [
+        "Se conserva el importe acordado.",
+        "Registras la nueva fecha que confirmó.",
+        "Y mantienes el trato respetuoso.",
+        "Cambia el día, sin cambiar el importe."
+      ]
+    },
+    {
+      "id": "sinrespuesta",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "No recibí confirmación. ¿Qué fecha pueden comprometer para el pago?",
+          "ejemplo": true
+        },
+        {
+          "de": "otro",
+          "texto": "Necesito validar el lunes con administración.",
+          "ejemplo": true
+        }
+      ],
+      "anotaciones": [
+        {
+          "a": "m1",
+          "texto": "Falta confirmar la fecha",
+          "lado": "abajo"
+        }
+      ],
+      "voz": [
+        "Pide la fecha que sí pueden comprometer.",
+        "Validar el lunes no significa pagar el lunes.",
+        "Todavía falta confirmar la fecha del pago."
+      ]
+    },
+    {
+      "id": "criterio",
+      "tipo": "idea",
+      "emoji": "🔍",
+      "texto": "Confirmar no es\n__suponer__",
+      "nota": "Un compromiso por escrito",
+      "voz": [
+        "Distingue una revisión de una fecha de pago.",
+        "Guarda el compromiso que quedó por escrito."
+      ]
+    },
+    {
+      "id": "revelacion",
+      "tipo": "oscura",
+      "emoji": "📝",
+      "titulo": "Kit para cobrar a tiempo",
+      "texto": "Acuerdos que puedes seguir",
+      "voz": [
+        "Para ordenar ese seguimiento, aquí tienes el Kit para cobrar a tiempo."
+      ]
+    },
+    {
+      "id": "incluye",
+      "tipo": "stack",
+      "items": [
+        {
+          "emoji": "📝",
+          "texto": "Registro del acuerdo"
+        },
+        {
+          "emoji": "💬",
+          "texto": "Mensajes de seguimiento"
+        },
+        {
+          "emoji": "📅",
+          "texto": "Agenda de revisión"
+        }
+      ],
+      "remate": "Todo queda por escrito",
+      "voz": [
+        "El kit reúne estas tres piezas.",
+        "Un registro con los datos del acuerdo.",
+        "Mensajes para completar con cada cliente.",
+        "Una agenda para saber cuándo revisar.",
+        "El seguimiento queda escrito en un lugar."
+      ]
+    },
+    {
+      "id": "registro",
+      "tipo": "lista",
+      "encabezado": "Registro:",
+      "vineta": "numero",
+      "items": [
+        "Qué se aprobó",
+        "Quién confirma",
+        "Cuándo se paga"
+      ],
+      "voz": [
+        "Escribes exactamente qué se aprobó.",
+        "Anotas quién confirma el pago.",
+        "Guardas la fecha que acordaron."
+      ]
+    },
+    {
+      "id": "pregunta-si",
+      "tipo": "idea",
+      "emoji": "🤔",
+      "texto": "¿Puedes encontrar\n__tu próximo cobro__?",
+      "voz": [
+        "¿Puedes encontrar la siguiente acción sin leer toda la conversación?"
+      ]
+    },
+    {
+      "id": "revision",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Acuerdo"
+        },
+        {
+          "etiqueta": "Confirmación"
+        },
+        {
+          "etiqueta": "Registro"
+        }
+      ],
+      "texto": "Revisa __lo que cambió__",
+      "voz": [
+        "Vuelves al acuerdo que ya tienes.",
+        "Buscas si llegó una confirmación nueva.",
+        "Actualizas el registro cuando cambia un dato."
+      ]
+    },
+    {
+      "id": "limites",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "Incluye:",
+          "items": [
+            "Formatos editables",
+            "Guía de uso"
+          ]
+        },
+        {
+          "titulo": "No incluye:",
+          "items": [
+            "Cobranza delegada",
+            "Cobros garantizados"
+          ],
+          "llave": "El cliente conserva su decisión"
+        }
+      ],
+      "voz": [
+        "Recibes los formatos editables para tu propio trabajo.",
+        "Y una guía para completar los campos.",
+        "El equipo no cobra en tu nombre.",
+        "Tampoco garantiza que todos los clientes paguen.",
+        "El cliente conserva su decisión de pagar."
+      ]
+    },
+    {
+      "id": "responsable",
+      "tipo": "idea",
+      "emoji": "👥",
+      "texto": "El equipo entrega\n__los formatos__",
+      "voz": [
+        "El equipo autor te entrega los formatos.",
+        "Completarlos requiere tus acuerdos reales con cada cliente."
+      ],
+      "anotaciones": [
+        {
+          "a": "texto",
+          "texto": "Requiere tus acuerdos reales"
+        }
+      ]
+    },
+    {
+      "id": "salida-comercial",
+      "tipo": "idea",
+      "emoji": "🤝",
+      "texto": "Revisa el alcance\n__antes de contratar__",
+      "nota": "Puedes decidir que no te sirve",
+      "voz": [
+        "Primero revisas la muestra y el alcance de la propuesta.",
+        "Si no te sirve, puedes rechazarla antes de contratar."
+      ]
+    },
+    {
+      "id": "llamado-uno",
+      "tipo": "boton",
+      "boton": "Solicitar el kit",
+      "texto": "Recibe la muestra\ny la propuesta por correo",
+      "llamado": true,
+      "voz": [
+        "Pulsa Solicitar el kit para recibir la muestra y la propuesta."
+      ]
+    },
+    {
+      "id": "despues",
+      "tipo": "pasos",
+      "n": 3,
+      "etiquetas": [
+        "Solicitas",
+        "Revisas",
+        "Decides"
+      ],
+      "activo": 1,
+      "voz": [
+        "Lo solicitas, revisas la muestra y decides si corresponde a tu trabajo."
+      ]
+    },
+    {
+      "id": "pago-gancho",
+      "tipo": "chat",
+      "guion": true,
+      "paga": "gancho",
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¿Confirmas el pago acordado para el viernes?",
+          "ejemplo": true
+        },
+        {
+          "de": "otro",
+          "texto": "Sí. Marta lo autoriza el viernes.",
+          "ejemplo": true
+        }
+      ],
+      "sello": "CON FECHA",
+      "voz": [
+        "Vuelves al cobro, ahora con una pregunta concreta.",
+        "La respuesta deja una responsable y una fecha registradas.",
+        "Eso es un acuerdo que puedes seguir."
+      ],
+      "sello_sobre": "m1"
+    },
+    {
+      "id": "resumen",
+      "tipo": "lista",
+      "items": [
+        "Fecha acordada",
+        "Responsable identificado",
+        "Siguiente acción"
+      ],
+      "voz": [
+        "Una fecha acordada.",
+        "Una persona para confirmar.",
+        "Una siguiente acción que puedes consultar.",
+        "Evita perder el seguimiento entre conversaciones."
+      ],
+      "anotaciones": [
+        {
+          "a": "i2",
+          "texto": "Evita perder el seguimiento",
+          "lado": "abajo"
+        }
+      ]
+    },
+    {
+      "id": "llamado-dos",
+      "tipo": "boton",
+      "boton": "Solicitar el kit",
+      "texto": "Revisa la muestra\ncon tu próximo cobro",
+      "llamado": true,
+      "voz": [
+        "Solicita el kit y revisa la muestra con tu próximo cobro."
+      ]
+    }
+  ]
+}

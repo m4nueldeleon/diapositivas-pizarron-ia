@@ -1,0 +1,1021 @@
+{
+  "titulo": "Cómo armar tu primera oferta de servicios",
+  "pieza": "tutorial",
+  "clase": true,
+  "en_vivo": true,
+  "formato": "16:9",
+  "emoji": "apple",
+  "marca": false,
+  "persona": "tu",
+  "_comentario": "Clase extensa de 60 láminas para probar robustez. El número fijado corresponde a tutorial con cierre de clase, no a 40–60 minutos: se conserva la modalidad en vivo. Conversaciones y servicio son ejemplos didácticos originales; no acreditan clientes ni ventas.",
+  "datos": {
+    "COMUNIDAD": {
+      "valor": "Comenta OFERTA y te mando la plantilla",
+      "fuente": "Confirmado por el usuario para esta ronda"
+    },
+    "PROXIMA_CLASE": {
+      "valor": "el próximo lunes a las 8 pm",
+      "fuente": "Confirmado por el usuario para esta ronda"
+    },
+    "ENTREGABLE": {
+      "valor": "La plantilla de oferta de servicios",
+      "fuente": "El usuario confirmó el envío de la plantilla mediante OFERTA"
+    },
+    "OBJECION_1": {
+      "valor": "¿Puedo pagar todo al terminar?",
+      "fuente": "Objeción citada por el usuario como caso de la ronda"
+    },
+    "OBJECION_2": {
+      "valor": "¿Y si pido cambios a cada rato?",
+      "fuente": "Objeción citada por el usuario como caso de la ronda"
+    }
+  },
+  "bloques": [
+    {
+      "desde": "gancho",
+      "hasta": "mapa",
+      "aprendizaje": "Reconocer qué decisión necesita una oferta antes de describir actividades"
+    },
+    {
+      "desde": "cliente",
+      "hasta": "practica-cliente",
+      "aprendizaje": "Elegir un problema observable de un cliente concreto",
+      "practico": true
+    },
+    {
+      "desde": "mapa-entrega",
+      "hasta": "practica-alcance",
+      "aprendizaje": "Convertir el problema en una entrega que se puede comprobar",
+      "practico": true
+    },
+    {
+      "desde": "mapa-acuerdo",
+      "hasta": "cierre-cambios",
+      "aprendizaje": "Conservar anticipo y alcance al responder objeciones"
+    },
+    {
+      "desde": "armar-frase",
+      "hasta": "proxima",
+      "aprendizaje": "Redactar y comprobar la primera oferta antes de enviarla"
+    }
+  ],
+  "laminas": [
+    {
+      "id": "gancho",
+      "tipo": "chat",
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "¿Qué recibo si te contrato?"
+        },
+        {
+          "de": "yo",
+          "texto": "Te ayudo con tus redes…"
+        }
+      ],
+      "voz": [
+        "Te preguntan qué reciben si te contratan.",
+        "Y respondes: te ayudo con tus redes. Falta concretar."
+      ]
+    },
+    {
+      "id": "actividad",
+      "tipo": "idea",
+      "emoji": "📦",
+      "texto": "Una actividad todavía\nno es __una oferta__",
+      "voz": [
+        "Una actividad todavía no es una oferta que puedan evaluar."
+      ]
+    },
+    {
+      "id": "eleccion",
+      "tipo": "bifurcacion",
+      "origen": {
+        "emoji": "🤔",
+        "texto": "¿Qué compro?"
+      },
+      "ramas": [
+        {
+          "texto": "Horas"
+        },
+        {
+          "texto": "Una entrega"
+        }
+      ],
+      "voz": [
+        "¿Compra horas o una entrega?",
+        "Puede escoger entre estas dos cosas.",
+        "El cliente necesita comprobar la entrega."
+      ],
+      "llave": "El cliente necesita comprobarla"
+    },
+    {
+      "id": "resultado",
+      "tipo": "lista",
+      "encabezado": "Sales con:",
+      "vineta": "check",
+      "items": [
+        "Un cliente definido",
+        "Una entrega concreta",
+        "Un acuerdo escrito"
+      ],
+      "voz": [
+        "Sales con un cliente definido.",
+        "Una entrega concreta que puedas producir.",
+        "Y un acuerdo escrito que puedas explicar."
+      ]
+    },
+    {
+      "id": "tiempo",
+      "tipo": "objeto",
+      "reloj": "8:00",
+      "contrato": true,
+      "texto": "En **8 minutos**\narmas el primer borrador",
+      "voz": [
+        "En ocho minutos armas el primer borrador de tu oferta."
+      ]
+    },
+    {
+      "id": "mapa",
+      "tipo": "pasos",
+      "n": 3,
+      "activo": 1,
+      "etiquetas": [
+        "Cliente",
+        "Entrega",
+        "Acuerdo"
+      ],
+      "texto": "Empieza por __un problema__",
+      "voz": [
+        "Cliente, entrega y acuerdo. Empieza por un problema concreto."
+      ]
+    },
+    {
+      "id": "cliente",
+      "tipo": "idea",
+      "emoji": "🎯",
+      "texto": "¿Quién necesita\n__esta entrega__?",
+      "voz": [
+        "Primero: ¿quién necesita esta entrega, aunque todavía no te conozca?"
+      ]
+    },
+    {
+      "id": "todos",
+      "tipo": "lista",
+      "encabezado": "Descarta:",
+      "items": [
+        {
+          "texto": "Todos los negocios",
+          "tachado": true
+        },
+        {
+          "texto": "Quien quiera crecer",
+          "tachado": true
+        }
+      ],
+      "voz": [
+        "Todos los negocios no define a una persona.",
+        "Quien quiera crecer tampoco describe un problema observable."
+      ]
+    },
+    {
+      "id": "persona",
+      "tipo": "flujo",
+      "flecha": "ninguna",
+      "nodos": [
+        {
+          "etiqueta": "Persona"
+        },
+        {
+          "etiqueta": "Problema"
+        },
+        {
+          "etiqueta": "Momento"
+        }
+      ],
+      "voz": [
+        "Nombra una persona.",
+        "El problema que tiene.",
+        "Y el momento en que lo necesita resolver."
+      ]
+    },
+    {
+      "id": "escena",
+      "tipo": "chat",
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "Me preguntan qué servicios ofrecemos."
+        },
+        {
+          "de": "yo",
+          "texto": "¿Dónde pueden verlos ahora?"
+        }
+      ],
+      "voz": [
+        "Imagina una clínica: le preguntan qué servicios ofrece.",
+        "Preguntas dónde pueden verlos ahora."
+      ]
+    },
+    {
+      "id": "friccion",
+      "tipo": "chat",
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "Los explicamos uno por uno en cada mensaje."
+        },
+        {
+          "de": "yo",
+          "texto": "Entonces falta una página que puedan consultar."
+        }
+      ],
+      "voz": [
+        "Los explican uno por uno en cada mensaje.",
+        "Entonces falta una página que puedan consultar."
+      ]
+    },
+    {
+      "id": "problema",
+      "tipo": "idea",
+      "emoji": "🔍",
+      "texto": "El problema se ve:\n__repiten la explicación__",
+      "anotaciones": [
+        {
+          "a": "texto",
+          "texto": "Consume tiempo de atención",
+          "lado": "abajo"
+        }
+      ],
+      "voz": [
+        "El problema se ve: repiten la explicación.",
+        "Eso consume tiempo de atención de la clínica."
+      ]
+    },
+    {
+      "id": "escuchar",
+      "tipo": "cita",
+      "emoji": "💬",
+      "texto": "«Nos preguntan\nlo mismo por mensaje»",
+      "voz": [
+        "Conserva la frase: nos preguntan lo mismo por mensaje."
+      ]
+    },
+    {
+      "id": "no-inferir",
+      "tipo": "lista",
+      "encabezado": "Todavía no sabes:",
+      "vineta": "x",
+      "items": [
+        "Cuántas consultas pierden",
+        "Cuánto pagarían"
+      ],
+      "voz": [
+        "Todavía no sabes cuántas consultas pierden.",
+        "Ni cuánto pagarían. La conversación no confirma esas cifras."
+      ]
+    },
+    {
+      "id": "pregunta-util",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¿Qué pregunta respondes varias veces por semana?"
+        },
+        {
+          "de": "otro",
+          "texto": "Qué incluye la primera consulta."
+        }
+      ],
+      "voz": [
+        "Pregunta qué responde varias veces por semana.",
+        "En esta escena: qué incluye la primera consulta."
+      ]
+    },
+    {
+      "id": "elegir",
+      "tipo": "idea",
+      "emoji": "🎯",
+      "texto": "Elige __una pregunta__\nque tu entrega pueda responder",
+      "voz": [
+        "Elige una pregunta que tu entrega realmente pueda responder."
+      ]
+    },
+    {
+      "id": "registro",
+      "tipo": "lista",
+      "vineta": "numero",
+      "items": [
+        "Clínica pequeña",
+        "Preguntas repetidas",
+        "Antes de agendar"
+      ],
+      "anotaciones": [
+        {
+          "llave": [
+            "i0",
+            "i2"
+          ],
+          "texto": "Ya puedes delimitar"
+        }
+      ],
+      "voz": [
+        "El cliente: una clínica pequeña.",
+        "El problema: preguntas repetidas.",
+        "El momento: antes de agendar.",
+        "Ya puedes delimitar la entrega."
+      ]
+    },
+    {
+      "id": "practica-cliente",
+      "tipo": "camara",
+      "vivo": true,
+      "dur": 45,
+      "texto": "Escribe tu cliente y su pregunta",
+      "items": [
+        "Una persona",
+        "Una pregunta que recibas"
+      ],
+      "voz": [
+        "Escribe un cliente concreto y una pregunta que reciba."
+      ],
+      "si_falla": "Si no tienes equipo, escribe el ejercicio en una hoja de papel.",
+      "accion": "Pausa 45 segundos para escribir el cliente y su pregunta."
+    },
+    {
+      "id": "mapa-entrega",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 2,
+      "hechos": [
+        1
+      ],
+      "texto": "Convierte la pregunta\nen __una entrega__",
+      "voz": [
+        "Ya tienes cliente. Convierte su pregunta en una entrega."
+      ]
+    },
+    {
+      "id": "entrega",
+      "tipo": "idea",
+      "emoji": "📄",
+      "texto": "Una página\ncon __los servicios__",
+      "voz": [
+        "Para la clínica, la entrega será una página de servicios."
+      ]
+    },
+    {
+      "id": "transformacion",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Pregunta recibida"
+        },
+        {
+          "etiqueta": "Página escrita"
+        },
+        {
+          "etiqueta": "Paciente informado"
+        }
+      ],
+      "voz": [
+        "Partes de las preguntas reales.",
+        "Las conviertes en una página.",
+        "El paciente puede consultarla antes de escribir."
+      ]
+    },
+    {
+      "id": "estructura",
+      "tipo": "lista",
+      "encabezado": "La página responde:",
+      "vineta": "numero",
+      "items": [
+        "Qué incluye",
+        "Cómo prepararte",
+        "Cómo agendar"
+      ],
+      "voz": [
+        "Qué incluye la consulta.",
+        "Cómo prepararte antes de llegar.",
+        "Y cómo agendarla."
+      ]
+    },
+    {
+      "id": "material",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¿Qué incluye la primera consulta?"
+        },
+        {
+          "de": "otro",
+          "texto": "Una entrevista y un plan de seguimiento."
+        }
+      ],
+      "voz": [
+        "Pides al responsable qué incluye la primera consulta.",
+        "En esta muestra: entrevista y plan de seguimiento."
+      ]
+    },
+    {
+      "id": "redaccion",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "La página dirá: entrevista y plan de seguimiento. ¿Es correcto?"
+        },
+        {
+          "de": "otro",
+          "texto": "Sí. Agrega que deben traer sus estudios previos."
+        }
+      ],
+      "voz": [
+        "Le devuelves la frase escrita para comprobarla.",
+        "Pide agregar que traigan sus estudios previos.",
+        "El responsable valida lo que quedará publicado."
+      ],
+      "anotaciones": [
+        {
+          "a": "m1",
+          "texto": "Requiere aprobación del responsable",
+          "lado": "abajo"
+        }
+      ]
+    },
+    {
+      "id": "contenido-listo",
+      "tipo": "lista",
+      "encabezado": "Primera consulta:",
+      "items": [
+        "Entrevista y __seguimiento__",
+        "Trae estudios previos",
+        "Agenda con recepción"
+      ],
+      "nota": "Recepción valida el contenido",
+      "voz": [
+        "El contenido ya dice entrevista y seguimiento.",
+        "Pide traer estudios previos.",
+        "Indica agendar con recepción.",
+        "Recepción valida el contenido antes de publicarlo."
+      ]
+    },
+    {
+      "id": "comprobacion",
+      "tipo": "idea",
+      "emoji": "🔍",
+      "texto": "¿Puede alguien\n__usar la página__?",
+      "voz": [
+        "Comprueba si alguien puede usar la página sin otra explicación."
+      ]
+    },
+    {
+      "id": "lectura",
+      "tipo": "chat",
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¿Qué necesitas traer a tu primera consulta?"
+        },
+        {
+          "de": "otro",
+          "texto": "Mis estudios previos. Y agendo con recepción."
+        }
+      ],
+      "voz": [
+        "Preguntas qué necesita traer a su primera consulta.",
+        "Responde estudios previos y sabe cómo agendar."
+      ]
+    },
+    {
+      "id": "limite",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "Incluye:",
+          "vineta": "check",
+          "items": [
+            "Una página",
+            "Una revisión"
+          ]
+        },
+        {
+          "titulo": "No incluye:",
+          "vineta": "cruz",
+          "items": [
+            "Anuncios",
+            "Reservas automáticas"
+          ],
+          "llave": "El alcance protege tu tiempo"
+        }
+      ],
+      "voz": [
+        "Incluye una página.",
+        "Y una revisión.",
+        "No incluye anuncios.",
+        "Ni reservas automáticas.",
+        "El alcance protege tu tiempo."
+      ]
+    },
+    {
+      "id": "comprobar",
+      "tipo": "flujo",
+      "flecha": "ninguna",
+      "nodos": [
+        {
+          "etiqueta": "Abrir"
+        },
+        {
+          "etiqueta": "Leer"
+        },
+        {
+          "etiqueta": "Contactar"
+        }
+      ],
+      "texto": "Tres acciones __comprobables__",
+      "voz": [
+        "La página debe abrir.",
+        "El contenido debe poder leerse.",
+        "Y debe permitir contactar. Son tres acciones comprobables."
+      ]
+    },
+    {
+      "id": "resultado-ajeno",
+      "tipo": "idea",
+      "emoji": "no:📈",
+      "texto": "La página no promete\n__ventas garantizadas__",
+      "voz": [
+        "La página no promete ventas garantizadas: entregas lo acordado."
+      ]
+    },
+    {
+      "id": "criterio",
+      "tipo": "cita",
+      "emoji": "💬",
+      "texto": "«Puedo leer los servicios\ny contactar a recepción»",
+      "voz": [
+        "El criterio es leer los servicios y contactar a recepción.",
+        "Ese resultado sí es comprobable."
+      ],
+      "sello": "SÍ SIRVE"
+    },
+    {
+      "id": "practica-alcance",
+      "tipo": "camara",
+      "vivo": true,
+      "dur": 45,
+      "texto": "Describe tu entrega comprobable",
+      "items": [
+        "Qué recibe",
+        "Qué queda fuera",
+        "Cómo lo comprueba"
+      ],
+      "voz": [
+        "Escribe tu entrega, su límite y cómo comprobarla."
+      ],
+      "si_falla": "Si no tienes equipo, escribe el ejercicio en una hoja de papel.",
+      "accion": "Pausa 45 segundos para escribir la entrega, el límite y la comprobación."
+    },
+    {
+      "id": "mapa-acuerdo",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 3,
+      "hechos": [
+        1,
+        2
+      ],
+      "texto": "Pon por escrito\n__el acuerdo__",
+      "voz": [
+        "Ya definiste la entrega. Ahora pon por escrito el acuerdo."
+      ]
+    },
+    {
+      "id": "dependencias",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Material aprobado"
+        },
+        {
+          "etiqueta": "Trabajo"
+        },
+        {
+          "etiqueta": "Entrega"
+        }
+      ],
+      "voz": [
+        "Primero recibes el material aprobado.",
+        "Después haces el trabajo.",
+        "Y finalmente entregas lo acordado."
+      ]
+    },
+    {
+      "id": "plazo",
+      "tipo": "idea",
+      "emoji": "📅",
+      "texto": "El plazo empieza\ncon __el material completo__",
+      "voz": [
+        "El plazo empieza cuando recibes el material completo y aprobado."
+      ]
+    },
+    {
+      "id": "revisar-material",
+      "tipo": "lista",
+      "encabezado": "Antes de empezar:",
+      "vineta": "numero",
+      "items": [
+        "Textos aprobados",
+        "Imágenes autorizadas",
+        "Contacto correcto"
+      ],
+      "voz": [
+        "Confirma que los textos estén aprobados.",
+        "Que las imágenes estén autorizadas.",
+        "Y que el contacto sea correcto.",
+        "Evita publicar un contacto equivocado."
+      ],
+      "anotaciones": [
+        {
+          "a": "i2",
+          "texto": "Evita publicar un error",
+          "lado": "abajo"
+        }
+      ]
+    },
+    {
+      "id": "pago",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Anticipo"
+        },
+        {
+          "etiqueta": "Entrega"
+        },
+        {
+          "etiqueta": "Saldo"
+        }
+      ],
+      "texto": "Escribe __cuándo se paga__",
+      "voz": [
+        "Para este acuerdo, el anticipo inicia el trabajo.",
+        "Después presentas la entrega.",
+        "El saldo se paga al terminar: escríbelo."
+      ]
+    },
+    {
+      "id": "objecion-pago",
+      "tipo": "idea",
+      "emoji": "🤔",
+      "encabezado": "Objeción #1",
+      "encabezado_pos": "entre",
+      "texto": "**«{{OBJECION_1}}»**",
+      "voz": [
+        "Primera objeción: ¿puedo pagar todo al terminar?"
+      ]
+    },
+    {
+      "id": "respuesta-pago",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "El pago conserva el anticipo. El saldo se paga al terminar."
+        },
+        {
+          "de": "otro",
+          "texto": "¿Y si contratamos menos páginas?"
+        }
+      ],
+      "voz": [
+        "El pago conserva el anticipo; el saldo va al terminar.",
+        "Pregunta si puede contratar menos páginas."
+      ]
+    },
+    {
+      "id": "ejemplo-pago",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Podemos acordar una sola página. También empieza con anticipo."
+        },
+        {
+          "de": "otro",
+          "texto": "Entendido: menos páginas, mismo esquema de pago."
+        }
+      ],
+      "voz": [
+        "Pueden acordar una página, que también empieza con anticipo.",
+        "Menos páginas conserva el mismo esquema de pago.",
+        "El anticipo se conserva en ambos casos."
+      ],
+      "anotaciones": [
+        {
+          "a": "m1",
+          "texto": "Evita financiar el trabajo",
+          "lado": "abajo"
+        }
+      ]
+    },
+    {
+      "id": "frontera-pago",
+      "tipo": "idea",
+      "emoji": "🤝",
+      "texto": "Menos alcance\nconserva __el anticipo__",
+      "voz": [
+        "Menos alcance conserva el anticipo; ya respondiste la duda exacta."
+      ]
+    },
+    {
+      "id": "revision",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "Revisión:",
+          "items": [
+            "Corregir un dato",
+            "Ajustar una frase"
+          ]
+        },
+        {
+          "titulo": "Cambio:",
+          "items": [
+            "Agregar un servicio",
+            "Crear otra página"
+          ],
+          "llave": "Otro alcance requiere cotización"
+        }
+      ],
+      "voz": [
+        "Corregir un dato entra en la revisión.",
+        "También ajustar una frase.",
+        "Agregar un servicio cambia el alcance.",
+        "Crear otra página también.",
+        "Otro alcance requiere otra cotización."
+      ]
+    },
+    {
+      "id": "objecion-cambios",
+      "tipo": "idea",
+      "emoji": "🤔",
+      "encabezado": "Objeción #2",
+      "encabezado_pos": "entre",
+      "texto": "**«{{OBJECION_2}}»**",
+      "voz": [
+        "Segunda objeción: ¿y si pido cambios a cada rato?"
+      ]
+    },
+    {
+      "id": "respuesta-cambios",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Incluye una revisión. Los cambios de alcance se cotizan antes."
+        },
+        {
+          "de": "otro",
+          "texto": "¿Corregir el teléfono cuenta como cambio?"
+        }
+      ],
+      "voz": [
+        "Incluye una revisión; los cambios de alcance se cotizan antes.",
+        "Pregunta si corregir el teléfono cuenta como cambio."
+      ]
+    },
+    {
+      "id": "ejemplo-cambios",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Corregir el teléfono entra en la revisión. Otra página se cotiza aparte."
+        }
+      ],
+      "voz": [
+        "Corregir teléfono entra en revisión; otra página se cotiza aparte."
+      ]
+    },
+    {
+      "id": "permiso-cambio",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Pide otra página"
+        },
+        {
+          "etiqueta": "Aprueba cotización"
+        },
+        {
+          "etiqueta": "Empiezas"
+        }
+      ],
+      "voz": [
+        "El cliente pide otra página.",
+        "Primero aprueba la cotización adicional.",
+        "Después empiezas ese trabajo."
+      ]
+    },
+    {
+      "id": "cierre-cambios",
+      "tipo": "idea",
+      "emoji": "🤝",
+      "texto": "La revisión sigue incluida.\n__El alcance queda escrito.__",
+      "voz": [
+        "La revisión sigue incluida y el alcance queda escrito.",
+        "Ese acuerdo queda por escrito."
+      ],
+      "sello": "POR ESCRITO"
+    },
+    {
+      "id": "armar-frase",
+      "tipo": "pasos",
+      "n": 3,
+      "etiquetas": [
+        "Para quién",
+        "Qué recibe",
+        "Cómo acepta"
+      ],
+      "texto": "Tu oferta __en una frase__",
+      "voz": [
+        "Une para quién, qué recibe y cómo acepta: tu oferta."
+      ]
+    },
+    {
+      "id": "frase-uno",
+      "tipo": "idea",
+      "emoji": "🎯",
+      "texto": "Para una clínica\nque __repite sus servicios__",
+      "voz": [
+        "Para una clínica que repite sus servicios por mensaje."
+      ]
+    },
+    {
+      "id": "frase-dos",
+      "tipo": "objeto",
+      "emoji": "📄",
+      "texto": "Una página de servicios\ncon __una revisión__",
+      "voz": [
+        "Preparas una página de servicios con una revisión incluida."
+      ]
+    },
+    {
+      "id": "frase-tres",
+      "tipo": "lista",
+      "vineta": "numero",
+      "items": [
+        "Abre en el celular",
+        "Explica la consulta",
+        "Conecta con recepción"
+      ],
+      "anotaciones": [
+        {
+          "a": "i2",
+          "texto": "El cliente lo comprueba",
+          "lado": "derecha"
+        }
+      ],
+      "voz": [
+        "Abre en el celular.",
+        "Explica qué incluye la consulta.",
+        "Y conecta con recepción.",
+        "El cliente puede comprobar esas tres acciones."
+      ]
+    },
+    {
+      "id": "no-promesa",
+      "tipo": "idea",
+      "texto": "^^__Comprobable.__^^",
+      "voz": [
+        "La oferta ya es comprobable antes de prometer resultados comerciales."
+      ]
+    },
+    {
+      "id": "pregunta-final",
+      "tipo": "chat",
+      "paga": "gancho",
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "¿Qué recibo si te contrato?"
+        },
+        {
+          "de": "yo",
+          "texto": "Una página de servicios, una revisión y contacto con recepción."
+        }
+      ],
+      "voz": [
+        "Vuelve la pregunta: ¿qué recibo si te contrato?",
+        "Una página de servicios, una revisión y contacto con recepción."
+      ]
+    },
+    {
+      "id": "aceptacion",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¿Este alcance responde a lo que necesitas?"
+        },
+        {
+          "de": "otro",
+          "texto": "Sí. Envíame las condiciones para revisarlas."
+        }
+      ],
+      "voz": [
+        "Preguntas si ese alcance responde a lo que necesita.",
+        "En esta conversación, pide las condiciones para revisarlas.",
+        "Revisar condiciones todavía no significa aceptarlas."
+      ],
+      "anotaciones": [
+        {
+          "a": "m1",
+          "texto": "Revisión sin compromiso de compra",
+          "lado": "abajo"
+        }
+      ]
+    },
+    {
+      "id": "antes-enviar",
+      "tipo": "lista",
+      "encabezado": "Comprueba:",
+      "vineta": "numero",
+      "items": [
+        "Puedo producirlo",
+        "El alcance es claro",
+        "El pago está escrito"
+      ],
+      "voz": [
+        "Comprueba que puedes producirlo.",
+        "Que el alcance es claro.",
+        "Y que el pago está escrito."
+      ]
+    },
+    {
+      "id": "error-final",
+      "tipo": "cita",
+      "emoji": "💬",
+      "texto": "~~«Te ayudo con todo»~~",
+      "voz": [
+        "Te ayudo con todo no define una entrega.",
+        "Tacha esa promesa: no puedes comprobar todo."
+      ],
+      "tachar_paso": 1
+    },
+    {
+      "id": "tarea",
+      "tipo": "idea",
+      "emoji": "📝",
+      "texto": "Tu tarea: escribe __tu oferta__\ny léela a un cliente",
+      "voz": [
+        "Tu tarea: escribe tu oferta y léela a un cliente."
+      ]
+    },
+    {
+      "id": "verificar-tarea",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Con tus palabras, ¿qué recibirías y qué quedaría fuera?"
+        }
+      ],
+      "voz": [
+        "Pídele explicar qué recibiría y qué quedaría fuera."
+      ]
+    },
+    {
+      "id": "comunidad",
+      "tipo": "idea",
+      "emoji": "💬",
+      "texto": "{{COMUNIDAD}}",
+      "llamado": true,
+      "voz": [
+        "Comenta OFERTA y te mando la plantilla."
+      ]
+    },
+    {
+      "id": "proxima",
+      "tipo": "idea",
+      "emoji": "📅",
+      "texto": "Próxima clase:\n__{{PROXIMA_CLASE}}__",
+      "voz": [
+        "La próxima clase es el próximo lunes a las ocho."
+      ]
+    }
+  ],
+  "sala": false
+}

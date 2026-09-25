@@ -1,0 +1,293 @@
+{
+  "titulo": "Cómo pedir una reseña de Google sin sonar desesperado",
+  "formato": "16:9",
+  "emoji": "apple",
+  "piel": "🏻",
+  "pieza": "tutorial",
+  "persona": "tu",
+  "laminas": [
+    {
+      "id": "gancho",
+      "tipo": "chat",
+      "sello": "0 reseñas",
+      "sello_sobre": "m1",
+      "mensajes": [
+        {
+          "de": "otro",
+          "hora": "6:10 pm",
+          "texto": "¡Quedó increíble, muchas gracias!"
+        },
+        {
+          "de": "yo",
+          "hora": "6:12 pm",
+          "texto": "¡Qué gusto! Si puedes, déjanos una reseña 🙏"
+        }
+      ],
+      "voz": [
+        "Tu cliente te escribe: quedó increíble, muchas gracias.",
+        "Le contestas: si puedes, déjanos una reseña.",
+        "Y la reseña nunca llega."
+      ]
+    },
+    {
+      "id": "vago",
+      "tipo": "idea",
+      "emoji": "🤷",
+      "texto": "«Si puedes» le dice que\n__no es urgente__",
+      "nota": "Y lo deja para después",
+      "voz": [
+        "«Si puedes» le dice a tu cliente que no es urgente.",
+        "Y lo deja para después."
+      ]
+    },
+    {
+      "id": "mapa",
+      "tipo": "pasos",
+      "iconos": [
+        "⏱️",
+        "🔗",
+        "✍️"
+      ],
+      "etiquetas": [
+        "Momento",
+        "Enlace",
+        "Frase"
+      ],
+      "activo": 1,
+      "texto": "Pide **en el momento**",
+      "voz": "Cambian tres cosas. La primera: pídela en el momento."
+    },
+    {
+      "id": "momento",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "emoji": "🙏",
+          "etiqueta": "Te da las gracias"
+        },
+        {
+          "emoji": "⭐",
+          "etiqueta": "Pides la reseña"
+        }
+      ],
+      "texto": "En el **mismo chat**",
+      "voz": [
+        "Cuando te da las gracias,",
+        "ahí mismo le pides la reseña, en ese chat."
+      ]
+    },
+    {
+      "id": "cuando",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "Sí",
+          "tono": "v",
+          "vineta": "check",
+          "items": [
+            "Al entregar",
+            "Cuando te agradece"
+          ]
+        },
+        {
+          "titulo": "No",
+          "tono": "r",
+          "vineta": "cruz",
+          "items": [
+            "Una semana después",
+            "En la factura"
+          ],
+          "llave": "Para entonces ya se enfrió"
+        }
+      ],
+      "voz": [
+        "Pídela al entregar,",
+        "o cuando te agradece.",
+        "No una semana después,",
+        "ni escondida en la factura.",
+        "Para entonces, ya se enfrió."
+      ]
+    },
+    {
+      "id": "mapa-enlace",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 2,
+      "hechos": [
+        1
+      ],
+      "texto": "Manda **el enlace directo**",
+      "voz": "Segundo: manda el enlace directo."
+    },
+    {
+      "id": "buscar",
+      "tipo": "idea",
+      "emoji": [
+        "no:🔍",
+        "si:🔗"
+      ],
+      "apagar_emoji": 0,
+      "emoji_paso": 1,
+      "texto": "Que no tenga que\n~~buscarte en Google~~",
+      "voz": [
+        "Si tiene que buscarte en Google, lo deja a medias.",
+        "Con el enlace, abre directo la ventana de reseña."
+      ],
+      "tachar_paso": 1
+    },
+    {
+      "id": "sacar",
+      "tipo": "lista",
+      "encabezado": "Para sacarlo:",
+      "vineta": "numero",
+      "items": [
+        "Abre tu **Perfil de Negocio**",
+        "Toca **Pedir reseñas**",
+        "Copia **el enlace**"
+      ],
+      "voz": [
+        "Para sacarlo, abre tu Perfil de Negocio en Google.",
+        "Toca «Pedir reseñas».",
+        "Y copia el enlace."
+      ]
+    },
+    {
+      "id": "demo",
+      "tipo": "camara",
+      "dur": 6,
+      "voz": "Te lo enseño en pantalla: así se ve en el perfil."
+    },
+    {
+      "id": "mapa-frase",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 3,
+      "hechos": [
+        1,
+        2
+      ],
+      "texto": "Escribe **la frase exacta**",
+      "voz": "Tercero: escribe la frase exacta."
+    },
+    {
+      "id": "frase",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "¡Qué bueno que [lo que hiciste] quedó como querías!"
+        },
+        {
+          "de": "yo",
+          "texto": "¿Me dejas una reseña en Google? Aquí está el enlace: [enlace]"
+        }
+      ],
+      "voz": [
+        "Primero nombras lo que le resolviste: así no suena masivo.",
+        "Luego pides la reseña con el enlace pegado."
+      ]
+    },
+    {
+      "id": "pregunta",
+      "tipo": "cuadrantes",
+      "items": [
+        {
+          "emoji": "no:⭐",
+          "texto": "«Si puedes…»",
+          "tono": "r"
+        },
+        {
+          "emoji": "si:⭐",
+          "texto": "«¿Me dejas una reseña?»",
+          "tono": "v"
+        }
+      ],
+      "voz": [
+        "«Si puedes» deja abierta la puerta para no hacerlo.",
+        "«¿Me dejas una reseña?» pide un sí o un no."
+      ]
+    },
+    {
+      "id": "objecion",
+      "tipo": "idea",
+      "emoji": "🤔",
+      "encabezado": "Objeción #1",
+      "encabezado_pos": "entre",
+      "texto": "**«¿Y si me deja una mala reseña?»**",
+      "voz": "Objeción número uno: ¿y si me deja una mala reseña?"
+    },
+    {
+      "id": "respuesta",
+      "tipo": "bifurcacion",
+      "origen": {
+        "emoji": "💬",
+        "texto": "¿Qué te **escribió**?"
+      },
+      "ramas": [
+        {
+          "emoji": "😍",
+          "valor": "Contento: pide"
+        },
+        {
+          "emoji": "😤",
+          "valor": "Queja: resuelve"
+        }
+      ],
+      "revelar": "ramas",
+      "voz": [
+        "Antes de pedir la reseña, fíjate qué te escribió.",
+        "Si dijo que quedó contento, le pides la reseña.",
+        "Si trae una queja, primero la resuelves."
+      ]
+    },
+    {
+      "id": "pago",
+      "tipo": "chat",
+      "como": "gancho",
+      "paga": "gancho",
+      "sello": "Con enlace",
+      "sello_sobre": "m1",
+      "mensajes": [
+        {
+          "de": "otro",
+          "hora": "6:10 pm",
+          "texto": "¡Quedó increíble, muchas gracias!"
+        },
+        {
+          "de": "yo",
+          "hora": "6:11 pm",
+          "texto": "¿Me dejas una reseña en Google? Aquí está el enlace: [enlace]"
+        }
+      ],
+      "voz": [
+        "Vuelve al chat del principio.",
+        "Esta vez pides la reseña con el enlace pegado.",
+        "Ahora la petición tiene a dónde llegar."
+      ]
+    },
+    {
+      "id": "resumen",
+      "tipo": "lista",
+      "encabezado": "Guarda esto:",
+      "vineta": "numero",
+      "items": [
+        "Pídela **en el mismo chat**",
+        "Manda **el enlace directo**",
+        "Pregunta **«¿me dejas una reseña?»**"
+      ],
+      "voz": [
+        "Guarda esto: pídela en el mismo chat.",
+        "Manda el enlace directo.",
+        "Y pregunta: ¿me dejas una reseña?"
+      ]
+    },
+    {
+      "id": "llamado",
+      "tipo": "idea",
+      "emoji": "📌",
+      "texto": "Guarda este video para tu **próxima entrega**",
+      "voz": "Guarda este video para tu próxima entrega."
+    }
+  ]
+}

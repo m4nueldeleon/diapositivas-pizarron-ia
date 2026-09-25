@@ -268,4 +268,9 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   esquinas; `runtime-sello.js` monta el sello sobre un emoji en su esquina (≥ 50% visible) y `medidas-r11` mide cuánto lo
   tapa; `esLlamadoVisible` no cuenta imperativos de lista/pasos/tarjetas/flujo como llamado; `demostracionChat` acepta un
   chat con `guion: true`; `reglasEditoriales` avisa la doble negación con tachón.
+- Juez r15: `reservarCarrilChat` respeta el `lado` del autor y solo reserva carril si la nota lateral no cabe (ancho del
+  chat a la medida de la nota, 45-62%); `colocarAnotaciones` exige 16 px a burbujas ajenas y QA da error por debajo.
+  `markup.mjs → pegarCortas` pega con espacio duro las palabras de 1-2 letras, la cifra y su unidad y la última palabra
+  corta de la frase. La doble negación se revisa en la frase entera (cruza `\n`) y no cuenta un tachón sobre un término
+  citado. `r14-aprobados` usa `esperado.json` por pieza (seis piezas).
 

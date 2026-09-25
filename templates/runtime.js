@@ -692,6 +692,8 @@
       let obst = [...lam.querySelectorAll(OBST_ANOT)].filter(e => e !== n && !n.contains(e) && !e.closest('.escena.clon') && e.getClientRects().length
         && !e.contains(el) && !cont.contains(e) && !e.closest('.anotacion')).map(e => caja(e, lam)).concat(puestas);
       const pedido = n.dataset.lado;
+      const burbujaPropia = el.closest('.burbuja');
+      const burbujasAjenas = [...lam.querySelectorAll('.burbuja')].filter(x => x !== burbujaPropia && !x.closest('.escena.clon') && x.getClientRects().length).map(x => caja(x, lam));
       const lados = [...new Set([pedido, 'derecha', 'izquierda', 'abajo', 'arriba'].filter(Boolean))];
       const probar = (lado, desvio = 0) => {
         const w = n.offsetWidth, h = n.offsetHeight;
@@ -704,7 +706,9 @@
         // R14: una nota no se parte en renglones de una palabra («Evita / publicar / un error» contra el borde)
         const renglones = rectsTexto(n, lam).length, pal = ((n.textContent || '').trim().match(/\S+/g) || []).length;
         const legible = renglones <= 1 || (renglones <= 3 && pal / renglones >= 2);
-        return { lado, x, y, ok: legible && empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 + (legible ? 0 : 5) };
+        // R15: ni pegada a una burbuja ajena (el juez midió 0-5 px con QA 100): 16 px de aire como mínimo
+        const libreDeBurbujas = burbujasAjenas.every(o => gapR(b, o) >= 16);
+        return { lado, x, y, ok: legible && libreDeBurbujas && empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 + (legible ? 0 : 5) + (libreDeBurbujas ? 0 : 3) };
       };
       let elegido = null;
       const base = Math.max(minimo, parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54);

@@ -176,7 +176,7 @@ test('etiquetas cortas: el flujo de 3 no las parte; QA avisa una corta partida e
 test('foco con texto y nota: pinta las dos (la nota ya no se pierde)', { timeout: 120_000 }, async () => {
   await conDeck(base([{ tipo: 'idea', emoji: '💰', texto: 'Uno' }, { tipo: 'foco', texto: 'Lo verde es tuyo', nota: 'Y esta nota se ve' }]), async page => {
     const t = await page.evaluate(() => window.PZ.lams[1].querySelector(':scope > .lienzo').innerText);
-    assert.ok(/Lo verde es tuyo/.test(t) && /Y esta nota se ve/.test(t), t);
+    assert.ok(/Lo\s+verde\s+es\s+tuyo/.test(t) && /Y\s+esta\s+nota\s+se\s+ve/.test(t), t);
   });
 });
 

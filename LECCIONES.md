@@ -341,3 +341,15 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Chromium:** asignar `textWrap` después de `whiteSpace` borra el `nowrap` (comparten `text-wrap-mode`). Primero
   `textWrap`, luego `whiteSpace`.
 
+
+## 2026-09-25 · Mi propio arreglo rompió una clase aprobada (juez r15)
+
+- **Error del orquestador:** el carril del chat 16:9 forzaba el lado de TODA nota a «derecha». Las tres notas «abajo» de la
+  clase de 60 láminas dejaron de caber y la clase bajó de 97 a 70 con las 573 pruebas en verde.
+- **Regla:** el `lado` que escribe el autor se respeta. El motor solo cambia la composición cuando lo pedido no cabe, y lo
+  mide antes (ancho natural de la nota contra el sitio junto a su burbuja).
+- **Regla:** la guardia de regresión cubre ahora seis piezas reales con su nota esperada (`pruebas/fixtures/aprobados/*/
+  esperado.json`); falla si aparece un error o la nota baja más de 3 puntos. Se corre en cada ronda.
+- **Tipografía:** no se deja una palabra de 1-2 letras ni la última palabra corta de una frase sola en su renglón, ni un
+  número separado de su unidad (`markup.mjs → pegarCortas`, espacio duro). Las pruebas que comparan cadenas normalizan
+  U+00A0: el texto visible es el mismo.

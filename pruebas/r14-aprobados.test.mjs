@@ -1,6 +1,7 @@
-// R14 (juez r14, punto 2): un deck que ya salió aprobado no puede empeorar en silencio. La propuesta de la ronda 11 pasó
-// de 100 a 49 cuando las listas crecieron por ocupación sin reservar la nota de su llave. Estas piezas se renderizan
-// con el motor actual y deben terminar sin errores (los avisos de contenido nuevos se toleran; los errores, no).
+// R14/R15 (jueces r14 y r15): un deck que ya salió aprobado no puede empeorar en silencio. La propuesta de la ronda 11
+// pasó de 100 a 49 y la clase de 60 láminas de 97 a 70 sin que ninguna prueba lo notara. Cada carpeta de
+// pruebas/fixtures/aprobados trae su deck (con sus assets) y esperado.json: se renderiza con el motor actual y falla si
+// aparece un error o si la nota baja más de 3 puntos. Cada pieza que un juez apruebe entra aquí.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,16 +12,18 @@ import { DIR_SKILL, lanzarChromium } from '../scripts/lib/pipeline.mjs';
 
 const APROBADOS = path.join(DIR_SKILL, 'pruebas', 'fixtures', 'aprobados');
 
-for (const nombre of fs.readdirSync(APROBADOS)) {
-  test(`r14: el deck aprobado «${nombre}» sigue sin errores con el motor actual`, { timeout: 300_000 }, async t => {
+for (const nombre of fs.readdirSync(APROBADOS).filter(n => fs.existsSync(path.join(APROBADOS, n, 'deck.json')))) {
+  test(`aprobados: «${nombre}» sin errores y sin bajar más de 3 puntos`, { timeout: 600_000 }, async t => {
     try { const b = await lanzarChromium(); await b.close(); }
     catch (e) { if (e.code !== 'SIN_NAVEGADOR') throw e; t.skip(`SIN RENDER: ${e.motivo}`); return; }
+    const esperado = JSON.parse(fs.readFileSync(path.join(APROBADOS, nombre, 'esperado.json'), 'utf8'));
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-aprobado-'));
     t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-    fs.copyFileSync(path.join(APROBADOS, nombre, 'deck.json'), path.join(dir, 'deck.json'));
-    const r = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts/render.mjs'), dir, '--sin-hoja', '--qa'], { encoding: 'utf8' });
+    fs.cpSync(path.join(APROBADOS, nombre), dir, { recursive: true });
+    const args = [path.join(DIR_SKILL, 'scripts/render.mjs'), dir, '--sin-hoja', '--qa', ...(esperado.borrador ? ['--borrador'] : [])];
+    const r = spawnSync(process.execPath, args, { encoding: 'utf8' });
     const qa = JSON.parse(fs.readFileSync(path.join(dir, 'salida', 'qa.json'), 'utf8'));
     assert.deepEqual(qa.errores, [], r.stdout.slice(-2000));
-    assert.ok(qa.nota >= 90, `${nombre}: nota ${qa.nota}`);
+    assert.ok(qa.nota >= esperado.nota - 3, `${nombre}: la nota bajó de ${esperado.nota} a ${qa.nota}\n${r.stdout.slice(-2000)}`);
   });
 }

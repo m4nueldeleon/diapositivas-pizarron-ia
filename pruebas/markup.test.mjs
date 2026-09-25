@@ -46,7 +46,8 @@ test('las marcas cruzan un salto de línea real (el \\n de un deck.json)', () =>
   assert.equal(marcar('__uno__\n**dos**'), '<b class="sub" data-sub>uno</b><br><b>dos</b>');
   // el caso de la réplica (ref_90): la negrita va en la frase clave, no invertida
   const r90 = marcar('the **best business\nmodel** to start as a **beginner**');
-  assert.equal(r90, 'the <b>best business<br>model</b> to start as a <b>beginner</b>');
+  // R15: espacio duro tras palabra corta (no queda «a» al final del renglón); el texto visible es el mismo
+  assert.equal(r90.replace(/\u00a0/g, ' '), 'the <b>best business<br>model</b> to start as a <b>beginner</b>');
   assert.ok(!r90.includes('**'));
   // el \n escrito como texto (barra + n) sigue funcionando
   assert.equal(marcar('**a\\nb**'), '<b>a<br>b</b>');

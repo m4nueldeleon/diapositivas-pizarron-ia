@@ -60,7 +60,18 @@ export function marcar(texto) {
 // en el texto (nunca en etiquetas ni atributos: «tono-v») y nunca dentro de un [DATO-PENDIENTE], que QA cuenta.
 export function unirGuiones(html) {
   return String(html).split(/(<span class="hueco[^"]*">[^<]*<\/span>|<[^>]+>)/).map((t, i) => (i % 2 ? t
-    : t.replace(/(\p{L})-(?=\p{L})/gu, '$1\u2060-\u2060'))).join('');
+    : pegarCortas(t.replace(/(\p{L})-(?=\p{L})/gu, '$1\u2060-\u2060')))).join('');
+}
+
+// R15 [juez r15]: en español no se deja una palabra de una o dos letras al final del renglón («¿Te / late», «Mueve un /
+// proyecto») ni un número separado de su unidad («en 2 / minutos»). Espacio duro (U+00A0) después de la palabra corta y
+// entre la cifra y la palabra que la sigue; solo en texto, nunca dentro de una etiqueta.
+export function pegarCortas(t) {
+  return String(t)
+    .replace(/(^|[\s(«"¿¡])([¿¡«"]?[\p{L}]{1,2})[ ](?=[\p{L}\p{N}¿¡«"$])/gu, '$1$2\u00a0')
+    .replace(/(\d[\d.,]*%?)[ ](?=\p{L})/gu, '$1\u00a0')
+    // …ni la última palabra corta de la frase sola en su renglón («a las / 10?»): se pega a la anterior
+    .replace(/[ ]([\p{L}\p{N}$]{1,3}[?!.,;:»"”]*)$/u, '\u00a0$1');
 }
 
 // Texto plano (para contar palabras y para QA)

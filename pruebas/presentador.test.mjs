@@ -143,7 +143,7 @@ test('tramo en vivo: en el presentador es blanco con la consigna y la cuenta reg
   const p = prepararSalida(dir, path.join(dir, 'salida'));
   assert.deepEqual(p.avisos, []);
   assert.match(p.html, /data-vivo="1" data-dur="300"/);
-  assert.match(p.html, /<div class="vivo-consigna">Ahora tú: <b>tu reparto<\/b><\/div>/);
+  assert.match(p.html.replace(/\u00a0/g, ' '), /<div class="vivo-consigna">Ahora tú: <b>tu reparto<\/b><\/div>/);
   const pres = await abrir(p.htmlPath, 1280, 720, { modo: 'presentador' });
   try {
     await pres.page.waitForSelector('.notas-pres', { state: 'attached' });
@@ -155,10 +155,10 @@ test('tramo en vivo: en el presentador es blanco con la consigna y la cuenta reg
         items: v.querySelectorAll('.vivo-items li').length, reloj: v.querySelector('.vivo-reloj').textContent, nota: l.querySelector('.lienzo .nota').checkVisibility() };
     });
     assert.equal(r.id, 'actividad');
-    assert.deepEqual([r.fondo, r.vis, r.consigna, r.items, r.nota], ['rgb(255, 255, 255)', 'flex', 'Ahora tú: tu reparto', 2, false]);
+    assert.deepEqual([r.fondo, r.vis, r.consigna.replace(/\u00a0/g, ' '), r.items, r.nota], ['rgb(255, 255, 255)', 'flex', 'Ahora tú: tu reparto', 2, false]);
     assert.match(r.reloj, /^(5:00|4:5\d)$/);
     await pres.page.keyboard.press('n');
-    const notas = await pres.page.locator('.notas-pres').innerText();
+    const notas = (await pres.page.locator('.notas-pres').innerText()).replace(/\u00a0/g, ' ');
     for (const texto of ['Ahora tú: tu reparto', 'Tienes cinco minutos', 'ACCIÓN: Abrir el documento', 'SI FALLA: Usar la copia local']) assert.ok(notas.includes(texto));
     assert.doesNotMatch(await pres.page.locator('.vivo-pres').first().innerText(), /Abrir el documento|Usar la copia local/);
     // la cámara sin vivo sigue en negro limpio
@@ -169,7 +169,7 @@ test('tramo en vivo: en el presentador es blanco con la consigna y la cuenta reg
   try {
     await ensayo.page.waitForSelector('.o-voz');
     await ensayo.page.keyboard.press('ArrowRight');
-    const notas = await ensayo.page.locator('.o-voz').innerText();
+    const notas = (await ensayo.page.locator('.o-voz').innerText()).replace(/\u00a0/g, ' ');
     for (const texto of ['Ahora tú: tu reparto', 'Tienes cinco minutos', 'ACCIÓN: Abrir el documento', 'SI FALLA: Usar la copia local']) assert.ok(notas.includes(texto));
   } finally { await ensayo.browser.close(); }
   const ren = await abrir(p.htmlPath, 1920, 1080);

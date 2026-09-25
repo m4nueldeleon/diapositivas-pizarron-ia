@@ -189,6 +189,10 @@ export function medidasR11(lam) {
     { const bn=caja(e), pisa=[...lam.querySelectorAll('.burbuja, .t, .item, .etiqueta, .encabezado')].filter(x=>visible(x)&&!e.contains(x)&&!x.contains(e))
         .map(x=>{const b=caja(x);return Math.max(0,Math.min(bn.x+bn.w,b.x+b.w)-Math.max(bn.x,b.x))*Math.max(0,Math.min(bn.y+bn.h,b.y+b.h)-Math.max(bn.y,b.y));});
       const fr=Math.max(0,...pisa)/(bn.w*bn.h||1);
+      const ancla0=lam.querySelector(`[data-a="${e.dataset.sobre}"]`), propia=ancla0?.closest('.burbuja')||ancla0;
+      // R15: a menos de 16 px de una burbuja AJENA ya se lee encima (el juez midió 5 px con QA 100)
+      const cerca=[...lam.querySelectorAll('.burbuja')].filter(x=>visible(x)&&x!==propia).map(x=>{const b=caja(x);return Math.hypot(Math.max(0,b.x-(bn.x+bn.w),bn.x-(b.x+b.w)),Math.max(0,b.y-(bn.y+bn.h),bn.y-(b.y+b.h)));});
+      if(cerca.length && Math.min(...cerca)*a1920<16) errores.push(`anotación «${corto(e.textContent)}» a ${(Math.min(...cerca)*a1920).toFixed(0)} px de otra burbuja (mínimo 16): muévela al carril libre o debajo de su ancla`);
       if(fr>.08) errores.push(`anotación «${corto(e.textContent)}» pisa texto (${Math.round(fr*100)}% de su caja): el motor reserva carril en chats 16:9; acórtala o cámbiala de ancla`); }
     // R14: ni renglones de una palabra ni pegada al borde lateral [r13, clase 36: «Evita / publicar / un error»]
     const lineas=window.lineasPalabras(e), pal=lineas.flat().length;

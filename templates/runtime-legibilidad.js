@@ -124,14 +124,27 @@ function centrarNotasContraste(lam) {
 // ancho y se corre a la izquierda; la nota va a la derecha de su burbuja.
 function reservarCarrilChat(lam) {
   if (lam.offsetWidth <= lam.offsetHeight || lam.dataset.tipo !== 'chat') return;
-  const notas = [...lam.querySelectorAll(':scope > .anotacion[data-sobre]')].filter(n => !n.dataset.llaveHasta && !n.dataset.fija);
-  if (!notas.length) return;
+  // R15 [juez r15]: se respeta el `lado` del autor. Una nota «abajo»/«arriba» nunca pide carril (antes se forzaba a la
+  // derecha y la clase de 60 láminas cayó de 97 a 70). Solo se reserva si la nota va a un costado y, medida a su ancho
+  // natural, NO cabe junto a su burbuja con el aire del gancho.
+  const W = lam.offsetWidth, m = Math.max(40, lam.offsetHeight * .06), aire = 130;
+  const notas = [...lam.querySelectorAll(':scope > .anotacion[data-sobre]')].filter(n => !n.dataset.llaveHasta && !n.dataset.fija
+    && (!n.dataset.lado || n.dataset.lado === 'derecha' || n.dataset.lado === 'izquierda'));
   const lz = lam.querySelector(':scope > .lienzo'), chat = lz?.querySelector('.chat');
-  if (!chat) return;
-  const W = lam.offsetWidth;
-  chat.style.maxWidth = Math.round(W * .58) + 'px'; chat.style.width = Math.round(W * .58) + 'px';
-  lz.style.alignItems = 'flex-start'; lz.style.paddingLeft = Math.round(W * .08) + 'px';
-  notas.forEach(n => { if (!n.dataset.lado || n.dataset.lado === 'arriba' || n.dataset.lado === 'abajo') n.dataset.lado = 'derecha'; });
+  if (!notas.length || !chat) return;
+  const necesita = notas.some(n => {
+    const el = ancla(lam, n.dataset.sobre); if (!el) return false;
+    const A = caja(el.closest('.burbuja') || el, lam), ancho = Math.min(n.scrollWidth || n.offsetWidth, 760);
+    const lado = n.dataset.lado || 'derecha';
+    return lado === 'derecha' ? W - m - (A.x + A.w) - aire < ancho : A.x - m - aire < ancho;
+  });
+  if (!necesita) return;
+  // Ancho del carril a la medida de la nota más ancha (con su gancho); el chat queda entre 45 y 62% del ancho.
+  const izq = Math.round(W * .06), notaMax = Math.max(...notas.map(n => Math.min(n.scrollWidth || n.offsetWidth, 760)));
+  const anchoChat = Math.round(Math.max(W * .45, Math.min(W * .62, W - m - izq - aire - notaMax - 20)));
+  chat.style.maxWidth = anchoChat + 'px'; chat.style.width = anchoChat + 'px';
+  lz.style.alignItems = 'flex-start'; lz.style.paddingLeft = izq + 'px';
+  notas.forEach(n => { n.dataset.lado = 'derecha'; });
   // Más angosto, una burbuja podía pasar el tope de 3 renglones: la letra baja de 4 en 4 hasta 64 px antes de romperlo.
   const bs = [...chat.querySelectorAll('.burbuja')];
   for (let t = 80; t >= 64 && bs.some(b => rectsTexto(b, lam).length > 3); t -= 4)

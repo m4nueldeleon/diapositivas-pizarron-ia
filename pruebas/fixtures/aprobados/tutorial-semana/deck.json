@@ -1,0 +1,284 @@
+{
+  "titulo": "Planea tu semana en 20 minutos cada domingo",
+  "formato": "16:9",
+  "emoji": "apple",
+  "animacion": "seco",
+  "piel": "🏻",
+  "pieza": "tutorial",
+  "persona": "tu",
+  "conceptos": {
+    "📅": "la agenda de la semana",
+    "😵‍💫": "perdido el lunes",
+    "📝": "escribir los pendientes",
+    "🎯": "las prioridades",
+    "⏰": "recordatorio",
+    "📌": "guardar"
+  },
+  "laminas": [
+    {
+      "id": "gancho",
+      "tipo": "idea",
+      "emoji": "📅",
+      "emoji_tam": "grande",
+      "texto": "20 minutos el domingo\n__ordenan toda tu semana__",
+      "nota": "Sin apps nuevas: papel y tu calendario",
+      "voz": [
+        "Veinte minutos el domingo ordenan tu semana.",
+        "Sin apps nuevas: papel y tu calendario."
+      ]
+    },
+    {
+      "id": "lunes",
+      "tipo": "idea",
+      "emoji": "😵‍💫",
+      "texto": "Sin plan, el lunes empiezas por\n**lo que grita más fuerte**",
+      "nota": "El correo del jefe, el chat del grupo",
+      "voz": [
+        "Sin plan, el lunes empiezas por lo que grita.",
+        "El correo del jefe o el chat del grupo."
+      ]
+    },
+    {
+      "id": "mapa",
+      "tipo": "pasos",
+      "iconos": [
+        "📝",
+        "🎯",
+        "📅"
+      ],
+      "etiquetas": [
+        "Vaciar",
+        "Priorizar",
+        "Agenda"
+      ],
+      "activo": 1,
+      "voz": [
+        "Tres pasos. Primero: vaciar."
+      ]
+    },
+    {
+      "id": "vaciar",
+      "tipo": "lista",
+      "encabezado": "Escribe en una hoja todo lo que tienes:",
+      "items": [
+        "Correos por **contestar**",
+        "Llamadas que **debes**",
+        "Entregas con **fecha**",
+        "Pendientes de **casa**"
+      ],
+      "voz": [
+        "Escribe todo en una hoja: los correos.",
+        "Las llamadas que debes.",
+        "Las entregas con fecha.",
+        "Y lo de casa: el súper, la luz."
+      ]
+    },
+    {
+      "id": "minutos",
+      "tipo": "cifra",
+      "arriba": "Vaciar + elegir + agendar:",
+      "lineas": [
+        "5 + 5 + 10 = ((20 minutos))"
+      ],
+      "voz": [
+        "Cinco, cinco y diez: veinte minutos."
+      ]
+    },
+    {
+      "id": "mapa-elegir",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 2,
+      "hechos": [
+        1
+      ],
+      "texto": "Elige lo que **mueve tu semana**",
+      "voz": [
+        "Segundo: elige lo que mueve tu semana."
+      ]
+    },
+    {
+      "id": "criterio",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "Entra",
+          "tono": "v",
+          "vineta": "check",
+          "items": [
+            "Tiene fecha",
+            "Mueve un proyecto"
+          ]
+        },
+        {
+          "titulo": "Espera",
+          "tono": "r",
+          "vineta": "cruz",
+          "items": [
+            "Nadie lo pidió",
+            "Se resuelve en 2 minutos"
+          ],
+          "llave": "Va a un bloque de pendientes"
+        }
+      ],
+      "voz": [
+        "Entra lo que tiene fecha.",
+        "Y lo que mueve un proyecto.",
+        "Espera lo que nadie pidió.",
+        "Y lo que tardas dos minutos.",
+        "Eso va junto en un bloque."
+      ]
+    },
+    {
+      "id": "tres",
+      "tipo": "idea",
+      "emoji": "🎯",
+      "texto": "Máximo __tres prioridades__ por semana",
+      "nota": "Lo demás es mantenimiento",
+      "voz": [
+        "Máximo tres prioridades por semana.",
+        "Lo demás es mantenimiento."
+      ]
+    },
+    {
+      "id": "mapa-agendar",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 3,
+      "hechos": [
+        1,
+        2
+      ],
+      "texto": "Cada prioridad **con día y hora**",
+      "voz": [
+        "Tercero: cada prioridad con día y hora."
+      ]
+    },
+    {
+      "id": "bloque",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "emoji": "🎯",
+          "etiqueta": "Tu prioridad"
+        },
+        {
+          "emoji": "📅",
+          "etiqueta": "Un bloque"
+        },
+        {
+          "emoji": "⏰",
+          "etiqueta": "Aviso 10 min antes"
+        }
+      ],
+      "voz": [
+        "Tomas una prioridad.",
+        "Le das dos horas en tu agenda.",
+        "Y un aviso diez minutos antes."
+      ]
+    },
+    {
+      "id": "hoja",
+      "tipo": "camara",
+      "dur": 15,
+      "voz": "Te enseño una hoja de ejemplo: todo lo pendiente arriba y tres prioridades encerradas abajo."
+    },
+    {
+      "id": "proteger",
+      "tipo": "chat",
+      "guion": true,
+      "mensajes": [
+        {
+          "de": "otro",
+          "texto": "¿Nos vemos el martes a las 10?"
+        },
+        {
+          "de": "yo",
+          "texto": "A las 10 tengo un bloque. ¿Te late a las 12?"
+        },
+        {
+          "de": "otro",
+          "texto": "Va, a las 12."
+        }
+      ],
+      "anotaciones": [
+        {
+          "a": "m1",
+          "texto": "Das otra hora, no un «no»"
+        }
+      ],
+      "voz": [
+        "Te piden el martes a las diez.",
+        "Contestas con otra hora: las doce.",
+        "Y casi siempre te dicen que sí.",
+        "No dijiste que no: diste otra hora."
+      ]
+    },
+    {
+      "id": "errores",
+      "tipo": "lista",
+      "encabezado": "Errores comunes:",
+      "tachar_despues": true,
+      "items": [
+        {
+          "texto": "Planear el lunes a las 9",
+          "tachado": true
+        },
+        {
+          "texto": "Anotar 15 prioridades",
+          "tachado": true
+        },
+        {
+          "texto": "Bloques sin hora",
+          "tachado": true
+        }
+      ],
+      "voz": [
+        "Primer error: planear el lunes.",
+        "Segundo: quince prioridades.",
+        "Tercero: bloques sin hora.",
+        "El plan va el domingo.",
+        "Quince no caben: son tres.",
+        "Sin hora, se lo come una junta."
+      ]
+    },
+    {
+      "id": "viernes",
+      "tipo": "idea",
+      "emoji": "⏳",
+      "texto": "El viernes revisa\n__qué se movió y por qué__",
+      "nota": "Cinco minutos antes de cerrar",
+      "voz": [
+        "El viernes revisa qué se movió.",
+        "Cinco minutos antes de cerrar."
+      ]
+    },
+    {
+      "id": "resumen",
+      "tipo": "pasos",
+      "como": "mapa",
+      "activo": 3,
+      "hechos": [
+        1,
+        2,
+        3
+      ],
+      "texto": "Cada domingo, **20 minutos**",
+      "voz": [
+        "Cada domingo: vacías, priorizas y agendas."
+      ]
+    },
+    {
+      "id": "llamado",
+      "tipo": "idea",
+      "emoji": "📌",
+      "llamado": true,
+      "texto": "__Guarda este video__\npara tu próximo domingo",
+      "voz": [
+        "Guarda este video.",
+        "Ábrelo el domingo a las seis."
+      ],
+      "nota": "El domingo a las 6 pm"
+    }
+  ]
+}
