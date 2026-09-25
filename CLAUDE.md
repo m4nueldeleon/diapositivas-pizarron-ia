@@ -140,7 +140,8 @@ SKILL.md.
    node --test pruebas/*.test.mjs
    node scripts/render.mjs ejemplos/demo && node scripts/qa.mjs ejemplos/demo
    ```
-5. Las correcciones de gusto del usuario van en `LECCIONES.md`, con fecha y el porqué.
+5. Las correcciones de gusto del usuario van como regla de una línea en `REGLAS-DEL-AUTOR.md` (≤ 8 KB, lo que lee quien
+   escribe un deck) y con fecha y el porqué en `LECCIONES.md` (el historial del motor). `r17-guardia` vigila el tamaño.
 6. Si el cambio se ve en el demo, regenera la vitrina del README con `node scripts/vitrina.mjs` (galería 4×4 y GIF de
    cuadros reales de `PZ.mostrar`; requiere ffmpeg) y mira `docs/galeria.jpg` antes de publicar.
 
@@ -293,3 +294,10 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
 - `runtime-filas.js → anclarMapas` (después de encajar): los mapas de íconos en 16:9 llevan el borde superior de sus
   íconos al 32% del alto; todas las apariciones de un mismo mapa (mismas etiquetas) usan el mismo desplazamiento.
 
+- Juez r16, cierre: la guardia de aprobados (`r14-aprobados`, con `scripts/lib/guardia.mjs`) falla también con un aviso
+  nuevo, con una medida de `geometria_r11` fuera de tolerancia (5 puntos en %, 10% o 4 px en px) o con un PNG cuyo dHash
+  16×16 cambió más de 8 bits (solo en la plataforma donde se tomó). Si el cambio es intencional:
+  `PZ_ACTUALIZAR_APROBADOS=1 node --test pruebas/r14-aprobados.test.mjs`, mira las láminas que cambiaron y revisa el diff
+  de `esperado.json`. La lista de dos renglones topa su intervalo en 2.4× la letra (QA: mínimo 36% del alto útil) y la
+  llave con una sola nota centra el conjunto; el celular asienta la conversación abajo (`.celular-entrada`);
+  `runtime-legibilidad.js → pisoSecundario` sube la hora del chat a 48 px efectivos después del encaje.

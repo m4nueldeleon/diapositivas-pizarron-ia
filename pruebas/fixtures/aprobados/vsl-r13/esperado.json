@@ -1,1 +1,277 @@
-{"nota": 94, "borrador": false}
+{
+ "nota": 94,
+ "borrador": false,
+ "avisos": [
+  "credibilidad sin cifra: di una cifra real de anos, clientes, alumnos, estudiantes, eventos, empresas, negocios, personas, asistentes, casos, proyectos, consultores, coaches, profesionales, emprendedores, duenos, miembros, egresados, graduados, generaciones, pacientes, vendedores, agencias, marcas, seguidores, suscriptores, familias, comunidades, paises, ciudades, usuarios antes de la revelación (GUION §#, beat #: «desde #, más de # clientes»); si no los hay, omítelo, no lo inventes",
+  "lámina # (pago-gancho): chat que paga el gancho con la respuesta del cliente (un resultado) sin procedencia: declara procedencia: \"ejemplo\" (sale «Ejemplo ficticio») o su fuente",
+  "lámina # (respuesta): desde el paso #: burbuja de # renglones (tope # en #:#): divide el mensaje en varios mensajes revelados por separado, una idea por burbuja"
+ ],
+ "geometria": {
+  "1": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 32.4,
+   "margen_inferior_pct": 32.4,
+   "principal_x": 42
+  },
+  "2": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "3": {
+   "margen_superior_pct": 71.3,
+   "margen_inferior_pct": 19,
+   "fila_ancho_pct": 70.5,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 42
+  },
+  "4": {
+   "lista_letra_px1920": 68,
+   "lista_alto_util_pct": 49.4,
+   "margen_superior_pct": 41.6,
+   "margen_inferior_pct": 28.4,
+   "lista_centro_pct": 50,
+   "fila_ancho_pct": 99.1,
+   "fila_rotulo_px1920": 68,
+   "principal_x": 34
+  },
+  "5": {
+   "margen_superior_pct": 28.9,
+   "margen_inferior_pct": 28.9,
+   "principal_x": 0
+  },
+  "6": {
+   "margen_superior_pct": 12.6,
+   "margen_inferior_pct": 18.5,
+   "fila_ancho_pct": 100,
+   "fila_rotulo_px1920": 80.1,
+   "bifurcacion_origen_px1920": 190.6,
+   "principal_x": 41.9
+  },
+  "7": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "8": {
+   "principal_x": 0
+  },
+  "9": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 12.2,
+   "margen_inferior_pct": 12.2,
+   "principal_x": 42
+  },
+  "10": {
+   "margen_superior_pct": 33.8,
+   "margen_inferior_pct": 39.7,
+   "fila_ancho_pct": 81.5,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "11": {
+   "chat_letras_min": 68,
+   "chat_letras_max": 68,
+   "margen_superior_pct": 26.1,
+   "margen_inferior_pct": 26.1,
+   "principal_x": 34
+  },
+  "12": {
+   "margen_superior_pct": 68.5,
+   "margen_inferior_pct": 21.1,
+   "principal_x": 45
+  },
+  "13": {
+   "margen_superior_pct": 29,
+   "margen_inferior_pct": 29,
+   "principal_x": 45
+  },
+  "14": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 12.2,
+   "margen_inferior_pct": 12.2,
+   "principal_x": 42
+  },
+  "15": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 86.2,
+   "margen_superior_pct": 12.3,
+   "margen_inferior_pct": 12.3,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "16": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 7,
+   "margen_inferior_pct": 8.4,
+   "principal_x": 42
+  },
+  "17": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "18": {
+   "margen_superior_pct": 28.1,
+   "margen_inferior_pct": 28.1,
+   "principal_x": 38
+  },
+  "19": {
+   "principal_x": 26
+  },
+  "20": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "21": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "22": {
+   "margen_superior_pct": 33.8,
+   "margen_inferior_pct": 39.7,
+   "fila_ancho_pct": 94.2,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "23": {
+   "lista_letra_px1920": 68,
+   "lista_alto_util_pct": 66.1,
+   "margen_superior_pct": 34.3,
+   "margen_inferior_pct": 21.1,
+   "lista_centro_pct": 50,
+   "fila_ancho_pct": 98.8,
+   "fila_rotulo_px1920": 68,
+   "principal_x": 34
+  },
+  "24": {
+   "margen_superior_pct": 24.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "25": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "26": {
+   "margen_superior_pct": 52.1,
+   "margen_inferior_pct": 28.6,
+   "principal_x": 42
+  },
+  "27": {
+   "fila_ancho_pct": 71.9,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 32
+  },
+  "28": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "29": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 57.2,
+   "margen_superior_pct": 25,
+   "margen_inferior_pct": 25,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "30": {
+   "margen_superior_pct": 52.1,
+   "margen_inferior_pct": 28.6,
+   "principal_x": 42
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "0000000000000000180019401b401f4018000000000000000000000000000000",
+   "01-gancho-2.png": "0000000000000000180019401b403f40f940f540f540d0000000000000000000",
+   "01-gancho-3.png": "0000000000000000180019401b403f40f940f540f700df000e800c000c000000",
+   "02-promesa-1.png": "000000000300030003000300030012401ac01aa01e601e601000000000000000",
+   "02-promesa-2.png": "000000000300030003000300030012401ac01aa01e601e6017400e4000000000",
+   "03-mecanismo-1.png": "000023003310333033303330333032b03210000000001a601b601b6002000000",
+   "04-filtro-1.png": "00000000000020002800a800a200860090000000000000000000000000000000",
+   "04-filtro-2.png": "00000000000020002800a800a200860090000000ec00ac00a000000000000000",
+   "04-filtro-3.png": "00000000000020482858a8f8a254864490440000ec00ac00a000000000000000",
+   "04-filtro-4.png": "00000000000020482858a8f8a254864490440000ecd4acd4a0e8000000000000",
+   "05-problema-1.png": "0000000000000100030007000f000d00090018b011a015201040000000000000",
+   "05-problema-2.png": "0000000000000100030007000f000d00090018b0312035201040000000000000",
+   "06-vacio-1.png": "0000030003000300054006800680048000000000000000000000000000000000",
+   "06-vacio-2.png": "000003000300030005402e80a694e4f4e0e4c0a2000000000000000000000000",
+   "06-vacio-3.png": "000003000300030005402e80a694e4f4e0e4e0f221603d201d201d2010600000",
+   "07-campos-1.png": "0000000004000580158016c016c0000000000000000000000000000000000000",
+   "07-campos-2.png": "0000000004000580158016c016c0100017801780158000000000000000000000",
+   "07-campos-3.png": "0000000004000580158016c016c0100017801780158015401540152000000000",
+   "08-muestra-1.png": "0000400060007200720074007400790079007180710070007a407a000a000000",
+   "09-entrada-1.png": "0000300032203b207aa0fea0f600f200d0000000000000000000000000000000",
+   "09-entrada-2.png": "0000300032203b207aa0fea0f600f200fca0347035e032a034a034c034803000",
+   "10-decision-1.png": "0000000000000000200070007000200000000000000000000000000000000000",
+   "10-decision-2.png": "0000000000000000210071807180200000000000000000000000000000000000",
+   "10-decision-3.png": "0000000000000000213071b071b020001d501d70186000000000000000000000",
+   "11-mensaje-1.png": "000000000000c000e500e580d680d580d580c520800000000000000000000000",
+   "11-mensaje-2.png": "000000000000c000e500e580d680d580d580e020f600e600a000000000000000",
+   "11-mensaje-3.png": "000000000000c000e500e580d680d580d5a8e028f6b8e630a000000000000000",
+   "12-salida-1.png": "000030003a003c0038003a00380030803900390030003ea01ea0356030000000",
+   "13-objecion-1.png": "00000000000001000300030003000300030027082c302c302000000000000000",
+   "14-respuesta-1.png": "000038003a4032c032c036d0331035b035803900180000000000000000000000",
+   "14-respuesta-2.png": "000038003a4032c032c036d0331035b035803b0035403540f240f640f2408000",
+   "15-condicion-1.png": "0000020003000a400b400b400000000000000000000000000000000000000000",
+   "15-condicion-2.png": "0000020003000a400b400b4009000e000e000800000000000000000000000000",
+   "15-condicion-3.png": "0000020003000a400b400b4009000e000e0008000d800d000d00000000000000",
+   "15-condicion-4.png": "0000020003000a400b400b4009000e000e0008000d800d000d0004c004400480",
+   "16-sinrespuesta-1.png": "10003a903af03360357035403840380000000000000000000000000000000000",
+   "16-sinrespuesta-2.png": "10003a903af0336035703540384039403de0f560f4c0f4c0d000000000000000",
+   "16-sinrespuesta-3.png": "10003a903af0336035703540384039403de0f560f4c0f6c0d2001ac01ac01800",
+   "17-criterio-1.png": "00000000030003000300030001800e000f400f00030003000300000000000000",
+   "17-criterio-2.png": "00000000030003000300030001800e000f400f0003000b200e800e0000000000",
+   "18-revelacion-1.png": "0000000000000080008000800080148e14a60cb6025f025f00df00ff00ff00ff",
+   "19-incluye-1.png": "8410841084108410841084108410841084108410841084108410841084308410",
+   "19-incluye-2.png": "f010f010f010f010b010b010b010b010b01090109010f010f010f010f030f010",
+   "19-incluye-3.png": "f7c0f7c0f7c0f7c0b7c0b4c0b4c0b4c0b4c09c409c40f7c0f7c0f7c0f7c0f7c0",
+   "19-incluye-4.png": "f7def7cef7cef7ceb7ceb4c2b4c2b4c2b4c29c429c46f7c6f7cef7caf7cef7de",
+   "19-incluye-5.png": "00000000000000000000000031087b587a583c80000000000000000000000000",
+   "20-registro-1.png": "00000000020003000b000a800a80000000000000000000000000000000000000",
+   "20-registro-2.png": "00000000020003000b000a800a8008000a800a800a8000000000000000000000",
+   "20-registro-3.png": "00000000020003000b000a800a8008000a800a800a800a400a400a4000000000",
+   "21-pregunta-si-1.png": "000000000000030003000300030003000a400c800e400c400c40080000000000",
+   "22-revision-1.png": "00000000000000008000e000e000000000000000000000000000000000000000",
+   "22-revision-2.png": "00000000000000008400e6c0e7c0000000000000000000000000000000000000",
+   "22-revision-3.png": "00000000000000008414e6d8e7d800080a600b600b2000000000000000000000",
+   "23-limites-1.png": "0000000020003000b000bc00ac00000000000000000000000000000000000000",
+   "23-limites-2.png": "0000000020003000b000bc00ac0090009000a000000000000000000000000000",
+   "23-limites-3.png": "0000000020403050b0f8bca8aca890009000a000000000000000000000000000",
+   "23-limites-4.png": "0000000020403050b0f8bca8aca890889090a090000000000000000000000000",
+   "23-limites-5.png": "0000000020403050b0f8bca8aca890889090a196019600b4008400c000000000",
+   "24-responsable-1.png": "000000000000030003000300030003000a800e800e0006800580040000000000",
+   "24-responsable-2.png": "000000000000a300a3008300d300950008800e800e0006800580040000000000",
+   "25-salida-comercial-1.png": "00000000030003000300030001000b800c800c800c800cc00800000000000000",
+   "25-salida-comercial-2.png": "00000000030003000300030001000b800c800c800c800c400d000d0000000000",
+   "26-llamado-uno-1.png": "0000000000000c000e000d400d400c400c401c401e201a201280000000000000",
+   "27-despues-1.png": "0000000000000000331033303330333033303330333000000000000000000000",
+   "28-pago-gancho-1.png": "00000000180019201b301ab019401cc018000000000000000000000000000000",
+   "28-pago-gancho-2.png": "00000000180019201b301ab019403cc03a003480f680f700f200d00000000000",
+   "28-pago-gancho-3.png": "00000000180019201b301ab019403cc03a1e348cf694f700f200d00000000000",
+   "29-resumen-1.png": "00000000000011001b001b000000000000000000000000000000000000000000",
+   "29-resumen-2.png": "00000000000011001b001b0010001ec01ac01aa0000000000000000000000000",
+   "29-resumen-3.png": "00000000000011001b001b0010001ec01ac01aa0158019001900080000000000",
+   "29-resumen-4.png": "00000000000011001b001b0010001ec01ac01ab815b019341930080000000000",
+   "30-llamado-dos-1.png": "0000000000000c000e000d400d400c400d400d401b201b200800000000000000"
+  }
+ }
+}

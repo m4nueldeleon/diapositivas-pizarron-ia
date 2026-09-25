@@ -1,1 +1,229 @@
-{"nota": 100, "borrador": false}
+{
+ "nota": 100,
+ "borrador": false,
+ "avisos": [
+  "bloque solucion: falta demostración visible; muestra archivo, captura o conversación completa, no «Duda → Demostración → Comprobación»"
+ ],
+ "geometria": {
+  "1": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "2": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 27.3,
+   "margen_inferior_pct": 18.8,
+   "principal_x": 42
+  },
+  "3": {
+   "lista_letra_px1920": 80.6,
+   "lista_alto_util_pct": 66,
+   "margen_superior_pct": 21.1,
+   "margen_inferior_pct": 21.1,
+   "lista_centro_pct": 50,
+   "principal_x": 40.3
+  },
+  "4": {
+   "margen_superior_pct": 32.5,
+   "margen_inferior_pct": 11.5,
+   "principal_x": 50
+  },
+  "5": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "6": {
+   "margen_superior_pct": 71.3,
+   "margen_inferior_pct": 19,
+   "fila_ancho_pct": 73.5,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 42
+  },
+  "7": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 27.3,
+   "margen_inferior_pct": 27.3,
+   "principal_x": 42
+  },
+  "8": {
+   "lista_letra_px1920": 72,
+   "lista_alto_util_pct": 64.4,
+   "margen_superior_pct": 21.9,
+   "margen_inferior_pct": 21.9,
+   "lista_centro_pct": 50,
+   "principal_x": 36
+  },
+  "9": {
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 37.8,
+   "fila_ancho_pct": 80.9,
+   "fila_rotulo_px1920": 76,
+   "principal_x": 38
+  },
+  "10": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "11": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "12": {
+   "lista_letra_px1920": 69.1,
+   "lista_alto_util_pct": 61.7,
+   "margen_superior_pct": 23,
+   "margen_inferior_pct": 23,
+   "lista_centro_pct": 50,
+   "principal_x": 34.6
+  },
+  "13": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  },
+  "14": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "15": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "16": {
+   "margen_superior_pct": 31.8,
+   "margen_inferior_pct": 20.2,
+   "fila_ancho_pct": 67,
+   "fila_rotulo_px1920": 66.8,
+   "principal_x": 33.4
+  },
+  "17": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "18": {
+   "principal_x": 60
+  },
+  "19": {
+   "principal_x": 50
+  },
+  "20": {
+   "margen_superior_pct": 19.8,
+   "margen_inferior_pct": 19.8,
+   "sello_cubre_emoji": 0.3,
+   "principal_x": 42
+  },
+  "21": {
+   "margen_superior_pct": 42.8,
+   "margen_inferior_pct": 48.7,
+   "fila_ancho_pct": 82.5,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "22": {
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 37.8,
+   "fila_ancho_pct": 81.3,
+   "fila_rotulo_px1920": 76,
+   "principal_x": 38
+  },
+  "23": {
+   "margen_superior_pct": 24.3,
+   "margen_inferior_pct": 24.3,
+   "principal_x": 45
+  },
+  "24": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-portada-1.png": "0000000001000100030003000300010004800580250825e826e000800000a400",
+   "02-escena-1.png": "0000000001003100fd40fd40f560f00000000000000000000000000000008000",
+   "02-escena-2.png": "0000000001003100fd40fd40f560f1000f000fa00da00dd00ec00ec006008000",
+   "02-escena-3.png": "0000000001003100fd40fd40f560f100cf00cfa0cda0cdd0cec00ec006008000",
+   "03-problema-1.png": "0000000020003c00b800fc00dc00000000000000000000000000000000000000",
+   "03-problema-2.png": "0000000020003c00b800fc00dc000000d000d000900000000000000000000000",
+   "03-problema-3.png": "0000000020003c00b800fc00dc000000d000d0009000df00b500840000000000",
+   "03-problema-4.png": "0000000020003c00b880fc80dc800080d0f2d0f290a0df00b500840000000000",
+   "04-costo-1.png": "0000000000000000080009000fc0068006800000000000000000000000000000",
+   "04-costo-2.png": "0000000000000000080009000fc006800e801b601b201a200000000040009000",
+   "04-costo-3.png": "0000000000000000080009000fc006800e801b601b201b200d200c8046809200",
+   "05-mes-1.png": "000000000300030001000300030009000e400cc00dc00dc00800000000000000",
+   "05-mes-2.png": "000000000300030001000300030009000e400cc00dc00d400f400f0000000000",
+   "06-solucion-1.png": "00002200333033303330333033302b303330000000000d000e400e4008000000",
+   "07-respuesta-1.png": "0000000000000c000e200ea00e900ed00cb00c00000000000000000000008000",
+   "07-respuesta-2.png": "0000000000000c000e200ea00e900ed03c80fe80faa0fa80d000000000008000",
+   "08-criterio-1.png": "00000000040004c036803b003f00000000000000000000000000000000000000",
+   "08-criterio-2.png": "00000000040004c036803b003f0000003d703d70325000000000000000000000",
+   "08-criterio-3.png": "00000000040004c036803b003f0000003d703d7032503a803a803a4000000000",
+   "09-registro-1.png": "0000000000000000300030003000300070006000600000000000000000000000",
+   "09-registro-2.png": "0000000000000000330037003700350073006300630000000000000000000000",
+   "09-registro-3.png": "0000000000000000331837383738351873386330633000000000000000000000",
+   "10-equipo-1.png": "00000000010003000300030003000f400f400f800c800c800000000000000000",
+   "10-equipo-2.png": "00000000010003000300030003000f400f400f800c801c8019a0192000000000",
+   "11-primeros-casos-1.png": "00000000030003000300010001000c800c801ec01a601aa01000000000000000",
+   "11-primeros-casos-2.png": "00000000030003000300010001000c800c801ec01a601aa03640304002000000",
+   "12-aceptacion-1.png": "00000000400072007600ec80ec80200000000000000000000000000000000000",
+   "12-aceptacion-2.png": "00000000400072007600ec80ec802000dc00dc00c00000000000000000000000",
+   "12-aceptacion-3.png": "00000000400072007600ec80ec802000dc00dc00c000e800e800a80000000000",
+   "12-aceptacion-4.png": "00000000400072007640ec80ec802040dc54dc54c044e840e840a84000000000",
+   "13-meta-1.png": "000000000100030003000300030012401b401f400f400f400800000000000000",
+   "13-meta-2.png": "000000000100030003000300030012401b401f400f400f400e80048000000000",
+   "14-medicion-1.png": "000000000c000cc00d000f000f80000000000000000000000000000000000000",
+   "14-medicion-2.png": "000000000c000cc00d000f000f8008000f400f400f4000000000000000000000",
+   "14-medicion-3.png": "000000000c000cc00d000f000f8008000f400f400f400f000f000f0000000000",
+   "15-incluye-1.png": "0000000003000300170014401660000000000000000000000000000000000000",
+   "15-incluye-2.png": "0000000003000300170014401660100014c014c014a000000000000000000000",
+   "15-incluye-3.png": "0000000003000300170014401660100014c014c014a014201440144000000000",
+   "16-sesiones-1.png": "0000000000000000100010001000100030003000300000000000000000000000",
+   "16-sesiones-2.png": "0000000000000000130013001300130033003300330000000000000000000000",
+   "16-sesiones-3.png": "0000000000000000132013201320133033303330333000000000000000000000",
+   "16-sesiones-4.png": "0000000000000000132013201320133033303330333000d000d000f000000000",
+   "17-no-incluye-1.png": "00000000020003001ea01e001e00000000000000000000000000000000000000",
+   "17-no-incluye-2.png": "00000000020003001ea01e001e0010001ec01cc0140000000000000000000000",
+   "17-no-incluye-3.png": "00000000020003001ea01e001e0010001ec01cc014000b400b400a4000000000",
+   "17-no-incluye-4.png": "00000000020003001aa01e201f0010001ec01cc014000b400b400a4000000000",
+   "17-no-incluye-5.png": "00000000020003001aa01e201f0010001ec01c4014000b400b400a4000000000",
+   "17-no-incluye-6.png": "00000000020003001aa01e201f0010001ec01c40140019401b401b6000000000",
+   "18-inversion-1.png": "00000000000000001a001a000a20000000000000000000000000000000000000",
+   "18-inversion-2.png": "00000000000000001a001a004a4c755075507b1c030000000000000000000000",
+   "18-inversion-3.png": "00000000000000001a001a004a4c755075507d1c07c007c00000000000000000",
+   "19-pagos-1.png": "0000000000000000000013201ba019a000000000000000000000000000000000",
+   "19-pagos-2.png": "0000000000000000000013201ba019a073b07b287b2800000000000000000000",
+   "20-garantia-1.png": "00000000030003000300010001000b400dc00dc00d400d400000000000000000",
+   "20-garantia-2.png": "00000000030003000300010001000b400dc00dc00d400d400960094000000000",
+   "20-garantia-3.png": "00000000030003380338013801800b800dc00dc00d400d400960094000000000",
+   "21-reclamo-1.png": "0000000000000000000000006000600060000000000000000000000000000000",
+   "21-reclamo-2.png": "0000000000000000000000006500650067000000000000000000000000000000",
+   "21-reclamo-3.png": "0000000000000000000000006568656867680000000000000000000000000000",
+   "22-arranque-1.png": "0000000000000000300020002000200020002000200000000000000000000000",
+   "22-arranque-2.png": "0000000000000000330027002700250023002300230000000000000000000000",
+   "22-arranque-3.png": "0000000000000000330827382738253823302330233800000000000000000000",
+   "23-fecha-1.png": "0000000000000300030003000300030017a016a01ca008000000000000000000",
+   "23-fecha-2.png": "0000000000000300030003000300030017a016a01ca01a601a600a0000000000",
+   "24-llamado-1.png": "000000000100030003000300020013901b901b901b4019c00000000000000000",
+   "24-llamado-2.png": "000000000100030003000300020013901b901b901b4019c018a0188000000000"
+  }
+ }
+}

@@ -1,5 +1,8 @@
 # Lecciones
 
+Historial del motor: el porqué de cada regla, cómo se detectó y qué se midió. **Para escribir un deck basta
+[REGLAS-DEL-AUTOR.md](REGLAS-DEL-AUTOR.md)**; este archivo es para quien modifica el motor o quiere la historia de una regla.
+
 ## 2026-09-25 · Una palabra cortada y una muestra vacía no pueden aprobar (ronda 12)
 
 - **Palabras enteras:** el primer rectángulo de una palabra oculta sus fragmentos en otros
@@ -361,3 +364,20 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   32% del alto en CADA aparición. `runtime-filas.js → anclarMapas` traslada todas las apariciones del mismo mapa (se
   reconocen por sus etiquetas) con un mismo desplazamiento, el que cabe en el miembro más limitado.
 
+
+
+## 2026-09-25 · La guardia ve lo que el ojo ve (juez r16)
+
+- **Regla:** una pieza aprobada guarda sus avisos, su geometría por lámina y un hash perceptual de cada PNG. Un cambio
+  del motor que la mueve sin bajar la nota hace fallar la guardia; si el cambio es intencional se miran las láminas y se
+  actualiza la foto con `PZ_ACTUALIZAR_APROBADOS=1`.
+- **Porqué:** la guardia de la ronda 15 solo miraba errores y nota; el juez señaló que ningún cambio geométrico o visual que
+  conservara la nota la hacía fallar. Comprobado: bajar la letra de las listas de 84 a 78 px hace fallar 6 de las 7 piezas.
+- **Regla:** con dos renglones, el hueco entre ellos no pasa de 2.4 veces la letra: a 440 px «Responsable» y «Fecha» ya no
+  se leían como lista. La lista con llave y nota se centra como conjunto.
+- **Regla:** en el celular la conversación va abajo, sobre la barra de escribir, como en un teléfono: tres mensajes arriba
+  dejaban el 45 % de la pantalla en blanco.
+- **Regla:** el motor, no el autor, garantiza los 48 px de la hora del chat; el aviso pedía un arreglo que el autor no podía
+  hacer. Un aviso sin arreglo accionable enseña a ignorar el QA.
+- **Entrada:** las reglas para escribir un deck se separaron en REGLAS-DEL-AUTOR.md (≤ 8 KB); LECCIONES pesaba 34 KB y se
+  leía completa antes de cada deck.

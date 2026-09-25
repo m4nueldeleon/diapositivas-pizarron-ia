@@ -688,6 +688,16 @@
         let exceso=intentar(1);
         const zmin=Math.min(1,64/f0);
         for(let z=.96; exceso>0 && bloque && z>=zmin-1e-6; z-=.04) exceso=intentar(z);
+        // R17 [juez r16, demo 54]: la lista centrada y la nota a su derecha dejaban el conjunto corrido. Con una sola
+        // anotación, el bloque se corre a la izquierda hasta centrar lista + llave + nota (nunca más allá de 60 px).
+        if(exceso<=0 && bloque && lam.querySelectorAll(':scope > .anotacion').length===1){
+          const textos=[...bloque.querySelectorAll('.lista > *, .encabezado')].map(e=>caja(e,lam)), N=caja(n,lam);
+          if(textos.length){
+            const izq=Math.min(...textos.map(t=>t.x)), der=Math.max(N.x+N.w, ...textos.map(t=>t.x+t.w));
+            const dx=Math.min((izq+der)/2-W/2, izq-60), z=parseFloat(bloque.style.zoom)||1;
+            if(dx>20){ bloque.style.position='relative'; bloque.style.left=((parseFloat(bloque.style.left)||0)-dx/z)+'px'; colocar(); }
+          }
+        }
         puestas.push(caja(n,lam)); return;
       }   // la conexión avisa que falta el ancla
       // sobre una captura, la nota va FUERA de ella (al lado del ancla, a la altura de lo que señala) [28:35]
@@ -1150,6 +1160,7 @@
     lams.forEach(l => { try { centrarNotasContraste(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de columna (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     try { anclarMapas(lams); } catch (e) { avisos.push(`altura del mapa (${e.message})`); }
+    lams.forEach(l => { try { pisoSecundario(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: hora del chat (${e.message})`); } });
     lams.forEach(l => { try { centrarNotasContraste(l); respetarMargen(l); reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
     // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
     const esFoco = l => !!l.querySelector(':scope > .escena.clon');

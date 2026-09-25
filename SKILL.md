@@ -25,15 +25,16 @@ deducir.
 
 1. Lee **[references/ARRANQUE.md](references/ARRANQUE.md)** (dos páginas): el flujo, el esqueleto, los ocho
    diseños más usados, la regla de una frase de voz por paso y los avisos del preflight con su arreglo. En un
-   reel, un tutorial o una clase express basta con ARRANQUE y LECCIONES: el preflight de `armar.mjs` te pide lo
+   reel, un tutorial o una clase express basta con ARRANQUE y REGLAS-DEL-AUTOR: el preflight de `armar.mjs` te pide lo
    demás por sección, y la tabla final de ARRANQUE dice qué leer para cada cosa.
 2. En una clase larga, un VSL, un webinar o una propuesta lee además **[references/ESTILO.md](references/ESTILO.md)**
    completa (la biblia: qué hace cada pieza y por qué), **[references/GUION-A-LAMINAS.md](references/GUION-A-LAMINAS.md)**
    (el método de frase a imagen, los primeros 10 segundos §6.1 y la oferta beat por beat §7),
    **[references/ARCOS.md](references/ARCOS.md)** (la sección de tu pieza) y
    **[references/VOZ-HUMANA.md](references/VOZ-HUMANA.md)** (las fórmulas de IA que no van).
-3. Lee **[LECCIONES.md](LECCIONES.md)**: las correcciones que ya hizo el usuario, que mandan
-   sobre todo lo demás.
+3. Lee **[REGLAS-DEL-AUTOR.md](REGLAS-DEL-AUTOR.md)** (una página): lo que ya se decidió y las correcciones que hizo el
+   usuario, que mandan sobre todo lo demás. El porqué de cada una está en [LECCIONES.md](LECCIONES.md), el historial del
+   motor; no hace falta leerlo para escribir un deck.
 4. Nunca copies credenciales, cifras, casos, anécdotas con fecha ni frases de otro deck, de un modelo o de un evento: son de otra persona. De un modelo se copia el mecanismo, no el dato. Sin ficha, {{ANOS}}/{{CLIENTES}} pendientes.
    Busca `MI-MARCA.md`, con la firma, el formato, el idioma y las palabras vetadas. La cadena es la misma que usan
    render y QA (`scripts/lib/marca.mjs`), y gana la primera que exista: la carpeta del deck → la de arriba →
@@ -167,7 +168,7 @@ Antes del guion, congela en `reglas_cliente` lo explícito del encargo que choqu
 | **5. Revisión visual** | **Mira la hoja y los PNG dudosos con tus propios ojos**, y la hoja de pasos para el orden del revelado. Con más de 20 láminas la hoja se pagina: **recorre TODAS** (`hoja-01.jpg`, `hoja-02.jpg`…, listadas en `hojas.json`; `hoja.jpg` es solo la primera). En clases y webinars, revisa por bloque del mapa. ¿Se entiende en 1 s sin audio? ¿Hay un solo punto focal? La hoja, los PNG y el QA usan el mismo número de lámina. | correcciones |
 | **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>` (o `render.mjs --qa`). **La primera captura requiere QA y revisión visual antes de entregarse**: corrige cada error y aviso que QA ya conoce (el mapa que vuelve vacío tras un bloque corto, una objeción que solo se responde con una frase, «sin prueba real», una tasa sin origen, un `no:` que niega un paso del mapa), vuelve a renderizar y a correr QA, y entrega con la salida de la ÚLTIMA corrida. El deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `avisos-pendientes` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
-| **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
+| **8. Aprender** | Si el usuario corrige algo, la regla va en `REGLAS-DEL-AUTOR.md` (una línea) y su historia en `LECCIONES.md`, antes de cerrar. | lección |
 
 La producción ejecuta un preflight geométrico con Chromium, fuentes cargadas y anchos reales antes
 de capturar PNG. `preflight-geometria.json` comprueba todos los pasos, listas, énfasis y sellos;

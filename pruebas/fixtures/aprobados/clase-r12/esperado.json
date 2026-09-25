@@ -1,1 +1,525 @@
-{"nota": 100, "borrador": false}
+{
+ "nota": 100,
+ "borrador": false,
+ "avisos": [
+  "bloque mapa-entrega: falta demostración visible; muestra archivo, captura o conversación completa, no «Duda → Demostración → Comprobación»"
+ ],
+ "geometria": {
+  "1": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 32.4,
+   "margen_inferior_pct": 32.4,
+   "principal_x": 42
+  },
+  "2": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "3": {
+   "margen_superior_pct": 10.9,
+   "margen_inferior_pct": 16.8,
+   "fila_ancho_pct": 80.7,
+   "fila_rotulo_px1920": 84,
+   "bifurcacion_origen_px1920": 200,
+   "principal_x": 44
+  },
+  "4": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "5": {
+   "margen_superior_pct": 58.9,
+   "margen_inferior_pct": 20.4,
+   "principal_x": 45
+  },
+  "6": {
+   "margen_superior_pct": 66.5,
+   "margen_inferior_pct": 23.8,
+   "fila_ancho_pct": 71.5,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 42
+  },
+  "7": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "8": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 56.4,
+   "margen_superior_pct": 25.3,
+   "margen_inferior_pct": 25.3,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "9": {
+   "margen_superior_pct": 42.8,
+   "margen_inferior_pct": 48.7,
+   "fila_ancho_pct": 87.4,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "10": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "11": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "12": {
+   "margen_superior_pct": 24.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "13": {
+   "margen_superior_pct": 22.6,
+   "margen_inferior_pct": 22.6,
+   "principal_x": 0
+  },
+  "14": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 56.4,
+   "margen_superior_pct": 25.3,
+   "margen_inferior_pct": 25.3,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "15": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "16": {
+   "margen_superior_pct": 25.8,
+   "margen_inferior_pct": 25.8,
+   "principal_x": 42
+  },
+  "17": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 57.2,
+   "margen_superior_pct": 25,
+   "margen_inferior_pct": 25,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "18": {
+   "vivo_letra_px1920": 84,
+   "margen_superior_pct": 18.9,
+   "margen_inferior_pct": 18.9,
+   "principal_x": 0
+  },
+  "19": {
+   "margen_superior_pct": 46.7,
+   "margen_inferior_pct": 14.2,
+   "fila_ancho_pct": 71.5,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 42
+  },
+  "20": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "21": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "fila_ancho_pct": 45.2,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "22": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "23": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "24": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 7,
+   "margen_inferior_pct": 8.4,
+   "principal_x": 42
+  },
+  "25": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 86.2,
+   "margen_superior_pct": 12.3,
+   "margen_inferior_pct": 12.3,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "26": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "27": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "28": {
+   "lista_letra_px1920": 76,
+   "lista_alto_util_pct": 69.1,
+   "margen_superior_pct": 33,
+   "margen_inferior_pct": 19.8,
+   "lista_centro_pct": 50,
+   "fila_ancho_pct": 96.9,
+   "fila_rotulo_px1920": 76,
+   "principal_x": 38
+  },
+  "29": {
+   "margen_superior_pct": 33.8,
+   "margen_inferior_pct": 39.7,
+   "fila_ancho_pct": 85.9,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "30": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "31": {
+   "margen_superior_pct": 12.5,
+   "margen_inferior_pct": 32.7,
+   "principal_x": 0
+  },
+  "32": {
+   "vivo_letra_px1920": 84,
+   "margen_superior_pct": 11.9,
+   "margen_inferior_pct": 11.9,
+   "principal_x": 0
+  },
+  "33": {
+   "margen_superior_pct": 46.7,
+   "margen_inferior_pct": 14.2,
+   "fila_ancho_pct": 71.5,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 42
+  },
+  "34": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "fila_ancho_pct": 42.2,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "35": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "36": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 12.3,
+   "margen_inferior_pct": 8.4,
+   "lista_centro_pct": 42.4,
+   "principal_x": 42
+  },
+  "37": {
+   "margen_superior_pct": 33.8,
+   "margen_inferior_pct": 39.7,
+   "fila_ancho_pct": 81.8,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "38": {
+   "margen_superior_pct": 29,
+   "margen_inferior_pct": 29,
+   "principal_x": 45
+  },
+  "39": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 17.2,
+   "margen_inferior_pct": 17.2,
+   "principal_x": 42
+  },
+  "40": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 7,
+   "margen_inferior_pct": 8.4,
+   "principal_x": 42
+  },
+  "41": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "42": {
+   "lista_letra_px1920": 72,
+   "lista_alto_util_pct": 67.6,
+   "margen_superior_pct": 33.7,
+   "margen_inferior_pct": 20.4,
+   "lista_centro_pct": 50,
+   "fila_ancho_pct": 100,
+   "fila_rotulo_px1920": 72,
+   "principal_x": 36
+  },
+  "43": {
+   "margen_superior_pct": 29,
+   "margen_inferior_pct": 29,
+   "principal_x": 45
+  },
+  "44": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 17.2,
+   "margen_inferior_pct": 17.2,
+   "principal_x": 42
+  },
+  "45": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 31.9,
+   "principal_x": 42
+  },
+  "46": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "fila_ancho_pct": 45,
+   "fila_rotulo_px1920": 84,
+   "principal_x": 42
+  },
+  "47": {
+   "margen_superior_pct": 18.1,
+   "margen_inferior_pct": 33.5,
+   "principal_x": 42
+  },
+  "48": {
+   "margen_superior_pct": 71.3,
+   "margen_inferior_pct": 19,
+   "fila_ancho_pct": 78.6,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 42
+  },
+  "49": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "50": {
+   "margen_superior_pct": 20.4,
+   "margen_inferior_pct": 20.4,
+   "principal_x": 45
+  },
+  "51": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 57.2,
+   "margen_superior_pct": 25,
+   "margen_inferior_pct": 6,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "52": {
+   "margen_superior_pct": 43.3,
+   "margen_inferior_pct": 43.3,
+   "principal_x": 45
+  },
+  "53": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 22.3,
+   "principal_x": 42
+  },
+  "54": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 17.1,
+   "margen_inferior_pct": 8.4,
+   "principal_x": 42
+  },
+  "55": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "56": {
+   "margen_superior_pct": 28.9,
+   "margen_inferior_pct": 28.9,
+   "principal_x": 0
+  },
+  "57": {
+   "margen_superior_pct": 25.8,
+   "margen_inferior_pct": 25.8,
+   "principal_x": 42
+  },
+  "58": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 31.9,
+   "principal_x": 42
+  },
+  "59": {
+   "margen_superior_pct": 25.1,
+   "margen_inferior_pct": 25.1,
+   "principal_x": 45
+  },
+  "60": {
+   "margen_superior_pct": 25.8,
+   "margen_inferior_pct": 25.8,
+   "principal_x": 42
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "00000000000000007000faa0fab0fad0d0000000000000000000000000000000",
+   "01-gancho-2.png": "00000000000000007000faa0fab0fa90dd001b201b2018000000000000000000",
+   "02-actividad-1.png": "000000000000030003000300030001001b201d201f400f000f00030000000000",
+   "03-eleccion-1.png": "00000300030003000d400e800e80088000000000000000000000000000000000",
+   "03-eleccion-2.png": "00000300030003000d403e80368060f060786048000000000000000000000000",
+   "03-eleccion-3.png": "00000300030003000d403e80368060f060787070332011001d601d4018000000",
+   "04-resultado-1.png": "0000000002000200160016801680000000000000000000000000000000000000",
+   "04-resultado-2.png": "0000000002000200160016801680100015401540150000000000000000000000",
+   "04-resultado-3.png": "0000000002000200160016801680100015401540150017401740164000000000",
+   "05-tiempo-1.png": "000008000e000e800e800e400ec00ec00ec00e400fc01f401a40164000000000",
+   "06-mapa-1.png": "0000331033303330333033303330333000000000104019e019e00a8000000000",
+   "07-cliente-1.png": "000000000000010003000300030003000c400cc00d400d800d800c0000000000",
+   "08-todos-1.png": "000000000000020002000a000c800c8000000000000000000000000000000000",
+   "08-todos-2.png": "000000000000020002000a000c800c800000000019401e001e00000000000000",
+   "09-persona-1.png": "0000000000000000000000004000600060000000000000000000000000000000",
+   "09-persona-2.png": "0000000000000000000000004300630063000000000000000000000000000000",
+   "09-persona-3.png": "0000000000000000000000004334633463380000000000000000000000000000",
+   "10-escena-1.png": "0000000030003d007970f320fb00f300d0000000000000000000000000000000",
+   "10-escena-2.png": "0000000030003d007970f320fb00f700dea00ea00fa00f800d800c0400000000",
+   "11-friccion-1.png": "00000000300031607260f6e0f4c0f4c0d0000000000000000000000000000000",
+   "11-friccion-2.png": "00000000300031607260f6e0f4c0fcc0dc80189019101b101b10180400000000",
+   "12-problema-1.png": "000000000000030003000300030001800a000c801ca018801980100000000000",
+   "12-problema-2.png": "00000000000093009300830083008d8008000c801ca018801980100000000000",
+   "13-escuchar-1.png": "000000000100030003000300030006000c400dc015801ca01ca0100000000000",
+   "14-no-inferir-1.png": "00000000000004800480348039c039c000000000000000000000000000000000",
+   "14-no-inferir-2.png": "00000000000004800480348039c039c00000000035803d003b00010000000000",
+   "15-pregunta-util-1.png": "0000000018001e201d201d901d401c4018000000000000000000000000000000",
+   "15-pregunta-util-2.png": "0000000018001e201d201d901d403c4039403a80fa80f600f600d00000000000",
+   "16-elegir-1.png": "0000000000000100030003000300030009200f803d8036a026a0000000000000",
+   "17-registro-1.png": "000000008000e200e600fc000000000000000000000000000000000000000000",
+   "17-registro-2.png": "000000008000e200e600fc00c000ea00f2009200000000000000000000000000",
+   "17-registro-3.png": "000000008000e200e600fc00c000ea00f2009200ea00ec00ec00040000000000",
+   "17-registro-4.png": "000000008080e280e680fc00c090ea38f23892a0ea00ec00ec00048000000000",
+   "18-practica-cliente-1.png": "00000200070007000700070027003a203a303a303a0031503e503e5004800000",
+   "19-mapa-entrega-1.png": "00003310333033303330333033303330100010001a201ac01f800fc00fc00000",
+   "20-entrega-1.png": "00000000000003000300030003000300048006800e800f400f40020000000000",
+   "21-transformacion-1.png": "0000000000000cc00cc00e800000000000000000000000000000000000000000",
+   "21-transformacion-2.png": "0000000000000cc00cc00e800500054004c00600000000000000000000000000",
+   "21-transformacion-3.png": "0000000000000cc00cc00e800500054004c0070009000e400e40000000000000",
+   "22-estructura-1.png": "000000000c000e800e800a800b80000000000000000000000000000000000000",
+   "22-estructura-2.png": "000000000c000e800e800a800b8008000ae00ae0090000000000000000000000",
+   "22-estructura-3.png": "000000000c000e800e800a800b8008000ae00ae0090008c00b800b8000000000",
+   "23-material-1.png": "000000000c000e100e900af00d800d800c000000000000000000000000000000",
+   "23-material-2.png": "000000000c000e100e900af00d803d803d2033a0f3a0f780f480d00000000000",
+   "24-redaccion-1.png": "18001a401b5019501b501cc01cc0180000000000000000000000000000000000",
+   "24-redaccion-2.png": "18001a401b5019501b501cc03cc038003740f340f2e0f2e0d000000000000000",
+   "24-redaccion-3.png": "18001a401b5019501b501cc03cc038003740f340f2e0f360d300269036d03040",
+   "25-contenido-listo-1.png": "00000400068019c019a01ba00000000000000000000000000000000000000000",
+   "25-contenido-listo-2.png": "00000400068019c019a01ba012401a401a400820000000000000000000000000",
+   "25-contenido-listo-3.png": "00000400068019c019a01ba012401a401a4008201d8018801880000000000000",
+   "25-contenido-listo-4.png": "00000400068019c019a01ba012401a401a4008201d80188018800d400c400880",
+   "26-comprobacion-1.png": "000000000000030003000300030001800c800e800e800d800d80080000000000",
+   "27-lectura-1.png": "0000000018001a501a501a501e701e7018000000000000000000000000000000",
+   "27-lectura-2.png": "0000000018001a501a501a501e703e603a4032e0f6e0f560fd60d00000000000",
+   "28-limite-1.png": "0000000060006000f000b000b000000000000000000000000000000000000000",
+   "28-limite-2.png": "0000000060006000f000b000b0008800a800a800000000000000000000000000",
+   "28-limite-3.png": "0000000060d060f0f1f0b180b1808800a800a800000000000000000000000000",
+   "28-limite-4.png": "0000000060d060f0f1f0b180b180891ca994a914000000000000000000000000",
+   "28-limite-5.png": "0000000060d060f0f1f0b180b180891ca994ab16032601280194019400000000",
+   "29-comprobar-1.png": "0000000000000000200060006000000000000000000000000000000000000000",
+   "29-comprobar-2.png": "0000000000000000220063006300000000000000000000000000000000000000",
+   "29-comprobar-3.png": "0000000000000000223063386338000037b037b011b000000000000000000000",
+   "30-resultado-ajeno-1.png": "0000000000000300030003000300030014601c601ca01e401a40080000000000",
+   "31-criterio-1.png": "00000300070007000d000d0018201c401cc01cc03cc034c00000000000000000",
+   "31-criterio-2.png": "00000300070007000d000d0018201c401cc01cc03cc036400f000f000c000400",
+   "32-practica-alcance-1.png": "0000070007000700070027082b103b701600160017401640144015c014c01000",
+   "33-mapa-acuerdo-1.png": "00003330333033303330333033303330110011000c400e800f80070007000000",
+   "34-dependencias-1.png": "0000000000000c000c400d400000000000000000000000000000000000000000",
+   "34-dependencias-2.png": "0000000000000c000c400d400300030003000380000000000000000000000000",
+   "34-dependencias-3.png": "0000000000000c000c400d400300030003000300030003800380008000000000",
+   "35-plazo-1.png": "000000000000030003000300030003000a800ec01e4017601760080000000000",
+   "36-revisar-material-1.png": "00000c001580158015c015000000000000000000000000000000000000000000",
+   "36-revisar-material-2.png": "00000c001580158015c01500144014a014a01400000000000000000000000000",
+   "36-revisar-material-3.png": "00000c001580158015c01500144014a014a0140016c016c01480000000000000",
+   "36-revisar-material-4.png": "00000c001580158015c01500144014a014a0140016c0164016001a401c401800",
+   "37-pago-1.png": "0000000000000000400060006000100000000000000000000000000000000000",
+   "37-pago-2.png": "0000000000000000460067006700118000000000000000000000000000000000",
+   "37-pago-3.png": "000000000000000046306738673811801d201f201b2000000000000000000000",
+   "38-objecion-pago-1.png": "000000000000010003000300030003000300231875b075b82400000000000000",
+   "39-respuesta-pago-1.png": "00003800384036c036c036403740370035001800000000000000000000000000",
+   "39-respuesta-pago-2.png": "00003800384036c036c0364037403700350039803980ff80fe00fe00d0000000",
+   "40-ejemplo-pago-1.png": "18001e401e501d601ea819801880180000000000000000000000000000000000",
+   "40-ejemplo-pago-2.png": "18001e401e501d601ea819803c803a2032b0fa30f910f990d000000000000000",
+   "40-ejemplo-pago-3.png": "18001e401e501d601ea819803c803a2032b0fa30f910f910d1001dc01ec01840",
+   "41-frontera-pago-1.png": "000000000000030003000300030001000d000d801dc01da01da0010000000000",
+   "42-revision-1.png": "0000000070007000f000ac00ac00000000000000000000000000000000000000",
+   "42-revision-2.png": "0000000070007000f000ac00ac008800ac00a400000000000000000000000000",
+   "42-revision-3.png": "0000000070607070f1e0ade8ade88800ac00a400000000000000000000000000",
+   "42-revision-4.png": "0000000070607070f1e0ade8ade88998ad98a5d8000000000000000000000000",
+   "42-revision-5.png": "0000000070607070f1e0ade8ade88998ad98a59a01960134015401d400000000",
+   "43-objecion-cambios-1.png": "0000000000000100030003000300030003002b287b287b282000000000000000",
+   "44-respuesta-cambios-1.png": "00001c001c001ab018b019b01930197019201c00000000000000000000000000",
+   "44-respuesta-cambios-2.png": "00001c001c001ab018b019b01930197039203cc03cd0fbd0fb80f980d0000000",
+   "45-ejemplo-cambios-1.png": "000000000000000018001a601a601d901c901ae01ae018400000000000000000",
+   "46-permiso-cambio-1.png": "0000000000000dc00d800d800000000000000000000000000000000000000000",
+   "46-permiso-cambio-2.png": "0000000000000dc00d800d8009000e000e800800000000000000000000000000",
+   "46-permiso-cambio-3.png": "0000000000000dc00d800d8009000e000e800900030003000300010000000000",
+   "47-cierre-cambios-1.png": "00000000030003000300010000001c601d601d40194019400000000000000000",
+   "47-cierre-cambios-2.png": "00000000030003000300010000001c601d601d4019401f000fc00e800c000c00",
+   "48-armar-frase-1.png": "000022003330333033303330333023a83338000000001cc019a00ba001000000",
+   "49-frase-uno-1.png": "000000000000010003000300030003000d800c801cc01ca01ca0080000000000",
+   "50-frase-dos-1.png": "0000000003000300038003000300030003001c601c601ec00fc00f8000000000",
+   "51-frase-tres-1.png": "00000000100010c015c015c00000000000000000000000000000000000000000",
+   "51-frase-tres-2.png": "00000000100010c015c015c0100014c014c01000000000000000000000000000",
+   "51-frase-tres-3.png": "00000000100010c015c015c0100014c014c01000123016601660000000000000",
+   "51-frase-tres-4.png": "00000000100010c015c015c0100014c014c010001230166017600d200e800c80",
+   "52-no-promesa-1.png": "00000000000000000000000008800e800e800a800a4000000000000000000000",
+   "53-pregunta-final-1.png": "000000003000f820fab0fa90d000000000000000000000000000000000000000",
+   "53-pregunta-final-2.png": "000000003000f820fab0fa90f800315031303130333037003300300400000000",
+   "54-aceptacion-1.png": "0000300031503310339039803980380000000000000000000000000000000000",
+   "54-aceptacion-2.png": "000030003150331033903980398038203330f330f980f980d000000000000000",
+   "54-aceptacion-3.png": "000030003150331033903980398038203330f330f980f900d10033403a403240",
+   "55-antes-enviar-1.png": "00000000020002801b801a801a80000000000000000000000000000000000000",
+   "55-antes-enviar-2.png": "00000000020002801b801a801a8018001a201a201a0000000000000000000000",
+   "55-antes-enviar-3.png": "00000000020002801b801a801a8018001a201a201a001aa01ac01ac000000000",
+   "56-error-final-1.png": "0000000000000100030007000700050005001d401ac01ec00800000000000000",
+   "56-error-final-2.png": "0000000000000100030007000700050005001d401ac01ec00800000000000000",
+   "57-tarea-1.png": "0000000000000300030003000300030011201ce01cc00c400c40000000000000",
+   "58-verificar-tarea-1.png": "000000000000000018001c601c60195019501bd01b001e000000000000000000",
+   "59-comunidad-1.png": "0000000000000300030003000300030009800d801d201ec01ec0000000000000",
+   "60-proxima-1.png": "00000000000003000300030003000300048006801e401940195010a000000000"
+  }
+ }
+}

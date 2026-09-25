@@ -34,7 +34,14 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
 - `id`: nombre corto para los archivos y los cortes.
 - `voz`: lo que se dice. Puede ser un texto o una lista con un texto por paso; sirve para
   tiempos, anclas y QA.
-- `paga: "<id>"`: retoma el gancho al cerrar; el id debe existir (si falta, QA avisa). Ver GUION §6.
+- `paga: "<id>"`: esta lámina paga el gancho `<id>` en el tramo final (el mismo objeto, resuelto). El id debe existir
+  (si falta, QA avisa); lo normal es combinarlo con `"como": "<id>"` para heredar el diseño y el emoji. Si el pago es
+  la respuesta de un cliente o un resultado, declara `procedencia: "ejemplo"` (sale «Ejemplo ficticio») o su `fuente`
+  real: QA avisa en cualquier pieza. Ver GUION §6 y ARCOS («el objeto del gancho vuelve»).
+  ```json
+  { "id": "pago", "tipo": "chat", "como": "gancho", "paga": "gancho", "procedencia": "ejemplo",
+    "sello": "Volvió", "sello_sobre": "m1", "mensajes": [{ "de": "otro", "hora": "Hoy", "texto": "¡Apártame tres cajas!" }] }
+  ```
 - `dur`: segundos por paso, como número o como lista.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
 - `sello`: texto de sello de goma que cae en un paso extra. Es una etiqueta blanca OPACA con doble
@@ -799,8 +806,10 @@ hasta que lo llenes; así una variable de la lección nunca se confunde con un d
 - `avatar_tam` (80-160): diámetro en px de los DOS avatares a la vez (por omisión 126 en 16:9 y 96 en 9:16; el emoji
   llena ~85%). No pases del alto de una burbuja de una línea (≤ ~130 px en 9:16) ni agrandes solo el de la IA: los dos
   avatares quedarían desparejos y las burbujas perderían ancho.
-- `tam_texto` (px) cambia la letra de las burbujas (54 en 16:9, 58 en 9:16).
-- `hora` por mensaje: un separador gris centrado sobre la burbuja, en el mismo paso. Un gancho en chat
+- `tam_texto` (px) cambia la letra de las burbujas. Por omisión, en 16:9 va de 84 a 60 px según el número de mensajes y
+  su largo (el deck iguala sus chats a ≤ 1.3×); en 9:16, 104 px para dos mensajes cortos y 84 en lo demás, con piso de 64.
+- `hora` por mensaje: un separador gris centrado sobre la burbuja, en el mismo paso, a 48 px efectivos (el motor la
+  sube si el encaje la reduce). Es ambientación: un dato que se tiene que leer va en el mensaje. Un gancho en chat
   tiene que entenderse sin sonido: muestra la hora de los dos extremos y pega el sello a la burbuja culpable.
   Cada burbuja es un ancla `m0`, `m1`… (se cuentan desde 0):
   ```json
@@ -823,7 +832,8 @@ los escalona en un mismo paso cada 0.25 s; `"todo"` los muestra juntos. Conserva
 {"tipo":"chat","variante":"muro","mensajes":[{"de":"otro","texto":"Ya quedó"},{"de":"otro","texto":"Lo probé"},{"de":"otro","texto":"Entendido"},{"de":"otro","texto":"Voy a empezar"},{"de":"otro","texto":"Tengo mi tarea"},{"de":"otro","texto":"Nos vemos"}]}
 ```
 
-`marco: "celular"` encierra de 1 a 3 mensajes en una pantalla con marco negro y muesca.
+`marco: "celular"` encierra de 1 a 3 mensajes en una pantalla con marco negro y muesca. Como en un teléfono, la
+conversación se asienta abajo, sobre la barra de escribir; sin `app`, la cabecera es la de un contacto (sin texto).
 `app` es el archivo del logo real o `{{LOGO_X}}` declarado; nunca un logo inventado.
 `grabando: true` añade una insignia roja. `texto` o `encabezado` quedan junto al celular.
 

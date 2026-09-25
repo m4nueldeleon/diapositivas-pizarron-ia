@@ -1,1 +1,149 @@
-{"nota": 100, "borrador": false}
+{
+ "nota": 100,
+ "borrador": false,
+ "avisos": [
+  "lámina # (criterio): desde el paso #: contraste desalineado: una columna parte sus renglones y la otra no; acorta los ítems largos o usa una letra común"
+ ],
+ "geometria": {
+  "1": {
+   "margen_superior_pct": 17,
+   "margen_inferior_pct": 17,
+   "principal_x": 42
+  },
+  "2": {
+   "margen_superior_pct": 19.8,
+   "margen_inferior_pct": 19.8,
+   "principal_x": 42
+  },
+  "3": {
+   "margen_superior_pct": 31.8,
+   "margen_inferior_pct": 51.6,
+   "fila_ancho_pct": 83.3,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "4": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 80.2,
+   "margen_superior_pct": 14.9,
+   "margen_inferior_pct": 14.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "5": {
+   "margen_superior_pct": 35.5,
+   "margen_inferior_pct": 57.7,
+   "principal_x": 67.2
+  },
+  "6": {
+   "margen_superior_pct": 31.8,
+   "margen_inferior_pct": 6.1,
+   "fila_ancho_pct": 83.3,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "7": {
+   "lista_letra_px1920": 64,
+   "lista_alto_util_pct": 72.7,
+   "margen_superior_pct": 31.5,
+   "margen_inferior_pct": 18.2,
+   "lista_centro_pct": 50,
+   "fila_ancho_pct": 100,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 32
+  },
+  "8": {
+   "margen_superior_pct": 24.3,
+   "margen_inferior_pct": 24.3,
+   "principal_x": 45
+  },
+  "9": {
+   "margen_superior_pct": 31.8,
+   "margen_inferior_pct": 6.1,
+   "fila_ancho_pct": 83.3,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "10": {
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 37.8,
+   "fila_ancho_pct": 96.2,
+   "fila_rotulo_px1920": 76,
+   "principal_x": 38
+  },
+  "12": {
+   "chat_letras_min": 72,
+   "chat_letras_max": 72,
+   "margen_superior_pct": 16.3,
+   "margen_inferior_pct": 16.2,
+   "principal_x": 36
+  },
+  "13": {
+   "lista_letra_px1920": 84,
+   "lista_alto_util_pct": 68.9,
+   "margen_superior_pct": 19.9,
+   "margen_inferior_pct": 19.9,
+   "lista_centro_pct": 50,
+   "principal_x": 42
+  },
+  "14": {
+   "margen_superior_pct": 19.8,
+   "margen_inferior_pct": 19.8,
+   "principal_x": 42
+  },
+  "15": {
+   "margen_superior_pct": 31.8,
+   "margen_inferior_pct": 6.1,
+   "fila_ancho_pct": 83.3,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "16": {
+   "margen_superior_pct": 19.1,
+   "margen_inferior_pct": 19.1,
+   "principal_x": 45
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "000002000300030003000300030003001cc01ce01d601d601940000000000000",
+   "01-gancho-2.png": "000002000300030003000300030003001cc01ce01d601d601a401a4010000000",
+   "02-lunes-1.png": "00000000030003000300030001002a403ac03ae01ec01c200000000000000000",
+   "02-lunes-2.png": "00000000030003000300030001002a403ac03ae01ec01a800a400a4000000000",
+   "03-mapa-1.png": "0000000000000000211823182318231823186210631063100010000000000000",
+   "04-vaciar-1.png": "0000200032b031201dc01dc00200000000000000000000000000000000000000",
+   "04-vaciar-2.png": "0000200032b031201dc01dc01a401ec01cc00100000000000000000000000000",
+   "04-vaciar-3.png": "0000200032b031201dc01dc01a401ec01cc019c01cc01cc00200000000000000",
+   "04-vaciar-4.png": "0000200032b031201dc01dc01a401ec01cc019c01cc01cc018401c401c400000",
+   "05-minutos-1.png": "000000000000000000000d400dc0f5aaf4a8f4a8e52401c00000000000000000",
+   "06-mapa-elegir-1.png": "00000000000000002118231823182318231862106310631020102a9035603500",
+   "07-criterio-1.png": "0000000030003000b0009000b000000000000000000000000000000000000000",
+   "07-criterio-2.png": "0000000030003000b0009000b000a800a800a000000000000000000000000000",
+   "07-criterio-3.png": "0000000030203020b1f091d0b1d0a800a800a000000000000000000000000000",
+   "07-criterio-4.png": "0000000030203020b1f091d0b1d0a9e0a9e0a1e000a000000000000000000000",
+   "07-criterio-5.png": "0000000030203020b1f091d0b1d0a9e0a9e0a1e201e001f000a800a800a00000",
+   "08-tres-1.png": "00000000000001000300030003000100cb28ef88ec8809000000000000000000",
+   "08-tres-2.png": "00000000000001000300030003000100cb28ef88ec880e800c80080000000000",
+   "09-mapa-agendar-1.png": "0000000000000000211823182318231823186210631063102110235036d032e0",
+   "10-bloque-1.png": "00000000000000002000600060006000e000d000d00000000000000000000000",
+   "10-bloque-2.png": "00000000000000002600660066006e00e600d500d50000000000000000000000",
+   "10-bloque-3.png": "00000000000000002630665066506e50e674d554d55800000000000000000000",
+   "12-proteger-1.png": "000060006400f400fc00fc00a000000000000000000000000000000000000000",
+   "12-proteger-2.png": "000060006400f400fc00fc00e000f480d680eb00ef0060200000000000000000",
+   "12-proteger-3.png": "000060006400f400fc00fc00e000f480d680eb00eb00e020e800a800a0000000",
+   "12-proteger-4.png": "000060006400f400fc00fc00e000f480d680eb00eb00e120e990a890a2000000",
+   "13-errores-1.png": "00000000040004801f0019801c80000000000000000000000000000000000000",
+   "13-errores-2.png": "00000000040004801f0019801c80000018c019c0190000000000000000000000",
+   "13-errores-3.png": "00000000040004801f0019801c80000018c019c019000d400e400e4000000000",
+   "13-errores-4.png": "00000000040004801f8019601d80000018c019c019000d400e400e4000000000",
+   "13-errores-5.png": "00000000040004801f8019601d80000018c018c01d400d400e400e4000000000",
+   "13-errores-6.png": "00000000040004801f8019601d80000018c018c01d400d000e400e4000000000",
+   "14-viernes-1.png": "00000000030003000100030003000c400f401f401d601ca00020000000000000",
+   "14-viernes-2.png": "00000000030003000100030003000c400f401f401d6019a00e400c0000000000",
+   "15-resumen-1.png": "000000000000000021182318231823182318621063106318211823b835b03520",
+   "16-llamado-1.png": "00000000010001000300030002000a400c401e40123012500000000000000000",
+   "16-llamado-2.png": "00000000010001000300030002000a400c401e40123012900680040001000000"
+  }
+ }
+}

@@ -108,7 +108,9 @@ export function medidasR11(lam) {
       medidas.lista_letra_px1920=Math.min(...items.map(tam));
       medidas.lista_alto_util_pct=caja(lienzo.firstElementChild).h/alto*100;
       if(medidas.lista_letra_px1920<64)avisos.push(`lista corta: renglón de ${medidas.lista_letra_px1920.toFixed(1)} px (mínimo 64 px a 1920); aumenta la letra antes de encoger`);
-      if(medidas.lista_alto_util_pct<45)avisos.push(`lista corta: bloque ocupa ${medidas.lista_alto_util_pct.toFixed(1)}% del alto útil (mínimo 45%); aumenta letra y separación, centrando el conjunto`);
+      // R17: dos renglones no llenan el 45% sin desarmarse (el intervalo se topa en 2.4× la letra): su mínimo es 36%
+      const minimo=Math.max(...listas.map(l=>l.children.length))<=2?36:45;
+      if(medidas.lista_alto_util_pct<minimo)avisos.push(`lista corta: bloque ocupa ${medidas.lista_alto_util_pct.toFixed(1)}% del alto útil (mínimo ${minimo}%); aumenta letra y separación, centrando el conjunto`);
     }
     // R16: una columna con renglones partidos junto a otra entera desalinea las filas del contraste
     const cols=[...lienzo.querySelectorAll('.contraste-col')];

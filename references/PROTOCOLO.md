@@ -308,8 +308,8 @@ dibujado por IA.
 ## 8. Aprender de cada corrección
 
 Cuando el usuario corrija algo, sea el tamaño, un emoji, el ritmo o un diseño que no le gustó,
-escríbelo en `LECCIONES.md` de la skill **antes de cerrar el turno**: la regla, el porqué y un
-ejemplo. La siguiente vez se aplica sin que lo pida.
+escríbelo **antes de cerrar el turno**: la regla, en una línea, en `REGLAS-DEL-AUTOR.md` (lo que se lee antes de cada
+deck), y el porqué con un ejemplo en `LECCIONES.md` (el historial). La siguiente vez se aplica sin que lo pida.
 
 #### Acceso en vivo
 

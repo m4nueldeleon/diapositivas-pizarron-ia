@@ -1,1 +1,83 @@
-{"nota": 100, "borrador": false}
+{
+ "nota": 100,
+ "borrador": false,
+ "avisos": [],
+ "geometria": {
+  "1": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 157.2,
+   "chat_letras_max": 157.2,
+   "principal_x": 78.6
+  },
+  "2": {
+   "principal_x": 99.6
+  },
+  "3": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 120.9,
+   "chat_letras_max": 120.9,
+   "principal_x": 69.3
+  },
+  "4": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 149.3,
+   "chat_letras_max": 149.3,
+   "principal_x": 74.7
+  },
+  "5": {
+   "principal_x": 78.2
+  },
+  "6": {
+   "principal_x": 78.2
+  },
+  "7": {
+   "tarjetas_letra_nativa": 84,
+   "principal_x": 0
+  },
+  "8": {
+   "lista_letra_px1920": 199.1,
+   "lista_alto_util_pct": 96,
+   "lista_centro_pct": 46.9,
+   "principal_x": 99.6
+  },
+  "9": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 120.9,
+   "chat_letras_max": 149.3,
+   "principal_x": 74.7
+  },
+  "10": {
+   "principal_x": 99.6
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "00000000000000000000060000006ea4f764a700000000000000000000000000",
+   "02-pregunta-1.png": "0000000000000000000036a03b9036203e307b30000000000000000000000000",
+   "02-pregunta-2.png": "0000000000000000000036a03bc036a03e307b30000000000000000000000000",
+   "03-literal-1.png": "0000000000000000000000000a80aa98aac0c002000000000000000000000000",
+   "04-alcance-1.png": "00000000c000c000c000f1f0d458000000000000000000000000000000000000",
+   "04-alcance-2.png": "00000000c000c000c000f1f0d458000ce00cf0e0dfb8e55cc000000000000000",
+   "05-igual-1.png": "000000000000000018e0192018e0000065606ce879c874c80000000000000000",
+   "06-objecion-1.png": "00000000000000000e801aa00d400f000c407ea0647079900000000000000000",
+   "07-respuesta-1.png": "0000000000000000630063007ec078a800000000000000000000000000000000",
+   "07-respuesta-2.png": "0000000000000000630063007ec078a863007a807b2074904000000000000000",
+   "08-resumen-1.png": "000000000d400800eb206ea80000000000000000000000000000000000000000",
+   "08-resumen-2.png": "000000000d400800eb206ea80000eac0ee100000000000000000000000000000",
+   "08-resumen-3.png": "000000000d400800eb206ea80000eac0ee1000004880cae06d60000000000000",
+   "09-pago-1.png": "0000000006000000600068ccf700a00000000000000000000000000000000000",
+   "09-pago-2.png": "0000000006000000600068ccf700a0000200c000ea88aac0c082000000000000",
+   "09-pago-3.png": "0000000006000000600068ccf700a0000200c000ea88aac0d882800000000000",
+   "10-llamado-1.png": "0000000000c000c006800f801800000035701ee035401c4019a0000000000000"
+  }
+ }
+}

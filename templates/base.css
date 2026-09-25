@@ -858,3 +858,15 @@ b.circ[data-circulo="linea"] { margin-inline: .4em; }
 .celular-pantalla .chat { --tb: 46px; gap: 28px; }
 .celular-pantalla .burbuja { max-width: 360px; padding: 16px 22px; }
 
+/* R17 [juez r16, demo 59]: tres mensajes arriba dejaban el 45% de la pantalla vacía. Como en un teléfono real, la
+   conversación se asienta abajo, sobre la barra de escribir (sin texto: no es contenido); arriba queda el aire. */
+.celular-pantalla { display: flex; flex-direction: column; }
+.celular-pantalla > .chat { margin-top: auto; }
+.celular-entrada { display: flex; align-items: center; gap: 14px; margin-top: 30px; flex: none; }
+.celular-entrada span { flex: 1; height: 58px; border: 3px solid #d4d4d8; border-radius: 29px; }
+.celular-entrada i { width: 58px; height: 58px; border-radius: 50%; background: #2f8fe8; flex: none; }
+/* Sin logo de app, la cabecera es la de un contacto (círculo + nombre en gris, sin texto): el aire de arriba se lee
+   como pantalla de conversación, no como hueco. */
+.celular-app:empty { justify-content: flex-start; gap: 18px; padding: 0 12px 18px; height: auto; border-bottom: 2px solid #ececef; }
+.celular-app:empty::before { content: ""; width: 58px; height: 58px; border-radius: 50%; background: #d4d4d8; flex: none; }
+.celular-app:empty::after { content: ""; width: 150px; height: 20px; border-radius: 10px; background: #d4d4d8; }

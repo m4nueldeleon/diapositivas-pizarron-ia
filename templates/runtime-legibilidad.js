@@ -39,7 +39,11 @@ function ampliarListas(lam) {
   const actual = bloque.getBoundingClientRect().height/escala(lam);
   if (actual < objetivo && listas[0].children.length>1 && !(listas[0].dataset.gapExplicito && actual/alto>=.45)) {
     const n = Math.max(...listas.map(l=>l.children.length));
-    listas.forEach(l=>l.style.setProperty('--gap-lista',(parseFloat(getComputedStyle(l).gap)+(objetivo-actual)/(n-1))+'px'));
+    // R17 [juez r16, demo 54]: con DOS ítems el hueco entero caía en un solo intervalo (~440 px entre «Responsable» y
+    // «Fecha»): ya no se leían como lista. El intervalo se topa en 2.4× la letra; el bloque queda centrado.
+    const letra=Math.max(...items.map(e=>parseFloat(getComputedStyle(e).fontSize)||84));
+    listas.forEach(l=>{ const g=parseFloat(getComputedStyle(l).gap)||0;
+      l.style.setProperty('--gap-lista',Math.min(g+(objetivo-actual)/(n-1), Math.max(g, letra*2.4))+'px'); });
   }
   if (lz.dataset.anclar!=='arriba') {
     lz.style.justifyContent='center';
@@ -189,3 +193,15 @@ function ajustarBurbujas(lam) {
   });
 }
 
+
+// R17 [juez r16, recuperar 15]: la hora del chat va a 48 px nominales, pero el encaje la dejaba a 44 efectivos y el
+// preflight le pedía al autor un arreglo que no podía hacer. La hora es ambientación que se lee: después del encaje
+// sube lo justo para verse a 48 px (proporcional al lienzo), sin tocar el resto del chat.
+function pisoSecundario(lam) {
+  const piso = 48 * lam.offsetWidth / 1920;
+  lam.querySelectorAll('.chat-hora').forEach(e => {
+    let z = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) z *= parseFloat(getComputedStyle(a).zoom) || 1;
+    const tam = parseFloat(getComputedStyle(e).fontSize);
+    if (tam * z < piso - .5) e.style.fontSize = Math.ceil(piso / z) + 'px';
+  });
+}

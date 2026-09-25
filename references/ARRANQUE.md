@@ -1,7 +1,8 @@
 # ARRANQUE — tu primer deck en dos páginas
 
 Lo mínimo para escribir un deck que pase el preflight a la primera. El resto de `references/` se consulta **por
-sección**, cuando el preflight lo pide o la pieza lo necesita (tabla al final). LECCIONES.md se lee siempre: manda.
+sección**, cuando el preflight lo pide o la pieza lo necesita (tabla al final). REGLAS-DEL-AUTOR.md (una página) se
+lee siempre: manda.
 
 ## 1. El flujo
 
@@ -34,7 +35,7 @@ sección**, cuando el preflight lo pide o la pieza lo necesita (tabla al final).
 |---|---|---|
 | `idea` | `texto`; `emoji` opcional; `nota` gris | 1 (+1 por `texto_paso`, `nota_paso`, `tachar_paso`, sello o anotación) |
 | `lista` | `items`; `encabezado` opcional; `vineta` (`numero`, `check`, `x`) | 1 por ítem (el encabezado sale con el primero) |
-| `chat` | `mensajes` con `de` (`yo`/`otro`) y `texto` | 1 por mensaje (+1 por `sello`) |
+| `chat` | `mensajes` con `de` (`yo`/`otro`) y `texto`; `hora` opcional (ambientación, ~48 px) | 1 por mensaje (+1 por `sello`) |
 | `flujo` | `nodos` con `emoji` y `etiqueta` | 1 por nodo |
 | `pasos` (mapa 1-2-3) | `iconos` + `etiquetas`, o `n`; `activo`; vuelve con `"como": "<id>"` | 1 (+ texto) |
 | `cifra` | `lineas` con `texto`; encierra con `((…))` | 1 por línea |
@@ -62,6 +63,10 @@ frases, y cada frase dice lo que aparece en ese paso.
 | «doble negación» | el tachón ya niega: quita el «no» o no taches |
 | «componente … sin respuesta» | responde CADA parte de la objeción («¿pago hoy y en efectivo?» son dos) |
 | «rótulo … 3 renglones en su tarjeta» | acórtalo a 2: es un rótulo, no una frase |
+| «chat que paga el gancho … sin procedencia» | `"procedencia": "ejemplo"` (sale «Ejemplo ficticio») o la `fuente` real |
+| «(texto secundario) se ve a N px» | quita texto a la lámina para que el encaje no la reduzca; un dato que se lee no va en `hora` |
+| «lista corta: bloque ocupa N %» | sube la letra o suma un renglón; no rellenes con aire |
+| «contraste desalineado» | acorta el ítem largo de la columna que parte renglones |
 | `[PRECIO]` o `FICHA_OFERTA` por confirmar | el dato real en `datos`; nunca inventado |
 
 ## 5. Qué leer después, y cuándo

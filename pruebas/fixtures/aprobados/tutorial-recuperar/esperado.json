@@ -1,1 +1,167 @@
-{"nota": 100, "borrador": false}
+{
+ "nota": 100,
+ "borrador": false,
+ "avisos": [
+  "lámina # (pago): chat que paga el gancho con la respuesta del cliente (un resultado) sin procedencia: declara procedencia: \"ejemplo\" (sale «Ejemplo ficticio») o su fuente"
+ ],
+ "geometria": {
+  "1": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 41.2,
+   "margen_inferior_pct": 32.7,
+   "principal_x": 42
+  },
+  "2": {
+   "margen_superior_pct": 19.8,
+   "margen_inferior_pct": 19.8,
+   "principal_x": 42
+  },
+  "3": {
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 61.3,
+   "principal_x": 70
+  },
+  "4": {
+   "margen_superior_pct": 32,
+   "margen_inferior_pct": 6.7,
+   "fila_ancho_pct": 86,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "5": {
+   "lista_letra_px1920": 72,
+   "lista_alto_util_pct": 64.4,
+   "margen_superior_pct": 21.9,
+   "margen_inferior_pct": 21.9,
+   "lista_centro_pct": 50,
+   "principal_x": 36
+  },
+  "6": {
+   "margen_superior_pct": 32,
+   "margen_inferior_pct": 6.7,
+   "fila_ancho_pct": 86,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "7": {
+   "chat_letras_min": 72,
+   "chat_letras_max": 72,
+   "margen_superior_pct": 34,
+   "margen_inferior_pct": 34,
+   "principal_x": 36
+  },
+  "8": {
+   "lista_letra_px1920": 64,
+   "lista_alto_util_pct": 64.7,
+   "margen_superior_pct": 35,
+   "margen_inferior_pct": 21.7,
+   "lista_centro_pct": 50,
+   "fila_ancho_pct": 95.5,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 32
+  },
+  "9": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 17.2,
+   "margen_inferior_pct": 17.2,
+   "principal_x": 42
+  },
+  "10": {
+   "margen_superior_pct": 32,
+   "margen_inferior_pct": 6.7,
+   "fila_ancho_pct": 86,
+   "fila_rotulo_px1920": 64,
+   "principal_x": 45
+  },
+  "11": {
+   "margen_superior_pct": 22.9,
+   "margen_inferior_pct": 28.8,
+   "fila_ancho_pct": 94.9,
+   "fila_rotulo_px1920": 76,
+   "principal_x": 42
+  },
+  "12": {
+   "margen_superior_pct": 29.4,
+   "margen_inferior_pct": 29.4,
+   "principal_x": 42
+  },
+  "13": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 31.9,
+   "margen_inferior_pct": 31.9,
+   "principal_x": 42
+  },
+  "14": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 7,
+   "margen_inferior_pct": 8.4,
+   "principal_x": 42
+  },
+  "15": {
+   "chat_letras_min": 84,
+   "chat_letras_max": 84,
+   "margen_superior_pct": 22.3,
+   "margen_inferior_pct": 13.8,
+   "principal_x": 42
+  },
+  "16": {
+   "lista_letra_px1920": 72,
+   "lista_alto_util_pct": 64.4,
+   "margen_superior_pct": 21.9,
+   "margen_inferior_pct": 21.9,
+   "lista_centro_pct": 50,
+   "principal_x": 36
+  },
+  "17": {
+   "margen_superior_pct": 25.8,
+   "margen_inferior_pct": 25.8,
+   "principal_x": 42
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "000000000000000003003300330034c0f4c0f2c0f2c0d0000000000000000000",
+   "01-gancho-2.png": "000000000000000003003300330034c0f4c0f2c0f700db000d80080008000000",
+   "02-tesis-1.png": "000000000100010001000300030009200ec01ec01d401d400040000000000000",
+   "02-tesis-2.png": "000000000100010001000300030009200ec01ec01d401d400600060000000000",
+   "03-cuenta-1.png": "0000000000000000094009404d8cccd0ccd0c8f80cc80c400000000000000000",
+   "04-mapa-1.png": "0000000000000000211823182318231823102228233823380080149014d010e0",
+   "05-criterios-1.png": "0000000002000300230027802580000000000000000000000000000000000000",
+   "05-criterios-2.png": "000000000200030023002780258000002ab02ab0288000000000000000000000",
+   "05-criterios-3.png": "000000000200030023002780258000002ab02ab028802b002b802b8000000000",
+   "06-mapa-mensaje-1.png": "000000000000000021182318231823182310222823b823b820802aa835b03490",
+   "07-plantilla-1.png": "0000000000000000c000fd00f980f380d380eb80eb00c0200000000000000000",
+   "07-plantilla-2.png": "0000000000000000c000fd00f9a4f3b6d38aeb80eb00c0200000000000000000",
+   "08-si-no-1.png": "0000000030003000b000f000f000000000000000000000000000000000000000",
+   "08-si-no-2.png": "0000000030003000b000f000f000c800e800e800000000000000000000000000",
+   "08-si-no-3.png": "0000000030203020b120f1c4f1c4c800e800e800000000000000000000000000",
+   "08-si-no-4.png": "0000000030203020b120f1c4f1c4c914e914e954000000000000000000000000",
+   "08-si-no-5.png": "0000000030203020b120f1c4f1c4c914e914e914032c01e800e000c000000000",
+   "09-respuesta-clienta-1.png": "0000600070007880c880e280ed80a00000000000000000000000000000000000",
+   "09-respuesta-clienta-2.png": "0000600070007880c880e280ec80b8003a803e803a8033003300320030200000",
+   "09-respuesta-clienta-3.png": "0000600070007880c880e280ec80b8003ab03e903a9833083300320030200000",
+   "10-mapa-recordatorio-1.png": "00000000000000002118231823182318231822282338233821004db44db44bb0",
+   "11-ritmo-1.png": "000000002000600060006000e000e000e0004000000000000000000000000000",
+   "11-ritmo-2.png": "000000002100650065006d00e700e300e3004200000000000000000000000000",
+   "11-ritmo-3.png": "000000002108653865686d68e728e330e3304a800cc00dc00d80000000000000",
+   "12-objecion-1.png": "000000000000010003000300030003000300470cd8c8d9c8c000000000000000",
+   "13-resp-molesta-1.png": "0000000000000000600073807380650065006600660062200000000000000000",
+   "13-resp-molesta-2.png": "0000000000000000600073827392651265006600660062200000000000000000",
+   "14-resp-otra-1.png": "60007800f940f500de00a0000000000000000000000000000000000000000000",
+   "14-resp-otra-2.png": "60007800f940f500de00e000ca80ca80e680e680c700cf00c020000000000000",
+   "14-resp-otra-3.png": "60007800f940f500de00e000ca80ca80e680e680c700cb00c820240036003200",
+   "15-pago-1.png": "0000020033003f007cc0f6c0f2c0fa40d0000000000000000000000000000000",
+   "15-pago-2.png": "0000020033003f007cc0f6c0f2c0fa40d10031003b40fb40f720f700f0004000",
+   "15-pago-3.png": "0000020033003f007cc0f6c0f2c0fa40d10031003b42fb44f724f700f0004000",
+   "16-resumen-1.png": "0000000002000200128012001a00000000000000000000000000000000000000",
+   "16-resumen-2.png": "0000000002000200128012001a0000001da01da0149000000000000000000000",
+   "16-resumen-3.png": "0000000002000200128012001a0000001da01da0149016101610161000000000",
+   "17-llamado-1.png": "000000000000010001000300030002002430356036480e880680008000000000"
+  }
+ }
+}

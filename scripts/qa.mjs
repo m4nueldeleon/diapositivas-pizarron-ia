@@ -295,7 +295,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
         if (t.matches('.agenda-numero, .grabando')) continue; // Microetiquetas de interfaz; siguen medidas por recorte.
         if (ef < 27.5) E(`letra de ${Math.round(ef)}px reales en «${corto(t.innerText, 24)}» (mínimo 28)`);
         else if (t.matches(FUENTE) && ef < 36 * (W / 1920) - 0.5) A(`la fuente «${corto(t.innerText, 24)}» se ve a ${Math.round(ef)} px: en un celular no se lee (≥ ${Math.round(36 * W / 1920)})`);
-        else if (t.matches(SECUNDARIO) && ef < 48 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» (texto secundario) se ve a ${Math.round(ef)}px reales: en un celular no se lee (ideal ≥ ${Math.round(48 * W / 1920)})`);
+        else if (t.matches(SECUNDARIO) && ef < 48 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» (texto secundario) se ve a ${Math.round(ef)}px reales: en un celular no se lee (ideal ≥ ${Math.round(48 * W / 1920)}). Arreglo: quita texto a la lámina para que el encaje no la reduzca, o lleva el dato a una etiqueta principal`);
         else if (t.matches(PRINCIPAL) && !t.closest('.tabla, .grafica, .celular-pantalla') && ef < 40 * (W / 1920) - 0.5) A(`«${corto(t.innerText, 24)}» se ve a ${Math.round(ef)}px reales (ideal ≥ ${Math.round(40 * W / 1920)})`);
       }
       // Sello: polígono girado contra renglones y emojis; fuera del lienzo
