@@ -345,7 +345,7 @@ para una secuencia usa un `flujo`.
 - 🔖: en Apple es una etiqueta de precio y en Fluent un marcador rojo. Para «guardar», 📌.
 - 📇 para «contactos»: sale como un aparato gris ilegible. Usa `📱+👥`.
 - 👥 para «conversaciones»: se lee «personas».
-- 🎫: en Apple sale igual que 🎟️ (el mismo boleto dibujado). Usa 🎟️.
+- 🎫: en Apple es una entrada amarilla plana (la del cuadro 4:15); junto a 🎟️ se confunden: para boleto o lugar usa 🎟️.
 - 🗂️: beige y pálido en Apple. Para «separar», una `rejilla` con etiquetas; para «archivar», 🗄️.
 - 🗑️ para «archivar»: se lee «a la basura», lo contrario (y en Fluent es gris, 22 en tarjeta). Usa 🗄️.
 - 🗓️ y 📆: en Apple salen igual que 📅 (el mismo calendario en SVG); en Fluent son 3D y distintos (argollas, espiral). Para «fecha» basta 📅.
@@ -362,7 +362,7 @@ de la persona y compara el ejemplo con `no:X` / `si:X`.
 | los dos | 🏢 🏬 | empresa es 🏢; tienda es 🛍️ o 🏪 |
 | los dos | 🧑‍💼 👨‍💼 | cliente es 🧑‍💼; experto, 🧑‍🏫 |
 | Apple | 🧑‍💼 🤵 | cliente es 🧑‍💼; vendedor, 👤 |
-| Apple | 📅 🗓️ 📆 · 🎟️ 🎫 | se dibujan con el mismo SVG: usa el primero (en Fluent salen nativos y distintos entre sí) |
+| Apple | 📅 🗓️ 📆 · 🎟️ 🎫 | los calendarios se dibujan con el mismo SVG; los dos boletos son SVG distintos pero amarillos y se confunden: usa el primero (en Fluent salen nativos y distintos entre sí) |
 | los dos | 📄 📃 · 💬 🗨️ | se dibujan con el mismo SVG: usa el primero |
 | Fluent | 🏦 🏛️ | el mismo edificio gris: impuestos 🏛️ y el banco con su logo o 💳 |
 
@@ -374,7 +374,7 @@ de la persona y compara el ejemplo con `no:X` / `si:X`.
 | 🤔 | pensativo | con ojos de alarma | para la objeción o duda en modo `fluent`, ❓; interpelar al público usa 👊 o 👉 |
 | 🗣️ | perfil que habla | silueta negra pesada, muy distinta al resto de la lámina | para «voz», 🎤 en los dos sets; 🗣️ solo con Apple en lámina clara y no junto a 👤 o 👥 grises |
 | 📅 🗓️ 📆 | «JUL 17» / «JUL» impresos | 3D, sin fecha, encabezado azul y distintos (liso, argollas, espiral) | en Apple se dibujan en SVG, un calendario sin fecha con volumen (también dentro del texto); en Fluent salen nativos. Usa 📅 |
-| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | 🎟️ se dibuja en SVG, un boleto ámbar liso, en los dos sets (el rosa de Fluent y el rojo de antes se fundían con el tachado y el círculo rojos [ref_255]); 🎫 igual en Apple y nativo (amarillo) en Fluent |
+| 🎟️ 🎫 | «ADMIT ONE» / «LIVE CONCERT TICKET» | boletos 3D sin texto (rosa, amarillo) | 🎟️ se dibuja en SVG, un boleto ámbar liso, en los dos sets (el rosa de Fluent y el rojo de antes se fundían con el tachado y el círculo rojos [ref_255]); 🎫 en Apple es otra ilustración, una entrada plana amarilla, y nativo (amarillo) en Fluent |
 | 📄 📃 | hoja pálida | hoja pálida | se dibujan en SVG, una hoja con renglones y la esquina azul, igual en los dos modos |
 | 💬 🗨️ | burbuja blanca (se pierde en la tarjeta) | burbuja lila casi blanca | se dibujan en SVG, una burbuja azul con tres puntos, igual en los dos modos |
 
