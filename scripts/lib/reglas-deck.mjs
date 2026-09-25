@@ -546,7 +546,8 @@ const PIEZAS_ENSENAN = ['tutorial', 'clase', 'clase-corta'];
 // (entrada → salida utilizable, o guion literal con variable, fecha o entregable).
 export const demuestra = l => l && ((l.tipo === 'prueba' && capturasDe(l).some(c => conTexto(c.src) && !c.hueco && c.ejemplo !== true))
   || (l.tipo === 'objeto' && conTexto(l.imagen))
-  || (l.tipo === 'camara' && (conTexto(l.demuestra) || conTexto(l.texto) || conTexto(l.nota) || l.vivo === true))
+  // R16 [juez r16]: «Demo» o `vivo: true` solos no dicen qué se enseña: 3+ palabras en `demuestra`, `texto` o `nota`
+  || (l.tipo === 'camara' && [l.demuestra, l.texto, l.nota].some(t => conTexto(t) && palabras(t) >= 3))
   || demostracionChat(l));
 export function reglasDemostracion(deck) {
   if (!PIEZAS_ENSENAN.includes(deck.pieza) || deck.laminas.some(demuestra)) return { errores: [], avisos: [] };

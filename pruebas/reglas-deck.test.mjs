@@ -417,7 +417,9 @@ test('huecos r4: una captura { hueco } es CAPTURA_N por confirmar; con plantilla
   const r = revisarDeck({ laminas: [idea('x'), p([{ src: 'a.png' }, { hueco: 'Y otra aquí' }])] }, [1, 2]);
   assert.ok(r.porConfirmar.CAPTURA_2);
   assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'objeto', emoji: '📱', texto: 'El celular' }] }).avisos[0], /sin demostración/);
-  assert.deepEqual(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Lo hago' }] }).avisos, []);
+  // R16: la cámara declara QUÉ enseña en 3+ palabras («Lo hago» no lo dice)
+  assert.deepEqual(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Muestro cómo lo hago' }] }).avisos, []);
+  assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Lo hago' }] }).avisos[0], /sin demostración/);
   assert.deepEqual(reglasDemostracion({ pieza: 'vsl', laminas: [idea('x')] }).avisos, []);
 });
 

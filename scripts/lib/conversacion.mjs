@@ -8,7 +8,10 @@ export function demostracionChat(l) {
   // R14 [juez r14]: un chat con `guion: true` es el texto LITERAL que el espectador copia (con sus variables): es la
   // demostración del cómo, como en un reel, aunque no traiga respuesta.
   // …con algo que se usa: una variable [nombre], una fecha u hora, una cifra o un entregable («Hola, ¿cómo estás hoy?» no)
-  const util = t => /\[[^\]]+\]|\d|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo|enlace|link|archivo|pagina|cotizacion|propuesta|pago|anticipo|entrega|revision|resena|precio|fecha|hora)\b/.test(normal(t));
+  // R16 [juez r16]: variable, cifra o día Y ADEMÁS una acción o un entregable («Hola [nombre], ¿cómo estás el lunes?» no)
+  const dato = t => /\[[^\]]+\]|\d|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/.test(normal(t));
+  const accion = t => /\b(enlace|link|archivo|pagina|cotizacion|propuesta|pago|anticipo|entrega|revision|resena|precio|fecha|hora|cajas?|pedido|mando|mandar|dejo|dejas|envio|te comparto|aqui esta|agenda\w*|reserv\w*|apart\w*|pag\w*|compr\w*|confirm\w*|entreg\w*|llevaste|salieron)\b/.test(normal(t));
+  const util = t => dato(t) && accion(t);
   if (l.guion === true && mensajes.some(m => palabras(m.texto).length >= 4 && util(m.texto))) return true;
   return mensajes.some((entrada,i) => mensajes.slice(i+1).some(salida => {
     const a=normal(entrada.texto), b=normal(salida.texto);
