@@ -141,6 +141,8 @@ SKILL.md.
    node scripts/render.mjs ejemplos/demo && node scripts/qa.mjs ejemplos/demo
    ```
 5. Las correcciones de gusto del usuario van en `LECCIONES.md`, con fecha y el porqué.
+6. Si el cambio se ve en el demo, regenera la vitrina del README con `node scripts/vitrina.mjs` (galería 4×4 y GIF de
+   cuadros reales de `PZ.mostrar`; requiere ffmpeg) y mira `docs/galeria.jpg` antes de publicar.
 
 Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROTOCOLO.md#desde-codex--sandbox); `--sin-navegador` no sustituye render, QA medidos ni revisión de la hoja.
 
