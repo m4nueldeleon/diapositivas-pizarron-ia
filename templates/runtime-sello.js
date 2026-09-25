@@ -191,6 +191,7 @@
   function selloEnChat(lam, burbuja, w, h, a, k0, m) {
     // del lienzo al marco del sello: el sello va girado −a, así que se deshace con +a
     const W = lam.offsetWidth, H = lam.offsetHeight, c = Math.cos(a), sn = Math.sin(a);
+    const arribaSeguro = H > W ? 220 : m, abajoSeguro = H > W ? 322 : m;
     const b = caja(burbuja, lam), yo = !!burbuja.closest('.msj.yo');
     const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
       .flatMap(e => rectsTexto(e, lam));
@@ -207,7 +208,7 @@
     const costo = (cx, cy, kk) => {
       const sw = w * kk, sh = h * kk, bw = (sw * Math.cos(a) + sh * Math.sin(a)) / 2, bh = (sw * Math.sin(a) + sh * Math.cos(a)) / 2;
       let t = 0;
-      if (cx - bw < m || cx + bw > W - m || cy - bh < m || cy + bh > H - m) t += 100;
+      if (cx - bw < m || cx + bw > W - m || cy - bh < arribaSeguro || cy + bh > H - abajoSeguro) t += 100;
       renglones.forEach(r => { t += frac(r, cx, cy, sw, sh); });
       iconos.forEach(r => { t += 4 * frac(r, cx, cy, sw, sh); });
       return t;
@@ -218,7 +219,7 @@
       // montado sobre el borde de abajo: pisa el relleno de la burbuja, nunca sus letras
       const pie = Math.max(b.y + b.h + bh * 0.35, Math.max(b.y, ...rectsTexto(burbuja, lam).map(r => r.y + r.h)) + 8 + bh);
       const cands = [[lado, pie], [b.cx, pie], [b.x + b.w + bw + 16, b.cy], [b.x - bw - 16, b.cy], [b.cx, b.y + b.h + bh + 12]]
-        .map(([x, y]) => [clamp(x, m + bw, W - m - bw), clamp(y, m + bh, H - m - bh)]);
+        .map(([x, y]) => [clamp(x, m + bw, W - m - bw), clamp(y, arribaSeguro + bh, H - abajoSeguro - bh)]);
       const medidos = cands.map(p => ({ p, t: costo(p[0], p[1], kk) }));
       const limpio = medidos.find(q => q.t === 0);
       if (limpio) return { p: limpio.p, k: kk };

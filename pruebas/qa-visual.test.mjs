@@ -14,7 +14,7 @@ test('QA r8: marcador de una letra en el stack intermedio e historial del primer
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ marca: false, emoji: 'apple', laminas: [
     { tipo: 'stack', id: 'oferta', items: [{ emoji: '🎁', texto: '[X]' }, { emoji: '📋', texto: 'Plan' }], remate: 'Todo junto' },
   ] }));
-  const r = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts/render.mjs'), dir, '--qa'], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts/render.mjs'), dir, '--borrador', '--qa'], { encoding: 'utf8' });
   assert.ok(fs.existsSync(path.join(dir, 'salida/qa.json')), r.stderr || r.stdout);
   const q = JSON.parse(fs.readFileSync(path.join(dir, 'salida/qa.json')));
   assert.ok(q.errores.some(e => /\[X\]/.test(e)), 'el remate no esconde el dato del paso anterior');

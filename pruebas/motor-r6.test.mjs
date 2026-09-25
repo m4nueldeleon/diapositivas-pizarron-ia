@@ -110,7 +110,7 @@ test('A1/A2 navegador: PDF páginas por paso sin cursor y apagado 35/20', async 
 test('B9: chat vertical corto crece, encabezado frase y elección explícita respetada', () => {
   const l = { tipo: 'chat', encabezado: 'Lo que te escribió', mensajes: [{ de: 'otro', texto: '¿Puedes ayudarme?' }, { de: 'yo', texto: 'Claro, aquí está.' }] };
   const r = construir({ formato: '9:16', laminas: [l] });
-  assert.match(r.html, /--tb:76px;--av:99px/);
+  assert.match(r.html, /--tb:104px;--av:135px/);
   const seccion = r.html.match(/<section[\s\S]*?<\/section>/)[0];
   assert.ok(!seccion.includes('class="encabezado"'));
   const explicito = construir({ formato: '9:16', laminas: [{ ...l, tam_texto: '64px', encabezado_estilo: 'rotulo' }] });

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { prepararSalida, abrir } from '../scripts/lib/pipeline.mjs';
+import { prepararSalida, abrir, lanzarChromium } from '../scripts/lib/pipeline.mjs';
 
 const deck = { emoji: 'apple', marca: false, laminas: [
   { tipo: 'idea', id: 'uno', emoji: '💡', texto: 'Uno', nota: 'nota', voz: ['Primera frase del orador', 'Segunda frase'] },
@@ -104,7 +104,7 @@ async function sincronia(motor) {
   const p = preparar();
   const pw = cargarPlaywright(DIR_SKILL);
   let browser;
-  try { browser = await pw[motor].launch(); } catch (e) { return null; }
+  try { browser = motor === 'chromium' ? await lanzarChromium() : await pw[motor].launch(); } catch (e) { if (motor === 'chromium') throw e; return null; }
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
     await page.goto(pathToFileURL(p.htmlPath).href + '?modo=presentador', { waitUntil: 'load' });
@@ -129,7 +129,7 @@ test('sincronía público ↔ ensayo con la tecla O: Chromium', { timeout: 120_0
 });
 test('sincronía público ↔ ensayo con la tecla O: WebKit (Safari), si Playwright lo puede lanzar', { timeout: 120_000 }, async t => {
   const r = await sincronia('webkit');
-  if (!r) { t.skip('WebKit no está instalado'); return; }
+  if (!r) { t.skip('WebKit no pudo iniciarse en este entorno'); return; }
   assert.deepEqual(r, ['#4', '#4', '#5']);
 });
 

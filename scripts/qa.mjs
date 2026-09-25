@@ -505,6 +505,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
           if (t.some(q => q.y + q.h > H - 320 || (q.y + q.h > H - 700 && q.x + q.w > W - 140))) zona = corto(e.textContent || e.className, 24);
         });
         const ocupa = (y1 - y0) / H;
+        r.composicion_vertical = { ocupacion_pct: +(ocupa * 100).toFixed(1), centro_pct: +((y0 + y1) / (2 * H) * 100).toFixed(1) };
         // idea, cita, cifra, objeto y botón son un solo punto focal: centrados y grandes, no llenan el alto a propósito
         if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara', 'boton'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)${['chat', 'rejilla', 'prueba'].includes(lam.dataset.tipo) ? '; sube tam_texto y usa encabezado_estilo:"frase"' : ''}`);
         if (zona) AF(`«${zona}» entra en la zona que tapan el caption y los botones de Reels (abajo 320 px, derecha 140 px)`);
@@ -625,7 +626,11 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
         AF(`etiquetas hermanas con distinto número de renglones: a «${larga.textContent.trim()}» le sobran ~${sobrantes} letras para ir en un renglón${f.dataset.sepFija && parseFloat(getComputedStyle(f).columnGap)>Number(f.dataset.gapMin || 90) ? '; baja separacion hasta el piso indicado' : '; acorta esa etiqueta'}`);
       }
       const cj = et.map(e => caja(e, lam));
-      for (let i = 1; i < cj.length; i++) if (cj[i].x < cj[i - 1].x + cj[i - 1].w + 24) EF(`«${corto(et[i - 1].innerText, 20)}» y «${corto(et[i].innerText, 20)}» se enciman o quedan a menos de 24 px: acorta una etiqueta o sube «separacion»`);
+      for (let i = 1; i < cj.length; i++) {
+        const apilado = getComputedStyle(f).flexDirection === 'column';
+        const distancia = apilado ? cj[i].y - cj[i - 1].y - cj[i - 1].h : cj[i].x - cj[i - 1].x - cj[i - 1].w;
+        if (distancia < 24) EF(`«${corto(et[i - 1].innerText, 20)}» y «${corto(et[i].innerText, 20)}» se enciman o quedan a menos de 24 px: acorta una etiqueta o sube «separacion»`);
+      }
     });
     // «Paso 2» o la etiqueta del mapa partidos en dos renglones
     visibles('.rotulo-paso').forEach(e => {
@@ -953,12 +958,14 @@ const infoContraste = [
 ];
 const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
 info.push(...revisionAvisos.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`));
-const informe = { glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
+const medicion = { glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: porConfirmar, datos_fuentes: prep.fuentes || {}, reglas_cliente: reglasCliente, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
+  composicion_vertical: porLamina.filter(r => r.composicion_vertical).map(r => ({ lamina: r.i + 1, ...r.composicion_vertical })),
   tinta: porLamina.map(r => ({ lamina: r.i + 1, rojo: r.rojo, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
+const historial = registrarQA(dirSalida, medicion, prep.html_sha);
+const informe = { ...medicion, primer_render: historial.qa_primer_render };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
-registrarQA(dirSalida, informe, prep.html_sha);
 if (flag('--json')) console.log(JSON.stringify(informe, null, 2));
 else {
   if (borrador) console.log(`BORRADOR: ${Object.keys(porConfirmar).length} dato(s) por confirmar (${Object.keys(porConfirmar).join(', ')}); la nota no pasa de ${TOPE_BORRADOR} hasta confirmarlos; ${avis.length} aviso(s), sin tope sería ${sinTope}; listo salvo datos: ${listoSalvoDatos ? 'sí' : 'no'}`);

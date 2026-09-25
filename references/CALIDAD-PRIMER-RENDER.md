@@ -1,12 +1,12 @@
 # Calidad antes del primer render
 
 La entrada de producción es `armar.mjs`. `render.mjs` sigue disponible para calibrar el motor y
-revisar borradores deliberadamente; no pasa por este filtro. Un borrador puede contener huecos:
+revisar borradores deliberadamente; no ejecuta el ciclo completo y sí bloquea datos pendientes salvo `--borrador`. Un borrador puede contener huecos:
 no se distribuye como presentación final. No se ocultan láminas ni se eliminan beats para aprobar.
 
 ```bash
 node scripts/armar.mjs mi-deck --corregir --sin-navegador
-# Fuera del sandbox, con los datos confirmados y las correcciones de guion resueltas:
+# Con los datos confirmados y el guion corregido, también dentro del sandbox:
 node scripts/armar.mjs mi-deck --corregir
 ```
 
@@ -59,7 +59,7 @@ bloqueado; `2` = entrada inválida. Un fallo inesperado de un subproceso conserv
 medida exacta. Solo la asocia al último render si **ambas huellas** coinciden. Un QA suelto no
 prueba que existan PNG actuales. Un cambio de ficha puede cambiar el HTML sin cambiar deck.json.
 
-`qa_primer_render.nota` es la primera medición asociada al render número 1; nunca se reemplaza
+`qa.json → primer_render.nota` y `calidad-historial.json → qa_primer_render.nota` contienen la misma primera medición asociada al render número 1; nunca se reemplaza
 con una mejor. Si el primer render no tuvo QA, es `null`: no se reconstruye ni se inventa.
 `qa_ultimo_render` contiene la última medición asociada. Cada proyecto usa su propia carpeta de
 salida; no mezcles historiales ni los borres para mejorar la primera nota. La nota provisional
@@ -94,19 +94,22 @@ La comparación de fidelidad conserva el contrato de PROTOCOLO §4b: solo la ré
 correlación mínima 0.7 y diferencias de caja de tinta de hasta 8 puntos del lienzo. Publica la
 distancia por lámina desde `comparar.json`. Sin ejecución del comparador no hay cifra nueva.
 
-## Auditoría de cierre
+## Contrato de producción
 
-Se revisaron las cuatro hojas del demo y PNG individuales del ícono propio, el óvalo y el stack;
-las cinco hojas de los tres decks de evaluación y cuadros originales de referencia. El ícono
-propio y el antes/después ya existen: se conservan. El problema principal es que un deck puede
-llegar a render con avisos conocidos y datos pendientes.
+`render.mjs` bloquea PNG, PDF y hojas si hay datos por confirmar o marcadores sin
+resolver. `--borrador` permite calibrarlos deliberadamente; conserva los huecos y
+el estado de borrador, nunca convierte esa captura en entrega. `--solo-html` y
+`--pasos` son herramientas de inspección, no sustituyen el armado de producción.
 
-Los QA aportados registran 82 (propuesta), 90 (clase express) y 90 (venta). Solo certifican sus
-versiones y sus reglas de entonces. En el preflight actual de esos archivos, sin completarlos,
-se detectan respectivamente **6 errores/33 avisos/14 datos**, **0/3/1** y **0/13/14**. Son conteos
-de texto, no nuevas notas de render. Los tres se detienen antes de generar PNG; ninguno se
-declara listo. La autocorrección editorial completa de esos tres decks sigue pendiente.
+La falta de datos no se arregla suprimiendo la oferta o el puente. Reporta la nota
+medida, los pendientes y el estado, aunque contradigan una meta numérica del loop.
+Un tema de una línea no confirma precio, pruebas, fechas ni condiciones.
 
-No se cambia la composición 9:16 sin una medición nueva, no se agregan emojis sin medir y no
-se afirma haber completado exportación editable ni paquete de show. PDF por paso sigue siendo
-un respaldo rasterizado. El adaptador a la capa de escenario no está probado aquí.
+## Límites comprobados
+
+El PDF por paso es un respaldo rasterizado. La exportación editable y los recortes
+de show requieren la capa de escenario y un adaptador de esquemas y pasos que
+aún no existe aquí. Una prueba aislada del motor externo no valida ese adaptador.
+No presentes un comando de importación como probado si no produjo el archivo y
+se comprobó su contenido. No ejecutes comandos que cambien preferencias del
+programa de presentación bajo la suposición de que «solo-script» es lectura.

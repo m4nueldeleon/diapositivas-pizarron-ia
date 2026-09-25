@@ -264,20 +264,22 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 
 | Pieza | 16:9 | 9:16 | Sala 16:9 |
 |---|---|---|---|
-| texto compacto / chico / medio / grande / enorme | 68 / 76 / 84 / 90 / 120 px | 72 / 78 / 88 / 100 / 140 px | Piso 72 px |
+| texto compacto / chico / medio / grande / enorme | 68 / 76 / 84 / 90 / 120 px | 72 / 78 / 88 / 100 / 140 px (idea grande: 112) | Piso 72 px |
 | nota manuscrita | 64 px | 80 px | 88 px (piso 72) |
 | frase de foco (protagonista, a mano) | 88 px (84 con más de 14 palabras) | 96 px (88) | 88 px (piso 72) |
 | texto secundario que se lee (sub, dato, %, post) | ≥ 48 px | ≥ 44 px | Piso 56 px |
-| burbuja de chat | 54 px | 58 px, hasta 820 px de ancho | Piso 72 px |
+| burbuja de chat | 54 px | 104 px con ≤2 mensajes de ≤6 palabras; 58–76 px en conversaciones largas | Piso 72 px |
 | emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 | Igual que 16:9 |
-| lista | 58-72 px | ×1.2 | Piso 72 px |
+| lista | 58-72 px | 124 px con ≤2 ítems cortos, 112 con 3; resto ×1.2 | Piso 72 px |
 | rótulo gris | 56 px | 60 px | 64 px |
-| margen de arriba y de abajo | 100 px | 320 px | 100 px |
+| margen de arriba y de abajo | 100 px | 260 / 380 px; centro óptico ≈47% | 100 px |
 | firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara | Igual que 16:9 |
 | tabla-marcador | columnas iguales, 50 / 44 px; con `converger`, las flechas terminan en UNA punta a ~20 px del primer renglón de la pregunta (≥ 68 px) [7:30] | filas de 220 px como máximo, vacías de 80 px, columnas según su palabra más larga, letra hasta 62 / 56 px según ancho y alto (piso 38 / 34); con `converger`, la pregunta va DEBAJO de la tabla (≥ 80 px) y las flechas bajan a una sola punta | Piso 56 px en celdas; 72 en frase |
 | gráfica | 1500×660 con etiqueta lateral | 940×1000, la banda arriba y dentro | Piso 56 px en etiquetas |
 | línea de tiempo | letra 56 / 84 px | ×1.35 de letra y alturas | Piso 56 px en etiquetas |
 | botón y opciones | tamaño base | ×1.6 y ×1.45 | Piso 72 px |
+
+La idea sin tamaño explícito usa un emoji de 530 px; las listas cortas se centran ópticamente salvo `anclar: "arriba"`. Se reserva el bloque completo desde el primer paso, para que nada salte al revelar. `qa.json → composicion_vertical` publica ocupación y centro del bloque por lámina.
 
 **Zona segura de Reels**: arriba, la barra de Reels (~220 px); los ~320 px de abajo los tapan el caption y los botones, y la columna de
 botones ocupa unos 140 px a la derecha de la franja baja. QA avisa si algo entra ahí, y si una lámina

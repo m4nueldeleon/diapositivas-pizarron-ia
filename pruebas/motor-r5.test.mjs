@@ -162,8 +162,8 @@ test('chat: el emoji del avatar llena ~85% del círculo; avatar_tam agranda los 
       const av = l.querySelector('.av-emo'), e = av.querySelector('.emo'), yo = l.querySelector('.yo-av');
       return { circ: av.offsetWidth, emo: e.offsetWidth, yo: yo.offsetWidth };
     }));
-    assert.equal(m[0].circ, 99, 'en 9:16 un chat corto sube la letra a 76 px y el avatar a ~1.3×');
-    assert.ok(m[0].emo >= 78 && m[0].emo <= 86, JSON.stringify(m));
+    assert.equal(m[0].circ, 135, 'en 9:16 un chat corto sube la letra a 104 px y el avatar a ~1.3×');
+    assert.ok(m[0].emo >= 109 && m[0].emo <= 117, JSON.stringify(m));
     assert.equal(m[1].circ, 120);
     assert.equal(m[1].yo, 120, 'los dos avatares miden lo mismo');
   });

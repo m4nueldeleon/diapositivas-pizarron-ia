@@ -21,7 +21,7 @@
 //     «comparar.mjs · <deck> · sha … · umbral N · pasan/total»;
 //   · <salida>/comparar.json: el deck y su deck_sha, y por par la caja de tinta de cada lado y su diferencia en % del lienzo.
 // Un par FALLA si x, y, ancho o alto de la caja difieren más del umbral (8 puntos por omisión).
-// Código de salida 1 si falta un par (lámina sin referencia o referencia sin lámina).
+// Código de salida 1 si falta un par, es otra escena o rebasa el umbral geométrico.
 // La métrica mide ENCUADRE, no estilo (ver scripts/lib/tinta.mjs): la revisión a ojo sigue mandando.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -134,7 +134,7 @@ fs.writeFileSync(path.join(salida, 'comparar.json'), JSON.stringify(informe, nul
 console.log(`Deck ${informe.deck} · sha ${deckSha}`);
 console.log(`Encuadre: ${pasan}/${medibles.length} pares dentro de ±${umbral}%${distintas.length ? ` · ${distintas.length} no parecen la misma lámina` : ''} · hojas en ${salida}`);
 pares.forEach(p => console.log(`  ${p.distinta ? '✗✗' : p.falla ? '✗' : '✓'} ${p.id} (paso ${p.paso + 1}, r ${p.parecido})  x ${f1(p.dx)}  y ${f1(p.dy)}  w ${f1(p.dw)}  h ${f1(p.dh)}${p.distinta ? '  ← no parece la misma lámina: ¿id o cuadro de otro momento?' : ''}`));
-process.exit(sinRef.length || sinLamina.length || distintas.length ? 1 : 0);
+process.exit(sinRef.length || sinLamina.length || distintas.length || pasan < medibles.length ? 1 : 0);
 
 } catch (error) {
   if (!(error instanceof ErrorNavegador)) throw error;

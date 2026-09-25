@@ -93,6 +93,11 @@ Antes del primer PNG sigue [Calidad antes del primer render](CALIDAD-PRIMER-REND
 del cliente siguen pendientes. Solo con el filtro limpio el comando ejecuta render y QA.
 Los comandos directos siguientes quedan para calibración y borradores explícitos.
 
+`render.mjs` detiene las capturas si encuentra datos pendientes. Solo en una calibración
+deliberada añade `--borrador`: los huecos siguen visibles y la pieza sigue en borrador.
+La nota del primer render se toma de `qa.json → primer_render.nota`; es la misma
+que conserva `calidad-historial.json`, no la nota provisional ni una corrida posterior.
+
 ```bash
 node scripts/render.mjs mi-video          # PNG por paso + presentador + hoja de contacto
 node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que corregir
@@ -205,7 +210,16 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
 
 En Keynote usa transición **ninguna** dentro de la lámina y **disolver 0.3 s** entre láminas. Pega `notas-por-paso.md` en las notas: incluye voz, `accion` y `si_falla`. `--pdf-pasos` es incompatible con `--finales`; `--pasos` solo imprime el mapa y sale antes de abrir el navegador.
 
-Para guion numerado con recortes por duración (60/45), Keynote y show, remite a la capa de escenario; no se implementan aquí.
+Para guion numerado con recortes por duración (60/45), Keynote y show, la frontera es `conferencia-escenario-ia`. El PDF de arriba es rasterizado: **no es un PPTX editable**. Falta el adaptador de `laminas` a su esquema `elementos/diseno`, expandiendo un estado por paso y conservando las notas.
+
+Prueba aislada del motor externo (2026-09-25): un fixture genérico de dos láminas con `python-pptx 1.0.2`, Pillow y lxml llegó al constructor y falló con `ImportError: cannot import name 'apilar' from 'disenos_escena'`. No produjo PPTX; no acredita una integración ni un comando de exportación funcional. Forma de invocación ensayada, para repetir **después de reparar esa distribución**:
+
+```bash
+python -B "$HOME/.claude/skills/conferencia-escenario-ia/motor/keynote/construir.py" \
+  --proyecto "$PROYECTO" --deck deck/A1.json --salida salida/deck.pptx
+```
+
+`PROYECTO` debe contener un deck en el esquema de escenario, no el JSON de pizarrón. No ejecutes `rematar.py --solo-script` como prueba de lectura: esa opción puede modificar preferencias y cachés de Keynote antes de escribir el script. Los recortes por duración y la hoja de show continúan sin integración comprobada.
 
 Teclas del presentador:
 

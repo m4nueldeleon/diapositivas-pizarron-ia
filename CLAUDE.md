@@ -139,3 +139,10 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
 - `layouts-texto.mjs` comparte la viñeta numérica y el reloj de segmentos con el tramo en vivo; `runtime.js → actualizarReloj` actualiza la misma geometría en presentador y captura. `pasos-mapa.mjs` cuenta también el óvalo diferido.
 - QA distingue `trazos` de `contenedores`, vigila sello libre y firma, óvalos entre renglones y contraste del ícono apagado; `contraste-color.mjs` calcula `pctApagado` y `medir-emojis.mjs` lo guarda como `apagado`.
 - Pruebas: `layouts-estilo-r7.test.mjs`, `reglas-iconos-r7.test.mjs`, `runtime-estilo-r7.test.mjs` y la integración de secuencias en `ejemplos.test.mjs`.
+
+## Mantenimiento de la primera captura (ronda 9)
+
+- `pruebas/primer-render-r9.test.mjs` protege el espacio de anotaciones, el flujo textual apilado, la ocupación y estabilidad vertical, los sellos dentro de Reels, la continuidad de `foco`, el bloqueo de pendientes y el código de salida del comparador.
+- El chat vertical de hasta dos mensajes cortos usa 104 px y avatar automático de 135 px; tamaños explícitos conservan prioridad. No reduzcas tolerancias del QA para aprobar estos tamaños.
+- `qa.json` incluye `primer_render` del mismo historial y `composicion_vertical` (ocupación y centro del bloque). La primera nota es inmutable; el resultado actual sigue en `nota` y `estado`.
+- Los clones de `foco` deben conservar `lz-<tipo>` y `data-anclar` del origen. Cualquier CSS nuevo de diseño se prueba también en sus clones.

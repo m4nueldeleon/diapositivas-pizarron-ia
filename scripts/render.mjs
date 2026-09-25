@@ -33,6 +33,7 @@ import { exportarPdf, exportarPdfPasos, conNotas } from './lib/pdf.mjs';
 import { duracionVivo } from './lib/construir.mjs';
 import { mensajeSinFirma } from './lib/reglas-deck.mjs';
 import { registrarRender } from './lib/evidencia-calidad.mjs';
+import { revisarTexto } from './lib/qa-texto.mjs';
 
 try {
 const { opt, flag, pos } = argumentos(process.argv);
@@ -66,6 +67,15 @@ if (prep.avisoReplica) console.warn('⚠ ' + prep.avisoReplica);
 if (prep.evidencia.invalido) fs.writeFileSync(path.join(dirSalida, 'NO-VALE.txt'), `deck_sha: ${prep.evidencia.deck_sha}\nla fidelidad se mide con node scripts/comparar.mjs <carpeta-ref>\n`);
 else if (flag('--forzar')) fs.rmSync(path.join(dirSalida, 'NO-VALE.txt'), { force: true });
 if (flag('--solo-html')) process.exit(prep.evidencia.invalido ? 3 : 0);
+
+// Un comando directo tampoco puede publicar huecos por accidente. El modo de
+// calibración conserva todos los beats y exige declarar que se renderiza un borrador.
+const preflight = revisarTexto(prep);
+if (!flag('--borrador') && (Object.keys(preflight.por_confirmar).length || Object.keys(preflight.pendientes).length)) {
+  fs.writeFileSync(path.join(dirSalida, 'qa-texto.json'), JSON.stringify(preflight, null, 2));
+  console.error('✗ Datos pendientes: completa qa-texto.json antes del primer render. Para calibrar un borrador explícito usa --borrador; nunca es entrega final.');
+  process.exit(3);
+}
 
 const escala = Number(opt('--escala', 1));
 const soloFinales = flag('--finales');

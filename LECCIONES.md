@@ -205,3 +205,14 @@ Una nota de texto o de un QA posterior no es la nota del primer render. Guarda l
 medición asociada a sus huellas de deck y HTML; si no existe, reporta que falta. Antes de
 renderizar, corrige avisos conocidos y detén el armado ante datos pendientes. La autocorrección
 de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o deja el caso al autor.
+
+## 2026-09-25 · Primera captura y composición vertical (ronda 9)
+- **Regla**: una anotación automática evita también emojis e imágenes; busca blanco en el eje de su lado antes de aceptar un choque. Los flujos exclusivamente textuales de hasta tres nodos se apilan si sus etiquetas no caben enteras en fila.
+- **Porqué**: una clase larga repetía el mismo choque de anotación y los flujos partían etiquetas de dos palabras. Corregir cada lámina ocultaba la causa del motor.
+- **Regla**: en 9:16 las ideas, listas y chats cortos crecen por defecto, con centro óptico cercano al 47%. No cambies indiscriminadamente los tamaños de tablas y mapas. El fondo de `foco` hereda diseño y anclaje; no salta al clonar.
+- **Porqué**: una lista ocupaba solo 26% del alto y quedaba arriba. Aumentar globalmente la letra produjo una invasión de Reels y reducir el alto útil encogió una tabla; ambas se detectaron con la suite existente.
+- **Regla**: la primera nota sale de `qa.json → primer_render.nota`, aunque la última sea mayor. Los datos sin confirmar bloquean el render de producción; `--borrador` conserva la condición de borrador. No quites oferta, prueba o puente para subir una nota.
+- **Regla**: el comparador falla también por distancia geométrica fuera del umbral, no solo por referencias ausentes u otra escena. La medición de encuadre acompaña la mirada; no certifica identidad de tipografía, ícono o trazo.
+- **Cómo se comprobó**: decks nuevos antes y después, capturas dentro de Codex, hojas finales y de pasos abiertas, pruebas de regresión vistas fallar antes del arreglo y réplica medida contra sus cuadros.
+
+- **Cierre adicional de la ronda 9**: una lista de 20 palabras con tres viñetas numeradas suma 23 visibles. El preflight ahora cuenta las listas simples con el mismo criterio; la explicación se conserva en voz y el texto se comprime. Esto se encontró después del primer render de una clase: su primera nota no se reemplaza por la corregida.

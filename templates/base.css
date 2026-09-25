@@ -511,6 +511,7 @@ s.tachon, .tachon { text-decoration: none; }
 .f-vertical .t.chico { --t: 78px; }
 .f-vertical .t.medio { --t: 88px; }
 .f-vertical .t.grande { --t: 100px; }
+.f-vertical .lz-idea .t.grande { --t: 112px; }
 .f-vertical .t.enorme { --t: 140px; }
 .f-vertical .nota { font-size: var(--tn, 80px); }
 .f-vertical .encabezado { font-size: 60px; }
@@ -528,6 +529,18 @@ s.tachon, .tachon { text-decoration: none; }
 .f-vertical .lienzo.lz-calendario { padding-left: 40px; padding-right: 40px; }
 .f-vertical .medidor { width: 820px; }
 .f-vertical .opcion { width: 560px; }
+
+/* Centro óptico a 47%: el pie necesita más aire que la cabecera. La altura de los
+   pasos ocultos se reserva: el bloque completo no salta durante el revelado. */
+.f-vertical .lienzo { padding-top: 260px; padding-bottom: 380px; }
+.f-vertical .lz-idea .t { max-width: 800px; }
+.f-vertical .lienzo.lz-lista:not([data-anclar="arriba"]) { justify-content: center; padding-top: 280px; }
+.f-vertical .lz-lista .lista { max-width: 800px; }
+.f-vertical .lz-idea .mt-e { margin-top: 90px; }
+.f-vertical .chat { gap: 64px; }
+.f-vertical .msj .burbuja { max-width: 650px; padding-top: 44px; padding-bottom: 44px; }
+.flujo-textual-apilado { display: flex; flex-direction: column; align-items: center; }
+.flujo-textual-apilado > .nodo { align-self: center !important; }
 
 /* ---------- presentador ---------- */
 body.presentador { background: #111; overflow: hidden; }

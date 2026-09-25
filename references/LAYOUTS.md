@@ -1247,10 +1247,15 @@ Si una escena vuelve con un costo nuevo, recalcula el total: la última cuenta e
 
 ### Chat en 9:16
 
-Sin `tam_texto`, 2-3 mensajes cortos (hasta 12 palabras cada uno) usan 76 px; con más mensajes cortos, 68 px;
+Sin `tam_texto`, hasta 2 mensajes de 6 palabras usan 104 px; 2-3 mensajes cortos (hasta 12 palabras cada uno) usan 76 px; con más mensajes cortos, 68 px;
 con mensajes de hasta 24 palabras, 64 px; solo los densos usan 58 px. El avatar mide aproximadamente 1.3 veces
 el texto. El encabezado usa `encabezado_estilo: "frase"` salvo elección explícita. Las frases y notas verticales
 se centran en un ancho máximo de 800 px para dejar libre la franja de botones. Comprueba ocupación ≥35 % en QA.
+
+El centro óptico del bloque vertical queda al 47% del alto. Las listas cortas se centran
+con todos sus pasos reservados, salvo `anclar: "arriba"` explícito. Dos ítems cortos usan
+124 px; tres, 112 px. La `idea` vertical sin `emoji_tam` usa un protagonista de 530 px.
+No llenes el lienzo con palabras adicionales: prueba tamaños por omisión antes de fijarlos.
 
 ### Logos por confirmar
 

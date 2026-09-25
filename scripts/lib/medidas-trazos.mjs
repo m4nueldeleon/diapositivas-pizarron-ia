@@ -29,7 +29,9 @@ export function medidasTrazos(lam) {
     if (!visible(f) || ['retorno','arco','arco-negro','curva-roja','entrada'].includes(f.dataset.estilo)) return;
     const a = buscar(f.dataset.de), b = buscar(f.dataset.a); if (!a || !b) return;
     const A = caja(a), B = caja(b), F = caja(f), cy = (F.top+F.bottom)/2;
-    if (lienzo.width > lienzo.height && A.height && B.height && (cy < Math.max(A.top,B.top)-4 || cy > Math.min(A.bottom,B.bottom)+4)) avisos.push('la flecha del flujo queda fuera de la banda vertical común de sus anclas; alinea los nodos y sus etiquetas');
+    const apilado = a.closest('.flujo-textual-apilado'), cx = (F.left + F.right) / 2;
+    if (apilado && (cx < Math.max(A.left,B.left)-4 || cx > Math.min(A.right,B.right)+4)) avisos.push('la flecha del flujo apilado queda fuera del eje común de sus anclas; centra los nodos');
+    if (!apilado && lienzo.width > lienzo.height && A.height && B.height && (cy < Math.max(A.top,B.top)-4 || cy > Math.min(A.bottom,B.bottom)+4)) avisos.push('la flecha del flujo queda fuera de la banda vertical común de sus anclas; alinea los nodos y sus etiquetas');
     lam.querySelectorAll('.etiqueta,.encabezado').forEach(e => {
       if (!visible(e) || e.contains(a) || e.contains(b) || a.contains(e) || b.contains(e)) return;
       if (trazaCruza(f,caja(e))) avisos.push('la flecha del flujo cruza una etiqueta o encabezado ajeno; aumenta el espacio entre nodos');

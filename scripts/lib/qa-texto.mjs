@@ -4,6 +4,20 @@ import { revisarDeck, notaQA, infoPersona, reglasDeckCompleto, clasificarAvisos,
 import { infoConceptos } from './emoji-diccionario.mjs';
 import { errorVozPasos } from './pasos-mapa.mjs';
 import { glosarioDatos } from './datos.mjs';
+import { palabras } from './markup.mjs';
+import { textoConMuestras } from './medidas-dom.mjs';
+
+// Listas simples: el último paso conserva todos los ítems. Cuenta también las teclas
+// numeradas y letras, como el QA del DOM; voz, fuentes y anotaciones quedan fuera.
+function cargaLista(lamina, datos) {
+  if (lamina.tipo !== 'lista' || !Array.isArray(lamina.items) || lamina.columnas) return 0;
+  const items = lamina.items.map((it, i) => {
+    const texto = typeof it === 'string' ? it : it.texto;
+    const vineta = lamina.vineta === 'numero' && !(typeof it === 'object' && it.emoji) ? String(i + 1) : lamina.vineta === 'letras' ? (lamina.letras || [])[i] || '' : '';
+    return `${vineta} ${texto || ''}`;
+  });
+  return palabras(textoConMuestras([lamina.encabezado, ...items, lamina.nota].filter(Boolean).join(' '), datos));
+}
 
 export const VISUALES_PENDIENTES = ['contraste', 'desbordes', 'geometría de la capa a mano', 'emojis', 'hoja'];
 export function informeSinMedir(errores = [], resto = {}) {
@@ -21,6 +35,9 @@ export function revisarTexto(prep) {
   avisos.push(...composicion.avisos);
   deck.laminas.forEach((lamina, i) => {
     if (lamina.tipo === 'camara') return;
+    const carga = cargaLista(lamina, crudo.datos);
+    if (carga > 35) errores.push(`lámina ${i + 1}: ${carga} palabras a la vista; el estilo pide una idea por lámina (≤ 22)`);
+    else if (carga > 22) avisos.push(`lámina ${i + 1}: ${carga} palabras a la vista (ideal ≤ 22); acorta la lista antes del render, las viñetas numeradas también cuentan`);
     for (const campo of ['voz', 'anclas']) {
       if (Array.isArray(lamina[campo]) && lamina[campo].length !== pasos[i]) {
         errores.push(`lámina ${i + 1}: ${errorVozPasos(campo, lamina[campo], pasos[i], revela[i])}`);

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { corregirSigno, candidatosFuente } from '../scripts/lib/autocorregir.mjs';
 import { decisionCiclo, tipoArreglo, qaVigente } from '../scripts/lib/ciclo-calidad.mjs';
@@ -15,8 +16,7 @@ import { revisarTexto } from '../scripts/lib/qa-texto.mjs';
 
 const base = { marca: false, emoji: 'apple', laminas: [{ id: 'idea', tipo: 'idea', texto: 'Revisa __un acuerdo__', voz: 'Revisa un acuerdo.' }] };
 function temporal(t) {
-  const raiz = path.join(DIR_SKILL, 'salida', 'pruebas-r8'); fs.mkdirSync(raiz, { recursive: true });
-  const dir = fs.mkdtempSync(path.join(raiz, 'caso-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pz-calidad-r8-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true })); return dir;
 }
 function ejecutar(t, deck, script = 'armar', flags = []) {

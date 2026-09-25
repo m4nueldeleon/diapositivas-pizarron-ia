@@ -255,13 +255,13 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
     catch (e) { throw new Error(`lámina ${i + 1} (${l.id || l.tipo}): ${e.message}`, { cause: e }); }
     armadas.push(a);
     avisos.push(...a.avisos.map(x => `lámina ${i + 1}: ${x}`));
-    let cuerpo = `<div class="lienzo lz-${escapar(l.tipo)}${a.arriba ? ' arriba' : ''}">${a.interior}</div>`;
+    let cuerpo = `<div class="lienzo lz-${escapar(l.tipo)}${a.arriba ? ' arriba' : ''}"${l.anclar ? ` data-anclar="${escapar(l.anclar)}"` : ''}>${a.interior}</div>`;
     let pasos = a.pasos;
     if (l.tipo === 'foco') {
-      const prev = armadas[i - 1];
+      const prev = armadas[i - 1], anterior = deck.laminas[i - 1];
       const op = Number.isFinite(l.opacidad) ? l.opacidad : 'var(--apagado)';
       // data-op-fija: el autor puso la opacidad; runtime.js no la baja aunque la frase no encuentre hueco
-      const fondo = prev ? `<div class="escena clon"${Number.isFinite(l.opacidad) ? ' data-op-fija="1"' : ''} style="position:absolute;inset:0;opacity:${op}"><div class="lienzo${prev.arriba ? ' arriba' : ''}">${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
+      const fondo = prev ? `<div class="escena clon"${Number.isFinite(l.opacidad) ? ' data-op-fija="1"' : ''} style="position:absolute;inset:0;opacity:${op}"><div class="lienzo lz-${escapar(anterior.tipo)}${prev.arriba ? ' arriba' : ''}"${anterior.anclar ? ` data-anclar="${escapar(anterior.anclar)}"` : ''}>${sinPasos(prev.interior)}</div><svg class="capa-mano"></svg><script type="application/json" class="con">${jsonSeguro(prev.conexiones.map(c => ({ ...c, p: 0 })))}</script></div>` : '';
       // El sello y las anotaciones de la lámina anterior (sus `extras`) NO se arman aquí: runtime.js (copiarExtrasAlClon)
       // los copia ya colocados, en su lugar final, y el clon dibuja también las flechas de las notas (anot).
       // La frase se acomoda en el hueco entre los renglones del fondo más cercano al centro (runtime.js, acomodarFoco);

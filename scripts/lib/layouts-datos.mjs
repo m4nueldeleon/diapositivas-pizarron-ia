@@ -522,7 +522,7 @@ export function prueba(l, ctx) {
 export function chat(l, ctx) {
   const ms = l.mensajes || [];
   const maxPalabras = Math.max(0, ...ms.map(m => palabras(m.texto)));
-  const tbVertical = ms.length <= 3 && maxPalabras <= 12 ? 76 : maxPalabras <= 12 ? 68 : maxPalabras <= 24 ? 64 : 58;
+  const tbVertical = ms.length <= 2 && maxPalabras <= 6 ? 104 : ms.length <= 3 && maxPalabras <= 12 ? 76 : maxPalabras <= 12 ? 68 : maxPalabras <= 24 ? 64 : 58;
   const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbVertical;
   const muro = l.variante === 'muro', celular = l.marco === 'celular';
   const html = ms.map((m,i) => m.de === 'prompt' ? renglonPrompt(l, ctx, i) : burbuja(m,ctx,{

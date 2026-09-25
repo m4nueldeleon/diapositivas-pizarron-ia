@@ -211,6 +211,17 @@ QA: una frase inequívoca de dato pendiente es error en propuesta o `en_vivo: tr
 
 ## 5. Ritmo y variedad
 
+- **La duración no se rellena con una plantilla de voz.** No generes decenas de secuencias
+  idénticas «idea → chat → flujo → lista» ni cierres automáticos («y registra ese paso»).
+  Cada bloque aporta una decisión distinta, una demostración y una práctica con producto
+  concreto. Lee los diálogos: `yo` conserva el rol del creador y `otro` el del cliente.
+  Si falta contenido para la duración pedida, señala la brecha; no añadas transiciones vacías.
+- **Tres rótulos largos no son un buen resumen horizontal.** Usa sustantivos concretos y
+  rótulos breves. El motor apila un flujo textual de hasta tres nodos cuando no cabe sin
+  partir palabras; una fila de conceptos sin relación debe ser lista o `flecha: "ninguna"`.
+- **El tachón llega después de leer.** En `idea`, `cita` y `cifra` con `~~…~~`, escribe
+  `tachar_paso: 1` y una frase de voz para el descarte. No agregues un paso sin voz.
+
 - **No repitas el mismo diseño 4 veces seguidas.** Alterna texto, proceso y dato.
 - **Capa roja a mano cada 3 o 4 láminas**: subrayado rojo, flecha, anotación, sello, círculo/encerrado/óvalo, tachón, llave o ✕ roja. La nota gris, la tabla y la letra manuscrita gris no cuentan. Es una medida distinta del golpe.
 - **Un golpe cada 4-6 láminas**: sello; tachón (`~~`, `tachado`, `tachar_despues`); `rejilla` o `multitud: true`; `circulos`; `cifra` o palabra sola gigante; llave con nota (`bifurcacion.llave` o llave de lista/chat/anotación); `anotaciones` con flecha; objeto dibujado (`objeto`, tarjeta, `boton`); óvalo `((…))`, `circulo` en celda/prueba o `encerrar` en rejilla. Subrayado, nota suelta y viñeta NO son golpe. No repitas el mismo TIPO en dos láminas seguidas, salvo que sea la misma lámina construyéndose. Sigue valiendo máximo un énfasis por lámina (ESTILO §5).
@@ -444,3 +455,7 @@ Nunca copies credenciales, cifras, casos, anécdotas con fecha ni frases de otro
 son de otra persona. De un modelo se copia el mecanismo, no el dato. Sin ficha, {{ANOS}}/{{CLIENTES}} pendientes.
 El resultado del mecanismo cae en la agenda: `agenda` con series por paso [41:25–41:30].
 La invitación de [43:50] usa `boton` variante `invitacion`.
+
+### Lista corta comprobable antes de capturar
+
+El máximo de 22 palabras incluye encabezado, nota y las teclas numeradas: tres viñetas numéricas suman tres palabras al contador visible. En una lista de tres pasos apunta a 3–5 palabras por ítem; la explicación completa vive en la voz. Subraya solo las 1–3 palabras decisivas, no toda la oración: un subrayado largo puede cruzar el siguiente renglón. El preflight cuenta las listas simples y bloquea ese exceso antes del PNG; columnas y geometría siguen requiriendo QA medido.

@@ -564,6 +564,16 @@
       fila.style.gridAutoColumns = '1fr';
       let te = base;
       while (!cabe() && te - 4 >= piso) { te -= 4; nodos.forEach(nd => nd.style.setProperty('--te', te + 'px')); }
+      if (!cabe() && nodos.every(nd => !nd.querySelector('.emo, img'))
+        && !fila.querySelector('.signo, .nodo-aparte, .retorno-et') && n <= 3 && !fijo) {
+        // Un proceso textual largo necesita alto, no palabras partidas ni letra minúscula.
+        // Se decide una sola vez con todos los pasos visibles; al revelar no se mueve.
+        fila.classList.add('flujo-textual-apilado');
+        nodos.forEach(nd => nd.style.setProperty('--te', base + 'px'));
+        fila.style.gap = '130px';
+        fila.dataset.igualada = String(base);
+        return;
+      }
       if (!cabe()) etqs.forEach(e => e.classList.remove('corta'));
       fila.dataset.igualada = te + '';
     });
@@ -591,7 +601,7 @@
   // área el contenedor de su ancla (captura, tarjeta, burbuja, rejilla) ni otro texto, sello o nota, y (c) queda a ≥ 80 px
   // del ancla (el gancho). Si ningún lado sirve, la letra baja de 4 en 4 hasta 44 px; si aun así no, el lado que menos
   // pisa y un aviso. Antes el borde la regresaba ENCIMA de la tarjeta y su gancho tachaba la propia nota [r5, muro 14].
-  const OBST_ANOT = '.t, .t-remate, .llamada-tarjeta, .meses, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .captura, .post, .sello, .tabla, .rejilla, .bento, .cuadro, .grafica svg, .dia';
+  const OBST_ANOT = '.emo, img, .t, .t-remate, .llamada-tarjeta, .meses, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .captura, .post, .sello, .tabla, .rejilla, .bento, .cuadro, .grafica svg, .dia';
   function colocarAnotaciones(lam) {
     const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, aire = 130;
     const cruce = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
@@ -616,11 +626,11 @@
         && !e.contains(el) && !cont.contains(e) && !e.closest('.anotacion')).map(e => caja(e, lam)).concat(puestas);
       const pedido = n.dataset.lado;
       const lados = [...new Set([pedido, 'derecha', 'izquierda', 'abajo', 'arriba'].filter(Boolean))];
-      const probar = lado => {
+      const probar = (lado, desvio = 0) => {
         const w = n.offsetWidth, h = n.offsetHeight;
         const Yv = lado === 'arriba' ? Math.min(A0.y, R.y) : Math.max(A0.y + A0.h, R.y + (cap ? R.h : 0));
-        const x0 = lado === 'derecha' ? B.x + B.w + aire : lado === 'izquierda' ? B.x - aire - w : B.cx - w / 2;
-        const y0 = lado === 'arriba' ? Yv - aire * 0.8 - h : lado === 'abajo' ? Yv + aire * 0.8 : B.cy - h / 2 - 60;
+        const x0 = lado === 'derecha' ? B.x + B.w + aire : lado === 'izquierda' ? B.x - aire - w : B.cx - w / 2 + desvio;
+        const y0 = lado === 'arriba' ? Yv - aire * 0.8 - h : lado === 'abajo' ? Yv + aire * 0.8 : B.cy - h / 2 - 60 + desvio;
         const x = clamp(x0, m, W - m - w), y = clamp(y0, m, H - m - h), b = { x, y, w, h };
         const pisa = Math.max(cruce(b, C), ...obst.map(o => cruce(b, o)), 0) / (w * h || 1);
         const empuje = Math.hypot(x - x0, y - y0);
@@ -633,12 +643,12 @@
       if (base > 44) tams.push(44);
       for (const tn of tams) {
         if (tn !== base) n.style.setProperty('--tn', tn + 'px');
-        elegido = lados.map(probar).find(c => c.ok) || null;
+        elegido = lados.flatMap(lado => [0, -160, 160, -320, 320, -480, 480].map(d => probar(lado, d))).find(c => c.ok) || null;
         if (elegido) break;
       }
       if (!elegido) {
         n.style.setProperty('--tn', base + 'px');
-        elegido = lados.map(probar).sort((a, b) => a.costo - b.costo)[0];
+        elegido = lados.map(lado => probar(lado)).sort((a, b) => a.costo - b.costo)[0];
         avisos.push(`lámina ${+lam.dataset.i + 1}: la anotación «${(n.textContent || '').trim().slice(0, 30)}» no cabe junto a su ancla sin pisar nada; acórtala o dale "x"/"y"`);
       }
       if (pedido && elegido.lado !== pedido) n.dataset.ladoReal = elegido.lado;
@@ -711,6 +721,18 @@
     const tope = 280 * (lam.offsetWidth >= lam.offsetHeight ? 1 : lam.offsetWidth / 1080);
     let fs = parseFloat(getComputedStyle(f).fontSize) || 40, guard = 0;
     while (f.offsetWidth > tope && fs > 22 && guard++ < 30) { fs -= 1; f.style.fontSize = fs + 'px'; }
+  }
+
+  function unirEnfasisCorto(lam) {
+    lam.querySelectorAll('[data-sub], mark').forEach(e => {
+      if (e.querySelector('br') || e.textContent.trim().split(/\s+/).length > 3) return;
+      const cont = e.closest('.t, .item, .nota, .burbuja, .etiqueta');
+      if (!cont) return;
+      const previo = e.style.whiteSpace;
+      e.style.whiteSpace = 'nowrap';
+      // Una marca larga sigue partida y QA la señala. No encoger letras para ocultarla.
+      if (e.getBoundingClientRect().width > cont.getBoundingClientRect().width) e.style.whiteSpace = previo;
+    });
   }
 
   function encajar(lam) {
@@ -952,6 +974,7 @@
     await prepararHalos();
     const lams = [...document.querySelectorAll('.lamina')];
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
+    lams.forEach(l => unirEnfasisCorto(l));
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
