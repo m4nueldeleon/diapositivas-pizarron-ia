@@ -273,4 +273,8 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   `markup.mjs → pegarCortas` pega con espacio duro las palabras de 1-2 letras, la cifra y su unidad y la última palabra
   corta de la frase. La doble negación se revisa en la frase entera (cruza `\n`) y no cuenta un tachón sobre un término
   citado. `r14-aprobados` usa `esperado.json` por pieza (seis piezas).
+- `tinta.mjs → anclasTinta`: sin glifo cromático (menos de 40 píxeles de color no rojos a 480×270) no hay silueta ni caja
+  de emoji que comparar; si solo un cuadro lo trae, sigue siendo falla. r95 (la ✕ roja, excluida por diseño) pasa: su IoU
+  0 era ruido de 4 contra 19 píxeles. Réplica 9/10: r255 usa 🎫 (boleto plano del cuadro) y sigue en revisión por la
+  silueta del boleto, que en el video es una imagen propia, no un emoji.
 

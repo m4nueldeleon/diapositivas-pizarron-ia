@@ -138,7 +138,10 @@ export function anclasTinta(rgba, w, h) {
       inicio=null;
     }
   }
-  const emoji=caja(color), silueta=new Array(256).fill(0);
+  // R15: con menos de 40 píxeles de color (a 480×270) no hay glifo cromático que comparar: la ✕ roja de ref_95 se
+  // excluye por diseño y quedaban 4 píxeles de borde contra 19; su «silueta» era ruido e IoU 0. Si solo UN cuadro trae
+  // glifo, compararAnclas lo sigue contando como falla.
+  const emoji=color.length>=40?caja(color):null, silueta=emoji?new Array(256).fill(0):null;
   if(emoji) for(const [x,y] of color) {
     const xx=Math.min(15,Math.floor((x/w*100-emoji.x)/emoji.w*16));
     const yy=Math.min(15,Math.floor((y/h*100-emoji.y)/emoji.h*16));
@@ -155,8 +158,9 @@ export function compararAnclas(a,b,umbral=3) {
     referencia: +(x.y-a.bandas[i].y-a.bandas[i].h).toFixed(2),
     nuestra: b.bandas[i+1] ? +(b.bandas[i+1].y-b.bandas[i].y-b.bandas[i].h).toFixed(2) : null,
   }));
-  const union=a.silueta.reduce((n,x,i)=>n+Number(x||b.silueta[i]),0);
-  const inter=a.silueta.reduce((n,x,i)=>n+Number(x&&b.silueta[i]),0);
+  const conSilueta=Array.isArray(a.silueta)&&Array.isArray(b.silueta);
+  const union=conSilueta?a.silueta.reduce((n,x,i)=>n+Number(x||b.silueta[i]),0):0;
+  const inter=conSilueta?a.silueta.reduce((n,x,i)=>n+Number(x&&b.silueta[i]),0):0;
   const iou=union ? +(inter/union).toFixed(3) : null;
   const falla=a.bandas.length!==b.bandas.length || bandas.some(x=>!x||Object.values(x).some(v=>Math.abs(v)>umbral))
     || (emoji && Object.values(emoji).some(v=>Math.abs(v)>umbral)) || Boolean(a.emoji)!==Boolean(b.emoji) || (iou!==null && iou<.8);
