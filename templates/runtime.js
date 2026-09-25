@@ -447,9 +447,14 @@
         if (!esCaja) { trazo(svg, suave(linea([b.x - 10, y + 4], [b.x + b.w + 10, y - 4], r, 2, 4)), { color: C.rojo, ancho: 7, p, dur: 240, no: true, clase: 'tachon' }); return; }
         // Descarte de lista [m_256 4:16]: plumón grueso (~10 px de núcleo) que arranca antes de la viñeta y sale por la
         // derecha, casi horizontal, con un segundo pase más claro que le da el borde áspero
-        trazo(svg, suave(linea([b.x - 20, y + 2], [b.x + b.w + 24, y - 2], r, 1.6, 4)), { color: C.rojo, ancho: 10.5, p, dur: 240, no: true, clase: 'tachon' });
-        const e2 = trazo(svg, suave(linea([b.x - 16, y + 4], [b.x + b.w + 20, y], r, 1.6, 4)), { color: C.rojo, ancho: 6, p, dur: 240, no: true });
-        e2.setAttribute('stroke-opacity', '.6'); e2.dataset.pase = '2';   // pase de textura: no cuenta como otro trazo
+        // R15 [ref_255 4:15]: en el video es una BANDA de ~16 px con el borde áspero de plumón seco (la nuestra medía ~10
+        // y salía limpia). Núcleo de 13 px + un pase ancho corrido hacia arriba + un pase fino con más temblor que rompe
+        // el borde; los pases de textura no cuentan como otro trazo.
+        trazo(svg, suave(linea([b.x - 20, y + 2], [b.x + b.w + 24, y - 2], r, 1.6, 4)), { color: C.rojo, ancho: 13, p, dur: 240, no: true, clase: 'tachon' });
+        const e2 = trazo(svg, suave(linea([b.x - 16, y - 3], [b.x + b.w + 20, y - 5], r, 2.2, 7)), { color: C.rojo, ancho: 12, p, dur: 240, no: true });
+        e2.setAttribute('stroke-opacity', '.55'); e2.dataset.pase = '2';
+        const e3 = trazo(svg, suave(linea([b.x - 22, y + 5], [b.x + b.w + 18, y + 3], r, 3.2, 12)), { color: C.rojo, ancho: 5, p, dur: 240, no: true });
+        e3.setAttribute('stroke-opacity', '.7'); e3.dataset.pase = '3';
       });
     });
   }
