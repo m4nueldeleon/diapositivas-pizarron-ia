@@ -49,6 +49,15 @@ export function revisarRecortes(raiz = document) {
 
 export function avisosProcedencia(l) {
   if (l.procedencia || (typeof l.fuente === 'string' && l.fuente.trim())) return [];
+  // R16 [juez r16]: un chat que muestra un RESULTADO (el cliente responde y hay sello, o paga el gancho) se lee como un caso
+  // real («VOLVIÓ», «te aparta tres cajas»). En cualquier pieza declara procedencia: 'ejemplo' (pie «Ejemplo ficticio»)
+  // o su fuente; nunca se presenta ficción como resultado.
+  // Un sello solo («SIN RESPUESTA», «TARDE») muestra un problema, no un resultado: se exige cuando el chat PAGA el gancho
+  // y el cliente responde DESPUÉS de nosotros (el final feliz presentado como hecho).
+  // Criterio: el chat paga el gancho y su ÚLTIMO mensaje (de dos o más) es del cliente: esa respuesta es el resultado.
+  const ms = l.mensajes || [];
+  if (l.tipo === 'chat' && l.paga && ms.length >= 2 && ms[ms.length - 1]?.de === 'otro')
+    return ['chat que paga el gancho con la respuesta del cliente (un resultado) sin procedencia: declara procedencia: "ejemplo" (sale «Ejemplo ficticio») o su fuente'];
   const falta = l.tipo === 'foto' || (l.tipo === 'prueba' && l.capturas?.some(c => c.src && !c.procedencia && !c.fuente));
   return falta ? ['imagen sin procedencia ni fuente: declara procedencia (real, ia o ejemplo) o añade fuente'] : [];
 }

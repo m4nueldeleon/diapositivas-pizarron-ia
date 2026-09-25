@@ -101,3 +101,14 @@ test('r15: evidencia unificada (cámara declarada, guion útil) y objeción comp
   assert.ok(r.some(x => x.generico && /disen/.test(x.tema)), JSON.stringify(r));
   assert.deepEqual(revisarComponentes('¿Qué importa más, el diseño o el plazo?', ['El diseño se ajusta al plazo: entregamos el viernes.']), []);
 });
+
+test('r16: un chat que paga el gancho con la respuesta del cliente pide procedencia; un sello de problema no', async () => {
+  const { avisosProcedencia } = await import('../scripts/lib/imagenes.mjs');
+  const exito = { tipo: 'chat', paga: 'gancho', sello: 'VOLVIÓ', mensajes: [{ de: 'yo', texto: 'Hola, ¿qué tal las galletas?' }, { de: 'otro', texto: '¡Te aparto tres cajas!' }] };
+  assert.ok(avisosProcedencia(exito).some(a => /resultado/.test(a)));
+  assert.deepEqual(avisosProcedencia({ ...exito, procedencia: 'ejemplo' }), []);
+  assert.deepEqual(avisosProcedencia({ tipo: 'chat', sello: 'SIN RESPUESTA', mensajes: [{ de: 'yo', texto: 'Hola' }, { de: 'otro', texto: 'Luego te digo' }] }), []);
+  assert.deepEqual(avisosProcedencia({ tipo: 'chat', paga: 'gancho', mensajes: [{ de: 'otro', texto: '¿Me lo dejas más barato?' }, { de: 'yo', texto: '¿Qué ajustamos?' }] }), []);
+  // el caso del juez r16: solo mensajes del cliente, el último es el pedido de vuelta
+  assert.ok(avisosProcedencia({ tipo: 'chat', paga: 'gancho', sello: 'Volvió', mensajes: [{ de: 'otro', texto: 'Me llevo dos cajas' }, { de: 'otro', texto: '¡Apártame tres cajas!' }] }).length);
+});
