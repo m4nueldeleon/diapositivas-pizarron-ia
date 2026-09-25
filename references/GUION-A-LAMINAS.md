@@ -383,9 +383,26 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   | «no sé por dónde empezar», «es difícil», «no sé de tecnología» | `flujo` o `pasos` | «Tú + tu hoja = tu agente» [35:10]; los pasos 1-2-3 [36:05] |
   | «qué le contesto al cliente» | `chat` | la respuesta escrita en la burbuja [35:35] |
   | «¿funciona?» | `prueba` con `src`/`fuente`, o `cifra` con `fuente` | la captura con el dato encerrado |
-  | «lo puedo hacer solo», «con lo que ya tengo» | `cuadrantes` rojo/verde o `idea` con par de emojis | el cuchillo contra el formón [34:30] |
+  | «lo puedo hacer solo», «con lo que ya tengo» | `cuadrantes` con el mismo trabajo y sus diferencias visibles | el cuchillo contra el formón [34:30] |
 
-  QA avisa en `vsl`, `vsl-corto` y `webinar` si la primera lámina de la respuesta es una `idea` sin `fuente`.
+  **Receta obligatoria: objeción → condición que se conserva → respuesta literal → ejemplo.**
+  Identifica el verbo o sustantivo principal de la objeción y conserva la restricción del espectador.
+  «No tengo tiempo» no se resuelve diciendo que el sistema es fácil: muestra cuánto tiempo requiere
+  y dónde cabe sin borrar sus obligaciones. «¿Y si el cliente pide cambios?» exige decir qué cambios
+  incluye, cuándo se cotizan los adicionales y enseñar esa respuesta escrita.
+
+  | Objeción exacta | Condición conservada | Respuesta literal | Ejemplo visible |
+  |---|---|---|---|
+  | «¿Y si pide cambios?» | Se conserva el precio y una revisión acordada | «El precio incluye una revisión; los cambios adicionales se cotizan aparte» | `chat`: solicitud del cliente y respuesta con ese límite |
+  | «¿Y si no paga?» | La entrega final sigue condicionada al pago pactado | «Entrego el archivo final cuando recibo el saldo» | `flujo`: anticipo → revisión → saldo → archivo final, con el pago explicado en voz |
+
+  Son ejemplos de formulación, no condiciones comerciales confirmadas: en una venta real se usan
+  las del creador. La respuesta no inventa frecuencia, casos, eficacia ni condiciones de garantía.
+  El bloque de respuesta ocupa 1–3 láminas: su primera lámina demuestra y la `idea` de frase puede
+  rematar después. QA avisa si empieza con `idea` sin `fuente` y busca coincidencias del núcleo por
+  familias explícitas de raíz (paga/pago/pagar, cambio/cambios, entrega/entregar/entregable).
+  Aplica también a clase, tutorial, propuesta y reel. Coincidir en una palabra no prueba que
+  resolviste la objeción: el autor verifica los cuatro eslabones mirando la respuesta sin audio.
 - **Sin prueba real, en este orden** (el beat 6 y el tramo de prueba de un vsl o webinar):
 
   | # | Sustituto | Diseño |
@@ -418,9 +435,29 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   profesionales, emprendedores, dueños, miembros, egresados, graduados, generaciones, pacientes,
   vendedores, agencias, marcas, seguidores, suscriptores, familias, comunidades, países, ciudades
   y usuarios. También reconoce «desde 2016». Un `{{X}}` o `[X]` delante de esos términos reserva
-  el dato sin inventarlo; seguirá pendiente hasta confirmarse. Usa `credibilidad: true` cuando la
-  lámina cumple esa función con otra formulación real. En propuestas, el tamaño del equipo del
+  el dato sin inventarlo; seguirá pendiente hasta confirmarse. `credibilidad: true` declara que
+  pretendes acreditar al creador; **la bandera nunca cuenta como evidencia**. Hace falta la cifra
+  real y su fuente o dato confirmado. En propuestas, el tamaño del equipo del
   cliente no acredita al proveedor: cuenta a las personas que el proveedor ya formó o atendió.
+
+  **Muestra, demostración, resultado y credencial son cosas distintas.** QA las separa en
+  `evidencias`, además del origen de `prueba`:
+
+  | Categoría | Qué permite afirmar | Qué no acredita |
+  |---|---|---|
+  | Muestra | «Esta es la plantilla/formato»; puede estar vacía | Que funciona, que se usó o que hubo resultados |
+  | Demostración | Una entrada concreta se transforma a la vista en una salida utilizable | Ventas, ahorro observado o éxito de clientes que no se midieron |
+  | Resultado | Un cambio medido con fuente, origen y límites: qué cambió, para quién y en qué periodo | Causalidad o resultados generales fuera de lo documentado |
+  | Credencial | Experiencia o volumen real del proveedor, confirmado y atribuible | El resultado futuro del espectador |
+
+  Para enseñar una plantilla, revela sus campos vacíos como **muestra**, después complétalos
+  con un caso explícitamente ilustrativo: entrada del cliente → decisión en cada campo → texto
+  terminado. Por ejemplo, «una página / una revisión / entrega el viernes» termina en el mensaje
+  completo que se podría enviar. Muéstralo en `chat` con solicitud y respuesta, o en capturas
+  legibles de las etapas y el documento final. Señala qué se puede copiar o usar y verifica que
+  responde a la entrada. Un `hueco` con `plantilla: true` o el rótulo «Aquí está el resultado» no
+  realiza esa transformación. Si el caso es inventado, la demostración sigue siendo ilustrativa;
+  no pasa a resultado real ni a credencial por estar completada.
 - **El llamado aparece al menos 2 veces** (beats 9 y 10), **a la vista**: un `boton`, la palabra clave o
   la flecha al link (`llamado: true` marca esa lámina). Que la voz diga «WhatsApp» o «aparta» no es un
   llamado, y el que va solo en la voz de la cámara final tampoco cuenta. En un webinar, 3 si hay un llamado
@@ -466,9 +503,16 @@ Escribe cada lámina a mano. Calcula su número al terminar el contenido; no fab
 por escena ni permutes una plantilla para cubrir minutos. QA detecta tres ventanas consecutivas de
 4–8 láminas con la misma bolsa de estructuras, aunque cambie su orden. Es un indicio editorial que
 exige reescritura; variar adjetivos o permutar escenas no lo corrige. Un retorno con `como` o `paga` no exonera un bloque entero: también se revisa su función narrativa.
+QA también avisa cuatro láminas consecutivas con la misma función retórica reconocida
+(instrucción, pregunta, descarte, inclusión, demostración o práctica), aunque alternes diseños.
+Cambiar una `lista` por un `flujo` no añade aprendizaje. Interrumpe la repetición con una decisión
+nueva, un contraste pertinente o una demostración que transforme una entrada concreta.
 
 Declara `bloques: [{desde: "id-inicial", hasta: "id-final", aprendizaje: "decisión nueva", practico: true}]`.
 Lee de corrido los aprendizajes: cada uno debe depender del anterior y añadir información verificable.
-Una anotación con flecha aporta consecuencia, contraste, precisión o veredicto: «Entrega» sobre
-«Define una entrega» es redundante y no cuenta como golpe; «Una fecha evita reabrir el alcance» sí añade
-consecuencia. El conteo de tinta nunca reemplaza este juicio.
+Una anotación con flecha aporta consecuencia, contraste, precisión o veredicto: «Entrega» o
+«Define un entregable» sobre «Define una entrega» son redundantes. Entrega/entregable/entregar
+pertenecen a la misma familia; cambiar la terminación no añade significado. «Una fecha evita reabrir
+el alcance» aporta consecuencia, «Una sola revisión» precisa el límite, «Revisar no es aceptar»
+contrasta dos decisiones y «Falta el responsable» da un veredicto comprobable. Añadir «excelente»
+no basta. El conteo de tinta nunca reemplaza este juicio.

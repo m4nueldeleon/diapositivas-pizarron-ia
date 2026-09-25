@@ -616,21 +616,31 @@
     const gapR = (a, b) => Math.hypot(Math.max(0, a.x - (b.x + b.w), b.x - (a.x + a.w)), Math.max(0, a.y - (b.y + b.h), b.y - (a.y + a.h)));
     const puestas = [];
     lam.querySelectorAll(':scope > .anotacion[data-sobre]').forEach(n => {
+      const actual = alturaX(n,lam), objetivo = alturaPrincipal(lam)*.75;
+      const minimo = Math.max(50, 1+Math.ceil(parseFloat(getComputedStyle(n).fontSize)*objetivo/(actual||1)));
+      n.style.setProperty('--tn', Math.max(minimo,parseFloat(getComputedStyle(n).fontSize))+'px');
+      n.style.maxWidth = Math.min(W-80,760)+'px';
       if (n.dataset.fija) { puestas.push(caja(n, lam)); return; }
       const el = ancla(lam, n.dataset.sobre); if (!el) return;
       if (n.dataset.llaveHasta) {
+        n.style.whiteSpace='nowrap'; n.style.maxWidth='none';
         const fin = ancla(lam, n.dataset.llaveHasta); if (!fin) return;
         const a = caja(el, lam), b = caja(fin, lam), entre = [];
         if (el.parentElement === fin.parentElement) for (let h = el.nextElementSibling; h && h !== fin; h = h.nextElementSibling) entre.push(caja(h, lam));
         n.style.left = (Math.max(a.x+a.w, b.x+b.w, ...entre.map(e => e.x+e.w))+100) + 'px';
         n.style.top = ((Math.min(a.y,b.y)+Math.max(a.y+a.h,b.y+b.h))/2-n.offsetHeight/2) + 'px';
+        const exceso = parseFloat(n.style.left)+n.offsetWidth-(W-60);
+        if(exceso>0){
+          const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
+          if(bloque && caja(bloque,lam).x-exceso>=60){bloque.style.position='relative';bloque.style.left=-exceso+'px';n.style.left=(parseFloat(n.style.left)-exceso)+'px';}
+        }
         puestas.push(caja(n,lam)); return;
       }   // la conexión avisa que falta el ancla
       // sobre una captura, la nota va FUERA de ella (al lado del ancla, a la altura de lo que señala) [28:35]
-      const A0 = caja(el, lam), cap = el.closest('.captura'), R = cap && cap !== el ? caja(cap, lam) : A0;
-      const cont = el.closest('.captura, .tarjeta, .burbuja, .rejilla, .post, .bento, .cuadro') || el, C = caja(cont, lam);
-      const B = { x: R.x, w: R.w, y: A0.y, h: A0.h, cx: A0.cx, cy: A0.cy };
-      const obst = [...lam.querySelectorAll(OBST_ANOT)].filter(e => e !== n && !n.contains(e) && !e.closest('.escena.clon') && e.getClientRects().length
+      let A0 = caja(el, lam), cap = el.closest('.captura'), R = cap && cap !== el ? caja(cap, lam) : A0;
+      let cont = el.closest('.captura, .tarjeta, .burbuja, .rejilla, .post, .bento, .cuadro') || el, C = caja(cont, lam);
+      let B = { x: R.x, w: R.w, y: A0.y, h: A0.h, cx: A0.cx, cy: A0.cy };
+      let obst = [...lam.querySelectorAll(OBST_ANOT)].filter(e => e !== n && !n.contains(e) && !e.closest('.escena.clon') && e.getClientRects().length
         && !e.contains(el) && !cont.contains(e) && !e.closest('.anotacion')).map(e => caja(e, lam)).concat(puestas);
       const pedido = n.dataset.lado;
       const lados = [...new Set([pedido, 'derecha', 'izquierda', 'abajo', 'arriba'].filter(Boolean))];
@@ -645,19 +655,34 @@
         return { lado, x, y, ok: empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 };
       };
       let elegido = null;
-      const base = Math.max(50, parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54);
+      const base = Math.max(minimo, parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54);
       n.style.setProperty('--tn', base + 'px');
       const tams = [base];
-      for (let t = base - 4; t > 50; t -= 4) tams.push(t);
-      if (base > 50) tams.push(50);
+      for (let t = base - 4; t > minimo; t -= 4) tams.push(t);
+      if (base > minimo) tams.push(minimo);
       for (const tn of tams) {
         if (tn !== base) n.style.setProperty('--tn', tn + 'px');
-        for (const ancho of [400, 320, 280, 240, 500]) {
+        for (const ancho of [760, 640, 500, 400, 320]) {
           n.style.maxWidth = ancho + 'px';
           elegido = lados.flatMap(lado => [0, -160, 160, -320, 320, -480, 480].map(d => probar(lado, d))).find(c => c.ok) || null;
           if (elegido) break;
         }
         if (elegido) break;
+      }
+      if (!elegido) {
+        // Abre una banda real bajo el bloque; no achica letra ni acorta flechas.
+        const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
+        n.style.maxWidth='760px'; n.style.setProperty('--tn',base+'px');
+        if(bloque && bloque.contains(el)){
+          const desplazamiento=Math.min(Math.max(0,A0.y+A0.h+aire+n.offsetHeight-(H-m)),Math.max(0,caja(bloque,lam).y-m));
+          if(desplazamiento>0){
+            bloque.style.position='relative';bloque.style.top=((parseFloat(bloque.style.top)||0)-desplazamiento)+'px';
+            A0=caja(el,lam);R=cap&&cap!==el?caja(cap,lam):A0;C=caja(cont,lam);
+            B={x:R.x,w:R.w,y:A0.y,h:A0.h,cx:A0.cx,cy:A0.cy};
+            obst=[...lam.querySelectorAll(OBST_ANOT)].filter(e=>e!==n&&!n.contains(e)&&!e.closest('.escena.clon')&&e.getClientRects().length&&!e.contains(el)&&!cont.contains(e)&&!e.closest('.anotacion')).map(e=>caja(e,lam)).concat(puestas);
+            elegido=lados.flatMap(lado=>[0,-160,160,-320,320].map(d=>probar(lado,d))).find(c=>c.ok)||null;
+          }
+        }
       }
       if (!elegido) {
         n.style.setProperty('--tn', base + 'px');
@@ -797,6 +822,29 @@
       if (b.textContent.trim().split(/\s+/).length > 8) return;
       let t = parseFloat(getComputedStyle(b).fontSize);
       while (rectsTexto(b, lam).length > 2 && t > 64) { t -= 2; b.style.fontSize = t + 'px'; }
+    });
+  }
+
+  /*@@TIPOGRAFIA@@*/
+
+  // Las palabras completas fijan el tamaño máximo; no se usa break-word para
+  // ocultar un desborde. Incluye chats dentro de celulares, muros y capturas.
+  function ajustarPalabrasChat(lam) {
+    const ctx=document.createElement('canvas').getContext('2d');
+    lam.querySelectorAll('.burbuja').forEach(b=>{
+      const css=getComputedStyle(b), ancho=b.clientWidth-parseFloat(css.paddingLeft)-parseFloat(css.paddingRight);
+      let mayor=0, palabra=0, anterior=null;
+      const it=document.createTreeWalker(b,NodeFilter.SHOW_TEXT);
+      for(let n;(n=it.nextNode());){
+        if(anterior){const r=document.createRange();r.setStart(anterior,anterior.length);r.setEnd(n,0);if(r.cloneContents().querySelector('br'))palabra=0;}
+        const s=getComputedStyle(n.parentElement);ctx.font=`${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
+        for(const parte of n.nodeValue.split(/(\s+)/)) {
+          if(/\s/.test(parte))palabra=0;
+          else {palabra+=ctx.measureText(parte).width;mayor=Math.max(mayor,palabra);}
+        }
+        anterior=n;
+      }
+      if(mayor>ancho&&ancho>0)b.style.fontSize=(parseFloat(css.fontSize)*ancho/mayor*.995)+'px';
     });
   }
 
@@ -1022,13 +1070,14 @@
     const lams = [...document.querySelectorAll('.lamina')];
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     lams.forEach(l => unirEnfasisCorto(l));
-    lams.forEach(l => { fijarDescargos(l); ajustarChatVertical(l); });
+    lams.forEach(l => { fijarDescargos(l); ajustarChatVertical(l); ajustarPalabrasChat(l); });
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
-    lams.forEach(l => { try { ampliarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
+    lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });
+    lams.forEach(l => { try { ajustarNotasLlave(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de llave (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });

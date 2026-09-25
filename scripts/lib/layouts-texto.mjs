@@ -152,7 +152,7 @@ export function flujo(l, ctx) {
     }
     const aNodo = ctx.vertical ? ctx.A('n' + i) : ctx.A('nodo' + i), aVis = ctx.vertical ? '' : ctx.A('n' + i);
     const normal = nd.normal || sinFlecha || (todoSignos && nd.normal !== false);
-    return `<div class="nodo${nd.tarjeta === true ? ' nodo-tarjeta' : ''}" style="--te:${te}"${ctx.P(k)}${aNodo}>
+    return `<div class="nodo${nd.tarjeta === true ? ' nodo-tarjeta' : ''}" style="--te:${!vis ? '84px' : te}"${ctx.P(k)}${aNodo}>
       ${vis ? `<div${aVis}>${vis}</div>` : ''}
       ${nd.etiqueta ? `<div class="etiqueta ${normal ? 'normal' : ''}${corta(nd.etiqueta)}"><span${!vis && !ctx.vertical ? aVis : ''}><span${ctx.A('et' + i)}>${marcar(nd.etiqueta)}</span></span></div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;
@@ -255,7 +255,7 @@ export function pasos(l, ctx) {
         ${l.prefijo !== false ? `<div class="rotulo-paso" style="font-size:${tamPref}px;color:var(--gris);margin-top:60px;line-height:1.05;white-space:nowrap">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
         ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
-      cab = `<div class="tecla" style="--s:${ctx.vertical ? 150 : 170}px"${ctx.A('k' + i)}>${i + 1}</div>
+      cab = `<div class="tecla" style="--s:${l.emoji_tam || (ctx.vertical ? 200 : l.etiquetas ? 220 : 170)}px"${ctx.A('k' + i)}>${i + 1}</div>
         ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${tamEtqTecla}px;font-weight:700;margin-top:${mEtq}px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
     // La ✅ CUELGA bajo la etiqueta fuera del flujo [28:00: los íconos siguen en y≈345 y las ✅ caen debajo]: en el flujo

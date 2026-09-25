@@ -185,6 +185,33 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   Una cita vertical usa 112 px y glifo de 430 px: el tamaño horizontal no sirve en el lienzo alto.
 - `comparar` conserva encuadre y añade bandas, espaciado, escala y silueta cromática. Un fallo
   de elementos sale con 1. Las secuencias sin referencia temporal no pasan por omisión.
-- La ronda 10 conserva sus pruebas nuevas y sus tres guiones manuales fuera del repo por
-  instrucción del encargo; el informe externo registra sus comandos y resultados. Las pruebas
+- Las regresiones editoriales de la ronda 10 están en `pruebas/editorial-r10.test.mjs`.
+  Sus tres guiones manuales y el informe de ejecución viven fuera del repo. Las pruebas
   existentes conservan las exigencias y reconocen el nuevo borrador por ficha incompleta.
+
+## Ronda 12 · Palabras enteras, evidencia y escala
+
+- `medidas-dom.mjs → palabrasPartidas` reúne los fragmentos de una palabra, incluidos los de
+  negrita, y mide todos sus rectángulos. `qa.mjs` y el preflight de `armar.mjs` rechazan una palabra
+  repartida entre renglones. `runtime.js → ajustarPalabrasChat` ajusta la letra a la palabra más
+  ancha de la burbuja; CSS no permite guionado ni cortes arbitrarios.
+- `medidas-dom.mjs → alturaX/alturaPrincipal` mide la x con la fuente real y su escala efectiva.
+  Runtime y `medidas-r11.mjs` comparten el criterio: la x de `anotaciones` alcanza al menos el
+  75% de la principal. Una anotación con llave conserva una línea; no se aprueba por tener 50 px
+  nominales. `saltosEscala` compara la jerarquía de láminas contiguas y publica los indicios en QA.
+- `runtime-filas.js` conserva el tamaño de filas y la alineación de flujos mixtos; un nodo sin
+  emoji tiene texto principal, con objetivo de 72–84 px efectivos a 1920. Las teclas de `pasos`
+  se calibran como objetos protagonistas, no como viñetas diminutas.
+- `reglas-deck.mjs → evidenciasDelDeck` publica `evidencias`: muestra, demostración, resultado,
+  credencial e intención sin evidencia. `credibilidad: true` declara intención y jamás acredita
+  por sí sola una plantilla vacía ni una cifra. Conservar `prueba` permite distinguir el origen.
+- `editorial.mjs → raicesTexto` comparte familias como entrega/entregable/entregar con la regla de
+  objeciones. `reglas-arco.mjs` busca el núcleo de la objeción en su respuesta; es un indicio, no
+  una certificación semántica. `funcionRetorica` avisa cuatro funciones iguales consecutivas
+  aunque cambie el diseño. Una anotación necesita novedad y consecuencia, precisión, contraste o veredicto.
+- `secuencia-referencia.mjs` compara ráfagas externas de 8 cps con `mostrar(lámina, paso, t)`;
+  `comparar.mjs --rafagas` publica `comparar.json → secuencia` separado del encuadre y los elementos.
+  La cobertura es parcial: un instante presente no acredita su trayectoria ni los tramos fuera
+  de la ráfaga. Los umbrales de elementos no cambian; los resultados se reportan en el informe de ejecución.
+- Regresiones de esta ronda: `pruebas/r12-*.test.mjs`. Los fixtures viven en directorios temporales
+  del sistema; no leen los decks externos del encargo. Ningún 100 automático equivale a firma profesional.

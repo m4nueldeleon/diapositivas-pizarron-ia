@@ -1,5 +1,45 @@
 # Lecciones
 
+## 2026-09-25 · Una palabra cortada y una muestra vacía no pueden aprobar (ronda 12)
+
+- **Palabras enteras:** el primer rectángulo de una palabra oculta sus fragmentos en otros
+  renglones. Hay que medirlos todos, incluso a través de negritas, y bloquear el corte en
+  preflight. La burbuja y su letra se ajustan al ancho real de la palabra más larga.
+- **Evidencia:** `credibilidad: true` declara intención; nunca acredita una plantilla vacía.
+  Muestra, demostración, resultado y credencial se reportan por separado. Para demostrar una
+  plantilla, enseñar la entrada, cómo se completa y el resultado utilizable; un ejemplo
+  ilustrativo terminado no pasa a caso real.
+- **Objeciones:** objeción → condición que se conserva → respuesta literal → ejemplo. La
+  facilidad de uso no resuelve falta de tiempo, y enseñar un flujo no responde automáticamente
+  a una duda de pago. El indicio por raíz ayuda a detectar respuestas desviadas; el autor
+  revisa la condición y la solución exactas. Nunca inventar frecuencias ni eficacia.
+- **Aportación editorial:** entrega/entregable/entregar son la misma familia. «Define un
+  entregable» junto a «Define una entrega» repite; la anotación agrega consecuencia, precisión,
+  contraste o veredicto. Cuatro instrucciones seguidas conservan la monotonía aunque cambien
+  sus diseños. Se corrige el aprendizaje, no la etiqueta de la escena.
+- **Legibilidad real:** Caveat de 50 px puede parecer la mitad de Figtree. La x de una anotación
+  alcanza al menos el 75% de la x principal, con la fuente cargada y su escala final. Una nota
+  de llave no se fragmenta en renglones mínimos; se reserva espacio o se reescribe.
+- **Diagramas protagonistas:** sin emoji, el nodo lleva texto principal de 72–84 px efectivos
+  a 1920. Las teclas y la fila ocupan el lienzo según la referencia; un mapa pequeño junto a
+  burbujas enormes exige revisar la escala entre láminas, además del encaje de cada una.
+- **Fidelidad temporal:** comparar los estados de `mostrar(lámina, paso, t)` con las ráfagas,
+  separado de encuadre y elementos. Presencia no equivale a trayectoria; donde la ráfaga
+  termina o falta una pareja, la cobertura sigue parcial. No aflojar tolerancias para sumar
+  pares ni convertir QA automático en firma profesional.
+- **Tiempo observado:** `data-retraso` declara cuándo comienza el motor, no cuándo aparece
+  movimiento visible. Comparar píxeles en ambos lados: un retraso de 1500 ms puede producir
+  el primer avance observable a 1625 ms. La coincidencia del inicio no acredita velocidad,
+  recorrido ni aparición del cursor; esos aspectos conservan resultados independientes.
+- **Revisión literal:** un chat que habla de modificaciones y devoluciones necesita resolver
+  ambas. Retomar una raíz puede aprobar el indicio automático dejando media pregunta sin
+  respuesta. Si se corrige después del primer render, conservar ambas huellas y reconocer
+  el retoque aunque las dos notas automáticas sean 100.
+- **Origen de la corrección:** el juez encontró una palabra partida aprobada con 100, una
+  plantilla contada como credibilidad, respuestas desviadas y notas demasiado pequeñas.
+  Estas reglas registran los defectos y su criterio de verificación; los resultados medidos,
+  hojas revisadas y pendientes de la ronda pertenecen a su informe, sin anticipar una aprobación.
+
 ## 2026-09-25 · Lo pequeño y lo descentrado deben fallar antes del PNG (ronda 11)
 
 - Una burbuja vertical angosta convierte cinco palabras en cuatro renglones. Primero se reparte
@@ -8,7 +48,8 @@
   al 47% y reservar su altura completa. `anclar: "arriba"` es una decisión explícita de continuidad.
 - Una fila corta crece hasta la ocupación de referencia antes de encogerse. Sus rótulos necesitan
   al menos 60 px efectivos a 1920, también después del zoom del contenedor.
-- Nota roja: 50 px como piso; otro lado o dos renglones antes de reducirla. El descargo vive fuera
+- Nota roja: el piso nominal de 50 px se completa en ronda 12 con la altura de x; para una
+  anotación de llave se conserva una línea. El descargo vive fuera
   de la pila escalable. Al moverlo conserva el paso de su captura y la zona segura de Reels.
 - El texto dentro de un SVG también puede quedar ilegible. Medir su escala final, exigir 44 px
   al cuerpo y conservar intacto el archivo original. Un SVG complejo sin medición o un PNG sin

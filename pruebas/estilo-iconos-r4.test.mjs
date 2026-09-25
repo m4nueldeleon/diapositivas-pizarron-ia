@@ -119,7 +119,7 @@ test('render r4: multitud, opciones con clic tardío, llave alta, tabla corta, c
       const r0 = cj(b.querySelector('[data-a="r0"]'), b), r1 = cj(b.querySelector('[data-a="r1"]'), b);
       const et = b.querySelector('[data-a="llave-et"]');
       out.llave = { alto: Math.max(...ys.map(q => q.y)) - Math.min(...ys.map(q => q.y)), H: b.offsetHeight, x0: Math.min(...ys.map(q => q.x)), x1: Math.max(...ys.map(q => q.x)),
-        c0: r0.x + r0.w / 2, c1: r1.x + r1.w / 2, tam: parseFloat(getComputedStyle(et).fontSize), sub: !!et.querySelector('[data-sub]') };
+        c0: r0.x + r0.w / 2, c1: r1.x + r1.w / 2, ojo: window.alturaX(et,b)/window.alturaPrincipal(b), sub: !!et.querySelector('[data-sub]') };
       // 5) tabla corta
       const t = L[4], td = t.querySelector('td:not(.fila-et)');
       out.tabla = { letra: parseFloat(getComputedStyle(td).fontSize), fila: td.getBoundingClientRect().height, peso: getComputedStyle(td).fontWeight };
@@ -140,7 +140,8 @@ test('render r4: multitud, opciones con clic tardío, llave alta, tabla corta, c
     assert.deepEqual(r.opciones, { o0: 0, o1: 1, arriba: true });
     assert.ok(r.llave.alto >= 0.12 * r.llave.H, `llave de ${r.llave.alto}px`);
     assert.ok(Math.abs(r.llave.x0 - r.llave.c0) <= 15 && Math.abs(r.llave.x1 - r.llave.c1) <= 15, JSON.stringify(r.llave));
-    assert.ok(r.llave.tam <= 60 && r.llave.sub);
+    // R12 sustituye el techo nominal obsoleto por la legibilidad real exigida.
+    assert.ok(r.llave.ojo >= .75 && r.llave.sub, JSON.stringify(r.llave));
     assert.ok(r.tabla.letra >= 0.3 * r.tabla.fila && r.tabla.peso === '700', JSON.stringify(r.tabla));
     assert.equal(r.cifra, 1); assert.equal(r.hueco, 1);
     assert.ok(Math.abs(r.tarjetas[0] - 150) < 2 && Math.abs(r.tarjetas[1] - 120) < 2, r.tarjetas.join());

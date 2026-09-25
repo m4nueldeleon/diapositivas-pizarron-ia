@@ -1,4 +1,4 @@
-import { anotacionAporta } from './editorial.mjs';
+import { anotacionAporta, raicesTexto } from './editorial.mjs';
 // reglas-arco.mjs — reglas de QA del ARCO de la pieza, sobre el deck.json (sin navegador): el mapa 1-2-3 que vuelve,
 // la respuesta a una objeción, el «cómo» de un reel y las métricas del arco que qa.json expone (contrato de tiempo, la
 // revelación y los llamados en %). reglas-deck.mjs las suma en revisarDeck. Pruebas en pruebas/arco-r5.test.mjs.
@@ -65,7 +65,7 @@ export function reglasRetornoMapa(deck, pasos) {
 // «You + AI = Product», 35:35 el chat, 36:05 los pasos 1-2-3]; la `idea` de frase («Absolutely.») va DESPUÉS, como
 // remate. El bloque de respuesta va desde la lámina siguiente hasta la próxima objeción, la oscura o el primer botón (3
 // como máximo). Si su primera lámina es una `idea` sin `fuente`, la respuesta solo afirma.
-const PIEZAS_OBJECION = ['vsl', 'vsl-corto', 'webinar'];
+const PIEZAS_OBJECION = ['vsl', 'vsl-corto', 'webinar', 'clase', 'clase-corta', 'tutorial', 'propuesta', 'reel'];
 export const demuestraRespuesta = l => l && l.tipo !== 'camara' && (l.tipo !== 'idea' || conTexto(l.fuente));
 export function reglasRespuestaObjecion(deck) {
   const avisos = [];
@@ -79,7 +79,14 @@ export function reglasRespuestaObjecion(deck) {
       if (!x || esObjecion(x) || esOscura(x) || x.tipo === 'boton') break;
       if (x.tipo !== 'camara') bloque.push(x);
     }
-    if (!bloque.length || demuestraRespuesta(bloque[0])) return;
+    const raices = raicesTexto(l.texto || '');
+    // Prioriza el objeto de la dificultad. Compartir «equipo» o «cliente» no
+    // responde a no saber tecnología, no tener tiempo o no poder pagar.
+    const problemas = raices.filter(w => /^familia(?:2|4|5|6|7|8|9)$/.test(w));
+    const nucleo = problemas.length ? problemas : raices.filter(w => !['equipo','cliente','persona','negocio'].includes(w));
+    const respuesta = new Set(raicesTexto(bloque.flatMap(textosVisibles).join(' ')));
+    if (demuestraRespuesta(bloque[0]) && nucleo.length && !nucleo.some(w => respuesta.has(w))) avisos.push(`${nombre(deck,i)}: la respuesta no retoma el núcleo de la objeción; conserva la condición, responde literalmente a su verbo o sustantivo principal y muestra un ejemplo (GUION §7)`);
+    if (bloque.length && demuestraRespuesta(bloque[0])) return;
     const n = (sinAcentos(plano(String(l.encabezado || ''))).match(/\d+/) || ['N'])[0];
     avisos.push(`${nombre(deck, i)}: la respuesta a la Objeción #${n} solo afirma; demuéstrala con \`flujo\`, \`chat\`, \`linea-tiempo\`, \`cuadrantes\`, \`prueba\` o \`cifra\` con fuente, y deja la \`idea\` de frase como remate después (GUION §2, tabla «objeción → respuesta»)`);
   });

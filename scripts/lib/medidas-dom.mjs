@@ -12,12 +12,12 @@ export function lineasPalabras(el) {
     const re = /\S+/g;
     for (let m; (m = re.exec(n.nodeValue));) {
       const rg = document.createRange(); rg.setStart(n, m.index); rg.setEnd(n, m.index + m[0].length);
-      const r = [...rg.getClientRects()].find(q => q.width > 1 && q.height > 1);
-      if (!r) continue;
-      const y = r.top + r.height / 2;
-      let l = lineas.find(o => Math.abs(o.y - y) < r.height * 0.5);
-      if (!l) lineas.push(l = { y, palabras: [] });
-      l.palabras.push(m[0]);
+      for (const r of [...rg.getClientRects()].filter(q => q.width > 1 && q.height > 1)) {
+        const y = r.top + r.height / 2;
+        let l = lineas.find(o => Math.abs(o.y - y) < r.height * 0.5);
+        if (!l) lineas.push(l = { y, palabras: [] });
+        l.palabras.push(m[0]);
+      }
     }
   }
   return lineas.sort((a, b) => a.y - b.y).map(l => l.palabras);
@@ -109,7 +109,7 @@ export function ejesFlujo(lam, tol = 0.02) {
   return out;
 }
 
-export const FUNCIONES_DOM = [lineasPalabras, recortes, flexMezclado, negritasPlanas, ejesFlujo, factorLetra, lineasConMuestra, textoConMuestras];
+export const FUNCIONES_DOM = [lineasPalabras, palabrasPartidas, alturaX, alturaPrincipal, recortes, flexMezclado, negritasPlanas, ejesFlujo, factorLetra, lineasConMuestra, textoConMuestras];
 export const inyectable = () => FUNCIONES_DOM.map(f => `window.${f.name} = ${f.toString()};`).join('\n');
 
 // Pisos por rol a 1920 px, en tamaño nominal (la nota a mano de sala, 72 en Caveat, como en la conferencia real).
@@ -141,4 +141,62 @@ export function lineasConMuestra(el, datos = {}) {
 // Un marcador pendiente representa el dato de muestra, no varias palabras separadas por guiones bajos.
 export function textoConMuestras(texto, datos = {}) {
   return String(texto).replace(/\[([A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ0-9 _-]*)\]/g, (_, clave) => typeof datos[clave]?.muestra === 'string' ? datos[clave].muestra : '0000');
+}
+
+// Recompone palabras que atraviesan <b>/<span>. Varios rectángulos en el
+// mismo renglón no son ruptura: se agrupan por su centro vertical.
+export function palabrasPartidas(lam) {
+  const grupos = new Map(), out = [];
+  const walker = document.createTreeWalker(lam, NodeFilter.SHOW_TEXT);
+  for (let n; (n = walker.nextNode());) {
+    const e = n.parentElement;
+    if (!e || e.closest('script,style,.emo,.cursor,.oculto,.pz-oculto')) continue;
+    let oculto = false, bloque = e;
+    for (let a=e;a&&a!==lam.parentElement;a=a.parentElement) {
+      const c=getComputedStyle(a);
+      if(c.visibility==='hidden'||c.display==='none'||+c.opacity===0) oculto=true;
+    }
+    if(oculto) continue;
+    while(bloque.parentElement!==lam && bloque.tagName.toLowerCase()!=='tspan' && /^(inline|contents)$/.test(getComputedStyle(bloque).display)) bloque=bloque.parentElement;
+    if(!grupos.has(bloque)) grupos.set(bloque,[]);
+    grupos.get(bloque).push(n);
+  }
+  for (const nodos of grupos.values()) {
+    let texto=''; const partes=[];
+    nodos.forEach((n,i)=>{
+      if(i){const r=document.createRange();r.setStart(nodos[i-1],nodos[i-1].length);r.setEnd(n,0);if(r.cloneContents().querySelector('br'))texto+='\n';}
+      partes.push({n,inicio:texto.length}); texto+=n.nodeValue;
+    });
+    const re=/[\p{L}\p{N}][\p{L}\p{N}\u00ad\u200b'’_-]*/gu;
+    const punto=i=>{const p=partes.find(p=>i>=p.inicio&&i<=p.inicio+p.n.length)||partes.at(-1);return [p.n,Math.min(p.n.length,i-p.inicio)];};
+    for(const m of texto.matchAll(re)) {
+      const r=document.createRange(),a=punto(m.index),b=punto(m.index+m[0].length);r.setStart(...a);r.setEnd(...b);
+      const lineas=[];
+      for(const q of r.getClientRects()) {
+        if(q.width<=1||q.height<=1)continue;
+        const y=q.top+q.height/2;
+        if(!lineas.some(v=>Math.abs(v-y)<q.height*.5))lineas.push(y);
+      }
+      if(lineas.length>1)out.push({palabra:m[0],renglones:lineas.length});
+    }
+  }
+  return out;
+}
+
+// Altura de la tinta de x, con fuente real, zoom y transformaciones.
+// Se inserta la misma función en runtime y QA, después de document.fonts.ready.
+export function alturaX(el, lam) {
+  const c=getComputedStyle(el),ctx=document.createElement('canvas').getContext('2d');
+  ctx.font=`${c.fontStyle} ${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+  const m=ctx.measureText('x'); let z=1;
+  for(let e=el;e&&e!==lam;e=e.parentElement) {
+    const cs=getComputedStyle(e); z*=parseFloat(cs.zoom)||1;
+    if(cs.transform!=='none'){const a=new DOMMatrix(cs.transform);z*=Math.hypot(a.a,a.b);}
+  }
+  return (m.actualBoundingBoxAscent+m.actualBoundingBoxDescent)*z;
+}
+export function alturaPrincipal(lam) {
+  const selector='.t,.item,.etiqueta,.rotulo-paso,.burbuja,.cifra,.b-texto';
+  const elementos=[...lam.querySelectorAll(selector)].filter(e=>!e.closest('.escena.clon,.anotacion,.firma') && !e.querySelector(selector));
+  return Math.max(0,...elementos.map(e=>alturaX(e,lam)));
 }

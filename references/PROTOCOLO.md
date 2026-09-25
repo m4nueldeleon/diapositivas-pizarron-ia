@@ -64,11 +64,12 @@ Criterio de salida: una lista de láminas con su diseño y la voz de cada paso.
   - [ ] Cada lámina tiene como máximo 22 palabras visibles.
   - [ ] Hay una sola frase en negrita y un solo énfasis (`__`, `==` o círculo).
   - [ ] El mismo concepto usa el mismo emoji, y un emoji no se usa para dos conceptos distintos.
-  - [ ] Ningún diseño aparece 4 veces seguidas.
-  - [ ] Hay capa a mano cada 3 o 4 láminas: subrayado, flecha, nota, tabla o sello.
+  - [ ] Ningún diseño aparece 4 veces seguidas; tampoco cuatro funciones retóricas iguales por cambiar de diseño.
+  - [ ] Hay capa a mano cada 3 o 4 láminas: subrayado, flecha, anotación, llave o sello. Una tabla sola no cuenta.
   - [ ] Las láminas oscuras son solo para revelar la marca o el producto; precio, lo que incluye
         y llamado van en blanco.
-  - [ ] Todas las objeciones tienen la misma forma (`idea` + «Objeción #N» + respuesta aparte).
+  - [ ] Todas las objeciones siguen objeción → condición conservada → respuesta literal → ejemplo;
+        la primera lámina de respuesta demuestra y retoma su núcleo (GUION §7).
   - [ ] Los primeros 10 s muestran el resultado o el conflicto; nada de saludo ni título antes
         (GUION §6.1).
   - [ ] La voz dura lo que pide su pieza (ARCOS.md) y cierra con un llamado o siguiente paso.
@@ -97,6 +98,10 @@ Los comandos directos siguientes quedan para calibración y borradores explícit
 deliberada añade `--borrador`: los huecos siguen visibles y la pieza sigue en borrador.
 La nota del primer render se toma de `qa.json → primer_render.nota`; es la misma
 que conserva `calidad-historial.json`, no la nota provisional ni una corrida posterior.
+El preflight geométrico comprueba todos los rectángulos de cada palabra y rechaza cortes entre
+renglones, también a través de negritas. Mide la x de anotaciones frente a la principal (mínimo
+75%), notas de llave sin fragmentar, texto principal de los nodos sin emoji y saltos de escala
+entre diagramas y láminas contiguas. La falta de una alerta no sustituye mirar su jerarquía.
 
 ```bash
 node scripts/render.mjs mi-video          # PNG por paso + presentador + hoja de contacto
@@ -154,6 +159,8 @@ Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes render
 ```bash
 node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/comparar
 # igual a: node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> …  (npm run replica -- <carpeta>)
+# Con ráfagas externas de 8 cuadros por segundo:
+node scripts/comparar.mjs <carpeta-ref> --rafagas <carpeta-rafagas> --salida <salida-externa>
 ```
 
 - La réplica vive versionada en `pruebas/replica/deck.json` (solo texto); los cuadros `ref_*.jpg` siguen
@@ -189,8 +196,14 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
   escala y silueta cromática. El umbral de anclas es 3 puntos; el parecido de silueta exige IoU ≥0.8.
   Un elemento fuera de tolerancia marca «REVISAR» y devuelve código 1 aunque el encuadre pase.
   La máscara cromática agrupa glifos y puede perder sus partes grises; inspecciona cada fallo.
-  `secuencia_render` conserva el orden del motor, pero no lo compara con el video: mientras falte
-  ese cotejo, `secuencias: sin-referencia-temporal`. Nunca sumes ese pendiente como aprobado.
+  `secuencia_render` conserva el orden del motor. Con `--rafagas`, `comparar.json → secuencia`
+  publica aparte el cotejo temporal mediante `mostrar(lámina, paso, t)`: aparición, estabilidad,
+  cursor, ruta y trazo cubiertos por las ráfagas. Sin ellas queda `sin-referencia-temporal`.
+  La medición actual es **parcial**: presencia en el corte no prueba identidad del cursor; la
+  ráfaga de teclas termina antes de completar la ruta y no cubre todos los trazos del catálogo.
+  Revisa las capturas temporizadas y reporta las regiones medidas, instantes y límites. Ningún
+  campo sin cobertura ni una trayectoria pendiente se suma como aprobado. Los cuadros originales
+  siguen fuera del repo y la secuencia no aumenta la nota de encuadre ni la de elementos.
 - Cada ronda del loop de mejora anota el número «pares que pasan / total» sobre `pruebas/replica` para ver
   si la réplica se acerca o se aleja del video. Ronda 2: **5/10** (pasan r10, r90, r95, r460, r628; fallan
   de verdad r115 —título en 2 renglones—, r255 —lista más arriba y más chica—, r260, r1040 y r1760).

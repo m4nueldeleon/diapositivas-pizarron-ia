@@ -108,6 +108,47 @@ trabaja el diagnóstico y el esquema, sin fabricar el VSL completo para llenar h
 Solo si el usuario pide expresamente un ejercicio ficticio, `ejemplo: true` permite una ficha de
 oferta de ejemplo: márcala así en el documento y en su entrega. No acredita testimonios ni resultados.
 
+## Ruta mínima por pieza
+
+Parte de un modelo completo, escribe cada lámina desde el guion nuevo y confirma sus datos propios.
+Los ejemplos enlazados son válidos como estructura; sus huecos declarados conservan el estado de
+borrador hasta llenarse. No son una fuente de credenciales ni un atajo para producir escenas en serie.
+
+| Pieza | Campos que fijas antes de escribir | Ruta mínima y ejemplo válido |
+|---|---|---|
+| Clase | `pieza`, `clase: true` si es `tutorial`, `en_vivo`, `sala`, `persona`, `formato`, `emoji`, `datos`, `bloques` | Contrato de tiempo → mapa → bloques con aprendizaje distinto → demostración visible en cada bloque práctico → tarea → puente confirmado. [Modelo de clase express](ejemplos/clase-express/deck.json): amplía contenido y práctica según la duración de ARCOS; no lo declares clase de una hora sin escribir esa hora. |
+| VSL | `pieza: "vsl"` o `"vsl-corto"`, `ficha_oferta` completa, `datos`, `persona`, `formato`, `emoji` | Gancho → promesa/mecanismo antes de 30 s → problema → demostración/prueba → objeción exacta y respuesta → revelación al 55–60% → componentes → precio/garantía confirmados → el mismo llamado dos veces. [Modelo VSL](ejemplos/vsl-corto/deck.json). |
+| Propuesta | `pieza: "propuesta"`, `ficha_oferta` completa, `datos` del cliente y del proveedor separados, `persona`, `formato`, `emoji` | Los nueve bloques de ARCOS: diagnóstico → costo → solución → responsable y prueba → metas → alcance → inversión → salida/garantía → siguiente paso con fecha y vigencia. [Modelo de propuesta](ejemplos/propuesta/deck.json). Entrega también el PDF con voz. |
+| Reel | `pieza: "reel"`, `formato: "9:16"`, `persona`, `emoji`, `datos` cuando corresponda | Gancho → acción literal visible → ejemplo o resultado utilizable → un llamado. [Modelo de reel](ejemplos/reel/deck.json). Si promete cómo responder, usa `chat` con `guion: true` y la respuesta escrita; «Guarda» requiere algo que se pueda guardar. |
+
+En las cuatro rutas, cada lámina lleva `id`, `tipo`, sus campos de LAYOUTS y `voz` alineada con
+los pasos. Un bloque práctico se declara así (los dos `id` deben existir en ese deck):
+
+```json
+{"desde":"entrada","hasta":"respuesta","aprendizaje":"Delimitar una revisión antes de cotizar","practico":true}
+```
+
+Ejemplo válido de fragmento para ese bloque, escrito como dos láminas de conversación; no es una
+pieza completa ni acredita resultados reales:
+
+```json
+[
+  {"id":"entrada","tipo":"chat","guion":true,"mensajes":[
+    {"de":"otro","texto":"¿Incluye todas las modificaciones?"}
+  ],"voz":["En este ejemplo te piden modificaciones ilimitadas."]},
+  {"id":"respuesta","tipo":"chat","guion":true,"mensajes":[
+    {"de":"otro","texto":"¿Incluye todas las modificaciones?"},
+    {"de":"yo","texto":"Incluye una revisión. Las modificaciones adicionales se cotizan aparte."}
+  ],"voz":["La pregunta sigue siendo sobre las modificaciones.","Responde con una revisión y cotiza las adicionales."]}
+]
+```
+
+Una plantilla vacía es **muestra**. Para demostrarla, enseña cómo se completa y el resultado
+utilizable; `credibilidad: true` solo declara intención. En toda objeción aplica la receta
+**objeción → condición que se conserva → respuesta literal → ejemplo** (GUION §7).
+Después: `armar --sin-navegador` → resolver la cola → `armar` → QA medido → mirar todas las
+hojas finales y de pasos → entregar el estado y el primer render que registra el historial.
+
 ## 1. Flujo
 
 Antes de escribir, congela el trato y las reglas del cliente; declara `persona` y conserva la misma persona en pantalla y voz (GUION §1).
@@ -128,6 +169,11 @@ Antes del guion, congela en `reglas_cliente` lo explícito del encargo que choqu
 La producción ejecuta un preflight geométrico con Chromium, fuentes cargadas y anchos reales antes
 de capturar PNG. `preflight-geometria.json` comprueba todos los pasos, listas, énfasis y sellos;
 no es un primer render y no modifica su historial. Si falla, corrige antes de capturar.
+Ninguna palabra se divide entre renglones: se miden todos sus rectángulos, incluso al cruzar
+negritas. La burbuja debe admitir su palabra más larga. Las anotaciones se comparan por altura
+real de x (al menos 75% de la principal), no solo por `font-size`; una nota de llave no se
+fragmenta en renglones mínimos. Revisa también el salto de escala entre láminas contiguas:
+un mapa diminuto seguido de un chat enorme rompe la jerarquía aunque ambos quepan.
 `qa.json.evaluaciones` separa geometría, integridad comercial, revisión editorial y aprobación visual.
 La nota heredada es cumplimiento automático. Un 100 automático nunca significa calidad profesional;
 la aprobación visual queda pendiente de evidencia humana externa, con las hojas y PNG revisados.
@@ -142,7 +188,8 @@ En la fase 2 entrega la lista de láminas + `conceptos` (emoji → concepto cort
 2. **Lienzo blanco puro.** El color solo significa algo: rojo para énfasis o lo malo, verde para
    lo bueno, naranja para lo intermedio, amarillo como resaltador.
 3. **Texto grande**: 84 a 90 px en 1920 (76 en frases largas), casi negro, con la frase clave en
-   **negrita**. Máximo 22 palabras visibles.
+   **negrita**. Máximo 22 palabras visibles. Los nodos de flujo sin emoji son texto principal
+   (72–84 px efectivos a 1920), y la fila debe ocupar el lienzo con la escala de referencia.
 4. **Un emoji protagonista por lámina de idea**, grande, o un par antes/después
    (`["no:📚","si:🤖"]`, con el negado atenuado). La negación se dibuja (`no:🎥`) y los conceptos
    dobles se componen (`🧑‍⚕️+💰`). Para una fila de conceptos, `flujo` (con `flecha: "ninguna"` si no
@@ -270,7 +317,8 @@ Para el cierre en vivo, `idea`, `lista` y `boton` aceptan `qr: {url, rotulo?}` (
 ## Desde Codex / sandbox
 
 Chromium necesita permiso para arrancar: en macOS, Codex con `-s workspace-write` puede bloquearlo.
-Si está bloqueado, Claude o el orquestador hace el render y revisa las hojas en su entorno habilitado.
+El motor reintenta con Chromium en un solo proceso dentro del sandbox. Si tampoco arranca,
+Claude o el orquestador hace el render y revisa las hojas en su entorno habilitado.
 Codex conserva el sandbox y entrega el filtro previo; no relanza con permisos distintos.
 Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`: es solo un filtro previo,
 con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.

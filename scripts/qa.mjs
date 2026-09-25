@@ -3,7 +3,7 @@ import { evaluacionesSeparadas } from './lib/editorial.mjs';
 import { reglasDeckCompleto, clasificarAvisos } from './lib/reglas-deck.mjs';
 import { medidasTrazos, avisosGeometriaSello } from './lib/medidas-trazos.mjs';
 import { subrayadosCruzan } from './lib/medidas-subrayados.mjs';
-import { medidasR11 } from './lib/medidas-r11.mjs';
+import { medidasR11, saltosEscala } from './lib/medidas-r11.mjs';
 import { infoConceptos } from './lib/emoji-diccionario.mjs';
 import { RE_PALABRA } from './lib/markup.mjs';
 // qa.mjs — revisa el deck renderizado con reglas que cuentan, no que opinan. Nota 0-100.
@@ -202,6 +202,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       }
       const trazos = window.medidasTrazos(lam); trazos.errores.forEach(E); trazos.avisos.forEach(A);
       const r11 = window.medidasR11(lam); r11.errores.forEach(E); r11.avisos.forEach(A); r.geometria_r11 = r11.medidas;
+      window.palabrasPartidas(lam).forEach(x => E(`palabra partida «${x.palabra}» entre ${x.renglones} renglones: amplía el contenedor o ajusta la letra; nunca cortes una palabra`));
       if (document.body.classList.contains('sala')) {
         const identificables = '.lz-pasos [style*="opacity"], .lz-pasos .paso-apagado .icono-paso, .lz-pasos .paso-apagado .rotulo-paso, .lz-pasos .paso-apagado .tecla, .item-apagado > *, .pasos-letras .pendiente, .rejilla .apagado, .rejilla .apagada, .calendario .dia.apagado, :scope > .clon';
         for (const e of lam.querySelectorAll(identificables)) {
@@ -891,6 +892,7 @@ porLamina.forEach(r => {
   if (flojosN.length) avis.push(`${n}: emoji fuera de la tabla medida que casi no se ve en ${modoRender} sobre ${flojosN[0].fondoN === 'oscura' ? 'la lámina oscura' : flojosN[0].fondoN === 'tarjeta' ? 'la tarjeta' : 'blanco'}: ${flojosN.map(m => `${m.ch} (${m.pct}%)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cámbialo (EMOJIS.md)`);
   if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });
+avis.push(...saltosEscala(porLamina.map(r=>r.geometria_r11)));
 const geometria = { errores: [...errores], avisos: [...avis] };
 // Datos pendientes: UN error por dato distinto, con las láminas donde aparece. Un hueco DECLARADO a propósito
 // ({ "pendiente": true, "motivo" }) no es un olvido: va como aviso y deja el deck en BORRADOR.
@@ -973,6 +975,7 @@ const medicion = { evaluaciones, alcance_nota: 'cumplimiento automático; no cal
   avisos: avis, datos_por_confirmar: porConfirmar, datos_fuentes: prep.fuentes || {}, reglas_cliente: reglasCliente, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   composicion_vertical: porLamina.filter(r => r.composicion_vertical).map(r => ({ lamina: r.i + 1, ...r.composicion_vertical })),
   geometria_r11: porLamina.filter(r => r.geometria_r11).map(r => ({ lamina: r.i + 1, ...r.geometria_r11 })),
+  evidencias: delDeck.evidencias,
   tinta: porLamina.map(r => ({ lamina: r.i + 1, rojo: r.rojo, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 if (flag('--preflight-geometria')) {

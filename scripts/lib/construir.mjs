@@ -1,4 +1,5 @@
 import { agenda } from './layouts-interfaces.mjs';
+import { alturaX, alturaPrincipal } from './medidas-dom.mjs';
 import { esFirmaRelleno } from './marca.mjs';
 // construir.mjs — deck.json → index.html autocontenido (fuentes, emojis e imágenes copiados a la salida).
 import fs from 'node:fs';
@@ -285,6 +286,7 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
   const css = fs.readFileSync(path.join(dirSkill, 'templates', 'base.css'), 'utf8');
   // runtime.js lleva adentro la colocación del sello (runtime-sello.js), en el mismo ámbito
   const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8')
+    .replace('/*@@TIPOGRAFIA@@*/', () => `${alturaX.toString()}\n${alturaPrincipal.toString()}\nwindow.alturaX=alturaX;window.alturaPrincipal=alturaPrincipal;`)
     .replace('/*@@RECORTES@@*/', () => revisarRecortes.toString())
     .replace('/*@@DOCUMENTOS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-documentos.js'), 'utf8'))
     .replace('/*@@EMOJIS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-emojis.js'), 'utf8'))

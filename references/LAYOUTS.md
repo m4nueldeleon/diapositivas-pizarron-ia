@@ -118,9 +118,12 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
   ```
   El emoji es lo que dice que le falta, negado (EMOJIS.md, «Compuestos útiles»: suelto, `no:X` es la objeción). Si la
   objeción es una pregunta («¿Por qué subiste?»), 🤔 sin prefijo; nunca niegues el ícono de un paso del mapa (QA avisa).
-  La respuesta va en la lámina siguiente (`idea` con `si:…` o `lista` con `vineta: "check"`); con
-  contraste, pregunta → «Sí.» → «Pero…» en láminas de una frase [34:35-34:45]. Nunca dentro del
-  `encabezado` de una lista ni pegada al texto de un `boton` (QA lo avisa).
+  La respuesta va en un bloque de 1–3 láminas y la primera demuestra con `chat`, `flujo`,
+  `linea-tiempo`, `cuadrantes`, `prueba` o una cifra con fuente. Sigue **objeción → condición
+  que se conserva → respuesta literal → ejemplo** (GUION §7): responder a «¿y los cambios?»
+  exige enseñar el límite de cambios y su aplicación. Una `idea` con «Sí.» o «Pero…» solo remata
+  después de demostrar; una lista de beneficios no resuelve por sí sola la objeción. Nunca dentro
+  del `encabezado` de una lista ni pegada al texto de un `boton`.
 - **Entrada y remate** [18:30]: `"Eso es lo que yo llamo un\n^^__plan de monetización__^^"`: el
   remate va en su renglón, en negrita y ~1.5×. El tamaño automático cuenta solo la entrada.
 - `nota_paso`: por omisión la nota aparece en el paso 1.
@@ -353,6 +356,9 @@ de la revelación [36:30-36:40]. El precio final, lo que incluye en detalle, la 
 #### Nodos de solo texto
 
 Sin `emoji`, `imagen` ni `cantidad`, el ancla rodea el texto en línea; no una columna vacía.
+La etiqueta es texto principal: objetivo de 72–84 px efectivos a 1920 (84 px de partida),
+también con `flecha: "ninguna"`. La fila crece con la ocupación de la referencia antes de encajar;
+quitar un emoji no deja tres rótulos pequeños flotando en una franja vacía.
 El motor conserva al menos 188 px de hueco y separa el encabezado 48 px de la fila.
 En nodos mixtos las flechas conectan las etiquetas a su misma altura. El encabezado presenta
 lo que sigue con “:” o numera; módulo y semana no van como eyebrow.
@@ -388,6 +394,10 @@ etiquetas reducen su tamaño para caber. Un regreso con `como` conserva las tres
   ARCOS «Las plantillas»).
 - `emoji_tam` (px) fija el tamaño de los íconos. En 9:16 van a 200 por omisión y la etiqueta y el «Paso N» se ajustan a
   su columna (con 3 pasos, ~62 px) para que la fila quepa en los 900 px útiles sin encaje (Recetas 9:16).
+  También controla las teclas: con etiquetas parten de 220 px en 16:9 y 200 px en 9:16.
+  El mapa numerado ocupa el centro visual y sus teclas dominan la composición; compara el tamaño
+  efectivo después del encaje y su jerarquía contra las láminas contiguas. La introducción con
+  frase y nota conserva la composición específica de ref_115; no se calibra con una lista de descartes.
 - `hechos`: lista de pasos con ✅, por ejemplo `[1, 2]`. La ✅ va siempre a todo color, aunque su
   columna esté atenuada por `activo`: es la señal de avance [28:00-28:05]. La ✅ CUELGA bajo la etiqueta sin alargar
   el mapa: los íconos no se mueven cuando aparece [28:00].
@@ -414,7 +424,7 @@ etiquetas reducen su tamaño para caber. Un regreso con `como` conserva las tres
 - **Arrastre** [1:55, ráfaga d_123]: con `clic` y ruta, la mano entra en el MISMO corte que las teclas (~100 ms
   después, ya junto a la tecla), aprieta la tecla, se queda ~1.4 s sobre ella y luego ARRASTRA la ruta punteada hasta
   la última tecla: los tramos desde la tecla del clic nacen en el paso del clic, uno tras otro (~700 ms cada uno,
-  desde los 1500 ms), con la mano cerrada y gris en la punta del trazo; al final queda la mano de
+  desde los 1750 ms), con la mano cerrada y gris en la punta del trazo; al final queda la mano de
   dedo sobre la última tecla (así sale en el PNG). Los tramos anteriores a la tecla del clic se ven desde
   el paso 0. `arrastre: false` lo apaga: ruta completa desde el paso 0 y la mano quieta en su tecla.
 - Por omisión teclas, texto, nota y la mano entran en un solo corte, como en la referencia [1:55]: la `voz` lleva UN
@@ -1056,14 +1066,20 @@ cohete, una tarjeta. `anotaciones` vale en cualquier lámina:
   "anotaciones": [{ "texto": "21.9K en 24 horas", "a": "cap0-circulo", "lado": "derecha" },
                   { "a": "cap0", "entra": "izquierda", "paso": 2 }] }
 ```
-- Cada anotación: `texto` (Caveat de 54 px, máx. 400 px de ancho), `a` (el [ancla](#anclas)), `lado` (`derecha`,
+- Cada anotación: `texto` (Caveat; el motor ajusta su tamaño por altura real de x y reserva hasta
+  760 px de ancho), `a` (el [ancla](#anclas)), `lado` (`derecha`,
   `izquierda`, `arriba`, `abajo`; sin él, a la derecha si cabe), `tono` (`r` rojo por omisión, `v` verde, `n`
   tinta; en lámina oscura el rojo sale claro), `paso` (por omisión, un paso extra al final), `tam` (px) y `x`/`y`
   (px o `%` del lienzo) para fijarla a mano. Sobre una captura la nota va FUERA de ella, a la altura del ancla.
 - La nota va en el blanco junto a lo que señala, nunca encima del contenido. Si el lado pedido no cabe (el borde la
   empuja más de 20 px), pisa su tarjeta, otro texto o el sello, o deja menos de 80 px para el gancho, el motor prueba
-  derecha, izquierda, abajo y arriba (en ese orden), prueba anchos que permitan dos renglones y usa el primero limpio; si ninguno sirve, baja la letra solo hasta 50 px y,
-  como último recurso, avisa. QA da error si una nota cae encima de su ancla u otra caja, o si su gancho la tacha.
+  derecha, izquierda, abajo y arriba (en ese orden), prueba anchos que permitan dos renglones y usa
+  el primero limpio. El piso es el mayor entre 50 px y la letra necesaria para que su x mida al
+  menos el 75% de la x principal, con las fuentes y escalas reales. Una anotación con `llave`
+  conserva una línea completa: no parte una frase corta en grupos de dos palabras. Si no hay
+  espacio, se reorganiza la composición o se reescribe la nota; no se baja del piso para aprobar.
+  QA da error si la x no alcanza esa proporción, una nota cae encima de su ancla u otra caja,
+  o su gancho la tacha.
 - Sin `texto` y con `entra` (`derecha`, `izquierda`, `arriba`, `abajo`): una flecha roja larga que entra desde ese
   borde del lienzo hasta el ancla [15:00].
 - En `calendario`, las anotaciones con `dia` siguen siendo las del calendario (nota al margen del día).
@@ -1208,7 +1224,8 @@ En 9:16 se ignora con aviso. `persona` acepta `"tu"` o `"ustedes"`; pantalla y v
 
 Campos comunes `accion` y `si_falla`: texto común o arreglo con una entrada por paso. Se muestran solamente en
 `notas-por-paso.md`, PDF con notas, banda N y vista O del presentador (también junto a la consigna de `vivo`), nunca sobre la lámina, PNG, video ni montaje. QA avisa `si_falla` sin `accion` en el mismo paso, notas sin `en_vivo: true` y `camara` con `vivo` sin respaldo. `credibilidad: true` declara una
-lámina de credibilidad explícita. `--pdf-pasos` recaptura todos los pasos sin cursor ni onda; cámaras sin `vivo`
+intención de acreditar al creador, nunca evidencia por sí sola. Una plantilla vacía es muestra;
+la credencial necesita cifra real confirmada o fuente atribuible (GUION §7). `--pdf-pasos` recaptura todos los pasos sin cursor ni onda; cámaras sin `vivo`
 no generan página, cámaras con `vivo: true` generan su consigna. El stack conserva sus pasos a sangre.
 
 `objeto` admite `procedencia` (`"real"`, `"ia"`, `"ejemplo"`), `fuente` y `fuente_paso` (0 por omisión).
@@ -1250,6 +1267,14 @@ La voz no se revisa aritméticamente. Pon los números de una escena en `datos` 
 Si una escena vuelve con un costo nuevo, recalcula el total: la última cuenta es la que recuerda el espectador.
 
 ### Chat en 9:16
+
+En todos los diseños, una palabra visible conserva todos sus caracteres en el mismo renglón:
+`overflow-wrap: normal`, `word-break: normal`, `hyphens: none`. No se inserta un salto dentro
+de la palabra para hacerla caber. En chat se mide el ancho real de la palabra más larga contra
+la burbuja sin sus márgenes internos y se ajusta la letra. QA mide todos los `getClientRects`
+de cada palabra, incluso al cruzar un cambio de negrita, y el preflight bloquea una partición.
+Si el texto requiere una letra ilegible, amplía su espacio o reescribe el mensaje sin alterar
+lo que responde; no aceptes el corte como solución.
 
 Sin `tam_texto`, hasta 2 mensajes de 6 palabras usan 104 px; 2-3 mensajes cortos (hasta 12 palabras cada uno) usan 76 px; con más mensajes cortos, 68 px;
 con mensajes de hasta 24 palabras, 64 px; solo los densos usan 58 px. Una burbuja ocupa 82–86% del ancho útil;

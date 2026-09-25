@@ -52,8 +52,8 @@ test('objeción r5: una respuesta en `idea` que solo afirma avisa; en `flujo`, `
   const r = reglasRespuestaObjecion(afirma);
   assert.equal(r.avisos.length, 2);
   assert.match(r.avisos[0], /Objeción #1 solo afirma.*flujo/);
-  const demuestra = { pieza: 'vsl-corto', laminas: [OBJ(1), { tipo: 'flujo', nodos: [{ emoji: '📄', etiqueta: 'Hoja' }, { emoji: '🤖', etiqueta: 'Agente' }] }, idea('Absolutamente.'),
-    OBJ(2), idea('83 de 100 llegaron', { fuente: 'Autor, «obra» (2020)' })] };
+  const demuestra = { pieza: 'vsl-corto', laminas: [OBJ(1), { tipo: 'flujo', nodos: [{ emoji: '📄', etiqueta: 'Tiempo: 10 minutos' }, { emoji: '🤖', etiqueta: 'Agente' }] }, idea('Absolutamente.'),
+    OBJ(2), idea('Tiempo ahorrado: 83 minutos', { fuente: 'Autor, «obra» (2020)' })] };
   assert.deepEqual(reglasRespuestaObjecion(demuestra).avisos, []);
   // fuera de una pieza de venta no se revisa (el demo es un catálogo)
   assert.deepEqual(reglasRespuestaObjecion({ laminas: afirma.laminas }).avisos, []);

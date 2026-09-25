@@ -26,6 +26,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { compararSecuencia } from './lib/secuencia-referencia.mjs';
 import { selloEvidencia } from './lib/hoja.mjs';
 import { pathToFileURL } from 'node:url';
 import { argumentos, prepararSalida, abrir, ErrorNavegador, DIR_SKILL, nuevaPagina } from './lib/pipeline.mjs';
@@ -118,7 +119,7 @@ for (let h = 0; h * 5 < pares.length; h++) {
     .f{display:flex;gap:12px;padding:10px 12px;align-items:center}.f img{width:640px;height:360px;object-fit:contain;background:#fff}
     .r{width:170px}.r b{display:block;font-size:24px}.mal{color:#ff6b6b}.bien{color:#7ee07a}.cab{padding:10px 12px 0;font-size:20px;color:#ffd35c}</style>
     ${selloEvidencia(prep.evidencia.sello)}<div class="cab">comparar.mjs · ${path.relative(DIR_SKILL, path.resolve(deckJson)).replace(/[<&]/g, '')} · sha ${deckSha} · umbral ±${umbral} · encuadre: pasan ${pasanAhora}/${medAhora} · elementos: ${pares.filter(p => !p.distinta && !p.elementos.falla).length}/${pares.length}</div>
-    ${grupo.map(p => `<div class="f"><div class="r"><b>ref_${p.seg}</b>${p.id} · paso ${p.paso + 1}<br><small>${String(p.cuadro).replace(/[<&]/g, '')}</small><br><span class="${p.falla || p.distinta || p.elementos.falla ? 'mal' : 'bien'}">${p.distinta ? 'NO ES LA MISMA' : p.falla ? 'FALLA' : p.elementos.falla ? 'REVISAR' : 'pasa'}</span> · r ${p.parecido}<br>x ${f1(p.dx)} · y ${f1(p.dy)}<br>w ${f1(p.dw)} · h ${f1(p.dh)}<br><small>Elementos: ${p.elementos.estado}<br>IoU: ${p.elementos.silueta_iou ?? "—"}<br>Secuencia: sin referencia</small></div><img src="${p.referencia}"><img src="${p.nuestra}"></div>`).join('')}`;
+    ${grupo.map(p => `<div class="f"><div class="r"><b>ref_${p.seg}</b>${p.id} · paso ${p.paso + 1}<br><small>${String(p.cuadro).replace(/[<&]/g, '')}</small><br><span class="${p.falla || p.distinta || p.elementos.falla ? 'mal' : 'bien'}">${p.distinta ? 'NO ES LA MISMA' : p.falla ? 'FALLA' : p.elementos.falla ? 'REVISAR' : 'pasa'}</span> · r ${p.parecido}<br>x ${f1(p.dx)} · y ${f1(p.dy)}<br>w ${f1(p.dw)} · h ${f1(p.dh)}<br><small>Elementos: ${p.elementos.estado}<br>IoU: ${p.elementos.silueta_iou ?? "—"}<br>Secuencia: ${opt('--rafagas') ? 'informe separado en comparar.json' : 'sin referencia'}</small></div><img src="${p.referencia}"><img src="${p.nuestra}"></div>`).join('')}`;
   const hp = path.join(salida, `.comp_${h + 1}.html`);
   fs.writeFileSync(hp, html);
   const pg = await nuevaPagina(browser, { viewport: { width: 1500, height: 400 } });
@@ -126,16 +127,17 @@ for (let h = 0; h * 5 < pares.length; h++) {
   await pg.screenshot({ path: path.join(salida, `comp_${h + 1}.jpg`), type: 'jpeg', quality: 80, fullPage: true });
   fs.unlinkSync(hp);
 }
+const secuencia = await compararSecuencia({dir:opt('--rafagas'),page,medir,ids,salida});
 await browser.close();
 
 const medibles = pares.filter(p => !p.distinta), distintas = pares.filter(p => p.distinta);
 const pasan = medibles.filter(p => !p.falla).length;
 const elementosPasan = pares.filter(p => !p.distinta && !p.elementos.falla).length;
-const informe = { fidelidad_profesional: 'pendiente-humana', elementos_pasan: elementosPasan, secuencias: 'sin-referencia-temporal', invalido: prep.evidencia.invalido, deck: path.relative(DIR_SKILL, path.resolve(deckJson)), deck_sha: deckSha, umbral, minParecido, pasan, total: medibles.length, distintas: distintas.map(p => p.id), sinRef, sinLamina,
+const informe = { fidelidad_profesional: 'pendiente-humana', elementos_pasan: elementosPasan, secuencia, secuencias: secuencia.estado, invalido: prep.evidencia.invalido, deck: path.relative(DIR_SKILL, path.resolve(deckJson)), deck_sha: deckSha, umbral, minParecido, pasan, total: medibles.length, distintas: distintas.map(p => p.id), sinRef, sinLamina,
   pares: pares.map(({ referencia, nuestra, pasos, ...p }) => p) };
 fs.writeFileSync(path.join(salida, 'comparar.json'), JSON.stringify(informe, null, 2));
 console.log(`Deck ${informe.deck} · sha ${deckSha}`);
-console.log(`Elementos: ${elementosPasan}/${pares.length}; secuencias sin referencia temporal. No acredita fidelidad profesional.`);
+console.log(`Elementos: ${elementosPasan}/${pares.length}; secuencia: ${secuencia.estado}. No acredita fidelidad profesional.`);
 console.log(`Encuadre: ${pasan}/${medibles.length} pares dentro de ±${umbral}%${distintas.length ? ` · ${distintas.length} no parecen la misma lámina` : ''} · hojas en ${salida}`);
 pares.forEach(p => console.log(`  ${p.distinta ? '✗✗' : p.falla || p.elementos.falla ? '✗' : '✓'} ${p.id} (paso ${p.paso + 1}, r ${p.parecido})  x ${f1(p.dx)}  y ${f1(p.dy)}  w ${f1(p.dw)}  h ${f1(p.dh)}${p.distinta ? '  ← no parece la misma lámina: ¿id o cuadro de otro momento?' : ''}`));
 process.exit(sinRef.length || sinLamina.length || distintas.length || pasan < medibles.length || elementosPasan < pares.length ? 1 : 0);

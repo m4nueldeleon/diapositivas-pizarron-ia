@@ -591,11 +591,12 @@ export function pruebaDelDeck(deck) {
 const soloMaqueta = l => { const cs = capturasDe(l); return l.tipo === 'prueba' && cs.some(c => c.ejemplo === true) && cs.every(c => c.ejemplo === true || c.hueco); };
 // Cada cifra se respalda por su propio marcador, fuente o credencial de la ficha.
 function frasesCredibilidad(l, proveedor = false) {
-  if (l.tipo === 'cifra' && /^\s*(si|cuando|con|pongamos|supongamos)\b/.test(sinAcentos(plano(l.arriba || ''))) && l.credibilidad !== true) return [];
+  if (l.tipo === 'cifra' && /^\s*(si|cuando|con|pongamos|supongamos)\b/.test(sinAcentos(plano(l.arriba || '')))) return [];
   const texto = sinAcentos([...textosVisibles(l), vozDe(l)].join(' '));
   const patron = proveedor ? CIFRA_PROVEEDOR : CIFRA_CREDIBILIDAD;
   const coincidencias = [...texto.matchAll(new RegExp(patron.source, 'g'))].map(m => m[0]);
-  return coincidencias.length ? coincidencias : l.credibilidad === true ? [texto] : [];
+  // La bandera expresa intención editorial, nunca una credencial ni una cifra.
+  return coincidencias;
 }
 function textoCredibilidadConOrigen(deck, l) {
   // Se conserva la frase del dato, pero sus números quedan identificados por su origen.
@@ -608,6 +609,10 @@ function textoCredibilidadConOrigen(deck, l) {
   return { ...l, texto: [...textosVisibles(l), vozDe(l)].map(sustituir).join(' '), voz: undefined };
 }
 function evaluarCredibilidad(deck, l, credenciales, proveedor = false, permitirHuecos = false) {
+  // El contenido demostrativo de una plantilla no acredita experiencia real,
+  // aunque su ejemplo incluya una cifra y cite al autor de la plantilla.
+  const capturas = capturasDe(l);
+  if (l.tipo === 'prueba' && capturas.length && capturas.every(c => c.hueco || c.plantilla || c.ejemplo || c.procedencia === 'ejemplo')) return false;
   const normalizada = textoCredibilidadConOrigen(deck,l);
   // No volver a recorrer otros campos: conservaríamos también sus números sin transformar.
   const frases = frasesCredibilidad({ tipo:l.tipo, arriba:l.arriba, texto:normalizada.texto, credibilidad:l.credibilidad },proveedor);
@@ -632,6 +637,24 @@ export function hayCifraCredibilidad(deck, opciones = {}) {
   const L = deck.laminas, osc = L.findIndex(l => l.tipo === 'oscura' || l.oscura === true);
   const fin = osc >= 0 ? osc : Math.ceil(L.length * .6);
   return L.slice(0,fin).some((_,i) => candidataCredibilidad(deck,i,opciones));
+}
+// Función de cada evidencia, separada de su origen y de la intención del autor.
+// No se infiere un resultado de una captura cuyo contenido no se puede leer.
+export function evidenciasDelDeck(deck, opciones = {}) {
+  const r = { muestra:[], demostracion:[], resultado:[], credencial:[], intencion_sin_evidencia:[] };
+  deck.laminas.forEach((l,i)=>{
+    const muestra = l.tipo==='prueba' && capturasDe(l).some(c=>c.plantilla||c.hueco||c.ejemplo||c.procedencia==='ejemplo');
+    const dialogo = l.tipo==='chat' && ['yo','otro'].every(de=>l.mensajes?.some(m=>m.de===de&&conTexto(m.texto)));
+    const real=origenPrueba(l), credencial=credibilidadConfirmada(opciones.crudo||deck,opciones.crudo?.laminas?.[i]||l,opciones.credenciales||[]);
+    if(muestra)r.muestra.push(i+1);
+    if(dialogo || real && ['prueba','objeto'].includes(l.tipo))r.demostracion.push(i+1);
+    const hipotetica = /^\s*(si|cuando|con|pongamos|supongamos)\b/.test(sinAcentos(plano(l.arriba || '')))
+      || l.procedencia === 'ejemplo' || /\bejemplo\b/.test(sinAcentos(l.fuente || ''));
+    if(real && !hipotetica && ['cifra','grafica'].includes(l.tipo))r.resultado.push({lamina:i+1,origen:real,alcance:real==='mercado'?'dato de terceros; no resultado propio':'resultado atribuido; verificar fuente'});
+    if(credencial)r.credencial.push(i+1);
+    if(l.credibilidad===true&&!credencial)r.intencion_sin_evidencia.push(i+1);
+  });
+  return r;
 }
 export function hayCredencialProveedor(deck, opciones = {}) {
   const inv = deck.laminas.findIndex(esInversion);
@@ -1321,6 +1344,7 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
       motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
     faltaParaFinal: faltaParaFinal(deck, { crudo, credenciales }),
     prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,
+    evidencias: evidenciasDelDeck(deck, { crudo, credenciales }),
     arco: arcoDeck(deck, pasos),
   };
 }

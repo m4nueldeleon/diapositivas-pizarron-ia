@@ -3,14 +3,43 @@ import { plano } from './markup.mjs';
 
 const normal = x => plano(String(x || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
 const tokens = x => normal(x).split(' ').filter(w => w.length > 3);
+// Familias explícitas: evitar un stemmer agresivo que equipare precio y precisión.
+export function raicesTexto(x) {
+  const familias = [/^entreg/, /^defin/, /^pag/, /^termin/, /^cambi/, /^revis/, /^cost|^car[oa]s?$|^precio/, /^tecnolog/, /^tiemp/, /^aprend/, /^comprob/];
+  const vacias = new Set(['para','como','puedo','puede','puedes','quiero','tengo','todo','cada','rato','esta','estas','este','estos','pero','solo','nunca','siempre','ahora','hacer','tiene','tienes','seria','quien','cual','cuando','donde','porque']);
+  return tokens(x).filter(w => !vacias.has(w)).map(w => {
+    const i = familias.findIndex(r => r.test(w));
+    return i >= 0 ? `familia${i}` : w.replace(/(?:es|s)$/,'');
+  });
+}
 const CAMPOS_TEXTO = new Set(['texto','encabezado','nota','etiqueta','etiquetas','titulo','sub','lineas','items','mensajes','nodos','columnas','filas','arriba','abajo','valor']);
 const extraer = x => typeof x === 'string' ? [x] : Array.isArray(x) ? x.flatMap(extraer) : x && typeof x === 'object' ? Object.entries(x).filter(([k]) => CAMPOS_TEXTO.has(k)).flatMap(([,v]) => extraer(v)) : [];
 const contenido = l => extraer(Object.fromEntries(Object.entries(l).filter(([k]) => !['nota','anotaciones'].includes(k)))).join(' ');
 const firma = l => [l.tipo, l.variante || '', l.items?.length || 0, l.mensajes?.length || 0, l.nodos?.length || 0, Boolean(l.sello), Boolean(l.anotaciones?.length)].join(':');
 export function anotacionAporta(l, a) {
   if (!a.texto) return false;
-  const base = new Set(tokens(contenido(l)));
-  return tokens(a.texto).some(w => !base.has(w));
+  const base = new Set(raicesTexto(contenido(l))), t = normal(a.texto);
+  const nueva = raicesTexto(a.texto).some(w => !base.has(w) && !['excelente','bueno','mejor','grand','importante','correcto','mismo','misma'].includes(w));
+  // Consecuencia, precisión, contraste o veredicto observables. Un adjetivo no basta.
+  const consecuencia = /\b(evit\w*|reduc\w*|permit\w*|impid\w*|ahorr\w*|pierd\w*|cuesta|porque|por eso|requiere|necesita|consume|pagado|costo)\b/;
+  const contraste = /\b(sin|antes|despues|excepto|en vez|no es)\b/;
+  const precision = /\b(hasta|desde|solo|cada|porcentaje|ano|primero|mientras|cuando|contigo|acompanamiento)\b|\d|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/;
+  const veredicto = /\b(comprueb\w*|comprobad\w*|verific\w*|acept\w*|rechaz\w*|sirve|falla|suficiente|falta|sobra|funciona|listos|decide|elige|acuerda|copia|pide|delimitar)\b/;
+  // Una atribución concreta o una cita literal precisa el referente de su ancla.
+  const referente = /\bexperiencia del equipo\b/.test(t) || /[«»"]/.test(String(a.texto));
+  const aporte = [consecuencia, contraste, precision, veredicto].some(r => r.test(t)) || referente;
+  return nueva && aporte;
+}
+
+export function funcionRetorica(l) {
+  const t = normal(contenido(l));
+  if (l.tipo === 'camara') return 'practica';
+  if (l.tipo === 'chat' && l.mensajes?.some(m => m.de === 'yo') && l.mensajes?.some(m => m.de === 'otro')) return 'demostracion';
+  if (/^(define|elige|escribe|anota|revisa|manda|abre|fija|confirma|delimita)\b/.test(t)) return 'instruccion';
+  if (/\?/.test(contenido(l))) return 'pregunta';
+  if (/^(sin|no necesitas|evita)\b/.test(t)) return 'descarte';
+  if (/^(incluye|te llevas|sales con)\b/.test(t)) return 'inclusion';
+  return null;
 }
 
 export function secuenciasRepetidas(deck) {
@@ -74,6 +103,11 @@ function demostracionVisible(l, aprendizaje = '') {
 }
 export function reglasEditoriales(deck) {
   const avisos = [], L = deck.laminas || [];
+  let racha = 0, anterior = null;
+  L.forEach((l,i) => {
+    const f = funcionRetorica(l); racha = f && f === anterior ? racha + 1 : 1; anterior = f;
+    if (f && racha === 4) avisos.push(`láminas ${i-2}–${i+1}: misma función retórica «${f}» cuatro veces seguidas; introduce una demostración, contraste o decisión nueva, aunque cambie el diseño`);
+  });
   for (const h of secuenciasRepetidas(deck)) avisos.push(`secuencias repetidas: láminas ${h.desde}–${h.hasta}, tres bloques de ${h.longitud} estructuras incluso permutadas; reescribe desde decisiones y demostraciones distintas, sin cuota`);
   const aprendizajes = new Set();
   for (const b of deck.bloques || []) {

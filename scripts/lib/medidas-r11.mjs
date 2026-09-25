@@ -87,10 +87,22 @@ export function medidasR11(lam) {
       if (minimo != null && minimo < 60) avisos.push(`fila corta: rótulo de ${minimo.toFixed(1)} px a 1920 (mínimo 60 px): aumenta la tipografía antes de encoger el conjunto`);
     }
   }
-  for (const e of lam.querySelectorAll('.anotacion')) {
+  for (const e of lam.querySelectorAll('.anotacion, .nota.roja')) {
     if (!visible(e)) continue;
     const n = tam(e);
     if (n < 46) errores.push(`anotación «${corto(e.textContent)}» de ${n.toFixed(1)} px a 1920 (mínimo 46 px): reubícala o pártela en dos renglones antes de encoger`);
+    const principal = window.alturaPrincipal(lam), x = window.alturaX(e,lam);
+    medidas.anotaciones_x ||= [];
+    medidas.anotaciones_x.push({texto:corto(e.textContent),x,principal,proporcion:principal ? x/principal : null});
+    if(principal && x/principal < .75) errores.push(`anotación «${corto(e.textContent)}»: altura x ${(100*x/principal).toFixed(1)}% del texto principal (mínimo 75%); aumenta Caveat y reserva espacio antes de encajar`);
+    if((e.dataset.llaveHasta || e.matches('.nota.roja')) && window.lineasPalabras(e).length>1) errores.push(`nota junto a llave «${corto(e.textContent)}» partida: mantenla en un renglón y reserva su anchura real`);
+  }
+  medidas.principal_x = window.alturaPrincipal(lam)*a1920;
+  medidas.tipo = lam.dataset.tipo;
+  for(const nodo of lienzo.querySelectorAll('.fila-flujo .nodo')) {
+    if(nodo.querySelector('.emo,img') || !visible(nodo))continue;
+    const et=nodo.querySelector('.etiqueta');
+    if(et && tam(et)<72) avisos.push(`nodo sin emoji «${corto(et.textContent)}»: texto principal de ${tam(et).toFixed(1)} px a 1920 (mínimo 72 px)`);
   }
   const pequenos = textos(lam).filter(q => tam(q.el) < 30);
   if (pequenos.length) avisos.push(`texto visible menor de 30 px a 1920: ${[...new Set(pequenos.map(q => `«${corto(q.texto)}» (${tam(q.el).toFixed(1)} px)`))].join(', ')}; aumenta su tamaño (solo firma y sufijos están exentos)`);
@@ -122,4 +134,14 @@ export function medidasR11(lam) {
     if (d > 24) avisos.push(`flecha huérfana: inicio a ${Number.isFinite(d) ? d.toFixed(1) : 'más de 24'} px del contorno más cercano (máximo 24 px a 1920): ánclala al borde del origen u omítela`);
   }
   return { errores, avisos, medidas };
+}
+
+export function saltosEscala(medidas) {
+  const avisos=[], diagramas=new Set(['pasos','flujo','bifurcacion','circulos']);
+  for(let i=1;i<medidas.length;i++) {
+    const a=medidas[i-1],b=medidas[i]; if(!a?.principal_x||!b?.principal_x)continue;
+    const menor=a.principal_x<b.principal_x?a:b,ratio=Math.max(a.principal_x,b.principal_x)/menor.principal_x;
+    if(diagramas.has(menor.tipo)&&ratio>1.8) avisos.push(`salto de escala entre láminas ${i} y ${i+1}: texto principal ${ratio.toFixed(2)}×; amplía el diagrama o revisa la jerarquía contigua`);
+  }
+  return avisos;
 }

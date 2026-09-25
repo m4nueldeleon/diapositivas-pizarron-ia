@@ -192,6 +192,12 @@ const BOLETO = OBJ('<g transform="rotate(-14 12 12)"><path d="M3.2 6.4h17.6a1.2 
   + '<path d="M3.4 7.1h17.2a.7.7 0 0 1 .7.7v1H2.7v-1a.7.7 0 0 1 .7-.7z" fill="#fff" fill-opacity=".35"/>'
   + '<path d="M16.4 7.6v8.8" stroke="#7a4f00" stroke-opacity=".6" stroke-width=".9" stroke-dasharray="1.1 1.1" stroke-linecap="round"/>'
   + '<path d="M9.2 9.2l.85 1.75 1.9.27-1.38 1.34.33 1.9-1.7-.9-1.7.9.33-1.9-1.38-1.34 1.9-.27z" fill="#7a4f00" fill-opacity=".6"/></g>');
+// 🎫: entrada horizontal amarilla, distinta del boleto doble 🎟. La referencia
+// lleva impresión inglesa; aquí conserva franjas y perforación, sin texto ajeno.
+const ENTRADA = OBJ('<path d="M1.5 5.5h21v5a1.5 1.5 0 0 0 0 3v5h-21v-5a1.5 1.5 0 0 0 0-3z" fill="#e7eb72" stroke="url(#pz-boleto)" stroke-width=".35"/>'
+  + '<path d="M2 6h20v2H2z" fill="#f9fa9b"/><path d="M16 5.8v12.4" stroke="#767333" stroke-width=".45" stroke-dasharray=".8 .6"/>'
+  + '<path d="M2.6 7.2h4.9v1.3H2.6zM17 6.4h4.7v2.8H17zM3 15.6h10v.8H3zM17 15.6h4v.8h-4z" fill="#494720"/>'
+  + '<path d="M3 10h10v1H3zM3 12h8v.8H3zM17 11h4v1h-4z" fill="#79713e"/>');
 // 📄 📃 documento, base de conocimiento: en los dos sets la hoja sale pálida (8-21% medido) y su sustituto era 📋,
 // que ya es «tarea». Hoja con degradado blanco → gris azulado y borde fino (≤ 0.7: el contorno negro de 1.2 la hacía
 // clip-art), renglones gris pizarra y la esquina doblada azul; se lee sobre blanco, tarjeta y lámina oscura.
@@ -231,7 +237,7 @@ const GLIFOS_SVG = {
 };
 // Solo en apple: el nativo imprime texto (el calendario con «JUL 17», el boleto «ADMIT ONE»). En fluent el 3D nativo no
 // trae texto y se usa (si el CDN falla, cae a este SVG). En apple también se cambian DENTRO del texto (EN_TEXTO_APPLE).
-const GLIFOS_SVG_APPLE = { '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO, '🎫': BOLETO, '🪪': CREDENCIAL };
+const GLIFOS_SVG_APPLE = { '📅': CALENDARIO, '📆': CALENDARIO, '🗓': CALENDARIO, '🎫': ENTRADA, '🪪': CREDENCIAL };
 const EN_TEXTO_APPLE = new Set([...Object.keys(GLIFOS_SVG_APPLE), '🎟', '🧾', '🏪', '➕']);
 export const TODOS_GLIFOS_SVG = { ...GLIFOS_SVG, ...GLIFOS_SVG_APPLE };   // pruebas: geometría de cada glifo
 const sinSel = ch => String(ch || '').replace(/️/g, '');

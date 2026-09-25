@@ -42,7 +42,7 @@ function ampliarFilas(lam) {
   fila.dataset.filaCorta = String(nodos.length);
   fila.dataset.ocupacionObjetivo = '.67';
   // El hueco restante se reparte arriba/abajo; no queda en el tercio superior.
-  if (!lz.dataset.anclar) { lz.style.justifyContent = 'center'; lz.style.paddingTop = '68px'; lz.style.paddingBottom = '132px'; }
+  if (!lz.dataset.anclar && !(lam.dataset.tipo==='pasos' && bloque.querySelector('.mt-t'))) { lz.style.justifyContent = 'center'; lz.style.paddingTop = '68px'; lz.style.paddingBottom = '132px'; }
 }
 
 // Los anillos son cuadrados: el alto limita antes que el ancho. Se agranda el
@@ -62,4 +62,27 @@ function ampliarCirculos(lam, lz, bloque) {
   if (factor > 1.005) dibujo.style.zoom = factor.toFixed(3);
   dibujo.dataset.composicionCirculos = '1';
   if (!lz.dataset.anclar) { lz.style.paddingTop = '68px'; lz.style.paddingBottom = '132px'; }
+}
+
+// Una fila mixta alinea sus anclas DESPUÉS de ampliar iconos y letras.
+function alinearFlujoMixto(lam) {
+  lam.querySelectorAll('.fila-flujo.flujo-con-texto:not(.flujo-textual-apilado)').forEach(fila=>{
+    const nodos=[...fila.children].filter(e=>e.classList.contains('nodo'));
+    const anclas=nodos.map(n=>n.querySelector('[data-a^="et"]')||n.querySelector('[data-a^="n"]'));
+    if(anclas.some(e=>!e))return;
+    const centros=anclas.map(e=>{const r=e.getBoundingClientRect();return r.y+r.height/2;});
+    const z=fila.getBoundingClientRect().width/fila.offsetWidth, max=Math.max(...centros);
+    nodos.forEach((n,i)=>n.style.paddingTop=((parseFloat(getComputedStyle(n).paddingTop)||0)+(max-centros[i])/z)+'px');
+  });
+}
+
+// Las notas rojas integradas en una llave necesitan el mismo ojo que las
+// anotaciones flotantes. Se reserva su renglón antes de encajar el conjunto.
+function ajustarNotasLlave(lam) {
+  const objetivo = alturaPrincipal(lam) * .75;
+  lam.querySelectorAll('.nota.roja').forEach(n => {
+    const actual = alturaX(n, lam), tam = parseFloat(getComputedStyle(n).fontSize);
+    if (actual < objetivo) n.style.setProperty('--tn', (1 + Math.ceil(tam * objetivo / (actual || 1))) + 'px');
+    n.style.whiteSpace = 'nowrap';
+  });
 }

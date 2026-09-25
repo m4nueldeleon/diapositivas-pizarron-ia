@@ -45,7 +45,8 @@ test('rojo semántico, gramática de la voz y ícono de contacto', () => {
   const l = { tipo: 'idea', texto: 'Define una entrega', emoji: '🧭', anotaciones: [{ a: 'texto', texto: 'Entrega' }] };
   assert.equal(anotacionAporta(l, l.anotaciones[0]), false);
   assert.equal(anotacionAporta(l, { texto: 'Evita rehacer el trabajo' }), true);
-  assert.equal(reglasEditoriales({ laminas: [{ ...l, texto: 'Escondes el contacto', voz: 'Dos minutos para define tu entrega' }] }).avisos.length, 2);
+  // R12 también detecta la nota «Entrega» sin consecuencia ni precisión.
+  assert.equal(reglasEditoriales({ laminas: [{ ...l, texto: 'Escondes el contacto', voz: 'Dos minutos para define tu entrega' }] }).avisos.length, 3);
   assert.equal(reglasEditoriales({ laminas: [{ tipo: 'idea', voz: 'Tienes dos minutos para definir tu entrega.' }] }).avisos.length, 0);
 });
 

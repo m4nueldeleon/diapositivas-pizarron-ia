@@ -84,7 +84,7 @@ body { font-family: var(--sans); color: var(--tinta); -webkit-font-smoothing: an
 .t b, .t strong { font-weight: 700; }
 /* Una palabra sin cortes (un link largo) se parte antes que salirse del lienzo. break-word y no anywhere: anywhere
    cambia el ancho mínimo en flex y grid y encogía diseños que hoy están bien. QA marca el renglón que aun así se sale. */
-.t, .item, .nota, .etiqueta, .burbuja, .tarjeta, .opcion, .b-texto { overflow-wrap: break-word; }
+.t, .item, .nota, .etiqueta, .burbuja, .tarjeta, .opcion, .b-texto { overflow-wrap: normal; }
 .t.compacto { --t: 68px; }   /* solo frases de más de 25 palabras: nunca por debajo */
 .t.chico { --t: 76px; }
 .t.medio { --t: 84px; }
@@ -156,10 +156,10 @@ s.tachon, .tachon { text-decoration: none; }
 
 /* tecla numérica (1 2 3) dibujada, para que se vea igual en cualquier sistema */
 .tecla {
-  width: var(--s, 112px); height: var(--s, 112px); border-radius: 24%; flex: none;
-  display: grid; place-items: center; color: #fff; font: 700 calc(var(--s, 112px) * .56)/1 var(--sans);
-  background: linear-gradient(180deg, #a9bccf 0%, #8ea4bb 45%, #6f87a1 100%);
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .55), inset 0 -4px 0 rgba(40, 60, 90, .35), 0 2px 4px rgba(0, 0, 0, .12);
+  width: var(--s, 112px); height: var(--s, 112px); border-radius: 21%; flex: none;
+  display: grid; place-items: center; color: #fff; font: 700 calc(var(--s, 112px) * .70)/1 Arial,sans-serif;
+  background: linear-gradient(180deg, #b8d0dd 0%, #8cb2c7 25%, #759aad 60%, #6b8491 100%);
+  box-shadow: inset 0 0 5px 5px rgba(36,67,85,.45), inset 0 10px 4px rgba(255,255,255,.3);
   text-shadow: 0 2px 2px rgba(40, 60, 90, .35);
 }
 
@@ -182,6 +182,11 @@ s.tachon, .tachon { text-decoration: none; }
 .item-apagado > .emo, .paso-apagado .icono-paso, .paso-apagado .tecla { opacity: max(var(--apagado), var(--apagado-icono)); }
 .item-apagado > .item-texto, .item-apagado > .vineta-letra { opacity: max(var(--apagado), .25); }
 .paso-apagado .rotulo-paso { opacity: var(--apagado); }
+/* Mapa de la referencia: los inactivos conservan su volumen, con menos color.
+   La opacidad mantiene el piso de contraste; la lupa tiene un aro gris metálico. */
+.paso-apagado .icono-paso { filter: saturate(.45); }
+.icono-paso .emo[data-e="%F0%9F%94%8D"] { filter: saturate(.45); }
+.icono-paso + .rotulo-paso { margin-bottom: 12px; }
 /* descartes tachados: cada renglón centrado y en seminegrita [m_256 4:16] */
 .lista.centrada { align-items: center; text-align: center; }
 .lista.centrada .item { font-weight: 600; }
@@ -234,7 +239,7 @@ s.tachon, .tachon { text-decoration: none; }
 .tabla td { font-weight: 700; font-size: var(--td, 44px); }
 .tabla td.fila-et { color: var(--tinta); font-size: var(--tde, 46px); }
 /* 9:16: si ni con la letra en el piso cabe la palabra, se parte (último recurso; QA avisa si algo sale de su celda) */
-.tabla.parte td, .tabla.parte th { overflow-wrap: anywhere; }
+.tabla.parte td, .tabla.parte th { overflow-wrap: normal; }
 .tabla th.esq { color: var(--gris); font-weight: 500; font-size: 42px; }
 .tabla tr + tr td, .tabla tr + tr th { border-top: 4px solid var(--linea); }
 .tabla td + td, .tabla th + th, .tabla td + th, .tabla th + td { border-left: 4px solid var(--linea); }
@@ -660,13 +665,13 @@ body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; 
 .captura .procedencia { position: static; padding: 16px 24px; }
 
 .fuente .hueco { border: 2px dashed #b79719; }
-.cifra .hueco.pendiente { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+.cifra .hueco.pendiente { max-width: 100%; overflow-wrap: normal; white-space: normal; }
 
 /* Zona segura de Reels: la nota a mano no invade la franja derecha de los botones (140 px). */
 .f-vertical .nota { max-width: min(var(--ancho-texto), 800px); }
 
 .logo-pendiente { display: inline-flex; justify-content: center; align-items: center; border: 3px dashed #b79719; padding: 12px; font: 600 34px/1.2 var(--sans); max-width: 100%; }
-.logo-pendiente .hueco { overflow-wrap: anywhere; max-width: 100%; }
+.logo-pendiente .hueco { overflow-wrap: normal; max-width: 100%; }
 
 /* B6: bandas con leyenda, riel de letras y tarjetas de prompt/respuesta. */
 .bandas-comparacion { display:flex; align-items:center; justify-content:center; gap:70px; margin-top:40px; }
@@ -684,7 +689,7 @@ body.sala { --apagado: .35; --t-rotulo: 64px; --t-nota: 88px; --t-fuente: 44px; 
 .riel-letra { font-weight:700; line-height:1.1; padding:8px 18px; color:var(--tinta); }
 .pasos-letras .pendiente { opacity: .35; }   /* riel de siglas: pendientes en gris claro, identificables en video y en sala */
 .letra-concepto { width:100%; gap:26px; text-align:center; }
-.letra-concepto .rotulo-paso { font-weight:700; line-height:1.1; overflow-wrap:anywhere; }
+.letra-concepto .rotulo-paso { font-weight:700; line-height:1.1; overflow-wrap:normal; }
 .vineta-letra { font-size:1.15em; min-width:1.1em; color:var(--tinta); }
 .chat-tarjeta { position:relative; width:100%; padding:30px 38px; border:0; border-radius:22px; background:#fff; box-shadow:var(--sombra-suave); }
 .chat-tarjeta.respuesta { background:#e8f5e7; }
@@ -808,3 +813,12 @@ body.sala .objeto-logos img { height: 52px !important; }
 .f-vertical .chat.chat-muro { width:900px; grid-template-columns:1fr; --tb:48px; --av:90px; }
 .f-vertical .chat-celular { flex-direction:column; gap:30px; }.f-vertical .celular { width:448px; height:896px; }
 .f-vertical .celular-pantalla .chat { width:100%; --tb:30px; --av:48px; }.f-vertical .celular-pantalla .burbuja { padding:18px; }
+
+/* Una palabra siempre queda entera, en todos los diseños y clones. */
+.lamina, .lamina * { overflow-wrap:normal; word-break:normal; hyphens:none; }
+/* Introducción al sistema: mapa con título y nota [ref_115]. */
+.lamina:not(.f-vertical) .lz-pasos:has(.mt-t + .mt-s) > .pila { position:relative; top:81px; --tn:60px; }
+.lamina:not(.f-vertical) .lz-pasos:has(.mt-t + .mt-s) .mt-t { margin-top:270px; }
+.lamina:not(.f-vertical) .lz-lista[data-anclar="arriba"] .encabezado { margin-bottom:100px; }
+/* La frase protagonista usa un plumón de 6 px [ref_10], legible al reducir. */
+.lamina:has(.lz-idea) .capa-mano path[data-clase="subrayado"] { stroke-width:6px; }

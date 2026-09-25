@@ -124,12 +124,16 @@ la voz (y los `dur`) y:
   lo imprime en una línea («arco: contrato 4:00 (lám 4) · voz 3:24 (-15 %) · revelación 59 % · llamados lám 25 (83 %)…»).
   Avisa si la voz se aleja más de 30% de lo que promete el contrato, y si una clase, clase corta, webinar o clase
   express no trae contrato de tiempo.
-- avisa el mapa repetido seguido y el que vuelve sin nada nuevo (arriba, «Las plantillas»); en `vsl`, `vsl-corto` y
-  `webinar`, la respuesta a una objeción que solo afirma (GUION §2); y en un reel que promete un cómo sin enseñarlo a la
+- avisa el mapa repetido seguido y el que vuelve sin nada nuevo (arriba, «Las plantillas»); en venta,
+  clase, tutorial, propuesta y reel, la respuesta a una objeción que solo afirma o no retoma su
+  verbo o sustantivo principal por equivalencias de raíz (GUION §7); y en un reel que promete un cómo sin enseñarlo a la
   vista (`falta_para_final`: «el cómo a la vista»).
 - `qa.json → prueba` dice de dónde sale la prueba: `propia` (captura o caso del creador), `mercado` (un dato publicado de
   terceros), `logica` o `garantia`. La de mercado cuenta para final, pero en un vsl o webinar avisa: respalda la
   oportunidad, no tu resultado (GUION §7 c).
+- `qa.json → evidencias` separa muestra, demostración, resultado y credencial. Una plantilla vacía
+  solo muestra el formato; `credibilidad: true` declara intención y no la convierte en prueba.
+  Enseña la plantilla completándose y el documento o mensaje final utilizable (GUION §7).
 - `qa.json → estado`: `con errores` → `borrador` (datos por confirmar, sin errores) → `bajo-90` → `falta-venta` → `listo`.
   Un borrador con errores sale `con errores`; en borrador, `nota_sin_tope` y `listo_salvo_datos` dicen si quedan avisos.
   `falta_para_final` lista lo que le falta a una pieza de venta (prueba real, cifra de credibilidad, objeción antes
@@ -195,11 +199,26 @@ Modelo: **`ejemplos/reel/`** (9:16, 11 láminas, ~55 s). Recetas de tamaño en L
    precio y garantía si los hay, llamado con qué pasa después, resumen y el llamado otra vez. Ningún «aplica» antes
    de la revelación y una sola acción en todos los llamados.
 
+### Resolver una objeción en cualquier pieza
+
+Aplica **objeción → condición que se conserva → respuesta literal → ejemplo**. Escribe los cuatro
+eslabones antes de elegir el diseño. Si el espectador objeta cambios, la respuesta habla de cambios;
+si objeta el pago, responde al pago. «Es sencillo» no contesta «No tengo tiempo» ni «¿Y si no paga?».
+Conserva su restricción y las condiciones reales de la oferta; no la borres para facilitar el ejemplo.
+La primera lámina de respuesta demuestra (`chat`, `flujo`, `linea-tiempo`, `cuadrantes`, captura o
+cifra con fuente), y una `idea` puede rematar después. Ejemplo: «¿Y si pide cambios?» → precio y
+una revisión pactados → «Incluye una revisión; los cambios adicionales se cotizan aparte» → chat
+con esa solicitud y respuesta. La condición es ilustrativa hasta que el creador confirme la suya.
+QA busca el núcleo por familias explícitas (entrega/entregable/entregar, paga/pago/pagar); el autor
+comprueba que la demostración resuelve la objeción exacta. No inventes su frecuencia ni eficacia.
+
 ### Clase en vivo (40-60 min)
 1. Gancho (≤ 2 min, GUION §6.1) y **contrato de tiempo**: qué se van a llevar en esta hora.
 2. Mapa 1-2-3 de la clase.
 3. **Tres bloques** de 10-15 min. Cada uno abre con el mapa (con bloques de 10-15 min el regreso sin texto siempre
    se justifica), explica en beats, hace una demostración en vivo (`camara` con `vivo: true` y `dur`) y regresa al mapa.
+   Declara cada bloque con `desde`, `hasta`, `aprendizaje` y `practico`. Un bloque práctico incluye
+   entrada concreta, transformación visible y salida utilizable; anunciar una demostración no basta.
 4. **Tarea**: qué hacer hoy, con objeto (qué mandar, a quién).
 5. **Puente al siguiente paso**: la comunidad, la próxima clase o una invitación suave, con su dato a la vista:
    CUÁNDO (fecha y hora, `{{PROXIMA_CLASE}}`) o CÓMO se entra (link, palabra clave o `boton` con destino,
