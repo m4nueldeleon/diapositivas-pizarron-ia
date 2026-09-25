@@ -853,10 +853,11 @@ body.sala .objeto-logos img { height: 52px !important; }
 b.circ[data-circulo="linea"] { margin-inline: .4em; }
 :has(> b.circ[data-circulo="linea"]) { padding-block: .12em; }
 /* R15 [juez r15, demo 59]: dentro del celular la letra iba a ~30 px en una pantalla casi vacía. Un chat 1 a 1 en el
-   teléfono no muestra avatares: sin ellos la burbuja ocupa el ancho de la pantalla y la letra sube a 46 px. */
+   teléfono no muestra avatares: sin ellos la burbuja ocupa el ancho de la pantalla y la letra sube a 46 px.
+   R17 [juez r17]: 54 px; con uno o dos mensajes cortos la conversación se veía diminuta. */
 .celular-pantalla .msj .yo-av, .celular-pantalla .msj .otro-av { display: none; }
-.celular-pantalla .chat { --tb: 46px; gap: 28px; }
-.celular-pantalla .burbuja { max-width: 360px; padding: 16px 22px; }
+.celular-pantalla .chat { --tb: 54px; gap: 28px; }
+.celular-pantalla .burbuja { max-width: 380px; padding: 16px 22px; }
 
 /* R17 [juez r16, demo 59]: tres mensajes arriba dejaban el 45% de la pantalla vacía. Como en un teléfono real, la
    conversación se asienta abajo, sobre la barra de escribir (sin texto: no es contenido); arriba queda el aire. */
