@@ -960,6 +960,7 @@
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
+    lams.forEach(l => { try { reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
     // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
     const esFoco = l => !!l.querySelector(':scope > .escena.clon');
     const capa = l => {

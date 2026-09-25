@@ -39,6 +39,29 @@
     obs.puntos.forEach(([x, y]) => { if (marco(x, y, 24)) t += 0.05; });
     return t;
   }
+  // Sello libre (sin sello_sobre ni sello_pos) que no cabe entero bajo el bloque: antes de encogerlo a 0.85/0.7, se sube
+  // el lienzo lo que falte (sin cruzar el margen de arriba), como haría quien compone la lámina dejando sitio al remate.
+  // Corre antes de las anotaciones y la capa a mano, que se miden ya con el lienzo en su lugar. El centro limpio no mueve nada.
+  function reservarSelloLibre(lam) {
+    const s = lam.querySelector(':scope > .sello:not([data-sobre]):not([data-pos])'), lz = lam.querySelector(':scope > .lienzo');
+    if (!s || !lz || lam.querySelector(':scope > .escena')) return;
+    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
+    const margen = parseFloat(getComputedStyle(lam).getPropertyValue('--margen-v')) || 100;
+    const abajo = Math.max(margen, lam.querySelector('.firma:not(.arriba)') ? 140 : margen);
+    const tinta = s.querySelector('.sello-tinta');
+    if (tinta) tinta.style.fontSize = Math.min(96, parseFloat(getComputedStyle(tinta).fontSize) || 96) + 'px';
+    const bloques = [...lz.children].filter(e => e.getClientRects().length).map(e => caja(e, lam));
+    if (!bloques.length) return;
+    const x0 = Math.min(...bloques.map(b => b.x)), x1 = Math.max(...bloques.map(b => b.x + b.w));
+    const y0 = Math.min(...bloques.map(b => b.y)), y1 = Math.max(...bloques.map(b => b.y + b.h));
+    const w = s.offsetWidth, h = s.offsetHeight, rw = w * Math.cos(a) + h * Math.sin(a), rh = w * Math.sin(a) + h * Math.cos(a);
+    const k = Math.min(1, (W - 2 * m) / rw, (H - margen - abajo) / rh, Math.max(0.8 * (x1 - x0), 420) / rw);
+    if (costoSello(obstaculosSello(lam, null), W, H, W / 2, H / 2, w, h, a, k, m, margen, abajo) === 0) return;
+    const falta = rh * k + 24 - ((H - abajo) - y1), sube = Math.min(falta, y0 - margen);
+    if (!(falta > 0) || sube < 8) return;
+    lz.style.top = -sube + 'px'; lz.style.bottom = sube + 'px';
+    lam.dataset.selloReserva = Math.round(sube);
+  }
   function colocarSello(lam) {
     lam.querySelectorAll(':scope > .sello').forEach(s => colocarUnSello(lam,s));
   }
