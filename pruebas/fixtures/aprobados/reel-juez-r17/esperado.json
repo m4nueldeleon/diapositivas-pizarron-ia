@@ -1,8 +1,7 @@
 {
- "nota": 94,
+ "nota": 97,
  "borrador": false,
  "avisos": [
-  "lámina # (cierre): desde el paso #: resaltado corto partido en dos renglones: «Guarda este / formato»; acorta la frase para que el resaltado quede entero",
   "lámina # (promesa): desde el paso #: resaltado corto partido en dos renglones: «sin perseguir / pendientes»; acorta la frase para que el resaltado quede entero"
  ],
  "geometria": {
@@ -63,7 +62,7 @@
    "principal_x": 85.2
   },
   "11": {
-   "principal_x": 99.6
+   "principal_x": 74.7
   }
  },
  "hashes": {
@@ -91,7 +90,7 @@
    "10-pago-1.png": "00000000030000006a30f2b0b180000000000000000000000000800000000000",
    "10-pago-2.png": "00000000030000006a30f2b0b180000003008000cbc08a00bb02800000000000",
    "10-pago-3.png": "00000000030000006a30f2b0b1800000fe00d800ebc08a00bb02800000000000",
-   "11-cierre-1.png": "000000000000000000c006800f8018000000355009c00d000000000000000000"
+   "11-cierre-1.png": "0000000000000000004006c007000f8018005b48745800000000000000000000"
   },
   "rojo": {
    "01-gancho-1.png": 0,
@@ -116,7 +115,7 @@
    "10-pago-1.png": 0,
    "10-pago-2.png": 0,
    "10-pago-3.png": 3038,
-   "11-cierre-1.png": 10888
+   "11-cierre-1.png": 10824
   }
  }
 }

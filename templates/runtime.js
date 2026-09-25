@@ -867,6 +867,14 @@
       const previo = e.style.whiteSpace;
       e.style.whiteSpace = 'nowrap';
       // Una marca larga sigue partida y QA la señala. No encoger letras para ocultarla.
+      // R17 [juez r17, 9:16]: la letra del lienzo alto va por encima de 84 px; una marca corta («Guarda este formato») puede
+      // bajar hasta 84 (el tamaño de 16:9) para quedar entera. Si ni así cabe, sigue partida y QA le pide al autor acortarla.
+      const vertical = lam.offsetHeight > lam.offsetWidth;
+      if (vertical && e.getBoundingClientRect().width > cont.getBoundingClientRect().width && cont.matches('.t')) {
+        const f0 = parseFloat(getComputedStyle(cont).fontSize) || 84;
+        for (let f = f0 - 4; f >= 84 && e.getBoundingClientRect().width > cont.getBoundingClientRect().width; f -= 4) cont.style.fontSize = f + 'px';
+        if (e.getBoundingClientRect().width > cont.getBoundingClientRect().width) cont.style.fontSize = '';
+      }
       if (e.getBoundingClientRect().width > cont.getBoundingClientRect().width) e.style.whiteSpace = previo;
     });
   }

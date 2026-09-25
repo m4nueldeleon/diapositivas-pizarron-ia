@@ -90,3 +90,17 @@ test('r17 9:16: una cuenta corta cabe en un renglón y el sello del chat no tapa
   assert.equal(r.partida, '');
   assert.equal(r.tapa, 0);
 });
+
+test('r17 9:16: una marca corta que es casi toda la frase baja hasta 84 px para quedar entera; una larga sigue avisando', async t => {
+  const p = await pagina(t, [
+    { tipo: 'idea', emoji: '📌', texto: '__Guarda este formato__' },
+    { tipo: 'idea', emoji: '📝', texto: 'Entrega el turno\n__sin perseguir pendientes__' },
+  ]); if (!p) return;
+  const r = await p.evaluate(() => window.PZ.lams.map(l => {
+    const m = l.querySelector('[data-sub]'), t = l.querySelector('.t');
+    return { renglones: new Set([...m.getClientRects()].map(x => Math.round(x.top))).size, letra: parseFloat(getComputedStyle(t).fontSize) };
+  }));
+  assert.equal(r[0].renglones, 1, JSON.stringify(r));
+  assert.ok(r[0].letra >= 84, JSON.stringify(r));
+  assert.ok(r[1].letra >= 84, 'la larga no se encoge por debajo de 84');
+});
