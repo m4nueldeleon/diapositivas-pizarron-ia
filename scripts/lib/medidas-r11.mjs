@@ -110,6 +110,10 @@ export function medidasR11(lam) {
       if(medidas.lista_letra_px1920<64)avisos.push(`lista corta: renglón de ${medidas.lista_letra_px1920.toFixed(1)} px (mínimo 64 px a 1920); aumenta la letra antes de encoger`);
       if(medidas.lista_alto_util_pct<45)avisos.push(`lista corta: bloque ocupa ${medidas.lista_alto_util_pct.toFixed(1)}% del alto útil (mínimo 45%); aumenta letra y separación, centrando el conjunto`);
     }
+    // R16: una columna con renglones partidos junto a otra entera desalinea las filas del contraste
+    const cols=[...lienzo.querySelectorAll('.contraste-col')];
+    if(cols.length===2){ const parte=cols.map(c=>[...c.querySelectorAll('.lista > *')].filter(visible).some(e=>window.lineasPalabras(e).length>1));
+      if(parte[0]!==parte[1]) avisos.push('contraste desalineado: una columna parte sus renglones y la otra no; acorta los ítems largos o usa una letra común'); }
     for(const col of lienzo.querySelectorAll('.contraste-col')) {
       if(col.querySelector('.contraste-titulo.tono-r') && [...col.querySelectorAll('.emo')].some(e=>visible(e)&&decodeURIComponent(e.dataset.e||'')==='✅'))avisos.push('columna roja con ✅ verde: usa una cruz o marca neutra acorde con la exclusión o cambio');
     }

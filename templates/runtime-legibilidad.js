@@ -21,6 +21,16 @@ function ampliarListas(lam) {
     // R14: UN tamaño por lista (antes cada renglón elegía 72 u 84 y el largo salía más chico que sus vecinos [demo 2]).
     listas.forEach(lista => { if (lista.dataset.tamExplicito) return; const propios=[...lista.children];
       const t=propios.some(e=>e.textContent.trim().length>30)?72:84; propios.forEach(e=>e.style.fontSize=t+'px'); });
+    // R16 [juez r16]: en el contraste las dos columnas comparten UNA letra, la que deja su ítem más largo en un renglón
+    // (baja de 4 en 4 hasta 64 px): una columna partida junto a otra entera desalineaba las filas.
+    if (contraste) {
+      // cada columna mide lo que pide su contenido (la «SÍ» corta dejaba a la «NO» sin sitio en su medio ancho)
+      if (!vertical) Object.assign(contraste.style, { gridTemplateColumns: 'repeat(2, minmax(0, max-content))', justifyContent: 'center', columnGap: '180px' });
+      const todos=[...contraste.querySelectorAll('.lista > *')].filter(e=>!e.closest('.lista').dataset.tamExplicito);
+      let t=Math.min(...todos.map(e=>parseFloat(getComputedStyle(e).fontSize)||84));
+      todos.forEach(e=>e.style.fontSize=t+'px');
+      for (; t>64 && todos.some(e=>rectsTexto(e,lam).length>1); t-=4) todos.forEach(e=>e.style.fontSize=(t-4)+'px');
+    }
     listas.filter(l=>!l.dataset.gapExplicito).forEach(l => l.style.setProperty('--gap-lista', items.length<=3 ? '110px' : '76px'));
     bloque.querySelectorAll('.encabezado').forEach(e=>e.style.fontSize='64px');
     bloque.querySelectorAll('.contraste-titulo').forEach(e=>e.style.fontSize='84px');
