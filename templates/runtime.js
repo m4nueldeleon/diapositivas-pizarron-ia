@@ -660,11 +660,11 @@
           if (el.parentElement === fin.parentElement) for (let h = el.nextElementSibling; h && h !== fin; h = h.nextElementSibling) entre.push(caja(h, lam));
           n.style.left = (Math.max(a.x+a.w, b.x+b.w, ...entre.map(e => e.x+e.w))+100) + 'px';
           n.style.top = ((Math.min(a.y,b.y)+Math.max(a.y+a.h,b.y+b.h))/2-n.offsetHeight/2) + 'px';
-          return parseFloat(n.style.left)+n.offsetWidth-(W-60);
+          return parseFloat(n.style.left)+n.offsetWidth-(W-Math.max(60, W*.0375));   // R15: la letra a mano sobresale de su caja
         };
         const partir=()=>{
           if(pal<4) return false;
-          const disponible=W-60-parseFloat(n.style.left);
+          const disponible=W-Math.max(60, W*.0375)-parseFloat(n.style.left);
           Object.assign(n.style,{whiteSpace:'normal',maxWidth:Math.max(160,disponible)+'px',textWrap:'balance'});
           const ok=colocar()<=0 && rectsTexto(n,lam).length<=2;
           // textWrap ANTES que whiteSpace: en Chromium comparten text-wrap-mode y vaciar textWrap después borraba el nowrap

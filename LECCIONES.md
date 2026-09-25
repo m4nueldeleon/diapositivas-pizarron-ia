@@ -353,3 +353,8 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Tipografía:** no se deja una palabra de 1-2 letras ni la última palabra corta de una frase sola en su renglón, ni un
   número separado de su unidad (`markup.mjs → pegarCortas`, espacio duro). Las pruebas que comparan cadenas normalizan
   U+00A0: el texto visible es el mismo.
+- **Decisión (juez r15, pendiente 8):** el mapa de íconos que se presenta sin texto y luego vuelve con texto o nota reserva
+  ese alto y se ve cargado arriba. Centrarlo haría saltar los íconos entre la primera aparición y sus regresos, y el
+  principio del estilo es que en el revelado por acumulación nada se mueve de lugar (ESTILO; prueba r5 «mapa sin salto»).
+  Gana la continuidad. Si el mapa no vuelve con texto, no hay reserva y sale centrado, como en ref_1040.
+

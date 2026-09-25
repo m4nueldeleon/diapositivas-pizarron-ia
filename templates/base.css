@@ -852,4 +852,9 @@ body.sala .objeto-logos img { height: 52px !important; }
    gana aire para que el trazo no pise «Inversión:» ni el renglón de arriba [juez r14, propuesta 18]. */
 b.circ[data-circulo="linea"] { margin-inline: .4em; }
 :has(> b.circ[data-circulo="linea"]) { padding-block: .12em; }
+/* R15 [juez r15, demo 59]: dentro del celular la letra iba a ~30 px en una pantalla casi vacía. Un chat 1 a 1 en el
+   teléfono no muestra avatares: sin ellos la burbuja ocupa el ancho de la pantalla y la letra sube a 46 px. */
+.celular-pantalla .msj .yo-av, .celular-pantalla .msj .otro-av { display: none; }
+.celular-pantalla .chat { --tb: 46px; gap: 28px; }
+.celular-pantalla .burbuja { max-width: 360px; padding: 16px 22px; }
 

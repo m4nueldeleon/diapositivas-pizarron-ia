@@ -45,7 +45,7 @@
   function reservarSelloLibre(lam) {
     const s = lam.querySelector(':scope > .sello:not([data-sobre]):not([data-pos])'), lz = lam.querySelector(':scope > .lienzo');
     if (!s || !lz || lam.querySelector(':scope > .escena')) return;
-    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
+    const W = lam.offsetWidth, H = lam.offsetHeight, m = Math.max(40, Math.round(W * .03)), a = 5 * Math.PI / 180;   // R15: 3% lateral, como QA
     const margen = parseFloat(getComputedStyle(lam).getPropertyValue('--margen-v')) || 100;
     const abajo = Math.max(margen, lam.querySelector('.firma:not(.arriba)') ? 140 : margen);
     const tinta = s.querySelector('.sello-tinta');
@@ -66,7 +66,7 @@
     lam.querySelectorAll(':scope > .sello').forEach(s => colocarUnSello(lam,s));
   }
   function colocarUnSello(lam, s) {
-    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, a = 5 * Math.PI / 180;
+    const W = lam.offsetWidth, H = lam.offsetHeight, m = Math.max(40, Math.round(W * .03)), a = 5 * Math.PI / 180;   // R15: 3% lateral, como QA
     const libre = !s.dataset.sobre && !s.dataset.pos;
     const margen = parseFloat(getComputedStyle(lam).getPropertyValue('--margen-v')) || 100;
     const arriba = libre ? margen : m, abajo = libre ? Math.max(margen, lam.querySelector('.firma:not(.arriba)') ? 140 : margen) : m;

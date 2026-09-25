@@ -23,11 +23,14 @@ deducir.
 
 ## 0. Antes de la primera lámina (cada vez)
 
-1. Lee **[references/ESTILO.md](references/ESTILO.md)** completa. Es la biblia: qué hace cada
-   pieza y por qué.
-2. Lee **[references/GUION-A-LAMINAS.md](references/GUION-A-LAMINAS.md)**: el método de
-   traducción de frase a imagen, los primeros 10 segundos (§6.1) y la oferta beat por beat (§7).
-   Con él, **[references/ARCOS.md](references/ARCOS.md)** (cuánto dura cada pieza y cómo se reparte) y
+1. Lee **[references/ARRANQUE.md](references/ARRANQUE.md)** (dos páginas): el flujo, el esqueleto, los ocho
+   diseños más usados, la regla de una frase de voz por paso y los avisos del preflight con su arreglo. En un
+   reel, un tutorial o una clase express basta con ARRANQUE y LECCIONES: el preflight de `armar.mjs` te pide lo
+   demás por sección, y la tabla final de ARRANQUE dice qué leer para cada cosa.
+2. En una clase larga, un VSL, un webinar o una propuesta lee además **[references/ESTILO.md](references/ESTILO.md)**
+   completa (la biblia: qué hace cada pieza y por qué), **[references/GUION-A-LAMINAS.md](references/GUION-A-LAMINAS.md)**
+   (el método de frase a imagen, los primeros 10 segundos §6.1 y la oferta beat por beat §7),
+   **[references/ARCOS.md](references/ARCOS.md)** (la sección de tu pieza) y
    **[references/VOZ-HUMANA.md](references/VOZ-HUMANA.md)** (las fórmulas de IA que no van).
 3. Lee **[LECCIONES.md](LECCIONES.md)**: las correcciones que ya hizo el usuario, que mandan
    sobre todo lo demás.

@@ -282,4 +282,8 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   «agendar»). `demuestra` (reglas-deck) es la única función de evidencia: `camara` cuenta solo con `demuestra`, `texto`,
   `nota` o `vivo`, y un chat con `demostracionChat` (guion con variable, cifra, día o entregable). `revisarComponentes`
   revisa objeciones compuestas de cualquier tema (`generico: true` → aviso, no política por confirmar).
+- Juez r15, tercer bloque: `references/ARRANQUE.md` es la entrada de dos páginas (SKILL §0 paso 1); si cambia un diseño,
+  un campo mínimo o un aviso frecuente, actualiza su tabla. Dentro del celular (`.celular-pantalla`) no hay avatares y la
+  letra va a 46 px. El sello deja 3% de margen lateral y la nota de llave 3.75%. El mapa que se presenta sin texto sigue
+  reservando el alto de sus regresos: gana «nada se mueve de lugar» (LECCIONES, decisión r15).
 
