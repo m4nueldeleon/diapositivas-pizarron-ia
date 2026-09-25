@@ -277,4 +277,9 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   de emoji que comparar; si solo un cuadro lo trae, sigue siendo falla. r95 (la ✕ roja, excluida por diseño) pasa: su IoU
   0 era ruido de 4 contra 19 píxeles. Réplica 9/10: r255 usa 🎫 (boleto plano del cuadro) y sigue en revisión por la
   silueta del boleto, que en el video es una imagen propia, no un emoji.
+- Juez r15, segundo bloque: `reglasIconosInversa` respeta el emoji que el deck declara en `conceptos`; `mismoConcepto` compara
+  sin artículos y `reglasConceptosIconos` trata como familia dos conceptos de la misma fila del diccionario (📅 «fecha» y
+  «agendar»). `demuestra` (reglas-deck) es la única función de evidencia: `camara` cuenta solo con `demuestra`, `texto`,
+  `nota` o `vivo`, y un chat con `demostracionChat` (guion con variable, cifra, día o entregable). `revisarComponentes`
+  revisa objeciones compuestas de cualquier tema (`generico: true` → aviso, no política por confirmar).
 

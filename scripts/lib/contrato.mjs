@@ -79,7 +79,7 @@ export const CAMPOS = {
   circulos: ['radio', 'radio_interior', 'tono', 'tono_interior', 'personas', 'adentro', 'tono_paso', 'emoji', 'centro', 'centro_paso', 'interior_paso', 'texto',
     'texto_paso', 'nota', 'nota_paso'],
   // `vivo: true`: tramo en vivo de una clase (actividad, demostración, preguntas) con su consigna para el público
-  camara: ['nota', 'vivo', 'texto', 'items', 'emoji'],
+  camara: ['nota', 'vivo', 'texto', 'items', 'emoji', 'demuestra'],
   foco: ['texto', 'nota', 'nota_paso', 'tam', 'opacidad'],
   calificacion: ['filas', 'max', 'emoji', 'acumular', 'encabezado', 'nota', 'nota_paso'],
   stack: ['items', 'columnas', 'sangre', 'encabezado', 'remate', 'remate_paso', 'total', 'nota', 'nota_paso'],

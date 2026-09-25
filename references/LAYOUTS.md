@@ -1013,6 +1013,9 @@ En vivo, todo tramo que dependa de una página, documento o internet lleva `si_f
 ```
 - En el presentador se proyecta en **negro limpio**; en la hoja sale como cuadro gris «🎥 cámara» y no genera PNG.
   En el montaje (`video.mjs --sobre`) ahí se ve tu grabación.
+- `demuestra: "Cómo pego el enlace en WhatsApp"`: qué se enseña en ese tramo. En un tutorial o una clase, una `camara`
+  solo cuenta como demostración si declara `demuestra`, un `texto`, una `nota` o es un tramo `vivo` [ronda 15]: una
+  cámara vacía ya no calla el aviso «sin demostración».
 - **Tramo en vivo de una clase** (actividad, demostración, preguntas): una `camara` con `"vivo": true`.
   ```json
   { "tipo": "camara", "id": "actividad", "vivo": true, "dur": 300,

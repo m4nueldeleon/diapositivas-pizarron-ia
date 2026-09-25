@@ -35,6 +35,9 @@ export function reglasIconosInversa(deck) {
       ...(l.tipo === 'pasos' ? (l.iconos || []).map((emoji,j) => ({ emoji, texto:l.etiquetas?.[j] })) : [])];
     candidatos.forEach(o => {
       if (!o || typeof o.emoji !== 'string' || /^(no|si):/.test(o.emoji)) return;
+      // R15 [juez r15]: el vocabulario que el autor declara en `conceptos` manda sobre el diccionario (pedía 🚨 para
+      // «Prioridad» aunque el deck había declarado 🎯 = «las prioridades»).
+      if (deck.conceptos && Object.keys(deck.conceptos).some(e => base(e) === base(o.emoji))) return;
       const texto = plano(o.etiqueta || o.texto || ''); if (palabras(texto)>3) return;
       const filas = indice.get(singular(texto)); if (filas?.length !== 1) return;
       const f = filas[0]; if (f.specs.some(s => base(s) === base(o.emoji))) return;

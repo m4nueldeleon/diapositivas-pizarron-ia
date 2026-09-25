@@ -541,8 +541,13 @@ export function huecosDePrueba(deck) {
 // un tramo a cámara. Es aviso: el emoji grande como objeto es del estilo original, pero un tutorial sin NINGUNA
 // demostración enseña de palabra.
 const PIEZAS_ENSENAN = ['tutorial', 'clase', 'clase-corta'];
+// R15 [juez r15]: una sola función de evidencia. Una `camara` cuenta solo si declara qué se enseña (`demuestra`, un
+// `texto`, una `nota` o un tramo en vivo): una cámara vacía de 15 s callaba el aviso. Un chat cuenta si demuestra de verdad
+// (entrada → salida utilizable, o guion literal con variable, fecha o entregable).
 export const demuestra = l => l && ((l.tipo === 'prueba' && capturasDe(l).some(c => conTexto(c.src) && !c.hueco && c.ejemplo !== true))
-  || (l.tipo === 'objeto' && conTexto(l.imagen)) || l.tipo === 'camara');
+  || (l.tipo === 'objeto' && conTexto(l.imagen))
+  || (l.tipo === 'camara' && (conTexto(l.demuestra) || conTexto(l.texto) || conTexto(l.nota) || l.vivo === true))
+  || demostracionChat(l));
 export function reglasDemostracion(deck) {
   if (!PIEZAS_ENSENAN.includes(deck.pieza) || deck.laminas.some(demuestra)) return { errores: [], avisos: [] };
   return { errores: [], avisos: [`sin demostración: el ${deck.pieza} enseña sin mostrar nada real (ARCOS §Tutorial, paso 3 pide captura real o \`camara\` corta): pide 1 captura o foto por paso (\`prueba\` con \`src\`, \`objeto\` con \`imagen\`) o corta a cámara a demostrarlo`] };
@@ -958,7 +963,10 @@ function conceptoRotulo(texto, declarados = [], esPaso = false, esGrafica = fals
   return conceptos.length === 0 && /^[a-z]{4,}$/.test(t.trim()) ? t.trim() : null;
 }
 // Dos rótulos de una palabra con la misma raíz («venta»/«ventas», «cliente»/«clientes») son el mismo concepto.
-const mismoConcepto = (a, b) => a === b || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5));
+// R15 [juez r15]: «la agenda» y «agendar» son el mismo concepto: se quitan artículos y posesivos antes de comparar raíces.
+const sinArticulo = s => String(s || '').replace(/^((el|la|los|las|un|una|unos|unas|lo|tu|tus|mi|mis|su|sus|tu)\s+)+/i, '');
+const mismoConcepto = (a0, b0) => { const a = sinArticulo(a0), b = sinArticulo(b0);
+  return a === b || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5)); };
 
 // Los planes no están hechos: un solo aviso por lista, sin penalización numérica.
 export function reglasVinetasPlan(deck) {
@@ -1058,7 +1066,11 @@ export function reglasConceptosIconos(deck) {
       if (/^avatar|^vineta$/.test(e.campo)) continue;
       const concepto = conceptoRotulo(e.texto, declarados, ['mapa', 'pasos'].includes(l.tipo), l.tipo === 'grafica');
       if (!concepto) continue;
-      const previo = (anteriores.get(e.base) || []).find(p => !mismoConcepto(p.concepto, concepto) && sinAcentos(p.texto) !== sinAcentos(e.texto));
+      // R15: dos conceptos que caben en la MISMA fila del diccionario de ese emoji son una familia («fecha» y «agendar»
+      // con 📅, cuya fila es «fecha, agenda, horario…»), no dos conceptos.
+      const familia = String(conceptoDe(e.base) || '').split(/[,;·]/).map(x => sinArticulo(sinAcentos(plano(x)).toLowerCase().trim())).filter(x => x.length >= 4);
+      const enFamilia = c => { const k = sinArticulo(sinAcentos(String(c)).toLowerCase()); return familia.some(f => mismoConcepto(f, k) || k.startsWith(f.slice(0, 5)) || f.startsWith(k.slice(0, 5))); };
+      const previo = (anteriores.get(e.base) || []).find(p => !mismoConcepto(p.concepto, concepto) && !(enFamilia(p.concepto) && enFamilia(concepto)) && sinAcentos(p.texto) !== sinAcentos(e.texto));
       if (previo && !reportados.has(e.base)) {
         const negado = (previo.prefijo === 'no') !== (e.prefijo === 'no');
         avisos.push(`${nombre(deck, i)}: coherencia emoji↔concepto: ${e.base} nombra «${concepto}» y «${previo.concepto}» en la ${nombre(deck, previo.i)}${negado ? '; aparece negado con no: y afirmado en otro concepto' : ''}; usa un emoji distinto para cada concepto (EMOJIS.md, «un emoji = un concepto»)`);

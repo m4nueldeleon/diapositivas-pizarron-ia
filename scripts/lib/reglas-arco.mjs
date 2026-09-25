@@ -83,6 +83,7 @@ export function reglasRespuestaObjecion(deck) {
       else if(j>i)respuestas.push(...textosVisibles(L[j]));
     }
     for(const f of revisarComponentes(pregunta,respuestas)) {
+      if(f.generico){ avisos.push(`${nombre(deck,i)}: la objeción pregunta por «${f.tema}» y la respuesta no lo retoma; responde cada parte de la pregunta`); continue; }
       avisos.push(`${nombre(deck,i)}: componente «${f.tema}» sin respuesta explícita; política pendiente: declara el dato real y responde a cada condición`);
       const clave='POLITICA_'+f.tema.toUpperCase();
       porConfirmar[clave]={pendiente:true,motivo:'La mención no resuelve el componente '+f.tema,laminas:[...(porConfirmar[clave]?.laminas||[]),i+1]};

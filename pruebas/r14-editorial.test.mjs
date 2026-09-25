@@ -77,3 +77,27 @@ test('r14: doble negación con tachón, guion literal como demostración y pasos
   assert.equal(esLlamadoVisible({ tipo: 'idea', texto: 'Comenta **RESEÑA**' }), true);
   assert.equal(esLlamadoVisible({ tipo: 'lista', items: ['Comenta la palabra RESEÑA'] }), true);
 });
+
+test('r15: los conceptos declarados mandan sobre el diccionario y «la agenda» = «agendar»', async () => {
+  const { reglasIconosInversa } = await import('../scripts/lib/reglas-marcas.mjs');
+  const { reglasConceptosIconos } = await import('../scripts/lib/reglas-deck.mjs');
+  const flujo = { tipo: 'flujo', nodos: [{ emoji: '🎯', etiqueta: 'Prioridad' }, { emoji: '📝', etiqueta: 'Notas' }] };
+  const sin = reglasIconosInversa({ laminas: [flujo] }).avisos, con = reglasIconosInversa({ conceptos: { '🎯': 'las prioridades' }, laminas: [flujo] }).avisos;
+  assert.ok(con.length <= sin.length && !con.some(a => /Prioridad/.test(a)), JSON.stringify({ sin, con }));
+  const agenda = reglasConceptosIconos({ laminas: [
+    { tipo: 'flujo', nodos: [{ emoji: '📅', etiqueta: 'La agenda' }, { emoji: '📝', etiqueta: 'Notas' }] },
+    { tipo: 'flujo', nodos: [{ emoji: '📅', etiqueta: 'Agendar' }, { emoji: '⏰', etiqueta: 'Aviso' }] }] }).avisos;
+  assert.ok(!agenda.some(a => /📅 nombra/.test(a)), JSON.stringify(agenda));
+});
+
+test('r15: evidencia unificada (cámara declarada, guion útil) y objeción compuesta de cualquier tema', async () => {
+  const { demuestra } = await import('../scripts/lib/reglas-deck.mjs');
+  const { revisarComponentes } = await import('../scripts/lib/conversacion.mjs');
+  assert.equal(Boolean(demuestra({ tipo: 'camara', dur: 15 })), false);
+  assert.equal(Boolean(demuestra({ tipo: 'camara', demuestra: 'Cómo pego el enlace' })), true);
+  assert.equal(Boolean(demuestra({ tipo: 'chat', guion: true, mensajes: [{ de: 'yo', texto: 'Hola, ¿cómo estás hoy?' }] })), false);
+  assert.equal(Boolean(demuestra({ tipo: 'chat', guion: true, mensajes: [{ de: 'yo', texto: '¿Me dejas una reseña aquí? [enlace]' }] })), true);
+  const r = revisarComponentes('¿Qué importa más, el diseño o el plazo?', ['El plazo manda: entregamos el viernes.']);
+  assert.ok(r.some(x => x.generico && /disen/.test(x.tema)), JSON.stringify(r));
+  assert.deepEqual(revisarComponentes('¿Qué importa más, el diseño o el plazo?', ['El diseño se ajusta al plazo: entregamos el viernes.']), []);
+});

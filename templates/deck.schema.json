@@ -88,6 +88,7 @@
         "nota": { "$ref": "#/$defs/texto" },
         "emoji": { "oneOf": [{ "$ref": "#/$defs/emoji" }, { "type": "array", "items": { "$ref": "#/$defs/emoji" }, "minItems": 1, "maxItems": 2, "description": "solo en idea: par antes/después [\"no:📚\", \"si:🤖\"]" }] },
         "encabezado": { "$ref": "#/$defs/texto" },
+        "demuestra": { "type": "string", "minLength": 1, "maxLength": 200, "description": "solo en camara: qué se enseña en ese tramo (sin esto una cámara no cuenta como demostración)" },
         "vivo": { "type": "boolean", "description": "solo en camara: tramo en vivo (actividad, demostración, preguntas); el público ve la consigna (texto, items) y una cuenta regresiva desde dur" }
       }
     }

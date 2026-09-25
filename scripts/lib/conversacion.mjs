@@ -7,7 +7,9 @@ export function demostracionChat(l) {
   const mensajes = l.mensajes || [];
   // R14 [juez r14]: un chat con `guion: true` es el texto LITERAL que el espectador copia (con sus variables): es la
   // demostración del cómo, como en un reel, aunque no traiga respuesta.
-  if (l.guion === true && mensajes.some(m => palabras(m.texto).length >= 4)) return true;
+  // …con algo que se usa: una variable [nombre], una fecha u hora, una cifra o un entregable («Hola, ¿cómo estás hoy?» no)
+  const util = t => /\[[^\]]+\]|\d|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo|enlace|link|archivo|pagina|cotizacion|propuesta|pago|anticipo|entrega|revision|resena|precio|fecha|hora)\b/.test(normal(t));
+  if (l.guion === true && mensajes.some(m => palabras(m.texto).length >= 4 && util(m.texto))) return true;
   return mensajes.some((entrada,i) => mensajes.slice(i+1).some(salida => {
     const a=normal(entrada.texto), b=normal(salida.texto);
     if(entrada.de===salida.de || palabras(a).length<4 || palabras(b).length<3 || a===b) return false;
@@ -34,6 +36,15 @@ export function revisarComponentes(pregunta,respuestas) {
   if(partes.length<2)return [];
   const frases=respuestas.flatMap(t=>normal(t).split(/[.!?;\n]+/)).filter(Boolean);
   const temas=TEMAS.filter(([,rx])=>rx.test(normal(pregunta)));
+  // R15 [juez r15]: sin tema conocido («¿diseño o plazo?» devolvía []), cada componente debe ver su palabra clave
+  // retomada en la respuesta (raíz de 5 letras). Es un indicio (aviso), no una política por confirmar: `generico: true`.
+  if(!temas.length){
+    const VACIAS=new Set(['puedo','puedes','quiero','tengo','tienes','hacer','algo','esto','como','cuando','donde','porque','pero','para','sobre','entre','mucho','muchos','todo','todos','cada']);
+    const clave=c=>(c.match(/[a-zñ]+/g)||[]).map(w=>w).filter(w=>w.length>=4&&!VACIAS.has(w)).sort((a,b)=>b.length-a.length)[0];
+    const dicho=normal(respuestas.join(' '));
+    return partes.filter(p=>!/^(que|cual|cuales|como|cuanto|cuanta|cuando|donde|por que|quien)\b/.test(normal(p).replace(/^[^a-z]+/,''))).map(p=>({p,k:clave(normal(p))})).filter(x=>x.k&&!dicho.includes(x.k.slice(0,5)))
+      .map(x=>({tema:x.k,componentes:[x.p],generico:true}));
+  }
   return temas.filter(([,tema,decision])=>!frases.some(f=>tema.test(f)&&decision.test(f)&&!(/por escrito|se acuerdan|se defin|por confirmar|pendiente/.test(f)&&! /\bsi |\bno |\bsolo |\baparte|\badicional/.test(f))))
     .map(([tema])=>({tema,componentes:partes.filter(p=>TEMAS.find(t=>t[0]===tema)[1].test(normal(p)))}));
 }
