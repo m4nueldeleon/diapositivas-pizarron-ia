@@ -112,3 +112,13 @@ test('r16: un chat que paga el gancho con la respuesta del cliente pide proceden
   // el caso del juez r16: solo mensajes del cliente, el último es el pedido de vuelta
   assert.ok(avisosProcedencia({ tipo: 'chat', paga: 'gancho', sello: 'Volvió', mensajes: [{ de: 'otro', texto: 'Me llevo dos cajas' }, { de: 'otro', texto: '¡Apártame tres cajas!' }] }).length);
 });
+
+test('r16: objeción compuesta con familias de palabras, interrogativos, «ni/pero» y sin premiar el eco', async () => {
+  const { revisarComponentes } = await import('../scripts/lib/conversacion.mjs');
+  const temas = (q, r) => revisarComponentes(q, r).map(x => x.tema);
+  assert.deepEqual(temas('¿Cuánto cuesta, cuánto tarda y qué incluye?', ['Cuesta 490 pesos.', 'Incluye tres plantillas.']), ['tarda']);
+  assert.deepEqual(temas('¿Cuánto cuesta, cuánto tarda y qué incluye?', ['Cuesta 490 pesos. Lo entregas en tres días.', 'Incluye tres plantillas.']), []);
+  assert.deepEqual(temas('¿Te molesta que te escriba o ya compras en otro lado?', ['¿Te molesta? ¿Compras en otro lado?']), ['molesta', 'compras']);
+  assert.deepEqual(temas('¿Te molesta que te escriba o ya compras en otro lado?', ['No me molesta. Compro aquí cuando se me acaba.']), []);
+  assert.ok(temas('No tengo tiempo ni presupuesto', ['El tiempo: son 20 minutos.']).includes('presupuesto'));
+});

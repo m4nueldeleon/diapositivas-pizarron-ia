@@ -81,6 +81,8 @@ export function reglasRespuestaObjecion(deck) {
       if(j>i&&(esObjecion(L[j])||esOscura(L[j])||L[j].tipo==='boton'))break;
       if(L[j].tipo==='chat')respuestas.push(...(L[j].mensajes||[]).filter(m=>m.de==='yo').map(m=>m.texto));
       else if(j>i)respuestas.push(...textosVisibles(L[j]));
+      // R16 [juez r16]: las anotaciones también responden (una nota «Le das una salida» retoma la objeción)
+      if(j>i||L[j].tipo==='chat')respuestas.push(...(L[j].anotaciones||[]).map(a=>a?.texto).filter(Boolean));
     }
     for(const f of revisarComponentes(pregunta,respuestas)) {
       if(f.generico){ avisos.push(`${nombre(deck,i)}: la objeción pregunta por «${f.tema}» y la respuesta no lo retoma; responde cada parte de la pregunta`); continue; }

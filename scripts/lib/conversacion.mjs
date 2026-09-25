@@ -23,7 +23,7 @@ export function demostracionChat(l) {
 
 // Separa conjunciones, enumeraciones y preguntas; conserva las cláusulas para auditoría.
 export function componentesObjecion(texto) {
-  return String(texto).split(/[¿?;,]+|\s+(?:y\/o|y|o)\s+/i).map(t=>t.trim()).filter(Boolean);
+  return String(texto).split(/[¿?;,]+|\s+(?:y\/o|y|o|ni|pero)\s+/i).map(t=>t.trim()).filter(Boolean);
 }
 const TEMAS = [
  ['devoluciones',/devolu\w*|reembols\w*/, /\b(proced\w*|acepta\w*|aplica\w*|devuelve\w*|reembolsa\w*|no hay|no incluye|sin devoluciones)\b/],
@@ -39,10 +39,23 @@ export function revisarComponentes(pregunta,respuestas) {
   // R15 [juez r15]: sin tema conocido («¿diseño o plazo?» devolvía []), cada componente debe ver su palabra clave
   // retomada en la respuesta (raíz de 5 letras). Es un indicio (aviso), no una política por confirmar: `generico: true`.
   if(!temas.length){
-    const VACIAS=new Set(['puedo','puedes','quiero','tengo','tienes','hacer','algo','esto','como','cuando','donde','porque','pero','para','sobre','entre','mucho','muchos','todo','todos','cada']);
-    const clave=c=>(c.match(/[a-zñ]+/g)||[]).map(w=>w).filter(w=>w.length>=4&&!VACIAS.has(w)).sort((a,b)=>b.length-a.length)[0];
-    const dicho=normal(respuestas.join(' '));
-    return partes.filter(p=>!/^(que|cual|cuales|como|cuanto|cuanta|cuando|donde|por que|quien)\b/.test(normal(p).replace(/^[^a-z]+/,''))).map(p=>({p,k:clave(normal(p))})).filter(x=>x.k&&!dicho.includes(x.k.slice(0,5)))
+    // R16 [juez r16]: familias de palabras (tarda ↔ plazo), las partes con interrogativo cuentan salvo que las demás sean
+    // opciones con artículo («¿Qué importa más, el diseño o el plazo?»), y una PREGUNTA no responde (el eco no aprueba).
+    const VACIAS=new Set(['puedo','puedes','quiero','tengo','tienes','hacer','algo','esto','como','cuando','donde','porque','pero','para','sobre','entre','mucho','muchos','todo','todos','cada','cuanto','cuanta','importa','mejor']);
+    const FAMILIAS=[['cuest','preci','cobr','pag','cost','inver'],['tard','plaz','tiemp','dias','seman','entreg','cuand'],['inclu','trae','vien','conti'],
+      ['funcio','result','sirv'],['molest','incomod'],['compr','pedi','orden'],['disen','diseñ'],['garant','devol','reemb']];
+    const clave=c=>(c.match(/[a-zñ]+/g)||[]).filter(w=>w.length>=4&&!VACIAS.has(w)).sort((a,b)=>b.length-a.length)[0];
+    const familia=k=>{const f=FAMILIAS.find(f=>f.some(r=>k.startsWith(r)));return f||[k.slice(0,5)];};
+    // Una pregunta cuenta si AGREGA contenido (2+ palabras que la objeción no tenía: «¿Qué te gusta de donde compras
+    // ahora?»); la que solo repite la objeción es eco («¿Te molesta? ¿Compras en otro lado?») y no responde.
+    const deLaObjecion=new Set((normal(pregunta).match(/[a-zñ]{4,}/g)||[]));
+    const aporta=f=>(f.match(/[a-zñ]{4,}/g)||[]).filter(w=>!deLaObjecion.has(w)).length>=2;
+    const afirmaciones=respuestas.flatMap(t=>normal(t).split(/(?<=[.!?])\s+|\n+/)).filter(f=>f.trim()&&(!/\?\s*$/.test(f.trim())||aporta(f)));
+    const dicho=afirmaciones.join(' ');
+    const conArticulo=partes.filter(p=>/^(el|la|los|las|un|una|tu|tus)\s/.test(normal(p).replace(/^[^a-z]+/,''))).length;
+    const interrogativa=p=>/^(que|cual|cuales|como|cuanto|cuanta|cuando|donde|por que|quien)\b/.test(normal(p).replace(/^[^a-z]+/,''));
+    return partes.filter(p=>!(conArticulo>=2&&interrogativa(p))).map(p=>({p,k:clave(normal(p))}))
+      .filter(x=>x.k&&!familia(x.k).some(r=>dicho.includes(r)))
       .map(x=>({tema:x.k,componentes:[x.p],generico:true}));
   }
   return temas.filter(([,tema,decision])=>!frases.some(f=>tema.test(f)&&decision.test(f)&&!(/por escrito|se acuerdan|se defin|por confirmar|pendiente/.test(f)&&! /\bsi |\bno |\bsolo |\baparte|\badicional/.test(f))))
