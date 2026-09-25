@@ -423,3 +423,47 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Regla:** cuando el cuadro del video usa fotos propias (la alcancía con billetes), la réplica mide su SECUENCIA (qué
   entra en el corte, qué se queda quieto) y no se empareja con el cuadro fijo: la silueta mediría la foto, no el motor.
 - **Evidencia:** 7 de 12 ráfagas medidas, las 7 coinciden en aparición y estabilidad; encuadre 12/12 y elementos 10/12.
+
+## 2026-09-25 · Una regla que cuenta palabras no mide ancho (juez r19, 88.95 sobre 058d029)
+
+- **Regla:** en `colocarAnotaciones` (`templates/runtime.js`), la llave de una lista SIN columnas en 16:9 solo probaba
+  el lado derecho (correr el bloque, partir la nota en dos renglones, encoger el zoom); si con ítems de largo normal
+  (~9 palabras) nada de eso bastaba, el código hacía `puestas.push(...); return;` sin red y la nota salía del lienzo:
+  `armar.mjs` truena con 4 errores («la nota de la llave se sale del lienzo», «invade el margen horizontal a -291 px»).
+  La rama vertical (9:16) sí tenía una ruta completa (`llaveBajo`); la horizontal, no.
+- **Porqué:** un juez que escribe su propio deck 16:9 (no un ejemplo ya calibrado) topó con esto en el primer intento y
+  tuvo que acortar los ítems a la fuerza para poder seguir. Es el mismo patrón que la lección de ronda 17 («el 9:16 no
+  es un 16:9 angosto»), pero en sentido inverso: aquí faltaba portar el repliegue de 9:16 A 16:9.
+- **Arreglo:** `llaveAbajo()` se extrajo como función compartida entre las dos ramas; si el corrimiento y el piso de
+  64 px de la rama horizontal no cierran (`exceso>0`), cae al mismo repliegue de 9:16 (llave bajo la lista, nota
+  centrada debajo), y si el conjunto sigue sin caber, encoge la ZOOM de la lista (no la nota) en pasos de .06 hasta el
+  mismo piso de 64 px que ya usa el resto del motor. Verificado con el caso exacto del juez (2 ítems, `armar.mjs` pasa
+  de 4 errores a 0 errores/0 avisos, QA 100/100) y con la suite completa (616 pruebas, guardia de 9 aprobados sin
+  cambios).
+- **Regla:** `demostracionChat` (`scripts/lib/conversacion.mjs`) tenía una lista negra de 4 frases EXACTAS para anuncios
+  de demo («vamos a mostrar», «te enseñaré»...). «Enseguida te muestro cómo queda armado todo el proceso completo»
+  colaba como demostración porque ninguna frase de la lista coincidía Y «queda» está en la lista de palabras que la
+  regla trata como «concreto». Se sumaron las formas conjugadas reales del verbo mostrar/enseñar en presente («te
+  muestro/enseño cómo/que», «aquí te muestro») a la misma lista negra — no una raíz gramatical, porque «muestro» no
+  comparte raíz ortográfica con «mostrar» (el diptongo o→ue la rompe).
+- **Regla:** la tabla `FAMILIAS` (misma función, para `revisarComponentes`) exigía la raíz literal del componente de la
+  objeción. «No tengo tiempo ni equipo ni experiencia» respondido con «todo corre desde tu celular» seguía marcando
+  «equipo» como sin resolver porque el texto dice «celular», no «equip-». Se sumó una familia de sinónimos
+  (equipo/celular/computadora/laptop/teléfono/dispositivo): el patrón ya existía para otros componentes (tarda↔plazo,
+  incluye↔trae) pero «equipo» no tenía la suya.
+- **Regla:** `layouts-texto.mjs` arma una lista 9:16 de ≤2 ítems de ≤6 palabras a 144 px SIN comprobar el ancho de la
+  columna: «Un solo lugar para pagar» (5 palabras, 25 caracteres) partía en 4 renglones de una palabra («Un solo /
+  lugar / para / pagar») en la columna angosta. El heurístico de PALABRAS no mide caracteres/ancho real, y esa medida
+  solo se puede hacer en el navegador (el build no tiene DOM). `ampliarListas` (`runtime-legibilidad.js`) ahora, para
+  toda lista vertical sin contraste, baja la letra de 4 en 4 hasta el piso de 64 px si algún ítem pasa de 2 renglones —
+  el mismo patrón que ya usaban el contraste horizontal y el contraste vertical apilado, aplicado aquí a la lista
+  simple. Medir renglones de un `.item-texto` exige un `Range` sobre su nodo de texto, no `getClientRects()` del
+  elemento: al ser hijo directo de `.item` (`display:flex`), el spec lo «blockifica» y su propia caja sale como UNA
+  sola aunque el texto envuelva varios renglones.
+- **Límite (abierto):** la réplica de r255 (tachones/boleto) y r403 (sello) mejoraron pero siguen en «revisar» (IoU
+  0.500 y 0.598); la cobertura temporal quedó en 7/12 ráfagas sin comparar la trayectoria real del cursor; y
+  `revisarComponentes` sigue con un falso positivo cuando la respuesta usa una paráfrasis que no está en `FAMILIAS`
+  (p. ej. «sin experiencia previa» no resuelve un componente de «experiencia» a menos que la palabra clave calzada por
+  `clave()` coincida). Estos tres quedan documentados y sin tocar: requieren trabajo de calibración visual contra los
+  cuadros del video (fuera del repo) o extender `FAMILIAS` caso por caso, que no se puede generalizar sin arriesgar
+  nuevos falsos negativos.
