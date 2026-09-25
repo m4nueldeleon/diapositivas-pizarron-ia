@@ -155,7 +155,10 @@ export function medidasR11(lam) {
   const lista = lienzo.querySelector('.lista');
   if (lam.dataset.tipo === 'lista' && lista && lista.querySelectorAll(':scope > .item').length <= 5) {
     // El contenedor reserva TODOS los pasos: una lista no salta mientras se revela.
-    const bloque = lienzo.firstElementChild, b = caja(bloque), centro = (b.y + b.h/2) / H * 100;
+    // R17: la llave bajo la lista (9:16) y su nota son parte del bloque: se centra el conjunto
+    const bajo = [...lam.querySelectorAll(':scope > .anotacion[data-llave-bajo]')].map(caja);
+    const b0 = caja(lienzo.firstElementChild), fin = Math.max(b0.y + b0.h, ...bajo.map(x => x.y + x.h));
+    const bloque = lienzo.firstElementChild, b = { ...b0, h: fin - b0.y }, centro = (b.y + b.h/2) / H * 100;
     medidas.lista_centro_pct = +centro.toFixed(1);
     medidas.lista_anclaje = lienzo.dataset.anclar === 'arriba' ? 'arriba-explicito' : 'centro';
     if (lienzo.dataset.anclar !== 'arriba' && (centro < 40 || centro > 58)) avisos.push(`lista corta: centro del bloque al ${centro.toFixed(1)}% del alto (40–58%): centra el bloque completo; anclar arriba requiere una continuación explícita`);

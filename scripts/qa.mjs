@@ -122,7 +122,8 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
   const opac = e => { let o = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) o *= parseFloat(getComputedStyle(a).opacity); return o; };
   const zoom = e => { let z = 1; for (let a = e; a && a.nodeType === 1; a = a.parentElement) z *= parseFloat(getComputedStyle(a).zoom) || 1; return z; };
   const corto = (s, n = 30) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
-  const TEXTO = '.t, .t-remate, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .post p, .vivo-consigna, .vivo-items li, .llamada-yo, .llamada-rotulo, .agenda-evento b, .agenda-evento span, .agenda-dia, .agenda-numero, .invitacion-cab b, .invitacion-cab span, .invitacion-sub, .invitacion-boton, .contraste-titulo, .grabando';
+  // R17: el rótulo de procedencia («Ejemplo ficticio») también se lee: un sello encima es error [juez r17, pago 10]
+  const TEXTO = '.procedencia, .t, .t-remate, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .post p, .vivo-consigna, .vivo-items li, .llamada-yo, .llamada-rotulo, .agenda-evento b, .agenda-evento span, .agenda-dia, .agenda-numero, .invitacion-cab b, .invitacion-cab span, .invitacion-sub, .invitacion-boton, .contraste-titulo, .grabando';
   const CAJAS = TEXTO + ', .emo, img, table, .captura, .pastilla, .calendario, .rejilla, .medidor, .boton-ui, .agenda-evento, .invitacion, .celular-pantalla';
   const PRINCIPAL = '.t, .item, .etiqueta, .burbuja, .tarjeta';
   // Texto secundario que se tiene que LEER (≥ 48 px a 1920, ≈ 9 px en un celular de 360). Los rótulos decorativos

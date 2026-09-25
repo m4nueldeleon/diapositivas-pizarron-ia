@@ -1,0 +1,210 @@
+{
+  "titulo": "Cómo entregar un turno de cafetería sin perder pendientes",
+  "formato": "9:16",
+  "emoji": "apple",
+  "pieza": "reel",
+  "persona": "tu",
+  "marca": false,
+  "animacion": "seco",
+  "conceptos": {
+    "📝": "escribir",
+    "⏰": "recordatorio",
+    "📦": "producto",
+    "🤔": "duda",
+    "📌": "guardar"
+  },
+  "datos": {
+    "OBJECION_1": {
+      "valor": "No tengo computadora ni tiempo para reportes.",
+      "fuente": "Objeción ficticia del ejercicio de evaluación solicitado"
+    }
+  },
+  "laminas": [
+    {
+      "id": "gancho",
+      "tipo": "chat",
+      "procedencia": "ejemplo",
+      "mensajes": [
+        {
+          "de": "otro",
+          "hora": "14:00",
+          "texto": "¿Quién pidió el café?"
+        }
+      ],
+      "voz": "Termina tu turno: nadie sabe quién pidió el café."
+    },
+    {
+      "id": "promesa",
+      "tipo": "idea",
+      "emoji": "📝",
+      "texto": "Entrega el turno\n__sin perseguir pendientes__",
+      "voz": "Deja el pendiente escrito antes de irte."
+    },
+    {
+      "id": "campos",
+      "tipo": "tarjetas",
+      "items": [
+        {
+          "emoji": "📦",
+          "texto": "Qué falta"
+        },
+        {
+          "emoji": "👤",
+          "texto": "Quién responde"
+        },
+        {
+          "emoji": "⏰",
+          "texto": "Para cuándo"
+        }
+      ],
+      "voz": [
+        "Primero, qué falta.",
+        "Después, quién responde.",
+        "Y para cuándo lo necesitas."
+      ]
+    },
+    {
+      "id": "contraste",
+      "tipo": "lista",
+      "columnas": [
+        {
+          "titulo": "SÍ",
+          "tono": "v",
+          "vineta": "check",
+          "items": [
+            "Pedir café",
+            "Ana, hoy"
+          ]
+        },
+        {
+          "titulo": "NO",
+          "tono": "r",
+          "vineta": "cruz",
+          "items": [
+            "Ver pendientes",
+            "Alguien, luego"
+          ]
+        }
+      ],
+      "voz": [
+        "Sí: pedir café.",
+        "Ana lo pide hoy.",
+        "No: ver pendientes.",
+        "Alguien, luego, deja todo abierto."
+      ]
+    },
+    {
+      "id": "llave",
+      "tipo": "lista",
+      "items": [
+        "Falta café",
+        "Ana lo pide"
+      ],
+      "anotaciones": [
+        {
+          "llave": [
+            "i0",
+            "i1"
+          ],
+          "texto": "Evita duplicados"
+        }
+      ],
+      "voz": [
+        "Falta café.",
+        "Ana lo pide.",
+        "Así evitas pedidos duplicados."
+      ]
+    },
+    {
+      "id": "flujo",
+      "tipo": "flujo",
+      "nodos": [
+        {
+          "etiqueta": "Falta café"
+        },
+        {
+          "etiqueta": "Ana pide"
+        },
+        {
+          "etiqueta": "Pedido registrado"
+        }
+      ],
+      "voz": [
+        "Detectas que falta café.",
+        "Ana hace el pedido.",
+        "El pedido queda registrado."
+      ]
+    },
+    {
+      "id": "cifra",
+      "tipo": "cifra",
+      "lineas": [
+        "((1)) responsable"
+      ],
+      "voz": "Cada pendiente tiene un responsable."
+    },
+    {
+      "id": "objecion",
+      "tipo": "idea",
+      "emoji": "🤔",
+      "encabezado": "Objeción #1",
+      "encabezado_pos": "entre",
+      "texto": "{{OBJECION_1}}",
+      "voz": "Sin computadora ni tiempo para reportes."
+    },
+    {
+      "id": "respuesta",
+      "tipo": "chat",
+      "guion": true,
+      "procedencia": "ejemplo",
+      "mensajes": [
+        {
+          "de": "yo",
+          "texto": "Sin computadora: celular."
+        },
+        {
+          "de": "yo",
+          "texto": "Sin tiempo para reportes: «Ana, pedido de café el lunes»."
+        }
+      ],
+      "voz": [
+        "Sin computadora, usa el celular.",
+        "Sin tiempo para reportes: Ana, pedido de café el lunes."
+      ]
+    },
+    {
+      "id": "pago",
+      "tipo": "chat",
+      "como": "gancho",
+      "paga": "gancho",
+      "procedencia": "ejemplo",
+      "mensajes": [
+        {
+          "de": "otro",
+          "hora": "14:00",
+          "texto": "¿Quién pidió el café?"
+        },
+        {
+          "de": "yo",
+          "hora": "14:01",
+          "texto": "Ana. Pedido registrado."
+        }
+      ],
+      "sello": "Resuelto",
+      "sello_sobre": "m1",
+      "voz": [
+        "Vuelve la pregunta sobre el café.",
+        "Ana: pedido registrado.",
+        "El pendiente queda resuelto."
+      ]
+    },
+    {
+      "id": "cierre",
+      "tipo": "idea",
+      "emoji": "📌",
+      "texto": "__Guarda este formato__",
+      "llamado": true,
+      "voz": "Guarda este formato para tu siguiente turno."
+    }
+  ]
+}

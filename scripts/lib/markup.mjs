@@ -68,7 +68,8 @@ export function unirGuiones(html) {
 // entre la cifra y la palabra que la sigue; solo en texto, nunca dentro de una etiqueta.
 export function pegarCortas(t) {
   return String(t)
-    .replace(/(^|[\s(«"¿¡])([¿¡«"]?[\p{L}]{1,2})[ ](?=[\p{L}\p{N}¿¡«"$])/gu, '$1$2\u00a0')
+    // R17: con lookbehind, dos palabras cortas seguidas se pegan las dos («no se pide»: antes quedaba «no·se pide»)
+    .replace(/(?<=^|[\s(«"¿¡])([¿¡«"]?[\p{L}]{1,2})[ ](?=[\p{L}\p{N}¿¡«"$])/gu, '$1\u00a0')
     .replace(/(\d[\d.,]*%?)[ ](?=\p{L})/gu, '$1\u00a0')
     // …ni la última palabra corta de la frase sola en su renglón («a las / 10?»): se pega a la anterior
     .replace(/[ ]([\p{L}\p{N}$]{1,3}[?!.,;:»"”]*)$/u, '\u00a0$1');

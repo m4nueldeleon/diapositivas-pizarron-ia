@@ -1,0 +1,122 @@
+{
+ "nota": 94,
+ "borrador": false,
+ "avisos": [
+  "lámina # (cierre): desde el paso #: resaltado corto partido en dos renglones: «Guarda este / formato»; acorta la frase para que el resaltado quede entero",
+  "lámina # (promesa): desde el paso #: resaltado corto partido en dos renglones: «sin perseguir / pendientes»; acorta la frase para que el resaltado quede entero"
+ ],
+ "geometria": {
+  "1": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 184.9,
+   "chat_letras_max": 184.9,
+   "principal_x": 92.4
+  },
+  "2": {
+   "principal_x": 99.6
+  },
+  "3": {
+   "tarjetas_letra_nativa": 84,
+   "principal_x": 0
+  },
+  "4": {
+   "lista_letra_px1920": 149.3,
+   "lista_alto_util_pct": 78.7,
+   "lista_centro_pct": 46.9,
+   "fila_ancho_pct": 77.8,
+   "fila_rotulo_px1920": 149.3,
+   "principal_x": 74.7
+  },
+  "5": {
+   "lista_letra_px1920": 256,
+   "lista_alto_util_pct": 75,
+   "lista_centro_pct": 47,
+   "principal_x": 128
+  },
+  "6": {
+   "fila_ancho_pct": 84.4,
+   "fila_rotulo_px1920": 170.7,
+   "principal_x": 85.3
+  },
+  "7": {
+   "principal_x": 110.1
+  },
+  "8": {
+   "principal_x": 99.6
+  },
+  "9": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 149.3,
+   "chat_letras_max": 149.3,
+   "principal_x": 74.7
+  },
+  "10": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 170.4,
+   "chat_letras_max": 170.4,
+   "principal_x": 85.2
+  },
+  "11": {
+   "principal_x": 99.6
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "00000000000000000000030030006b18f9f8f380000000000000800000000000",
+   "02-promesa-1.png": "0000000008000cc00ee00dc00e00000056b8762034e03ae03020000000000000",
+   "03-campos-1.png": "0000000000000000600074806000000000000000000000000000000000000000",
+   "03-campos-2.png": "0000000000000000600074806000750076c00000000000000000000000000000",
+   "03-campos-3.png": "0000000000000000600074806000750076c0745076d060000000000000000000",
+   "04-contraste-1.png": "00000000000003006b406cc00000000000000000000000000000000000000000",
+   "04-contraste-2.png": "00000000000003006b406cc06900668000000000000000000000000000000000",
+   "04-contraste-3.png": "00000000000003006b406cc06900668003006d50000000000000000000000000",
+   "04-contraste-4.png": "00000000000003006b406cc06900668003006d5068406d300000000000000000",
+   "05-llave-1.png": "0000000068600000000000000000000000000000000000000000000000000000",
+   "05-llave-2.png": "0000000068600000000000000000000022306d70000000000000000000000000",
+   "05-llave-3.png": "0000000068600000000000000000000022306d7062980100da98010000000000",
+   "06-flujo-1.png": "000000000000000018c00ca00000000000000000000000000000000000000000",
+   "06-flujo-2.png": "000000000000000018c00d2003000ec000000000000000000000000000000000",
+   "06-flujo-3.png": "000000000000000018c00d2003000ec001004908751800000000000000000000",
+   "07-cifra-1.png": "000000000000000000000000c000ce38c2000000000000000000000000000000",
+   "08-objecion-1.png": "0000000006800cc01aa01d400f000c4019403ae01ac000606310000000000000",
+   "09-respuesta-1.png": "00000000000c000cf078d768e000000000000000000000000000800000000000",
+   "09-respuesta-2.png": "00000000000c000cf078d768e004000cf730f770cd30e700e300800000000000",
+   "10-pago-1.png": "00000000030000006a30f2b0b180000000000000000000000000800000000000",
+   "10-pago-2.png": "00000000030000006a30f2b0b180000003008000cbc08a00bb02800000000000",
+   "10-pago-3.png": "00000000030000006a30f2b0b1800000fe00d800ebc08a00bb02800000000000",
+   "11-cierre-1.png": "000000000000000000c006800f8018000000355009c00d000000000000000000"
+  },
+  "rojo": {
+   "01-gancho-1.png": 0,
+   "02-promesa-1.png": 1387,
+   "03-campos-1.png": 1,
+   "03-campos-2.png": 1,
+   "03-campos-3.png": 439,
+   "04-contraste-1.png": 0,
+   "04-contraste-2.png": 0,
+   "04-contraste-3.png": 1513,
+   "04-contraste-4.png": 2040,
+   "05-llave-1.png": 0,
+   "05-llave-2.png": 0,
+   "05-llave-3.png": 4406,
+   "06-flujo-1.png": 0,
+   "06-flujo-2.png": 355,
+   "06-flujo-3.png": 712,
+   "07-cifra-1.png": 422,
+   "08-objecion-1.png": 710,
+   "09-respuesta-1.png": 0,
+   "09-respuesta-2.png": 0,
+   "10-pago-1.png": 0,
+   "10-pago-2.png": 0,
+   "10-pago-3.png": 3038,
+   "11-cierre-1.png": 10888
+  }
+ }
+}

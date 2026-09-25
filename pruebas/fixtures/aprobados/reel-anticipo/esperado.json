@@ -1,0 +1,130 @@
+{
+ "nota": 100,
+ "borrador": false,
+ "avisos": [],
+ "geometria": {
+  "1": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 174.2,
+   "chat_letras_max": 174.2,
+   "principal_x": 87.1
+  },
+  "2": {
+   "principal_x": 99.6
+  },
+  "3": {
+   "lista_letra_px1920": 256,
+   "lista_alto_util_pct": 89.7,
+   "lista_centro_pct": 49.8,
+   "principal_x": 128
+  },
+  "4": {
+   "fila_ancho_pct": 77,
+   "fila_rotulo_px1920": 170.7,
+   "principal_x": 85.3
+  },
+  "5": {
+   "principal_x": 78.2
+  },
+  "6": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 143.4,
+   "chat_letras_max": 143.4,
+   "principal_x": 71.7
+  },
+  "7": {
+   "tarjetas_letra_nativa": 84,
+   "principal_x": 0
+  },
+  "8": {
+   "lista_letra_px1920": 149.3,
+   "lista_alto_util_pct": 78.7,
+   "lista_centro_pct": 46.9,
+   "fila_ancho_pct": 75.6,
+   "fila_rotulo_px1920": 149.3,
+   "principal_x": 74.7
+  },
+  "9": {
+   "principal_x": 67.5
+  },
+  "10": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 149.3,
+   "chat_letras_max": 149.3,
+   "principal_x": 74.7
+  },
+  "11": {
+   "chat_ancho_pct": 100,
+   "burbujas_ancho_pct_min": 84,
+   "burbujas_ancho_pct_max": 84,
+   "chat_letras_min": 170.7,
+   "chat_letras_max": 170.7,
+   "principal_x": 85.3
+  }
+ },
+ "hashes": {
+  "plataforma": "darwin-apple",
+  "png": {
+   "01-gancho-1.png": "0000000000000000000006000000698cf19cad12000000000000000000000000",
+   "01-gancho-2.png": "0000000000000000000006000000698cf19caf10076400000000000000000000",
+   "02-tesis-1.png": "00000000000000001f001cc00700000000000000000000000000000000000000",
+   "02-tesis-2.png": "00000000000000001f001cc0070000001b401dc01aa01a801800000000000000",
+   "03-para-que-1.png": "34803aa0da002900ec8000000000000000000000000000000000000000000000",
+   "03-para-que-2.png": "34803aa0da002900ec80000000004000da80ea404d2000000000000000000000",
+   "03-para-que-3.png": "34803aa0da002900ec80000000004000da80ea40cca403000cc00e8032e00000",
+   "04-orden-1.png": "000002800700070072a820000000000000000000000000000000000000000000",
+   "04-orden-2.png": "000002800700070072a823000700078031500000000000000000000000000000",
+   "04-orden-3.png": "000002800700070072a823000700078031500300070003000ec00a8000000000",
+   "05-objecion-1.png": "00000000000000000e801aa00d400f00344862a86a7018800000000000000000",
+   "06-respuesta-1.png": "00000000000c000ce4e0e4ace300e00000000000000000000000000000000000",
+   "06-respuesta-2.png": "00000000000c000ce4e0e4ace300e00c600ce498eab4e300f180000000000000",
+   "06-respuesta-3.png": "00000000000c000ce4e0e4ace300e00c600ce498eab4e300f3001d2014200000",
+   "07-dices-1.png": "000000000000000014807ca07540600000000000000000000000000000000000",
+   "07-dices-2.png": "000000000000000014807ca07540700077a06000000000000000000000000000",
+   "07-dices-3.png": "000000000000000014807ca07540700077a07400768000000000000000000000",
+   "08-si-no-1.png": "0000000000000300612066400000000000000000000000000000000000000000",
+   "08-si-no-2.png": "000000000000030061206640648060a000000000000000000000000000000000",
+   "08-si-no-3.png": "000000000000030061206640648060a003006ea0000000000000000000000000",
+   "08-si-no-4.png": "000000000000030061206640648060a003006ea061106d200000000000000000",
+   "09-cuenta-1.png": "0000000000000000000000000000d23403000000000000000000000000000000",
+   "10-plantilla-1.png": "0000000062007350000ce01cd6acea6ce9600000000000000000000000000000",
+   "10-plantilla-2.png": "0000000062007350000ce01cd6acea6ce960000ce004c69ce000000000000000",
+   "11-pago-1.png": "000000000000000000000600000076a4f286b180000000000000800000000000",
+   "11-pago-2.png": "000000000000000000000600000076a4f286b1d000e000000000800000000000"
+  },
+  "rojo": {
+   "01-gancho-1.png": 0,
+   "01-gancho-2.png": 3763,
+   "02-tesis-1.png": 468,
+   "02-tesis-2.png": 925,
+   "03-para-que-1.png": 0,
+   "03-para-que-2.png": 0,
+   "03-para-que-3.png": 4550,
+   "04-orden-1.png": 824,
+   "04-orden-2.png": 1150,
+   "04-orden-3.png": 1485,
+   "05-objecion-1.png": 720,
+   "06-respuesta-1.png": 0,
+   "06-respuesta-2.png": 0,
+   "06-respuesta-3.png": 1298,
+   "07-dices-1.png": 313,
+   "07-dices-2.png": 313,
+   "07-dices-3.png": 313,
+   "08-si-no-1.png": 0,
+   "08-si-no-2.png": 0,
+   "08-si-no-3.png": 1519,
+   "08-si-no-4.png": 2027,
+   "09-cuenta-1.png": 431,
+   "10-plantilla-1.png": 0,
+   "10-plantilla-2.png": 0,
+   "11-pago-1.png": 0,
+   "11-pago-2.png": 2554
+  }
+ }
+}

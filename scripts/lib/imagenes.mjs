@@ -55,9 +55,15 @@ export function avisosProcedencia(l) {
   // Un sello solo («SIN RESPUESTA», «TARDE») muestra un problema, no un resultado: se exige cuando el chat PAGA el gancho
   // y el cliente responde DESPUÉS de nosotros (el final feliz presentado como hecho).
   // Criterio: el chat paga el gancho y su ÚLTIMO mensaje (de dos o más) es del cliente: esa respuesta es el resultado.
-  const ms = l.mensajes || [];
-  if (l.tipo === 'chat' && l.paga && ms.length >= 2 && ms[ms.length - 1]?.de === 'otro')
-    return ['chat que paga el gancho con la respuesta del cliente (un resultado) sin procedencia: declara procedencia: "ejemplo" (sale «Ejemplo ficticio») o su fuente'];
+  // R17 [juez r17]: quien hable da igual. «Ya recibí tu pago. Pedido confirmado» con sello VENDIDO pasaba porque lo decía
+  // «yo». Un chat que PAGA el gancho, o que lleva un sello de resultado (vendido, pagado, resuelto…), es un resultado.
+  const resultado = /^(vendid|pagad|resuelt|volvi|cerrad|confirmad|listo|aprobad|agendad|reservad|cobrad|ganad|logrado|hecho)/i
+    .test(String(l.sello || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
+  const sinAcento = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  // Una pregunta («¿Qué recibo si te contrato?») no afirma un resultado
+  const dicenResultado = (l.mensajes || []).filter(m => !/\?\s*$/.test(String(m?.texto || '').trim())).some(m => /\b(pag[oaueé]\w*|confirm\w*|compr\w*|reserv\w*|apart\w*|agend\w*|recib\w*|llev[oa]\w*|listo|hecho|vendid\w*|cerrad\w*|firmad\w*|contrat\w*|inscri\w*|registrad\w*)\b/.test(sinAcento(m?.texto)));
+  if (l.tipo === 'chat' && ((l.paga && dicenResultado) || (l.sello && resultado)))
+    return ['chat que muestra un resultado (paga el gancho o lleva sello de resultado) sin procedencia: declara procedencia: "ejemplo" (sale «Ejemplo ficticio») o su fuente'];
   const falta = l.tipo === 'foto' || (l.tipo === 'prueba' && l.capturas?.some(c => c.src && !c.procedencia && !c.fuente));
   return falta ? ['imagen sin procedencia ni fuente: declara procedencia (real, ia o ejemplo) o añade fuente'] : [];
 }

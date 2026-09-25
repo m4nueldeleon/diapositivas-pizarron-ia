@@ -392,3 +392,16 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   aspecto y 720 px de tope salían en 28 × 18 a ~34 px, y el sello, que mide el ancho de la rejilla, quedaba chico.
 - **Cómo se detectó:** al sumar r403 y su ráfaga a `comparar.mjs --rafagas`. El encuadre pasó de fallar (y +7.4, h −15.6) a
   pasar (x −2.3, y +1.1, w +1.3, h −1.5); la silueta de 500 celdas diminutas queda en «revisar» y el umbral no se aflojó.
+
+## 2026-09-25 · El 9:16 no es un 16:9 angosto (juez r17)
+
+- **Regla:** en el lienzo alto, lo que en 16:9 va al lado va debajo. La nota de una llave a la derecha salía 440 px fuera
+  del lienzo; ahora la llave es horizontal bajo la lista y la nota va centrada debajo.
+- **Regla:** los tamaños de 16:9 no sirven apilados. El contraste iba a 48 px, el flujo a 76 junto a listas de 144 y la
+  cuenta de una línea se partía con el piso de 96. En 9:16 cada diseño tiene su escala, medida contra sus vecinos.
+- **Porqué:** el juez de Codex escribió un reel 9:16 a mano y su primer render dio QA 34 con cuatro errores; con estos
+  arreglos, el mismo deck da 94 sin errores. El demo es 16:9: ninguna prueba ejercitaba el reel completo.
+- **Regla:** una regla nueva se prueba contra las piezas aprobadas antes de publicarla. Encoger las listas 9:16 a un renglón
+  empeoró el reel aprobado (el verbo arriba y la frase en negrita abajo era un diseño bueno): se revirtió.
+- **Regla:** QA no premia nombrar el tema. «El precio es importante» no responde «¿cuánto cuesta?», «Vamos a ver una
+  demostración» no demuestra y un sello VENDIDO es un resultado aunque lo diga «yo».

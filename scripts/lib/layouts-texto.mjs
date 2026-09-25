@@ -133,10 +133,13 @@ export function flujo(l, ctx) {
   const flechas = Array.isArray(l.flechas) ? l.flechas : [];
   const signoDe = i => { const f = flechas[i - 1]; return f && SIGNOS.includes(f.signo) ? f.signo : ''; };
   const todoSignos = n > 1 && Array.from({ length: n - 1 }, (_, i) => signoDe(i + 1)).every(Boolean);
-  const tamE = l.emoji_tam || (sinFlecha ? 120 : n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
+  // R17 [reel 9:16]: apilado en el lienzo alto, el flujo usaba los tamaños de la fila de 16:9 (etiqueta de 76 px junto a
+  // listas de 144): QA marcaba un salto de escala de 1.9×. En 9:16 hasta tres nodos van a 200 px y la etiqueta a 96.
+  const tamE = l.emoji_tam || (ctx.vertical && !sinFlecha ? (n <= 3 ? 200 : n === 4 ? 150 : 110) : sinFlecha ? 120 : n <= 2 ? 220 : n === 3 ? 180 : n === 4 ? 140 : 104);
   // con columnas iguales (todas del ancho del nodo más ancho) el hueco baja un poco para que 3 nodos con sub quepan
-  const gap = Math.max(conTexto ? 188 : 0, l.separacion || (ctx.vertical ? 150 : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 210 : n === 4 ? 130 : 80));
-  const te = n >= 5 ? '40px' : n === 4 ? '54px' : sinFlecha ? '60px' : '76px';
+  const soloTexto = nodos.length > 0 && nodos.every(nd => !nd.emoji && !nd.imagen && !nd.cantidad);
+  const gap = Math.max(conTexto ? 188 : 0, l.separacion || (ctx.vertical ? (soloTexto && n <= 3 ? 240 : 150) : sinFlecha ? (n <= 3 ? 150 : 90) : n <= 2 ? 380 : n === 3 ? 210 : n === 4 ? 130 : 80));
+  const te = ctx.vertical && !sinFlecha ? (n <= 3 ? '96px' : n === 4 ? '76px' : '60px') : n >= 5 ? '40px' : n === 4 ? '54px' : sinFlecha ? '60px' : '76px';
   const estilo = sinFlecha ? 'ninguna' : ctx.vertical ? 'recta' : (l.flecha || 'recta');
   const signos = [];
   const html = nodos.map((nd, i) => {
@@ -152,7 +155,9 @@ export function flujo(l, ctx) {
     }
     const aNodo = ctx.vertical ? ctx.A('n' + i) : ctx.A('nodo' + i), aVis = ctx.vertical ? '' : ctx.A('n' + i);
     const normal = nd.normal || sinFlecha || (todoSignos && nd.normal !== false);
-    return `<div class="nodo${nd.tarjeta === true ? ' nodo-tarjeta' : ''}" style="--te:${!vis ? '84px' : te}"${ctx.P(k)}${aNodo}>
+    // R17 [juez r17, 9:16]: sin emoji, el nodo apilado a 84 px dejaba el flujo en el 31% del alto: sube a 112 (≤ 3 nodos)
+    const teTexto = ctx.vertical && !sinFlecha ? (n <= 3 ? '112px' : n === 4 ? '96px' : '76px') : '84px';
+    return `<div class="nodo${nd.tarjeta === true ? ' nodo-tarjeta' : ''}" style="--te:${!vis ? teTexto : te}"${ctx.P(k)}${aNodo}>
       ${vis ? `<div${aVis}>${vis}</div>` : ''}
       ${nd.etiqueta ? `<div class="etiqueta ${normal ? 'normal' : ''}${corta(nd.etiqueta)}"><span${!vis && !ctx.vertical ? aVis : ''}><span${ctx.A('et' + i)}>${marcar(nd.etiqueta)}</span></span></div>` : ''}
       ${nd.sub ? `<div class="sub-etiqueta">${marcar(nd.sub)}</div>` : ''}</div>`;

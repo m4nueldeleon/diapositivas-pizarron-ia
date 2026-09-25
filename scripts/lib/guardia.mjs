@@ -66,6 +66,35 @@ export async function hashesPNG(page, dirLaminas) {
   return hashes;
 }
 
+// R17 [juez r17]: quitar un subrayado cambia 2 de 256 bits del hash y ninguna medida geométrica. La tinta roja se cuenta
+// aparte, a 480×270 (el umbral de la tinta a mano: r > 150, g y b < 110).
+export async function rojoPNG(page, dirLaminas) {
+  const archivos = fs.readdirSync(dirLaminas).filter(f => f.endsWith('.png')).sort();
+  const rojo = {};
+  for (const f of archivos) {
+    const datos = 'data:image/png;base64,' + fs.readFileSync(path.join(dirLaminas, f)).toString('base64');
+    rojo[f] = await page.evaluate(async src => {
+      const img = new Image(); img.src = src; await img.decode();
+      const w = 480, h = Math.round(480 * img.height / img.width), c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+      const d = ctx.getImageData(0, 0, w, h).data; let n = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i] > 150 && d[i + 1] < 110 && d[i + 2] < 110) n++;
+      return n;
+    }, datos);
+  }
+  return rojo;
+}
+
+// Una lámina con tinta roja (≥ 40 px a 480) que pierde o gana más del 30% cambió su capa roja.
+export function diferenciasRojo(antes = {}, ahora = {}) {
+  const difs = [];
+  for (const [archivo, n] of Object.entries(antes)) {
+    const m = ahora[archivo]; if (m === undefined) continue;
+    if (Math.max(n, m) >= 40 && Math.abs(m - n) > .3 * Math.max(n, 1)) difs.push(`${archivo}: tinta roja ${n} → ${m} px`);
+  }
+  return difs;
+}
+
 export const hamming = (a, b) => [...a].reduce((n, c, i) => {
   let x = parseInt(c, 16) ^ parseInt(b[i] ?? '0', 16), k = 0;
   while (x) { k += x & 1; x >>= 1; }

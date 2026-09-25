@@ -418,7 +418,10 @@ test('huecos r4: una captura { hueco } es CAPTURA_N por confirmar; con plantilla
   assert.ok(r.porConfirmar.CAPTURA_2);
   assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'objeto', emoji: '📱', texto: 'El celular' }] }).avisos[0], /sin demostración/);
   // R16: la cámara declara QUÉ enseña en 3+ palabras («Lo hago» no lo dice)
-  assert.deepEqual(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Muestro cómo lo hago' }] }).avisos, []);
+  // R17 [juez r17]: y nombra el objeto: «Muestro cómo lo hago» o «Vamos a ver una demostración» solo anuncian
+  assert.deepEqual(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Muestro cómo lleno la cotización' }] }).avisos, []);
+  assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Muestro cómo lo hago' }] }).avisos[0], /sin demostración/);
+  assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', demuestra: 'Vamos a ver una demostración' }] }).avisos[0], /sin demostración/);
   assert.match(reglasDemostracion({ pieza: 'tutorial', laminas: [idea('Paso 1'), { tipo: 'camara', nota: 'Lo hago' }] }).avisos[0], /sin demostración/);
   assert.deepEqual(reglasDemostracion({ pieza: 'vsl', laminas: [idea('x')] }).avisos, []);
 });

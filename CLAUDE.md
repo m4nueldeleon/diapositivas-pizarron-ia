@@ -306,3 +306,12 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   el golpe con temblor solo con `suave`). `layouts-datos → rejilla`: 400+ en 16:9 es `rejilla-masiva` (1.25 de aspecto, 900 px
   de alto, columnas a ~1210/cols, rótulo-frase a 62 px, nota a 100 px); `respetarMargen` y el margen de QA la exceptúan.
   La silueta de r403 (IoU ~0.6) sigue en «revisar», como r255: 500 celdas de ~12 px a 480×270 no alinean píxel a píxel.
+- Juez r17 (Codex, 84.50 sobre 360ff59): en 9:16 la anotación con llave va HORIZONTAL bajo la lista (`colocarAnotaciones` →
+  `data-llave-bajo`, `dibujar` → llave de columna) y el conjunto lista + llave + nota se centra al 47%; el contraste apilado
+  usa letra común 84→64 y títulos de 96; el flujo apilado sube a 200/96 px (texto solo: 112, tramo de 240) y
+  `ajustarFlujoVertical` topa sus etiquetas en 780 px (zona de Reels); `ajustarCifras` baja su piso a 72/64 en 9:16; el
+  fondo del `foco` recibe `ampliarListas` (el clon lleva `data-tipo`). `pegarCortas` encadena palabras cortas seguidas
+  (lookbehind). La procedencia se pide a todo chat que afirme un resultado o lleve sello de resultado (`avisosProcedencia`),
+  el sello de chat evita `.procedencia` y prueba montarse arriba de la burbuja. Objeciones: una frase que solo valora el tema
+  («es importante») no responde, y las partes genéricas se revisan aunque haya un tema conocido. `demuestra`: un anuncio
+  («Vamos a ver una demostración») no cuenta; `[nombre]` no es dato. La guardia cuenta la tinta roja por PNG (`rojoPNG`).

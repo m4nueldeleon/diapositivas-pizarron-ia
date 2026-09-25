@@ -1,0 +1,224 @@
+{
+ "titulo": "Cómo cobrar un anticipo sin incomodar",
+ "formato": "9:16",
+ "emoji": "apple",
+ "pieza": "reel",
+ "persona": "tu",
+ "marca": false,
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "10:05 pm",
+     "texto": "¿Te pago todo cuando esté listo?"
+    }
+   ],
+   "sello": "Sin anticipo",
+   "sello_sobre": "m0",
+   "voz": [
+    "¿Te pago todo cuando esté listo?",
+    "Otra vez, sin anticipo."
+   ]
+  },
+  {
+   "id": "tesis",
+   "tipo": "idea",
+   "emoji": "🤝",
+   "texto": "El anticipo no se pide:\n__se explica__",
+   "texto_paso": 1,
+   "voz": [
+    "El anticipo no se pide.",
+    "Se explica."
+   ]
+  },
+  {
+   "id": "para-que",
+   "tipo": "lista",
+   "encabezado": "El anticipo sirve para:",
+   "items": [
+    "Apartar su fecha",
+    "Comprar el material"
+   ],
+   "anotaciones": [
+    {
+     "llave": [
+      "i0",
+      "i1"
+     ],
+     "texto": "Por eso es la mitad"
+    }
+   ],
+   "voz": [
+    "Sirve para apartar su fecha.",
+    "Y para comprar el material.",
+    "Por eso es la mitad."
+   ]
+  },
+  {
+   "id": "orden",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "📅",
+     "etiqueta": "Apartas la fecha"
+    },
+    {
+     "emoji": "💳",
+     "etiqueta": "Paga la mitad"
+    },
+    {
+     "emoji": "📦",
+     "etiqueta": "Entregas"
+    }
+   ],
+   "voz": [
+    "Primero apartas la fecha.",
+    "Te paga la mitad.",
+    "Y entregas."
+   ]
+  },
+  {
+   "id": "objecion",
+   "tipo": "idea",
+   "emoji": "🤔",
+   "encabezado": "Objeción #1",
+   "encabezado_pos": "entre",
+   "texto": "**«¿Y si no me gusta ni me lo entregas a tiempo?»**",
+   "voz": "¿Y si no me gusta, ni me lo entregas a tiempo?"
+  },
+  {
+   "id": "respuesta",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Si no te gusta, lo ajusto dos veces sin costo."
+    },
+    {
+     "de": "yo",
+     "texto": "Si no te lo entrego el viernes, te devuelvo el anticipo."
+    }
+   ],
+   "voz": [
+    "Si no le gusta, lo ajustas dos veces.",
+    "Si no entregas el viernes, devuelves el anticipo.",
+    "Así pierde el miedo."
+   ],
+   "anotaciones": [
+    {
+     "a": "m1",
+     "texto": "Así pierde el miedo",
+     "lado": "abajo"
+    }
+   ]
+  },
+  {
+   "id": "dices",
+   "tipo": "tarjetas",
+   "encabezado": "En el mensaje van:",
+   "items": [
+    {
+     "emoji": "📅",
+     "texto": "La fecha"
+    },
+    {
+     "emoji": "🔁",
+     "texto": "Los ajustes"
+    },
+    {
+     "emoji": "💳",
+     "texto": "El pago"
+    }
+   ],
+   "voz": [
+    "La fecha.",
+    "Los ajustes.",
+    "Y el pago."
+   ]
+  },
+  {
+   "id": "si-no",
+   "tipo": "lista",
+   "columnas": [
+    {
+     "titulo": "SÍ",
+     "tono": "v",
+     "vineta": "check",
+     "items": [
+      "Di para qué",
+      "Da la fecha"
+     ]
+    },
+    {
+     "titulo": "NO",
+     "tono": "r",
+     "vineta": "cruz",
+     "items": [
+      "Pedir perdón",
+      "Dar descuento"
+     ]
+    }
+   ],
+   "voz": [
+    "Di para qué es.",
+    "Da la fecha.",
+    "No pidas perdón.",
+    "Ni des descuento."
+   ]
+  },
+  {
+   "id": "cuenta",
+   "tipo": "cifra",
+   "lineas": [
+    {
+     "texto": "$8,000 × ((50%)) = **$4,000**"
+    }
+   ],
+   "voz": "De ocho mil, la mitad: cuatro mil."
+  },
+  {
+   "id": "plantilla",
+   "tipo": "chat",
+   "guion": true,
+   "encabezado": "Copia este mensaje:",
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Para apartar tu fecha del [día], el anticipo es de [monto]."
+    },
+    {
+     "de": "yo",
+     "texto": "Te mando el enlace."
+    }
+   ],
+   "voz": [
+    "Copia este mensaje y cambia la fecha y el monto.",
+    "Y mandas el enlace."
+   ]
+  },
+  {
+   "id": "pago",
+   "tipo": "chat",
+   "como": "gancho",
+   "paga": "gancho",
+   "procedencia": "ejemplo",
+   "llamado": true,
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "10:20 pm",
+     "texto": "¡Listo! Ya te pagué la mitad."
+    }
+   ],
+   "sello": "Pagado",
+   "sello_sobre": "m0",
+   "voz": [
+    "Listo, ya te pagué la mitad.",
+    "Guarda este reel: el mensaje está aquí."
+   ]
+  }
+ ]
+}

@@ -177,7 +177,7 @@
       const hay = [...new Set(dentro(esc, '[data-a]').flatMap(e => [e.dataset.a, e.dataset.w].filter(Boolean))) ].join(', ');
       avisos.push(`lámina ${+lam.dataset.i + 1}: falta el ancla «${!eb ? c.a : c.de}» (anclas de esta lámina: ${hay})`); return;
     }
-    const A = ea ? caja(ea, lam) : null, B = caja(eb, lam), p = c.p || 0;
+    let A = ea ? caja(ea, lam) : null, B = caja(eb, lam); const p = c.p || 0;
     let pts, color = C.rojo, ancho = 7, len = 30, abre = 0.5;
     switch (c.estilo) {
       case 'converge': {
@@ -327,7 +327,8 @@
         return;
       }
       case 'llave': {
-        if (c.vertical) {
+        const evBajo = c.vertical && c.via ? ancla(esc, c.via) : null;
+        if (c.vertical && !evBajo?.dataset.llaveBajo) {
           const ev = ancla(esc, c.via); if (!ev) return;
           // La llave agrupa también lo que queda ENTRE sus puntas: un renglón intermedio más largo no puede quedar cortado
           const entre = [];
@@ -340,6 +341,12 @@
         }
         const eV = c.via && ancla(esc, c.via); if (!eV) return;
         const V = caja(eV, lam);
+        if (evBajo) {
+          // Llave bajo la lista (9:16): las puntas en los extremos de los renglones que agrupa, abajo del último.
+          const cs = [A, B]; if (ea && ea.parentElement === eb.parentElement) for (let n = ea.nextElementSibling; n && n !== eb; n = n.nextElementSibling) cs.push(caja(n, lam));
+          const x0 = Math.min(...cs.map(b => b.x)), x1 = Math.max(...cs.map(b => b.x + b.w)), y1 = Math.max(...cs.map(b => b.y + b.h));
+          A = { x: x0, y: y1, w: 0, h: 0, cx: x0 + 16, cy: y1 }; B = { x: x1, y: y1, w: 0, h: 0, cx: x1 - 16, cy: y1 };
+        }
         // Llave alta [c_0635]: las puntas ~24 px bajo el centro de cada rama, los brazos bajan en curva amplia ~9% del alto
         // hasta el tramo horizontal y el pico baja otro ~5% hasta ~36 px sobre la nota. La altura sale del alto de la
         // lámina (el hueco lo reserva bifurcacion() en layouts-texto.mjs), no del hueco: antes medía ~65 px y se veía chata.
@@ -659,6 +666,24 @@
         // lienzo [juez r14, propuesta 12]. En orden: correr el bloque a la izquierda, partir la nota en DOS renglones
         // balanceados de 2+ palabras, y encoger el bloque sin bajar la lista del piso de 64 px.
         const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
+        // R17 [reel 9:16]: en el lienzo alto no cabe la nota a la derecha (salía 440 px fuera y la lista bajaba a 52 px).
+        // La llave va HORIZONTAL bajo los renglones que agrupa y la nota centrada debajo, como la llave de una columna.
+        if (H > W) {
+          Object.assign(n.style,{textWrap:'balance',whiteSpace:'normal',maxWidth:Math.round(W*.84)+'px',textAlign:'center'});
+          n.dataset.llaveBajo='1';
+          const cs=[el,fin].map(e=>caja(e,lam)).concat(entre), x0=Math.min(...cs.map(b=>b.x)), x1=Math.max(...cs.map(b=>b.x+b.w));
+          const y1=Math.max(...cs.map(b=>b.y+b.h)), mb=H*.06;
+          let top=y1+100+H*.05;
+          if(bloque){
+            // El conjunto (lista + llave + nota) se centra al 47% del alto sin salir de los márgenes
+            const arriba=caja(bloque,lam).y, abajo=top+n.offsetHeight;
+            const dy=Math.min((H-mb)-abajo, Math.max(mb-arriba, H*.47-(arriba+abajo)/2));
+            const z=parseFloat(getComputedStyle(bloque).zoom)||1;
+            if(Math.abs(dy)>1){ bloque.style.position='relative'; bloque.style.top=((parseFloat(bloque.style.top)||0)+dy/z)+'px'; top+=dy; }
+          }
+          n.style.left=((x0+x1)/2-n.offsetWidth/2)+'px'; n.style.top=top+'px';
+          puestas.push(caja(n,lam)); return;
+        }
         const pal=((n.textContent||'').trim().match(/\S+/g)||[]).length, f0=parseFloat(getComputedStyle(el).fontSize)||84;
         const colocar=()=>{
           const a = caja(el, lam), b = caja(fin, lam), entre = [];
@@ -816,7 +841,9 @@
       const st = getComputedStyle(lz), util = lz.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
       cs.forEach(c => { c.style.whiteSpace = 'nowrap'; });
       const tams = cs.map(c => parseFloat(getComputedStyle(c).fontSize) || 84);
-      const piso = cs.length > 1 ? 72 : 96, mayor = Math.max(...tams);
+      // R17 [reel 9:16]: el lienzo alto mide 1080 de ancho; con el piso de 16:9 (96) «$8,000 × 50% = $4,000» se partía.
+      const vertical = lam.offsetHeight > lam.offsetWidth;
+      const piso = cs.length > 1 ? (vertical ? 64 : 72) : (vertical ? 72 : 96), mayor = Math.max(...tams);
       const cabe = () => cs.every(c => c.scrollWidth <= Math.min(util, c.clientWidth || util) + 1);
       let k = 1;
       while (!cabe() && mayor * k * 0.96 >= piso) { k *= 0.96; cs.forEach((c, i) => c.style.setProperty('--tc', (tams[i] * k).toFixed(1) + 'px')); }
@@ -1149,9 +1176,11 @@
     lams.forEach(l => { fijarDescargos(l); ajustarChatVertical(l); ajustarPalabrasChat(l); });
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
-    lams.forEach(l => { ampliarListas(l); ajustarConsigna(l); reservarCarrilChat(l); });
+    // R17: el fondo del foco (clon de la lámina anterior) recibe la misma ampliación que su original: si no, la lista
+    // del fondo quedaba con el tamaño de partida y «saltaba» al pasar al foco [9:16, r9].
+    lams.forEach(l => { ampliarListas(l); const clon = l.querySelector(':scope > .escena.clon'); if (clon) ampliarListas(clon); ajustarConsigna(l); reservarCarrilChat(l); });
     coherenciaChats(lams); coherenciaChatsHorizontal(lams);
-    lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
+    lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); ajustarFlujoVertical(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });

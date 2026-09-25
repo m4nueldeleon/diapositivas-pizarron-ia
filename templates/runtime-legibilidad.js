@@ -35,6 +35,16 @@ function ampliarListas(lam) {
     bloque.querySelectorAll('.encabezado').forEach(e=>e.style.fontSize='64px');
     bloque.querySelectorAll('.contraste-titulo').forEach(e=>e.style.fontSize='84px');
   }
+  if (vertical && contraste) {
+    // R17 [reel 9:16]: el contraste apilado iba a 48 px (se leía como pie de página). Una letra común desde 84 px que baja
+    // de 4 en 4 hasta que ningún ítem se parta (piso 64); los títulos SÍ/NO a 96 px y aire entre las dos columnas.
+    const todos=[...contraste.querySelectorAll('.lista > *')].filter(e=>!e.closest('.lista').dataset.tamExplicito);
+    let t=84; todos.forEach(e=>e.style.fontSize=t+'px');
+    for (; t>64 && todos.some(e=>rectsTexto(e,lam).length>1); t-=4) todos.forEach(e=>e.style.fontSize=(t-4)+'px');
+    contraste.querySelectorAll('.contraste-titulo').forEach(e=>e.style.fontSize='96px');
+    contraste.style.gap='90px';
+    listas.filter(l=>!l.dataset.gapExplicito).forEach(l=>l.style.setProperty('--gap-lista','56px'));
+  }
   const objetivo = lam.offsetHeight*.5;
   const actual = bloque.getBoundingClientRect().height/escala(lam);
   if (actual < objetivo && listas[0].children.length>1 && !(listas[0].dataset.gapExplicito && actual/alto>=.45)) {
@@ -42,8 +52,9 @@ function ampliarListas(lam) {
     // R17 [juez r16, demo 54]: con DOS ítems el hueco entero caía en un solo intervalo (~440 px entre «Responsable» y
     // «Fecha»): ya no se leían como lista. El intervalo se topa en 2.4× la letra; el bloque queda centrado.
     const letra=Math.max(...items.map(e=>parseFloat(getComputedStyle(e).fontSize)||84));
-    listas.forEach(l=>{ const g=parseFloat(getComputedStyle(l).gap)||0;
-      l.style.setProperty('--gap-lista',Math.min(g+(objetivo-actual)/(n-1), Math.max(g, letra*2.4))+'px'); });
+    // En 9:16 no hay tope: el lienzo es alto y la regla de la ronda 9 pide ≥ 45% del alto al contenido corto.
+    listas.forEach(l=>{ const g=parseFloat(getComputedStyle(l).gap)||0, crece=g+(objetivo-actual)/(n-1);
+      l.style.setProperty('--gap-lista',(vertical ? crece : Math.min(crece, Math.max(g, letra*2.4)))+'px'); });
   }
   if (lz.dataset.anclar!=='arriba') {
     lz.style.justifyContent='center';
@@ -204,4 +215,16 @@ function pisoSecundario(lam) {
     const tam = parseFloat(getComputedStyle(e).fontSize);
     if (tam * z < piso - .5) e.style.fontSize = Math.ceil(piso / z) + 'px';
   });
+}
+
+// R17 [juez r17, 9:16]: las etiquetas del flujo apilado suben a 96-112 px, pero una etiqueta corta no se parte y no puede
+// entrar en la zona de los botones de Reels: una letra común para todas, que baja de 4 en 4 hasta que la más ancha quepa
+// en 780 px (piso 76).
+function ajustarFlujoVertical(lam) {
+  if (lam.offsetHeight <= lam.offsetWidth || lam.dataset.tipo !== 'flujo') return;
+  const ets = [...lam.querySelectorAll(':scope > .lienzo .nodo .etiqueta')];
+  if (!ets.length) return;
+  const ancho = e => { const s = e.querySelector('span') || e; return s.scrollWidth || s.getBoundingClientRect().width / escala(lam); };
+  let t = Math.max(...ets.map(e => parseFloat(getComputedStyle(e).fontSize) || 84));
+  for (; t > 76 && ets.some(e => ancho(e) > 780); t -= 4) ets.forEach(e => e.style.fontSize = (t - 4) + 'px');
 }

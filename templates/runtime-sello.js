@@ -9,7 +9,8 @@
   // gana el que menos tapa. Con `sello_pos` se respeta la zona del autor y solo se corre lo mínimo DENTRO de su lado.
   const ZONAS = { centro: [0.5, 0.5], arriba: [0.5, 0.27], abajo: [0.5, 0.73], izquierda: [0.28, 0.5], derecha: [0.72, 0.5],
     'arriba-izquierda': [0.28, 0.27], 'arriba-derecha': [0.72, 0.27], 'abajo-izquierda': [0.28, 0.73], 'abajo-derecha': [0.72, 0.73] };
-  const TXT_SELLO = '.t, .nota, .encabezado, .etiqueta, .burbuja, .chat-hora, .item, .valor, .cifra, .etiqueta-chica, .tarjeta, .opcion, .sub-etiqueta, .fuente, .titulo-marca';
+  // R17 [juez r17]: el rótulo «Ejemplo ficticio» (.procedencia) también es obstáculo: el sello RESUELTO lo tapaba.
+  const TXT_SELLO = '.t, .nota, .encabezado, .etiqueta, .burbuja, .chat-hora, .item, .valor, .cifra, .etiqueta-chica, .tarjeta, .opcion, .sub-etiqueta, .fuente, .procedencia, .titulo-marca';
   // Lo que el sello no debe tapar, medido una vez por lámina. `excluir`: el ancla de sello_sobre (sellarlo es a propósito).
   // Rejilla, cuadrantes y capturas se toleran, igual que en QA.
   function obstaculosSello(lam, excluir) {
@@ -204,7 +205,7 @@
     const margenHorizontal = Math.max(100, m);
     const arribaSeguro = H > W ? 220 : margenHorizontal, abajoSeguro = H > W ? 322 : margenHorizontal;
     const b = caja(burbuja, lam), yo = !!burbuja.closest('.msj.yo');
-    const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
+    const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado, .procedencia')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
       .flatMap(e => rectsTexto(e, lam));
     const iconos = [...lam.querySelectorAll('.yo-av, .otro-av, .emo, .firma')].filter(e => e.getClientRects().length && !e.closest('.escena.clon') && (e.matches('.yo-av, .otro-av') || !e.closest('.yo-av, .otro-av'))).map(e => caja(e, lam));
     // fracción de una caja bajo el sello (muestreo 10×5, más fino que el de QA: aquí se busca NO tocar las letras)
@@ -229,7 +230,10 @@
       const lado = yo ? b.x + bw * 0.9 : b.x + b.w - bw * 0.9;   // del lado contrario al avatar
       // montado sobre el borde de abajo: pisa el relleno de la burbuja, nunca sus letras
       const pie = Math.max(b.y + b.h + bh * 0.35, Math.max(b.y, ...rectsTexto(burbuja, lam).map(r => r.y + r.h)) + 8 + bh);
-      const cands = [[lado, pie], [b.cx, pie], [b.x + b.w + bw + 16, b.cy], [b.x - bw - 16, b.cy], [b.cx, b.y + b.h + bh + 12]]
+      // R17 [juez r17, 9:16]: abajo pueden estar el rótulo «Ejemplo ficticio» y la zona segura de Reels; montado sobre el
+      // borde de ARRIBA (pisa el relleno, no las letras) es la salida antes de tapar algo.
+      const techo = Math.min(b.y + bh * 0.35, Math.min(b.y + b.h, ...rectsTexto(burbuja, lam).map(r => r.y)) - 8 - bh);
+      const cands = [[lado, pie], [b.cx, pie], [b.x + b.w + bw + 16, b.cy], [b.x - bw - 16, b.cy], [b.cx, b.y + b.h + bh + 12], [lado, techo], [b.cx, techo]]
         .map(([x, y]) => [clamp(x, m + bw, W - m - bw), clamp(y, arribaSeguro + bh, H - abajoSeguro - bh)]);
       const medidos = cands.map(p => ({ p, t: costo(p[0], p[1], kk) }));
       const limpio = medidos.find(q => q.t === 0);

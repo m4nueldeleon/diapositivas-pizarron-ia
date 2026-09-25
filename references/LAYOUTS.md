@@ -35,12 +35,13 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
 - `voz`: lo que se dice. Puede ser un texto o una lista con un texto por paso; sirve para
   tiempos, anclas y QA.
 - `paga: "<id>"`: esta lámina paga el gancho `<id>` en el tramo final (el mismo objeto, resuelto). El id debe existir
-  (si falta, QA avisa); lo normal es combinarlo con `"como": "<id>"` para heredar el diseño y el emoji. Si el pago es
-  la respuesta de un cliente o un resultado, declara `procedencia: "ejemplo"` (sale «Ejemplo ficticio») o su `fuente`
-  real: QA avisa en cualquier pieza. Ver GUION §6 y ARCOS («el objeto del gancho vuelve»).
+  (si falta, QA avisa); lo normal es combinarlo con `"como": "<id>"` para heredar el diseño y el emoji. Si el chat
+  afirma un resultado (pagó, confirmó, apartó, reservó…) o lleva un sello de resultado (VENDIDO, PAGADO, RESUELTO…), lo
+  diga quien lo diga, declara `procedencia: "ejemplo"` (sale «Ejemplo ficticio») o su `fuente` real: QA avisa en
+  cualquier pieza. Ver GUION §6 y ARCOS («el objeto del gancho vuelve»).
   ```json
   { "id": "pago", "tipo": "chat", "como": "gancho", "paga": "gancho", "procedencia": "ejemplo",
-    "sello": "Volvió", "sello_sobre": "m1", "mensajes": [{ "de": "otro", "hora": "Hoy", "texto": "¡Apártame tres cajas!" }] }
+    "sello": "Volvió", "sello_sobre": "m0", "mensajes": [{ "de": "otro", "hora": "Hoy", "texto": "¡Apártame tres cajas!" }] }
   ```
 - `dur`: segundos por paso, como número o como lista.
 - `revelar`: `"todo"` enseña todo de un golpe; por omisión se revela un elemento por paso.
@@ -118,7 +119,7 @@ El diseño más usado. Un emoji grande arriba y la frase con su parte clave en n
 - **Par antes/después** [10:55]: `"emoji": ["no:📚", "si:🤖"]` pone dos emojis en fila;
   `apagar_emoji: 0` atenúa el primero (el negado) y `emoji_paso: 1` revela el segundo después.
   Solo en `idea`. Para comparar un EJEMPLO, conserva el mismo concepto: `cuadrantes` con `no:🪝` (tono `r`) y `si:🪝` (tono `v`) = sin gancho / con gancho. 😩/😌 es el estado de una persona (dolor / alivio), no el resultado de dos ejemplos.
-- `encabezado`: arranca la frase que completan los ítems y termina en «:», «…», «...» o «?». Excepciones: numeración con `encabezado_pos: "entre"`, listas mapa (`activo`, `hechos`, `como`, `oscura`) y `encabezado_estilo: "frase"`. No lleva metadatos (módulo, semana, fecha, N personas, « · »), nombre de sección ni estados («por confirmar», «pendiente», «ficticio», «ejemplo», `{{…}}`). Usa «No incluye:». Procedencia en `fuente` o nota; `procedencia` se ignora en idea/chat. QA avisa también si, en decks de 12 láminas o más, más del 25% lleva encabezado no exento. Con `encabezado_pos: "entre"` va entre emoji y frase; por omisión es un rótulo gris arriba.
+- `encabezado`: arranca la frase que completan los ítems y termina en «:», «…», «...» o «?». Excepciones: numeración con `encabezado_pos: "entre"`, listas mapa (`activo`, `hechos`, `como`, `oscura`) y `encabezado_estilo: "frase"`. No lleva metadatos (módulo, semana, fecha, N personas, « · »), nombre de sección ni estados («por confirmar», «pendiente», «ficticio», «ejemplo», `{{…}}`). Usa «No incluye:». La procedencia no va en el encabezado: en `idea`, en `fuente` o nota; en `chat`, `foto` y `prueba`, con `procedencia` (pie «Ejemplo ficticio»). QA avisa también si, en decks de 12 láminas o más, más del 25% lleva encabezado no exento. Con `encabezado_pos: "entre"` va entre emoji y frase; por omisión es un rótulo gris arriba.
 - **Objeción o «Razón #N»** [34:25, 35:15] — una forma para todas las del deck:
   ```json
   { "tipo": "idea", "emoji": "no:⌨️", "encabezado": "Objeción #1", "encabezado_pos": "entre",

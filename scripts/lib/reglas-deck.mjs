@@ -541,13 +541,19 @@ export function huecosDePrueba(deck) {
 // un tramo a cámara. Es aviso: el emoji grande como objeto es del estilo original, pero un tutorial sin NINGUNA
 // demostración enseña de palabra.
 const PIEZAS_ENSENAN = ['tutorial', 'clase', 'clase-corta'];
+// R17 [juez r17]: «Vamos a ver una demostración» anuncia, no enseña: quitando el anuncio (vamos a ver, te muestro, demo…)
+// y las palabras vacías, deben quedar dos palabras con contenido («lleno la cotización en vivo»).
+const ANUNCIO = new Set(['vamos','voy','ver','veamos','mostrar','muestro','ensenar','enseno','demostracion','demo','ahora','aqui','continuacion','te','les','os','hacer','hago','esto','eso']);
+const VACIAS_DEMO = new Set(['a','al','una','un','unos','unas','la','el','los','las','de','del','en','y','o','que','como','para','con','tu','mi','su','se','lo','le','es','muy']);
+const soloAnuncio = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z0-9]+/g)
+  ?.filter(w => !ANUNCIO.has(w) && !VACIAS_DEMO.has(w)).length < 2;
 // R15 [juez r15]: una sola función de evidencia. Una `camara` cuenta solo si declara qué se enseña (`demuestra`, un
 // `texto`, una `nota` o un tramo en vivo): una cámara vacía de 15 s callaba el aviso. Un chat cuenta si demuestra de verdad
 // (entrada → salida utilizable, o guion literal con variable, fecha o entregable).
 export const demuestra = l => l && ((l.tipo === 'prueba' && capturasDe(l).some(c => conTexto(c.src) && !c.hueco && c.ejemplo !== true))
   || (l.tipo === 'objeto' && conTexto(l.imagen))
   // R16 [juez r16]: «Demo» o `vivo: true` solos no dicen qué se enseña: 3+ palabras en `demuestra`, `texto` o `nota`
-  || (l.tipo === 'camara' && [l.demuestra, l.texto, l.nota].some(t => conTexto(t) && palabras(t) >= 3))
+  || (l.tipo === 'camara' && [l.demuestra, l.texto, l.nota].some(t => conTexto(t) && palabras(t) >= 3 && !soloAnuncio(t)))
   || demostracionChat(l));
 export function reglasDemostracion(deck) {
   if (!PIEZAS_ENSENAN.includes(deck.pieza) || deck.laminas.some(demuestra)) return { errores: [], avisos: [] };
