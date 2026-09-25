@@ -112,3 +112,32 @@ function ampliarTarjetasVertical(lam) {
   if (!probar(false)) probar(true);
   lz.style.justifyContent = 'center';
 }
+
+// R16 [juez r16, ref_1040 17:20 y 28:00]: en el video la fila de íconos del mapa va a la MISMA altura en cada aparición,
+// con su borde superior cerca del 32% del alto (ref_1040; 28:00), y el texto cuelga debajo. Con la reserva del grupo (nada se mueve de lugar) el bloque se
+// centraba entero y los íconos subían al ~17%. Corre DESPUÉS de encajar: solo traslada, sin salir del margen de 6%.
+function anclarMapas(lams) {
+  // Todas las apariciones del MISMO mapa (misma secuencia de íconos) se trasladan lo mismo: el desplazamiento común es el
+  // que cabe en el miembro más limitado, así los íconos quedan a idéntica altura en cada regreso.
+  const grupos = new Map();
+  lams.forEach(lam => {
+    if (lam.offsetWidth <= lam.offsetHeight || lam.dataset.tipo !== 'pasos') return;
+    const lz = lam.querySelector(':scope > .lienzo'), bloque = lz?.firstElementChild;
+    if (!bloque || lz.dataset.anclar || bloque.querySelector('.tecla') || !bloque.querySelector('.fila, .fila-pasos')) return;
+    // Solo los íconos de la fila (no la ✅ que cuelga en los regresos); el grupo se reconoce por sus etiquetas
+    const iconos = [...bloque.querySelectorAll('.icono-paso .emo, .icono-paso img')].filter(e => e.getClientRects().length);
+    if (!iconos.length) return;
+    const H = lam.offsetHeight, m = H * .06, cajas = iconos.map(e => caja(e, lam)), B = caja(bloque, lam);
+    const arriba = Math.min(...cajas.map(b => b.y));   // el borde SUPERIOR de los íconos al 32% del alto [ref_1040; prueba r5]
+    const clave = [...bloque.querySelectorAll('.rotulo-paso')].map(e => e.textContent.trim()).join('|') || iconos.map(e => e.dataset.e || '').join('|');
+    const g = grupos.get(clave) || { deseado: H * .32 - arriba, max: Infinity, min: -Infinity, miembros: [] };
+    g.max = Math.min(g.max, H - m - (B.y + B.h)); g.min = Math.max(g.min, m - B.y); g.miembros.push(bloque);
+    grupos.set(clave, g);
+  });
+  grupos.forEach(g => {
+    const dy = Math.max(g.min, Math.min(g.deseado, g.max));
+    if (Math.abs(dy) < 4) return;
+    g.miembros.forEach(b => { const z = parseFloat(getComputedStyle(b).zoom) || 1; b.style.position = 'relative'; b.style.top = ((parseFloat(b.style.top) || 0) + dy / z) + 'px'; });
+  });
+}
+

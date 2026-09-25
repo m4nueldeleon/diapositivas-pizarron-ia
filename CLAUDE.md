@@ -290,4 +290,6 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   `coherenciaChatsHorizontal` iguala la escala del deck (≤ 1.3×) y `ajustarBurbujas` ciñe cada burbuja a su renglón más
   largo (itera: el reparto «pretty» reacomoda). QA registra `chat_letras` también en 16:9 y avisa hueco interno > 12%.
   `pruebas/fixtures/aprobados/tutorial-recuperar` es el deck del juez r16.
+- `runtime-filas.js → anclarMapas` (después de encajar): los mapas de íconos en 16:9 llevan el borde superior de sus
+  íconos al 32% del alto; todas las apariciones de un mismo mapa (mismas etiquetas) usan el mismo desplazamiento.
 

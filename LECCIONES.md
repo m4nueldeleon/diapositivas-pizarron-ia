@@ -357,4 +357,7 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   ese alto y se ve cargado arriba. Centrarlo haría saltar los íconos entre la primera aparición y sus regresos, y el
   principio del estilo es que en el revelado por acumulación nada se mueve de lugar (ESTILO; prueba r5 «mapa sin salto»).
   Gana la continuidad. Si el mapa no vuelve con texto, no hay reserva y sale centrado, como en ref_1040.
+  **Actualización (juez r16):** la continuidad era correcta pero la altura no: en el video los íconos arrancan cerca del
+  32% del alto en CADA aparición. `runtime-filas.js → anclarMapas` traslada todas las apariciones del mismo mapa (se
+  reconocen por sus etiquetas) con un mismo desplazamiento, el que cabe en el miembro más limitado.
 

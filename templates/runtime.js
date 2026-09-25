@@ -1149,6 +1149,7 @@
     lams.forEach(l => { try { ajustarBurbujas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: burbujas (${e.message})`); } });
     lams.forEach(l => { try { centrarNotasContraste(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de columna (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
+    try { anclarMapas(lams); } catch (e) { avisos.push(`altura del mapa (${e.message})`); }
     lams.forEach(l => { try { centrarNotasContraste(l); respetarMargen(l); reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
     // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
     const esFoco = l => !!l.querySelector(':scope > .escena.clon');
