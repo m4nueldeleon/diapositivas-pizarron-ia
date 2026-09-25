@@ -143,7 +143,9 @@
       mp.setAttribute('pathLength', '1'); mp.setAttribute('stroke-dasharray', '1 1'); mp.dataset.trazo = '1'; mp.dataset.p = o.p || 0; mp.dataset.dur = o.dur || 700;
       if (o.retraso) mp.dataset.retraso = o.retraso;
       // tramo que arrastra la mano [1:55]: el cursor sigue la punta de esta máscara (ver mostrar)
-      if (o.arrastre != null) Object.assign(e.dataset, { arrastre: o.arrastre, retraso: o.retraso || 0, dur: o.dur || 700 });
+      // R14 [d_123, cuadro 24 = 2.0 s del corte]: la mano va al ~64% entre la tecla 1 y la 2; con 650 ms de salida rápida
+      // la réplica ya había llegado. El tramo que arrastra usa entrada y salida suaves (900 ms), igual en máscara y mano.
+      if (o.arrastre != null) { Object.assign(e.dataset, { arrastre: o.arrastre, retraso: o.retraso || 0, dur: o.dur || 700, curva: 'inout' }); mp.dataset.curva = 'inout'; }
       m.appendChild(mp); svg.querySelector('defs').appendChild(m); e.setAttribute('mask', `url(#${mid})`);
     } else if (!o.relleno) {
       e.setAttribute('pathLength', '1'); e.setAttribute('stroke-dasharray', '1 1'); e.dataset.trazo = '1'; e.dataset.dur = o.dur || 300;
@@ -316,7 +318,7 @@
         const P = [A.x + A.w + 14, A.cy + (arriba ? -A.h * 0.22 : A.h * 0.22)], Q = [B.x - 14, B.cy + (arriba ? -B.h * 0.22 : B.h * 0.22)];
         const d = Q[0] - P[0], alto = (arriba ? -1 : 1) * Math.max(90, d * 0.42);
         pts = cubica(P, [P[0] + d * 0.12, P[1] + alto], [Q[0] - d * 0.2, Q[1] + alto * 0.9], Q);
-        trazo(svg, suave(pts), { color: C.grisClaro, ancho: 4, dash: '7 11', p, textura: false, dur: 650, retraso: c.retraso, arrastre: c.arrastre });
+        trazo(svg, suave(pts), { color: C.grisClaro, ancho: 4, dash: '7 11', p, textura: false, dur: c.arrastre != null ? 900 : 650, retraso: c.retraso, arrastre: c.arrastre });
         return;
       }
       case 'linea': {
@@ -1000,7 +1002,8 @@
     lam.querySelectorAll('[data-trazo]').forEach(e => {
       const p = pasoTrazo(e), dur = +e.dataset.dur || 300, ret = +e.dataset.retraso || 0;
       const crece = suave || e.closest('mask');
-      const k = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : crece ? easeOut(clamp((t - ret) / dur)) : 1;
+      const curva = e.dataset.curva === 'inout' ? easeInOut : easeOut;
+      const k = fin || p < paso || e.dataset.fijo ? 1 : p > paso ? 0 : crece ? curva(clamp((t - ret) / dur)) : 1;
       e.style.strokeDashoffset = String(1 - k);
     });
     lam.querySelectorAll('[data-cabeza]').forEach(e => {
@@ -1024,8 +1027,9 @@
       // opciones, idea) conservan su entrada larga: no hay ráfaga del video que diga otra cosa.
       const teclas = arrastra || lam.dataset.tipo === 'pasos';
       if (!fin && p === paso && teclas) {
-        const t0 = 100, k = easeOut(clamp((t - t0) / 250));
-        dx = (1 - k) * 30; dy = (1 - k) * 60; op = String(k);
+        // R14 [d_123, cuadro 8 = corte]: la mano ya está a la vista, opaca, bajo la tecla, y sube a ella en ~1 cuadro (125 ms).
+        const t0 = 0, k = easeOut(clamp((t - t0) / 125));
+        dx = (1 - k) * 30; dy = (1 - k) * 60; op = '';
         if (t > t0 + 250 && t < t0 + 400) sc = 0.86;
         if (t > t0 + 250 && t < t0 + 700) { const q = (t - t0 - 250) / 450; oo = 0.9 * (1 - q); os = 20 + q * 110; }
         if (arrastra && t > t0 + 400) { const q = arrastre(cur, t); dx = q[0]; dy = q[1]; cerrada = q[2]; if (cerrada) sc = 0.85; }
@@ -1065,7 +1069,7 @@
     if (t >= tFin) { const [ex, ey] = puntaDe(ult, 1), k = easeOut((t - tFin) / 250); return [ex + (fx - ex) * k, ey + (fy - ey) * k, k < 1]; }
     if (t < ini(tramos[0])) return [0, 0, false];
     const e = tramos.find(x => t < ini(x) + dur(x)) || ult;
-    const k = easeOut(clamp((t - ini(e)) / dur(e)));
+    const k = (e.dataset.curva === 'inout' ? easeInOut : easeOut)(clamp((t - ini(e)) / dur(e)));
     const [ex, ey] = puntaDe(e, k);
     // al salir de la tecla del clic la mano se desliza hasta la punta del trazo (sin salto de un cuadro)
     const b = e === tramos[0] ? clamp(k * 3) : 1;

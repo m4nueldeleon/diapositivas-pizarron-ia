@@ -159,9 +159,14 @@ Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes render
 ```bash
 node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/comparar
 # igual a: node scripts/comparar.mjs pruebas/replica <carpeta-con-ref_SEG.jpg> …  (npm run replica -- <carpeta>)
-# Con ráfagas externas de 8 cuadros por segundo:
+# Con ráfagas externas de 8 cuadros por segundo (la medición de una ronda SIEMPRE las incluye: sin ellas
+# comparar.json dice «sin-referencia-temporal» y un juez lo lee como fidelidad temporal sin medir):
 node scripts/comparar.mjs <carpeta-ref> --rafagas <carpeta-rafagas> --salida <salida-externa>
 ```
+
+- **Calibración temporal vigente (ronda 14, ráfaga d_123):** la mano del mapa entra opaca en el corte, bajo la
+  tecla, y sube a ella en ~125 ms; el arrastre empieza a los 1500 ms y cada tramo dura 900 ms con entrada y salida
+  suaves (a los 2 s la mano va ~60% entre la tecla 1 y la 2, como el cuadro 24). `r14-geometria` lo fija.
 
 - La réplica vive versionada en `pruebas/replica/deck.json` (solo texto); los cuadros `ref_*.jpg` siguen
   FUERA del repo. Cada lámina lleva `_cuadro` («4:15 lista tachada») y, si el cuadro es un momento

@@ -103,3 +103,15 @@ test('r14: un chat 16:9 con anotación reserva carril y la nota no pisa texto',a
  assert.ok(!q.errores.some(e=>/pisa texto|margen horizontal|renglones mínimos/.test(e)),JSON.stringify(q.errores));
  assert.ok(!q.avisos.some(a=>/burbuja de \d+ renglones/.test(a)),JSON.stringify(q.avisos));
 });
+test('r14: el cursor del mapa entra visible en el corte y la mano va a ~60% del tramo a los 2 s [d_123]',async t=>{
+ const p=await pagina(t,[{tipo:'pasos',clic:1,texto:'3-step business',nota:'Complete beginners'}]);if(!p)return;
+ const r=await p.evaluate(()=>{const l=window.PZ.lams[0];const cur=l.querySelector('.cursor[data-p]');const p0=+cur.dataset.p;
+   window.PZ.mostrar(l,p0,0);const op0=getComputedStyle(cur).opacity;
+   const f=[...l.querySelectorAll('.capa-mano path[data-arrastre]')].sort((a,b)=>a.dataset.arrastre-b.dataset.arrastre)[0];
+   const tx=+cur.dataset.tx;
+   window.PZ.mostrar(l,p0,2000);const M=new DOMMatrix(getComputedStyle(cur).transform);
+   const fin0=f?f.getPointAtLength(f.getTotalLength()).x-tx:null;
+   return {op0:+op0,frac:f?M.m41/(fin0||1):null,curva:f?.dataset.curva};});
+ assert.ok(r.op0>=.99,`el cursor debe verse en el corte (opacidad ${r.op0})`);
+ if(r.frac!=null){ assert.equal(r.curva,'inout'); assert.ok(r.frac>.4&&r.frac<.8,`avance a 2 s: ${r.frac}`); }
+});
