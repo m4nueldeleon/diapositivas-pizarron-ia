@@ -238,6 +238,119 @@
    "emoji_tam": 420,
    "separacion": 520,
    "_solo_rafaga": true
+  },
+  {
+   "_cuadro": "5:28-5:30 tabla-marcador vacía con la primera columna rotulada (ráfaga j_table)",
+   "paso_ref": -1,
+   "id": "r328",
+   "tipo": "tabla",
+   "vacias": 4,
+   "columnas": [
+    "High-Ticket Sales"
+   ],
+   "filas": [
+    {
+     "etiqueta": "Unitary Gain",
+     "celdas": [
+      ""
+     ]
+    },
+    {
+     "etiqueta": "Startup Capital",
+     "celdas": [
+      ""
+     ]
+    },
+    {
+     "etiqueta": "Speed to First Dollar",
+     "celdas": [
+      ""
+     ]
+    },
+    {
+     "etiqueta": "Skill Requirements",
+     "celdas": [
+      ""
+     ]
+    },
+    {
+     "etiqueta": "Fulfilment",
+     "celdas": [
+      ""
+     ]
+    },
+    {
+     "etiqueta": "Scalability",
+     "celdas": [
+      ""
+     ]
+    }
+   ],
+   "esquina": "Metric"
+  },
+  {
+   "_cuadro": "7:28-7:30 gráfica de escala de Dropshipping (ráfaga f_flechas)",
+   "paso_ref": -1,
+   "id": "r448",
+   "tipo": "grafica",
+   "titulo": "Dropshipping",
+   "subtitulo": "Scalability",
+   "series": [
+    {
+     "nombre": "Scale",
+     "forma": "recta",
+     "tono": "a"
+    },
+    {
+     "nombre": "Ad cost",
+     "forma": "exponencial",
+     "tono": "r"
+    }
+   ],
+   "banda": "Your Margins"
+  },
+  {
+   "_cuadro": "11:08-11:10 mapa 1-2-3 con manos y nota gris que entra en el corte (ráfaga l_stack)",
+   "paso_ref": -1,
+   "id": "r668",
+   "tipo": "pasos",
+   "n": 3,
+   "sobre": "✋",
+   "texto": "The exact **3-step system** beginners\nall over the world are using",
+   "nota": "(while having AI fulfilling all the work for them)",
+   "nota_paso": 1
+  },
+  {
+   "_cuadro": "15:23.9-15:24.9 la pastilla del reparto entra sola en el corte (ráfaga h_pill)",
+   "paso_ref": 0,
+   "id": "r922",
+   "tipo": "reparto",
+   "total": {
+    "datos": [
+     {
+      "valor": "5k",
+      "etiqueta": "Audience"
+     },
+     {
+      "valor": "$30,000",
+      "etiqueta": "Revenue"
+     }
+    ]
+   },
+   "partes": [
+    {
+     "etiqueta": "Creator's cut",
+     "valor": "$21,000",
+     "pct": "70%",
+     "tono": "gris"
+    },
+    {
+     "etiqueta": "Your cut",
+     "valor": "$9,000",
+     "pct": "30%",
+     "tono": "verde"
+    }
+   ]
   }
  ],
  "_nota": "Réplica versionada del video de referencia: cada lámina r<seg> se compara con ref_<seg>.jpg (fuera del repo, en pizarron-ref/replica). paso_ref: paso visible en el cuadro (desde 0; -1 = el último). Ver PROTOCOLO §4b."

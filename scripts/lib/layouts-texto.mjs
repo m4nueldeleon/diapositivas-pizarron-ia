@@ -253,14 +253,16 @@ export function pasos(l, ctx) {
   const cols = [];
   for (let i = 0; i < n; i++) {
     const apagado = activo && activo !== i + 1 ? ' paso-apagado' : '';
-    const sobre = l.sobre ? `<div class="icono-paso" style="margin-bottom:10px">${ctx.emoji(l.sobre, 120)}</div>` : '';
+    // R19 [ref_668, 11:08]: con un emoji `sobre` la mano manda (~135-150 px) y la tecla baja a ~90-110 px, a la inversa del
+    // mapa sin manos. Antes la tecla medía 170 y la mano 120.
+    const sobre = l.sobre ? `<div class="icono-paso" style="margin-bottom:14px">${ctx.emoji(l.sobre, 160)}</div>` : '';
     let cab;
     if (l.iconos) {
       cab = `<div class="icono-paso"${ctx.A('k' + i)}>${l.iconos[i]?.imagen ? imagenConHueco(ctx, l.iconos[i].imagen, tamIcono) : ctx.emoji(l.iconos[i]?.emoji || l.iconos[i], tamIcono)}</div>
         ${l.prefijo !== false ? `<div class="rotulo-paso" style="font-size:${tamPref}px;color:var(--gris);margin-top:60px;line-height:1.05;white-space:nowrap">${escapar((l.prefijo || 'Paso') + ' ' + (i + 1))}</div>` : ''}
         ${l.etiquetas ? `<div class="rotulo-paso" style="font-size:${tamEtq}px;font-weight:700;letter-spacing:-.02em;line-height:1.05;white-space:nowrap${l.prefijo === false ? ';margin-top:60px' : ''}">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     } else {
-      cab = `<div class="tecla" style="--s:${l.emoji_tam || (ctx.vertical ? 200 : l.etiquetas ? 220 : 170)}px"${ctx.A('k' + i)}>${i + 1}</div>
+      cab = `<div class="tecla" style="--s:${l.emoji_tam || (l.sobre ? (ctx.vertical ? 130 : 110) : ctx.vertical ? 200 : l.etiquetas ? 220 : 170)}px"${ctx.A('k' + i)}>${i + 1}</div>
         ${l.etiquetas ? `<div class="rotulo-paso${corta(l.etiquetas[i] || '')}" style="font-size:${tamEtqTecla}px;font-weight:700;margin-top:${mEtq}px">${marcar(l.etiquetas[i] || '')}</div>` : ''}`;
     }
     // La ✅ CUELGA bajo la etiqueta fuera del flujo [28:00: los íconos siguen en y≈345 y las ✅ caen debajo]: en el flujo

@@ -22,6 +22,18 @@ export const RAFAGAS = [
   // R19: los cuadrantes quedan inmóviles 1.8 s (10:28.0-10:29.8) hasta el corte a «1 Partnership».
   {nombre:'g_partner',id:'r628',paso:-1,corte:1,fin:15,aparicion:true,
     regiones:{texto:[0,.22,1,.12],texto2:[0,.74,1,.12]}},
+  // R19: la tabla-marcador vacía se sostiene 2.9 s sin moverse [5:28.0-5:30.9]
+  {nombre:'j_table',id:'r328',paso:-1,corte:1,fin:24,aparicion:true,
+    regiones:{texto:[0,0,.3,.95]}},
+  // R19: la gráfica se sostiene quieta hasta el corte a la tabla con flechas que convergen [7:28.0-7:30.0]
+  {nombre:'f_flechas',id:'r448',paso:-1,corte:1,fin:15,aparicion:true,
+    regiones:{titulo:[.3,0,.4,.15],trazo:[.1,.25,.75,.65]}},
+  // R19: la nota gris entra COMPLETA en el corte [11:08.2 → 11:08.4], bajo el mapa con manos que ya estaba
+  {nombre:'l_stack',id:'r668',paso:-1,corte:4,fin:24,aparicion:true,
+    regiones:{gris:[.1,.79,.8,.1]}},
+  // R19: la pastilla del reparto entra sola en el corte [15:23.9] y queda quieta; las partes llegan después
+  {nombre:'h_pill',id:'r922',paso:0,corte:16,fin:24,aparicion:true,
+    regiones:{pastilla:[.2,.1,.6,.5]}},
 ];
 
 // Caja de tinta por región; la tinta roja se aísla para comprobar su corte.
@@ -81,7 +93,7 @@ export async function compararSecuencia({dir,page,medir,ids,salida}) {
       const lados=await medir.evaluate(async ({urls,regiones})=>Promise.all(urls.map(async u=>{
         const im=new Image();im.src=u;await im.decode();const c=new OffscreenCanvas(480,270),g=c.getContext('2d');g.drawImage(im,0,0,480,270);
         const d=g.getImageData(0,0,480,270).data;
-        return Object.fromEntries(Object.entries(regiones).map(([k,r])=>[k,window.medirRegion(d,480,270,r,k==='movimiento'?'neutro':k==='trazo'||k==='sello')]));
+        return Object.fromEntries(Object.entries(regiones).map(([k,r])=>[k,window.medirRegion(d,480,270,r,k==='movimiento'||k.startsWith('gris')?'neutro':k==='trazo'||k==='sello')]));
       })),{urls,regiones:cfg.regiones});
       muestras.push({frame:f,ms,referencia:{regiones:lados[0]},replica:{regiones:lados[1]},dom});
       if([cfg.corte,cfg.corte+1,cfg.fin].includes(f)){

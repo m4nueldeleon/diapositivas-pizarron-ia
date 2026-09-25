@@ -422,4 +422,7 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Regla:** la ✕ sobre un arco tachado se ve desde lejos: ~90 px y plumón grueso. La nuestra medía la mitad y se perdía.
 - **Regla:** cuando el cuadro del video usa fotos propias (la alcancía con billetes), la réplica mide su SECUENCIA (qué
   entra en el corte, qué se queda quieto) y no se empareja con el cuadro fijo: la silueta mediría la foto, no el motor.
-- **Evidencia:** 7 de 12 ráfagas medidas, las 7 coinciden en aparición y estabilidad; encuadre 12/12 y elementos 10/12.
+- **Evidencia:** 11 de 12 ráfagas medidas, todas coinciden en aparición y estabilidad; encuadre 16/16 y elementos 10/16.
+- **Regla:** cada réplica nueva es una oportunidad de calibrar. La gráfica del video llena el lienzo (la nuestra salía ~10%
+  más chica en cada eje) y en el mapa con manos la mano manda sobre la tecla. Un ajuste que acierta en un eje y rompe otro
+  (zoom a la pastilla del reparto: +8.5% de ancho y la flecha del demo a 43 px) se revierte.

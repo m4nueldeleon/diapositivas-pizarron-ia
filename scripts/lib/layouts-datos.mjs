@@ -186,7 +186,9 @@ export function grafica(l, ctx) {
   const tipo = l.grafica || 'lineas';   // lineas | barras | crecimiento
   // En 9:16 el área es alta (940×1000) y sin los 330 px de la etiqueta lateral: la banda va arriba, dentro [r4, escala]
   const V = ctx.vertical;
-  const W = V ? 940 : 1500, H = V ? 1000 : 660, x0 = 80, y0 = H - 60, x1 = V ? W - 70 : W - 330, y1 = V ? 150 : 50;
+  // R19 [ref_448, 7:28]: en el video la gráfica llena el lienzo (~1500 × 790 px bajo el título); con 1500 × 660 salía un
+  // 10% más chica en cada eje.
+  const W = V ? 940 : 1720, H = V ? 1000 : 740, x0 = V ? 80 : 40, y0 = H - 60, x1 = V ? W - 70 : W - 400, y1 = V ? 150 : 50;
   let svg = '';
   if (tipo === 'barras') {
     const bs = l.barras || [];
@@ -218,7 +220,9 @@ export function grafica(l, ctx) {
   } else {
     const series = l.series || (tipo === 'crecimiento' ? [{ forma: 'exponencial', tono: 'v' }] : []);
     const ejes = `<path d="M${x0} ${y1 - 10} L${x0} ${y0} L${x1 + 60} ${y0}" stroke="#555" stroke-width="4" fill="none" stroke-linecap="round"/>`;
-    svg += tipo === 'crecimiento' ? ejes : ejes + Array.from({ length: 4 }, (_, i) => `<line x1="${x0}" x2="${x1 + 60}" y1="${y1 + i * (y0 - y1) / 4}" y2="${y1 + i * (y0 - y1) / 4}" stroke="#e6e6e6" stroke-width="2" stroke-dasharray="6 8"/>`).join('');
+    // [ref_448] cinco guías punteadas que siguen bajo la etiqueta de la banda, un poco más visibles que antes
+    const finGuia = V ? x1 + 60 : x1 + 380;
+    svg += tipo === 'crecimiento' ? ejes : ejes + Array.from({ length: 5 }, (_, i) => `<line x1="${x0}" x2="${finGuia}" y1="${y1 + 20 + i * (y0 - y1 - 20) / 5}" y2="${y1 + 20 + i * (y0 - y1 - 20) / 5}" stroke="#dcdcdc" stroke-width="2" stroke-dasharray="4 7"/>`).join('');
     const finales = [];
     series.forEach((s, i) => {
       const f = formas[s.forma] || formas.recta;
@@ -238,7 +242,8 @@ export function grafica(l, ctx) {
     const ancho = t => [...t].length * 46 * 0.56;
     const obst = [];
     const bandaX = V ? x1 - 300 : x1 + 24, bandaY = y => (V ? y - 130 : y);
-    if (l.banda && finales.length >= 2) obst.push({ x0: bandaX, x1: bandaX + 300, y0: bandaY(Math.min(...finales.map(f => f.p[1]))) - 36, y1: bandaY(Math.min(...finales.map(f => f.p[1]))) + 36 });
+    const bandaW = V ? 300 : 380;
+    if (l.banda && finales.length >= 2) obst.push({ x0: bandaX, x1: bandaX + bandaW, y0: bandaY(Math.min(...finales.map(f => f.p[1]))) - 40, y1: bandaY(Math.min(...finales.map(f => f.p[1]))) + 40 });
     const choca = b => finales.some(f => f.pts.some((q, j) => j && [0, 0.25, 0.5, 0.75].some(t => {
       const x = f.pts[j - 1][0] + (q[0] - f.pts[j - 1][0]) * t, y = f.pts[j - 1][1] + (q[1] - f.pts[j - 1][1]) * t;
       return x > b.x0 - 10 && x < b.x1 + 10 && y > b.y0 - 10 && y < b.y1 + 10;
@@ -263,7 +268,8 @@ export function grafica(l, ctx) {
     });
     if (l.banda && finales.length >= 2) {
       const ys = finales.map(f => f.p[1]).sort((a, b) => a - b);
-      svg += `<g${ctx.P(l.banda_paso ?? 0)}><rect x="${bandaX}" y="${bandaY(ys[0]) - 36}" width="300" height="72" rx="8" fill="#b8f5b0"/><text x="${bandaX + 150}" y="${bandaY(ys[0]) + 14}" text-anchor="middle" font-size="42" fill="#1f8a14" font-weight="700">${escapar(l.banda)}</text></g>`;
+      // [ref_448] la banda mide ~435 × 84 px con letra de ~48 en 16:9
+      svg += `<g${ctx.P(l.banda_paso ?? 0)}><rect x="${bandaX}" y="${bandaY(ys[0]) - 40}" width="${bandaW}" height="80" rx="8" fill="#b8f5b0"/><text x="${bandaX + bandaW / 2}" y="${bandaY(ys[0]) + 16}" text-anchor="middle" font-size="${V ? 42 : 46}" fill="#1f8a14" font-weight="600">${escapar(l.banda)}</text></g>`;
     }
     if (l.eje_x) svg += `<text x="${x1 + 60}" y="${y0 + 64}" text-anchor="end" font-size="46" fill="#444">${escapar(l.eje_x)}</text>`;
     if (l.eje_y) svg += `<text x="${x0 + 26}" y="${y1 + 12}" font-size="46" fill="#444">${escapar(l.eje_y)}</text>`;
