@@ -9,7 +9,10 @@ export function imagenRecortada(ctx, src, alto, rol = 'objeto') {
   const html = imagenConHueco(ctx, src, alto);
   const ruta = html.match(/src="(img\/[^"]+)"/)?.[1];
   const medible = ruta ? html.replace(`src="${ruta}"`, `src="data:image/${TIPOS[path.extname(ruta).toLowerCase()]};base64,${fs.readFileSync(path.join(ctx.dirSalida, ruta)).toString('base64')}"`) : html;
-  return medible.replace('<img ', `<img data-recorte="${rol}" `);
+  // El SVG sigue siendo una imagen inerte: runtime analiza una copia XML separada.
+  const documento = rol === 'objeto' && ruta && path.extname(ruta).toLowerCase() === '.svg'
+    && /<text\b/i.test(fs.readFileSync(path.join(ctx.dirSalida, ruta), 'utf8'));
+  return medible.replace('<img ', `<img data-recorte="${rol}"${documento ? ' data-documento-svg="1"' : ''} `);
 }
 
 // Autocontenida para runtime y pruebas: nunca mide sombras; lee los píxeles del archivo original.

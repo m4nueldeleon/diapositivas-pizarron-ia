@@ -1,5 +1,25 @@
 # Lecciones
 
+## 2026-09-25 · Lo pequeño y lo descentrado deben fallar antes del PNG (ronda 11)
+
+- Una burbuja vertical angosta convierte cinco palabras en cuatro renglones. Primero se reparte
+  el ancho útil (82–86% para la burbuja), después se ajusta la letra. QA mide todos los pasos.
+- «Sin», «Incluye» y «No incluye» son la misma familia. Hasta cinco renglones, centrar el bloque
+  al 47% y reservar su altura completa. `anclar: "arriba"` es una decisión explícita de continuidad.
+- Una fila corta crece hasta la ocupación de referencia antes de encogerse. Sus rótulos necesitan
+  al menos 60 px efectivos a 1920, también después del zoom del contenedor.
+- Nota roja: 50 px como piso; otro lado o dos renglones antes de reducirla. El descargo vive fuera
+  de la pila escalable. Al moverlo conserva el paso de su captura y la zona segura de Reels.
+- El texto dentro de un SVG también puede quedar ilegible. Medir su escala final, exigir 44 px
+  al cuerpo y conservar intacto el archivo original. Un SVG complejo sin medición o un PNG sin
+  OCR no se convierten en «legibles» por carecer de texto DOM.
+- Una garantía sustituye un caso de primeros clientes solo con condición, plazo y remedio real;
+  «no devolvemos» no es garantía. La identidad visible de quien entrega sigue siendo obligatoria.
+- Acortar una flecha moviendo su origen la deja huérfana. El inicio permanece en el borde del objeto;
+  QA comprueba el contorno antes de permitir la captura.
+- El historial acredita la primera nota, nunca el último 100. La aprobación profesional y la fidelidad
+  por elemento requieren evidencia aparte; los fallos del comparador siguen pendientes aunque el encuadre pase.
+
 ## 2026-09-25 · La nota automática no firma una presentación (ronda 10)
 
 - **Regla:** resolver ficha de oferta antes del guion comercial; escribir bloques desde aprendizajes

@@ -158,13 +158,26 @@ export function lineaArco(a) {
 }
 // El umbral es el mismo 30% de `duracion_objetivo` (reglasDuracion)
 export function reglasContrato(deck, pasos) {
-  const avisos = [], c = contratoDeTiempo(deck);
+  const avisos = [...reglasRevelacion(deck, pasos).avisos], c = contratoDeTiempo(deck);
   if (c) {
     const dur = duracionTotal(deck, pasos), d = dur / (c.min * 60) - 1;
     if (Math.abs(d) > 0.3) avisos.push(`la lámina ${c.lamina} promete ${mmss(c.min * 60)} y la voz dura ~${mmss(dur)} (${d > 0 ? '+' : ''}${Math.round(d * 100)} %): ajusta la promesa o los beats; el contrato de tiempo se cumple [2:03 «los próximos 33 minutos»] (ARCOS.md)`);
   } else if (conContrato(deck)) {
     avisos.push('falta el contrato de tiempo: después del gancho, un `objeto` con `reloj` («10:00») y los minutos en negrita, o `"contrato": true` en la lámina que lo promete [2:00-2:03] (ARCOS.md, GUION §6.1)');
   }
+  return { errores: [], avisos };
+}
+
+// El VSL largo conserva más demostración, pero ambos reservan 40–45% para
+// explicar la oferta. Se mide TIEMPO real, no número de láminas ni % redondeado.
+export function reglasRevelacion(deck, pasos) {
+  const avisos = [];
+  if (!['vsl', 'vsl-corto'].includes(deck.pieza)) return { errores: [], avisos };
+  const i = deck.laminas.findIndex(esOscura), dur = duracionTotal(deck, pasos);
+  if (i < 0 || dur <= 0) return { errores: [], avisos };
+  const inicio = tiemposSecuenciales(deck, pasos).find(s => s.lamina === i)?.inicio;
+  const proporcion = inicio / dur;
+  if (proporcion < 0.55 || proporcion > 0.6) avisos.push(`la revelación de ${deck.pieza} cae al ${(proporcion * 100).toFixed(1)}% de la duración: debe caer entre 55–60%; ajusta el arco antes de capturar (ARCOS.md)`);
   return { errores: [], avisos };
 }
 

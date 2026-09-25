@@ -67,7 +67,7 @@
     return [b.cx + dx * t, b.cy + dy * t];
   }
   function suave(pts) {
-    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    let d = `M${pts[0][0]} ${pts[0][1]}`;
     for (let i = 0; i < pts.length - 1; i++) {
       const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
       const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
@@ -234,7 +234,7 @@
         // arco nace debajo del texto, sin pasar del extremo interior, para no tachar las letras.
         const sg = B.cx < A.cx ? -1 : 1;
         const Q = [B.cx - sg * Math.min(20, B.w * 0.1), B.y - 40];
-        let P = [sg < 0 ? A.x - 26 : A.x + A.w + 26, A.y + A.h * 0.8];
+        let P = [sg < 0 ? A.x - 24 : A.x + A.w + 24, A.y + A.h * 0.8];
         if ((Q[0] - P[0]) * sg < 70) {
           const x = Q[0] - sg * 70;
           P = [sg < 0 ? Math.max(x, A.x + A.w * 0.12) : Math.min(x, A.x + A.w * 0.88), A.y + A.h + 14];
@@ -265,9 +265,7 @@
           // cuarto del primer renglón (la letra, no la caja). Nunca más de 340 px.
           const r0 = rectsTexto(eb, lam)[0] || B;
           const Q = [r0.x + r0.w * 0.22, r0.y - 16];
-          let P = [A.x - 14, A.cy];
-          const d = Math.hypot(P[0] - Q[0], P[1] - Q[1]);
-          if (d > 340) P = [Q[0] + (P[0] - Q[0]) * 340 / d, Q[1] + (P[1] - Q[1]) * 340 / d];
+          const P = [A.x - Math.min(14, 12 * lam.offsetWidth / 1080), A.cy];
           pts = cuadratica(P, Q, [Q[0] + (P[0] - Q[0]) * 0.2, P[1] - 8]); ancho = 5; len = 24; break;
         }
         if (c.lateral) {
@@ -280,7 +278,7 @@
           pts = cubica(P, [xM, P[1] + (Q[1] - P[1]) * 0.35], [xM, Q[1]], Q); ancho = 5; len = 24;
           break;
         }
-        const P = borde(A, [B.cx, B.cy], 16), Q = borde(B, [A.cx, A.cy], 12);
+        const P = borde(A, [B.cx, B.cy], Math.min(12, 8 * lam.offsetWidth / 1080)), Q = borde(B, [A.cx, A.cy], 12);
         const dx = Q[0] - P[0], dy = Q[1] - P[1], s = c.curva || (Q[0] < P[0] ? 1 : -1);
         pts = cuadratica(P, Q, [(P[0] + Q[0]) / 2 + dy * 0.35 * s, (P[1] + Q[1]) / 2 - dx * 0.35 * s]); ancho = c.fina ? 3.6 : 5; len = c.fina ? 18 : 24;
         if (c.tono) color = TONO[c.tono] || C.rojo;
@@ -359,11 +357,12 @@
         // [c_1045, 12:35, 13:20]: la flecha mide ~250 px (el 55% del hueco entre los dos emojis, de 140 a 260), va
         // centrada en el hueco con un asta de ~9 px y una punta en V grande (brazos de ~60 px, abierta ~33°, alto de la
         // punta ≈ 25-30% del largo). De borde a borde (~460 px) con punta de 30 se leía como un palito [r5].
-        const P0 = borde(A, [B.cx, B.cy], 12), Q0 = borde(B, [A.cx, A.cy], 12);
+        const P0 = borde(A, [B.cx, B.cy], 0), Q0 = borde(B, [A.cx, A.cy], 12);
         const dx = Q0[0] - P0[0], dy = Q0[1] - P0[1], hueco = Math.hypot(dx, dy) || 1, u = [dx / hueco, dy / hueco];
         const L = Math.max(0, Math.min(hueco - 24, Math.min(260, Math.max(140, 0.55 * hueco))));
         const M = [(P0[0] + Q0[0]) / 2, (P0[1] + Q0[1]) / 2];
-        const P = [M[0] - u[0] * L / 2, M[1] - u[1] * L / 2], Q = [M[0] + u[0] * L / 2, M[1] + u[1] * L / 2];
+        const aireOrigen = 24 * Math.min(1, lam.offsetWidth / 1920);
+        const P = [P0[0] + u[0] * aireOrigen, P0[1] + u[1] * aireOrigen], Q = [P[0] + u[0] * L, P[1] + u[1] * L];
         pts = linea(P, Q, r, 2.6); ancho = 9; len = Math.max(40, Math.min(62, 0.25 * L)); abre = 0.58;
       }
     }
@@ -646,13 +645,18 @@
         return { lado, x, y, ok: empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 };
       };
       let elegido = null;
-      const base = parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54;
+      const base = Math.max(50, parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54);
+      n.style.setProperty('--tn', base + 'px');
       const tams = [base];
-      for (let t = base - 4; t > 44; t -= 4) tams.push(t);
-      if (base > 44) tams.push(44);
+      for (let t = base - 4; t > 50; t -= 4) tams.push(t);
+      if (base > 50) tams.push(50);
       for (const tn of tams) {
         if (tn !== base) n.style.setProperty('--tn', tn + 'px');
-        elegido = lados.flatMap(lado => [0, -160, 160, -320, 320, -480, 480].map(d => probar(lado, d))).find(c => c.ok) || null;
+        for (const ancho of [400, 320, 280, 240, 500]) {
+          n.style.maxWidth = ancho + 'px';
+          elegido = lados.flatMap(lado => [0, -160, 160, -320, 320, -480, 480].map(d => probar(lado, d))).find(c => c.ok) || null;
+          if (elegido) break;
+        }
         if (elegido) break;
       }
       if (!elegido) {
@@ -755,6 +759,9 @@
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       [h, ...h.querySelectorAll('*')].forEach(e => {
         if (e.closest('svg') && e.tagName !== 'svg') return;
+        // La rejilla de pasos incluye media columna vacía en cada extremo. Encajar esa
+        // envoltura reducía íconos y rótulos aunque todas sus cajas reales sí cabían.
+        if (e.classList.contains('fila-pasos') || (e === h && h.querySelector('.fila-pasos'))) return;
         // el rótulo de procedencia va pegado a la esquina del lienzo (absoluto): no es contenido que haya que encajar
         if (e.classList.contains('procedencia') && getComputedStyle(e).position === 'absolute') return;
         const r = e.getBoundingClientRect(); if (!r.width && !r.height) return;
@@ -765,6 +772,35 @@
       if (k < 0.995) { h.style.zoom = k.toFixed(3); if (esc === lam) lam.dataset.encaje = k.toFixed(2); }
     }));
   }
+
+  // Descargos fuera de la pila: el encaje no reduce su letra ni los acerca a la firma.
+  function fijarDescargos(lam) {
+    const candidatos = [...lam.querySelectorAll('.procedencia, .fuente')].filter(e =>
+      !e.closest('.clon') && (e.dataset.documentoDescargo === '1' || e.classList.contains('procedencia') || /fictici|archivo de práctica|no es una venta real|muestra original/i.test(e.textContent)));
+    let abajo = lam.offsetWidth < lam.offsetHeight ? 340 : 36;
+    candidatos.forEach(e => {
+      let paso = 0;
+      for (let p = e; p && p !== lam; p = p.parentElement) paso = Math.max(paso, Number(p.dataset.p) || 0);
+      e.dataset.p = paso;
+      e.classList.add('descargo'); lam.appendChild(e);
+      e.style.bottom = abajo + 'px';
+      abajo += e.offsetHeight + 12;
+    });
+  }
+
+  function ajustarChatVertical(lam) {
+    if (lam.offsetWidth >= lam.offsetHeight) return;
+    lam.querySelectorAll('.lz-chat > .pila > .chat:not(.chat-muro)').forEach(c => {
+      if (c.querySelectorAll('.msj').length <= 2) c.classList.add('chat-corto');
+    });
+    lam.querySelectorAll('.lz-chat > .pila > .chat:not(.chat-muro) .burbuja').forEach(b => {
+      if (b.textContent.trim().split(/\s+/).length > 8) return;
+      let t = parseFloat(getComputedStyle(b).fontSize);
+      while (rectsTexto(b, lam).length > 2 && t > 64) { t -= 2; b.style.fontSize = t + 'px'; }
+    });
+  }
+
+  /*@@FILAS@@*/
 
   // ---------- foco: dónde va la frase sobre el fondo atenuado ----------
   // En la referencia [15:20–15:23, h_pill] la frase va CENTRADA y puede cruzar texto del fondo atenuado a ~10–15%
@@ -957,6 +993,7 @@
   };
 
   /*@@RECORTES@@*/
+  /*@@DOCUMENTOS@@*/
   /*@@EMOJIS@@*/
 
   // El presentador y la captura activan la misma geometría; nunca reemplazan el SVG por texto.
@@ -979,13 +1016,16 @@
   async function preparar() {
     try { await document.fonts.ready; } catch (e) {}
     await Promise.all([...document.images].map(i => (i.complete ? null : new Promise(res => { i.onload = i.onerror = res; }))));
+    await prepararDocumentosSVG();
     revisarRecortes();
     await prepararHalos();
     const lams = [...document.querySelectorAll('.lamina')];
     lams.forEach(l => mostrar(l, pasos(l) - 1, Infinity));
     lams.forEach(l => unirEnfasisCorto(l));
+    lams.forEach(l => { fijarDescargos(l); ajustarChatVertical(l); });
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
+    lams.forEach(l => { try { ampliarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });

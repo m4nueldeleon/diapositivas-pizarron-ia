@@ -68,7 +68,7 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
   las etiquetas bajan solas para que la mano no las toque. En un mapa con `iconos`, la punta cae en el cuarto
   inferior derecho del emoji. QA da error si la mano tapa más del 40% del número de la tecla.
 - `anclar: "arriba" | "centro"`: dónde arranca el contenido. Por omisión, `lista` y `tarjetas` que
-  se revelan de a uno arrancan ARRIBA y crecen hacia abajo, salvo listas de hasta tres ítems que se centran con el alto final reservado; las listas de exclusiones (`vineta: "x"`/`"no"`) conservan el arranque superior [ref_95, 3:25, 9:25]; lo demás va
+  se revelan de a uno arrancan ARRIBA y crecen hacia abajo, salvo listas de hasta cinco renglones que se centran con el alto final reservado, con cualquier viñeta. Para conservar el arranque superior de una continuación [ref_95, 3:25, 9:25], declara `anclar: "arriba"`; lo demás va
   centrado. `"centro"` lo devuelve al centro [15:35].
 - `oscura: true` pone la lámina en negro, y `fondo` elige el brillo: `violeta` (por omisión),
   `azul` (arriba, [37:40]) o `negro` (plano, [36:15]). Solo para revelar la marca o el producto.
@@ -147,12 +147,14 @@ en negrita, después del emoji explícito de cada ítem: emoji → letra → tex
 - Un ítem con `"tachado": true` recibe un tachón rojo. Con `"tachar_despues": true` en la lista,
   los tachones llegan después de que aparece todo [4:05], **cada uno en su paso**: 3 ítems tachados dan 6 pasos
   (3 ítems + 3 tachones), y la `voz` lleva 6 textos.
-- Arranca arriba y crece hacia abajo (`anclar`); con `revelar: "todo"` se centra.
+- Hasta cinco renglones: bloque centrado al 47% del alto, con todas las posiciones reservadas.
+  `anclar: "arriba"` conserva explícitamente el encabezado de una continuación.
 - **Descartes** [m_256 4:16, 4:05]: si TODOS los ítems van tachados, cada renglón va centrado, en
   seminegrita, y la lista se queda centrada en la lámina con su hueco reservado (el primer renglón aparece
   ya en su lugar final). El tachón es un plumón grueso (~10 px) que arranca antes de la viñeta y sale por
   la derecha. `alinear: "centro"` lo fuerza en cualquier lista; `alinear: "izquierda"` lo quita. Las listas
-  con encabezado («Sin:», razones) siguen a la izquierda y arriba [1:35, 3:30].
+  con encabezado («Sin:», razones) alinean sus renglones a la izquierda dentro del bloque centrado;
+  para el arranque superior de [1:35, 3:30] se declara `anclar: "arriba"`.
 - **Pilares que vuelven** [37:40 → 39:45]: `activo` (desde 1) muestra la lista entera y apaga los demás ítems al 25%;
   `hechos: [1, 2]` los deja encendidos con su ✅ al final. La lista se declara una vez y vuelve con
   `"como": "<id>"` (hereda `items`, `encabezado`, `tam_texto`, `separacion` y `vineta`). Una lista con `activo`,
@@ -714,12 +716,11 @@ En sala: máximo 14 días (2 semanas), sin reducción automática; divide los ca
   (margen de 40 px), mide ~1250 de ancho, la barra ~160 con el nombre a ~64 px y las celdas son cuadradas (~228)
   con 10 px de separación. Con notas al margen o con más días, el calendario normal de 1400.
 - **9:16**: la tarjeta usa casi todo el ancho (1000; 960 con nota) y los días van en **3-4 columnas**, no en 5: 4 (celdas
-  casi cuadradas, ≥ 210 px) si el `sub` más largo cabe a 30 px; si no, 3. El `sub` no baja de 30 px (28 reales tras la
-  escala) y nunca se parte ni invade la celda vecina (si no cabe, QA lo marca recortado). La nota va ENCIMA de la
+  casi cuadradas, ≥ 210 px) si el `sub` más largo cabe a 32 px; si no, 3. El `sub` conserva 32 px
+  y nunca invade la celda vecina (si no cabe, QA lo marca recortado). La nota va ENCIMA de la
   tarjeta, 30 px sobre ella y de su lado (el `arriba` de 16:9 no aplica), y su flecha baja por el margen de fuera y
   entra a la celda por el COSTADO: nunca cruza la barra de la fase.
-- El `sub` de cada día va a 32 px (28 en un calendario angosto); «DÍA» es un rótulo decorativo (~28 px,
-  como en el video).
+- El `sub` de cada día y el rótulo «DÍA» van a 32 px, incluso en un calendario angosto.
 - Anotaciones: `tam` en px (56 por omisión, medido en m_1740) y `arriba` en px o en porcentaje
   (`"12%"`). Con anotaciones el calendario se angosta para que la nota quede fuera.
 - Repite la lámina cambiando `fase_activa` para recorrer las fases.
@@ -1061,7 +1062,7 @@ cohete, una tarjeta. `anotaciones` vale en cualquier lámina:
   (px o `%` del lienzo) para fijarla a mano. Sobre una captura la nota va FUERA de ella, a la altura del ancla.
 - La nota va en el blanco junto a lo que señala, nunca encima del contenido. Si el lado pedido no cabe (el borde la
   empuja más de 20 px), pisa su tarjeta, otro texto o el sello, o deja menos de 80 px para el gancho, el motor prueba
-  derecha, izquierda, abajo y arriba (en ese orden) y usa el primero limpio; si ninguno sirve, baja la letra hasta 44 px y,
+  derecha, izquierda, abajo y arriba (en ese orden), prueba anchos que permitan dos renglones y usa el primero limpio; si ninguno sirve, baja la letra solo hasta 50 px y,
   como último recurso, avisa. QA da error si una nota cae encima de su ancla u otra caja, o si su gancho la tacha.
 - Sin `texto` y con `entra` (`derecha`, `izquierda`, `arriba`, `abajo`): una flecha roja larga que entra desde ese
   borde del lienzo hasta el ancla [15:00].
@@ -1214,7 +1215,8 @@ no generan página, cámaras con `vivo: true` generan su consigna. El stack cons
 Una imagen solo cuenta como prueba propia con `procedencia: "real"` o `fuente`. IA y ejemplos nunca cuentan.
 En `prueba`, cada captura admite la misma `procedencia`. Una captura de respuesta de IA real lleva
 `fuente: "Respuesta real de <IA> · <fecha>"`. IA muestra «Imagen creada con IA»; ejemplo, «Ejemplo ficticio»:
-rótulo gris inferior derecho, 34 px en video y 44 px en sala, sin capa roja.
+rótulo gris inferior izquierdo de 36 px, fuera del encaje y de la firma, sin capa roja. Conserva el paso de su objeto;
+si hay varios, se apilan hacia arriba dentro de la zona segura.
 En `cifra`, solo `procedencia: "ejemplo"` activa ese descargo visible cuando el usuario lo pide.
 
 `linea-tiempo.marcas[].paso` fija el paso desde 0. Sin ese campo, una marca `tono: "r"` o `"v"` entra con el
@@ -1250,13 +1252,15 @@ Si una escena vuelve con un costo nuevo, recalcula el total: la última cuenta e
 ### Chat en 9:16
 
 Sin `tam_texto`, hasta 2 mensajes de 6 palabras usan 104 px; 2-3 mensajes cortos (hasta 12 palabras cada uno) usan 76 px; con más mensajes cortos, 68 px;
-con mensajes de hasta 24 palabras, 64 px; solo los densos usan 58 px. El avatar mide aproximadamente 1.3 veces
+con mensajes de hasta 24 palabras, 64 px; solo los densos usan 58 px. Una burbuja ocupa 82–86% del ancho útil;
+si un mensaje de hasta ocho palabras excede dos renglones, ajusta su letra hasta 64 px conservando ese ancho.
+El avatar mide aproximadamente 1.3 veces
 el texto. El encabezado usa `encabezado_estilo: "frase"` salvo elección explícita. Las frases y notas verticales
 se centran en un ancho máximo de 800 px para dejar libre la franja de botones. Comprueba ocupación ≥35 % en QA.
 
 El centro óptico del bloque vertical queda al 47% del alto. Las listas cortas se centran
 con todos sus pasos reservados, salvo `anclar: "arriba"` explícito. Dos ítems cortos usan
-124 px; tres, 112 px. La `idea` vertical sin `emoji_tam` usa un protagonista de 530 px.
+144 px; tres, 112 px. La `idea` vertical sin `emoji_tam` usa un protagonista de 530 px.
 No llenes el lienzo con palabras adicionales: prueba tamaños por omisión antes de fijarlos.
 
 ### Logos por confirmar
@@ -1326,3 +1330,11 @@ Un aviso sin resolver impide `estado: listo`, aunque la nota sea mayor de 90.
 Los campos que aceptan emoji (`idea`, `pasos`, `flujo`, `stack`, `lista`) admiten `trazo:triangulo|MÉTODO`, `trazo:circulo|MÉTODO` y `trazo:marco|MÉTODO`. Solo para términos acuñados sin emoji literal, con 1–2 rótulos por deck, repetidos con figura idéntica; véase EMOJIS, «Término acuñado sin emoji literal». Para una metáfora física, usa `objeto` con `imagen: "assets/objeto.svg"`; su grupo vuelve con `como`, conservando imagen y medidas, sin heredar texto ni voz.
 
 El preflight, `tipo_arreglo`, los criterios de paro, el historial del primer render y `glosario` derivado de `datos` se documentan en [Calidad antes del primer render](CALIDAD-PRIMER-RENDER.md).
+
+### Documento SVG legible dentro de un objeto
+
+Un `objeto` cuya `imagen` local sea SVG y contenga texto se mide como documento: el cuerpo debe quedar en **44 px o más a 1920 de ancho**, incluida la reducción final del encaje. El motor aumenta la imagen antes de encajar; si aun así el texto queda pequeño, el preflight avisa y se debe separar el documento o quitar contenido. También detecta texto dentro del SVG bajo el mínimo general de 30 px. `qa.json → geometria_r11 → documentos_svg` registra cada texto y su tamaño efectivo.
+
+Los descargos que comienzan por «Ejemplo ficticio», «Archivo de práctica», «No es una venta real» o «Muestra original» salen de la copia renderizada del SVG y pasan al estilo fijo común de descargo, de al menos **32 px**, conservando el paso de aparición de la imagen. El archivo original no se modifica; títulos y contenido del documento se conservan.
+
+Se admiten tamaños numéricos declarativos, herencia y transformaciones SVG medibles. El análisis usa XML separado y la imagen permanece inerte: nunca se inserta su SVG como contenido activo ni se consulta la red. SVG con CSS, referencias `use`/`symbol`, texto en definiciones o máscaras, `textPath`, animación, SVG anidado, `slice` o unidades físicas sin `viewBox` se declara **sin medir**, con aviso; se simplifica el archivo antes de producir. **PNG/JPG no tienen OCR automático**: su legibilidad sigue requiriendo revisar la imagen a tamaño final; no se informa una medición inexistente.

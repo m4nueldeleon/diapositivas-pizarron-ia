@@ -101,7 +101,7 @@ test('render: cita con gancho corto al primer renglón, rango sin partir; oscura
     { tipo: 'idea', oscura: true, texto: 'Hoy: __$1,500__ y no ~~$9,000~~' },
     { tipo: 'idea', emoji: ['no:📚', 'si:🤖'], apagar_emoji: 0, texto: 'La IA hace el trabajo pesado' },
     { tipo: 'flujo', flecha: 'ninguna', nodos: [{ emoji: '📦', etiqueta: '1. Qué' }, { emoji: '💵', etiqueta: '2. Precio' }, { emoji: '📈', etiqueta: '3. Crece' }] },
-    { tipo: 'lista', encabezado: 'Sin:', vineta: 'x', items: ['uno', 'dos', 'tres'] },
+    { tipo: 'lista', anclar: 'arriba', encabezado: 'Sin:', vineta: 'x', items: ['uno', 'dos', 'tres'] },
     { tipo: 'chat', mensajes: [{ de: 'otro', texto: 'Hola [nombre]' }], avatar_otro: '🤖' },
     { tipo: 'boton', boton: 'Generar', emoji: '🤖' },
   ] }, async page => {

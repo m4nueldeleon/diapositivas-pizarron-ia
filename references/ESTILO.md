@@ -53,8 +53,8 @@ El encabezado arranca la frase que completan los ítems y termina en «:», «�
     ancho [15:20].
   - **Texto que se tiene que leer: ≥ 48 px** en 1920 (≈ 9 px en un celular de 360) y nunca por debajo
     de 36. Aplica al texto secundario: el sub de un nodo (52), el dato y el % de una pastilla (50 y
-    52), el post escrito (50). Se exceptúan los rótulos decorativos del calendario («DÍA», ~28 px) y la
-    firma, que en el original también van a ~28-30 px [ref_1760]. La `fuente` de un dato o un estudio sí
+    52), el post escrito (50). El calendario conserva rótulos de 32 px. Se exceptúa la
+    firma, que en el original va a ~28-30 px [ref_1760]. La `fuente` de un dato o un estudio sí
     se lee: sans gris a 40 px (36 en 9:16 y en la captura), y QA avisa bajo 36. QA avisa bajo 48 en el
     texto secundario y da error bajo 28 en cualquier texto.
   - Cifra protagonista: 120 a 140 px.
@@ -223,7 +223,9 @@ Foto a sangre solo con velo blanco o banda blanca; nunca foto suelta en rectáng
 
 - **Corte seco**: sin transiciones. La lámina aparece.
 - **La lista crece hacia abajo desde arriba** [ref_95 «Without:», 3:25, 9:25]: arranca en el cuarto
-  superior y el hueco de abajo anuncia que viene más. Una lista que entra entera se centra. También se centran las listas cortas de hasta tres ítems, salvo exclusiones (❌) o `anclar: "arriba"`: el alto final se reserva desde el primer paso.
+  superior cuando conserva el encabezado de una continuación, con `anclar: "arriba"` explícito.
+  Toda lista de hasta cinco renglones se centra como bloque al 47% del alto, también con ❌,
+  ✅ o sin viñeta. El alto final se reserva desde el primer paso; QA avisa fuera de 40–58%.
 - **Revelado por acumulación**: cada frase dicha suma UN elemento y nada cambia de lugar. Las
   listas crecen renglón por renglón y la tabla se llena columna por columna.
 - Solo cuatro micro-efectos:
@@ -270,7 +272,7 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 | texto secundario que se lee (sub, dato, %, post) | ≥ 48 px | ≥ 44 px | Piso 56 px |
 | burbuja de chat | 84 px con ≤2 mensajes de ≤12 palabras; 72 con 3; resto 54 | 104 px con ≤2 mensajes de ≤6 palabras; 58–76 px en conversaciones largas | Piso 72 px |
 | emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 | Igual que 16:9 |
-| lista | 58-72 px | 124 px con ≤2 ítems cortos, 112 con 3; resto ×1.2 | Piso 72 px |
+| lista | 58-72 px | 144 px con ≤2 ítems cortos, 112 con 3; resto ×1.2 | Piso 72 px |
 | rótulo gris | 56 px | 60 px | 64 px |
 | margen de arriba y de abajo | 100 px | 260 / 380 px; centro óptico ≈47% | 100 px |
 | firma | abajo a la derecha | arriba al centro (y ≈ 226), bajo la barra de Reels y lejos de la cámara | Igual que 16:9 |
@@ -280,6 +282,22 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 | botón y opciones | tamaño base | ×1.6 y ×1.45 | Piso 72 px |
 
 La idea sin tamaño explícito usa un emoji de 530 px; las listas cortas se centran ópticamente salvo `anclar: "arriba"`. Se reserva el bloque completo desde el primer paso, para que nada salte al revelar. `qa.json → composicion_vertical` publica ocupación y centro del bloque por lámina.
+
+### Pisos medidos antes del PNG (ronda 11)
+
+- Chat vertical: burbuja de 82–86% del ancho útil, dejando sitio al avatar. Hasta ocho palabras,
+  máximo dos renglones; el bloque de chat ocupa al menos 70% del ancho útil.
+- Filas de dos a cuatro elementos: objetivo 60–75% del ancho útil, íconos de 170–250 px y
+  rótulos de 64–80 px a 1920. QA avisa bajo 50% o rótulos menores de 60 px. Las columnas
+  apiladas no son filas horizontales.
+- Anotación: piso de 50 px. Prueba otro lado y dos renglones antes de reducir letra;
+  QA da error bajo 46 px efectivos a 1920.
+- Descargo: sans gris de 36 px, fijo abajo a la izquierda, fuera del encaje y de la firma; conserva el paso de su objeto y apila varios hacia arriba.
+  Texto visible menor de 30 px avisa; solo se exceptúan firma y sufijos. El cuerpo de un
+  documento ilustrativo debe diseñarse para verse a 44 px o más después de escalar la captura.
+  El motor no lee letras dentro de imágenes: ese piso requiere revisar la fuente y la lámina.
+- Flechas: el inicio queda a 24 px o menos del contorno de un elemento. Acortar una flecha
+  nunca mueve su origen al vacío; si no puede anclarse, se omite.
 
 **Zona segura de Reels**: arriba, la barra de Reels (~220 px); los ~320 px de abajo los tapan el caption y los botones, y la columna de
 botones ocupa unos 140 px a la derecha de la franja baja. QA avisa si algo entra ahí, y si una lámina

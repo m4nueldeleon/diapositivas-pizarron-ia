@@ -1,5 +1,11 @@
 # Calidad antes del primer render
 
+El preflight geométrico incluye la composición de ronda 11 en cada paso: chat vertical de hasta
+ocho palabras en dos renglones, ancho de chat ≥70% útil, centro de listas cortas entre 40–58%,
+filas pequeñas ≥50% del ancho útil y rótulos ≥60 px a 1920, anotaciones ≥46 px, texto visible
+≥30 px (salvo firma y sufijos) e inicio de flechas a ≤24 px del contorno. Son controles previos
+al PNG; no registran una captura ni sustituyen la revisión de todas las hojas.
+
 La entrada de producción es `armar.mjs`. `render.mjs` sigue disponible para calibrar el motor y
 revisar borradores deliberadamente; no ejecuta el ciclo completo y sí bloquea datos pendientes salvo `--borrador`. Un borrador puede contener huecos:
 no se distribuye como presentación final. No se ocultan láminas ni se eliminan beats para aprobar.

@@ -76,11 +76,11 @@ export function lista(l, ctx) {
   const items = l.items || [];
   const largo = Math.max(0, ...items.map(i => palabras(typeof i === 'string' ? i : i.texto)));
   const px = largo <= 6 ? 72 : largo <= 10 ? 66 : 58;
-  const t = l.tam_texto || `${ctx.vertical ? (items.length <= 2 && largo <= 6 ? 124 : items.length <= 3 && largo <= 6 ? 112 : Math.round(px * 1.2)) : px}px`;
+  const t = l.tam_texto || `${ctx.vertical ? (items.length <= 2 && largo <= 6 ? 144 : items.length <= 3 && largo <= 6 ? 112 : Math.round(px * 1.2)) : px}px`;
   // Descartes [m_256 4:16]: si TODOS los ítems van tachados (o `alinear: "centro"`), cada renglón va centrado, en
   // seminegrita, y la lista se queda centrada en la lámina con su hueco reservado (construir.mjs, anclaArriba).
   const centrada = listaCentrada(l);
-  const gapL = l.separacion || (ctx.vertical && items.length <= 2 ? 220 : ctx.vertical && items.length <= 3 ? 154 : centrada && items.length <= 3 ? 130 : items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
+  const gapL = l.separacion || (ctx.vertical && items.length <= 2 ? 340 : ctx.vertical && items.length <= 3 ? 154 : centrada && items.length <= 3 ? 130 : items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
   const vin = { x: '❌', no: '❌', check: '✅', si: '✅' };
   // Pilares que vuelven [37:40 → 39:45]: con `activo` (desde 1) la lista entra entera y los demás ítems se apagan al 25%;
   // los de `hechos` quedan encendidos con su ✅ al final. Se reúsa con `como` (CAMPOS_OBJETO.lista).

@@ -594,10 +594,10 @@ export function calendario(l, ctx) {
   const largoSub = Math.max(0, ...dias.map(d => { const t = String(d.sub || '').trim(), ps = t.split(/\s+/); return ps.length <= 2 ? t.length : Math.max(...ps.map(w => w.length)); }));
   // 9:16: el calendario usa casi todo el ancho (1000; 960 con nota al margen, para que su flecha baje por fuera de la
   // tarjeta) y va en 3-4 columnas, no en 5: con 5 las celdas medían ~154 px y «Identificación» se salía de la suya.
-  // 4 columnas (celdas casi cuadradas, como ref_1760) si el sub más largo cabe a 30 px; si no, 3. Nunca se parte la palabra.
+  // 4 columnas (celdas casi cuadradas, como ref_1760) si el sub más largo cabe a 32 px; si no, 3. Nunca se parte la palabra.
   const anchoV = (l.anotaciones || []).length ? 960 : 1000;
   const celdaV = c => (anchoV - 72 - (c - 1) * 20) / c;
-  const cabeV = c => !largoSub || (celdaV(c) - 16) / (0.5 * largoSub) >= 30;
+  const cabeV = c => !largoSub || (celdaV(c) - 16) / (0.5 * largoSub) >= 32;
   // Con más de 20 días (4-6 semanas) van de 7 en 7; la fila se achica para que todo quepa en el alto útil
   const cols = l.columnas || (ctx.vertical ? (dias.length > 20 ? 5 : cabeV(4) ? 4 : 3) : dias.length > 20 ? 7 : 5);
   const filas = Math.ceil(dias.length / cols);
@@ -612,12 +612,10 @@ export function calendario(l, ctx) {
     : Math.floor(Math.min(196, (altoUtil - barraH - pad - 20 * (filas - 1)) / filas));
   const compacto = altoDia < 110;
   const faseDe = d => fases.findIndex(f => d + 1 >= f.desde && d + 1 <= f.hasta);
-  // El sub del día se lee (32 px), pero en un calendario angosto baja hasta 28 para que «Prueba social» quepa en su
-  // celda en un renglón (2 palabras de hasta 14 letras no se parten). En 9:16 el piso es 30: la escala del lienzo
-  // vertical no lo deja bajar de 28 reales.
+  // El sub conserva 32 px; si no cabe se redistribuyen columnas, no se vuelve ilegible.
   const anchoCal = ctx.vertical ? anchoV : (l.anotaciones || []).length ? 1080 : grande ? anchoGrande : 1400;
   const celdaW = (anchoCal - 72 - (cols - 1) * gapDia) / cols;
-  const tamSub = largoSub ? Math.max(ctx.vertical ? 30 : 28, Math.min(32, Math.floor((celdaW - (ctx.vertical ? 16 : 8)) / (0.5 * largoSub)))) : 32;
+  const tamSub = 32;
   // Sin fase activa los días van en gris neutro (la lámina que presenta el plan, 28:45).
   const html = dias.map((d, i) => {
     const f = faseDe(i), c = f >= 0 ? CELDA[fases[f].color] || CELDA.amarillo : null;

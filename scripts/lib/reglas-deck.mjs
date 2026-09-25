@@ -654,8 +654,16 @@ export function reglasCredibilidad(deck, opciones = {}) {
   const avisos = [], p = deck.pieza, L = deck.laminas;
   // la propuesta no lleva muro de capturas: bloque 4 de ARCOS (quién la imparte y un caso). Avisos orientativos.
   if (p === 'propuesta') {
-    if (!hayCredencialProveedor(deck, opciones)) avisos.push('la propuesta no dice quién la imparte con una cifra suya (años, clientes, empresas, «desde 20XX»): va antes de la inversión (ARCOS.md, propuesta, bloque 4). «40 personas» del cliente no cuenta. Si no hay cifra real, un sustituto de GUION §7; nunca inventada');
-    if (!hayCaso(deck)) avisos.push('la propuesta no trae un caso ni una prueba: un caso parecido al suyo con números y «fuente», o `{{CASO}}` declarado como pendiente; sin caso real, un sustituto de GUION §7 (ARCOS.md, propuesta, bloque 4)');
+    const inversion = L.findIndex(esInversion);
+    const antes = L.slice(0, inversion >= 0 ? inversion : L.length);
+    const garantia = l => sustitutoPrueba(l) === 'garantia'
+      && /\b(devolv\w*|devolucion|reembols\w*|reintegro|cancel\w* sin (costo|penalizacion))\b/.test(todoTexto(l))
+      && !/\b(no|nunca|jamas|sin)\s+(?:\w+\s+){0,2}(devolv\w*|devolucion|reembols\w*|reintegro|cancel\w*)\b/.test(todoTexto(l));
+    const primerosCasos = antes.some(l => /\bprimeros casos\b/.test(todoTexto(l)));
+    const proveedor = antes.some(l => /\b(lo (implementa|imparte)|responsable|equipo de)\s*:?[\s/]+[a-z][a-z]+/.test(sinAcentos(textosVisibles(l).join(' / '))));
+    const sustituto = proveedor && (antes.some(garantia) || (primerosCasos && L.some(garantia)));
+    if (!hayCredencialProveedor(deck, opciones) && !sustituto) avisos.push('la propuesta no dice quién la imparte con una cifra suya (años, clientes, empresas, «desde 20XX»): va antes de la inversión (ARCOS.md, propuesta, bloque 4). «40 personas» del cliente no cuenta. Si no hay cifra real, un sustituto de GUION §7; nunca inventada');
+    if (!hayCaso(deck) && !sustituto) avisos.push('la propuesta no trae un caso ni una prueba: un caso parecido al suyo con números y «fuente», o `{{CASO}}` declarado como pendiente; sin caso real, un sustituto de GUION §7 (ARCOS.md, propuesta, bloque 4)');
     return { errores: [], avisos };
   }
   if (!PIEZAS_VENTA.includes(p)) return { errores: [], avisos };

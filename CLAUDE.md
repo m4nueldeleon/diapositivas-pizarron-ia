@@ -100,7 +100,28 @@ SKILL.md.
 - Réplica vieja: `evidenciaReplica.laminas_dir` gobierna las rutas de PNG, pasos y hojas. `video.mjs` recaptura HTML; no consume esa carpeta. Pruebas de esta ronda: `motor-r7.test.mjs`, `qa-r7.test.mjs`, `ejemplos-render.test.mjs` (omiten Chromium solo cuando no arranca), `golpes-columnas-r7.test.mjs`, `conocimiento-datos-r7.test.mjs` e `inventario-conceptos-r7.test.mjs`.
 - Golpes y capa roja: `reglas-arco.mjs → golpesDeck/reglasGolpes` (qa.json → `arco.golpes`) y `reglas-marcas.mjs → tiposRojos` cuentan desde el deck, también sin navegador; la nota gris y la tabla no son capa roja. `reglas-deck.mjs` suma dato anunciado como faltante, quién entrega, atribución de revista y la apertura de la propuesta. La ficha de reglas del cliente reutiliza `avisos_aceptados` (`contrato-superficies.mjs → REGLAS_NEGOCIABLES`).
 
+### Ronda 11 · Geometría antes del PNG
+
+- `scripts/lib/medidas-r11.mjs`: chat corto, centro de listas, ocupación y letra de filas,
+  anotaciones, texto pequeño y origen de flechas. Corre en cada paso de QA y preflight;
+  publica `geometria_r11` sin tocar el historial de capturas.
+- `templates/runtime-filas.js`: amplía composiciones pequeñas antes de encajar y dibujar
+  conexiones. `construir.mjs` lo inserta dentro del runtime.
+- `runtime.js → fijarDescargos`: separa procedencias y descargos del contenedor escalable,
+  conserva el paso efectivo de su captura y apila los pies en el margen seguro, a 36 px.
+- `imagenes.mjs` identifica documentos SVG locales; `templates/runtime-documentos.js` mide su
+  texto declarativo en XML inerte, extrae descargos y amplía el cuerpo a 44 px. QA vuelve a medir
+  después del encaje; variantes no medibles y formatos sin OCR se distinguen explícitamente.
+- Las listas de hasta cinco ítems se centran por omisión, incluso `x/no`. Las continuaciones
+  superiores usan `anclar: "arriba"`. Las pruebas antiguas de ese anclaje lo declaran ahora
+  explícitamente, conservando todas sus aserciones.
+- `reglas-arco.mjs → reglasRevelacion`: VSL y VSL corto revelan al 55–60% del tiempo.
+  Las propuestas conservan sus nueve bloques y el sustituto de primeros casos con garantía medible.
+- Regresiones: `pruebas/r11-motor.test.mjs`, `r11-filas.test.mjs`, `r11-qa.test.mjs`, `r11-documentos.test.mjs`.
+  Los fixtures usan directorios temporales del sistema y no dependen de decks de rondas externas.
+
 ## Reglas de mantenimiento
+
 1. **Un diseño nuevo exige cinco cosas**:
    - la función en `layouts-*.mjs`;
    - su registro en `LAYOUTS`;
@@ -159,7 +180,8 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   no toca el historial del primer render. `qa.json → evaluaciones` separa geometría, integridad
   comercial, indicios editoriales y aprobación visual humana pendiente.
 - Chat corto horizontal: 84/72 px según longitud; el vertical conserva 104 px. Las listas cortas
-  reservan el bloque completo centrado, salvo exclusiones `x/no` calibradas arriba en la referencia.
+  reservan el bloque completo centrado. Desde ronda 11, `x/no` también se centra; una continuación
+  superior de la referencia se declara explícitamente con `anclar: "arriba"`.
   Una cita vertical usa 112 px y glifo de 430 px: el tamaño horizontal no sirve en el lienzo alto.
 - `comparar` conserva encuadre y añade bandas, espaciado, escala y silueta cromática. Un fallo
   de elementos sale con 1. Las secuencias sin referencia temporal no pasan por omisión.

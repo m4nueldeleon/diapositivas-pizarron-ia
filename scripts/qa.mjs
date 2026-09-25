@@ -3,6 +3,7 @@ import { evaluacionesSeparadas } from './lib/editorial.mjs';
 import { reglasDeckCompleto, clasificarAvisos } from './lib/reglas-deck.mjs';
 import { medidasTrazos, avisosGeometriaSello } from './lib/medidas-trazos.mjs';
 import { subrayadosCruzan } from './lib/medidas-subrayados.mjs';
+import { medidasR11 } from './lib/medidas-r11.mjs';
 import { infoConceptos } from './lib/emoji-diccionario.mjs';
 import { RE_PALABRA } from './lib/markup.mjs';
 // qa.mjs — revisa el deck renderizado con reglas que cuentan, no que opinan. Nota 0-100.
@@ -106,7 +107,7 @@ if (flag('--sin-navegador')) {
   process.exit(flag('--estricto') ? 3 : informe.errores.length ? 1 : 0);
 }
 const { browser, page, avisos, errores: errPagina } = await abrir(htmlPath, W, H);
-await page.addScriptTag({ content: inyectable() + `;window.medidasTrazos = ${medidasTrazos.toString()};window.avisosGeometriaSello = ${avisosGeometriaSello.toString()};window.subrayadosCruzan = ${subrayadosCruzan.toString()};` });
+await page.addScriptTag({ content: inyectable() + `;window.medidasTrazos = ${medidasTrazos.toString()};window.avisosGeometriaSello = ${avisosGeometriaSello.toString()};window.subrayadosCruzan = ${subrayadosCruzan.toString()};window.medidasR11 = ${medidasR11.toString()};` });
 const CONTRASTE = { BAJO: BAJO_CONTRASTE, MEDIDO: contrasteMedido(), U: UMBRAL_CONTRASTE, UO: UMBRAL_OSCURA, OK: VISTOS_OK, DIVERGE, SUG: SUGERIDO, IMPRESO: TEXTO_IMPRESO, HALO_INSUFICIENTE, pedido: crudo.emoji || 'auto', mv: (FORMATOS[formato] || FORMATOS['16:9']).mv };
 
 const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, datosMuestra, enVivo]) => {
@@ -200,6 +201,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
         if (tam < 48) A(`el rótulo del símbolo «${rotulo.textContent}» mide ${Math.round(tam)} px: usa etiqueta externa o un concepto reconocible (mínimo 48 px)`);
       }
       const trazos = window.medidasTrazos(lam); trazos.errores.forEach(E); trazos.avisos.forEach(A);
+      const r11 = window.medidasR11(lam); r11.errores.forEach(E); r11.avisos.forEach(A); r.geometria_r11 = r11.medidas;
       if (document.body.classList.contains('sala')) {
         const identificables = '.lz-pasos [style*="opacity"], .lz-pasos .paso-apagado .icono-paso, .lz-pasos .paso-apagado .rotulo-paso, .lz-pasos .paso-apagado .tecla, .item-apagado > *, .pasos-letras .pendiente, .rejilla .apagado, .rejilla .apagada, .calendario .dia.apagado, :scope > .clon';
         for (const e of lam.querySelectorAll(identificables)) {
@@ -970,6 +972,7 @@ const evaluaciones = evaluacionesSeparadas({ deck, geometria, editorial: { error
 const medicion = { evaluaciones, alcance_nota: 'cumplimiento automático; no calidad profesional', glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: porConfirmar, datos_fuentes: prep.fuentes || {}, reglas_cliente: reglasCliente, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   composicion_vertical: porLamina.filter(r => r.composicion_vertical).map(r => ({ lamina: r.i + 1, ...r.composicion_vertical })),
+  geometria_r11: porLamina.filter(r => r.geometria_r11).map(r => ({ lamina: r.i + 1, ...r.geometria_r11 })),
   tinta: porLamina.map(r => ({ lamina: r.i + 1, rojo: r.rojo, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
 if (flag('--preflight-geometria')) {

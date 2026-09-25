@@ -34,7 +34,7 @@ también en vivo.
 |---|---|---|---|---|---|---|
 | `reel` | 30-60 s | 80-140 palabras | 12-20 | 6-12 | ninguna, sin oscuras | 1: guardar o comentar una palabra |
 | `video` (YouTube) | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | puente suave o ninguna | 1-2 |
-| `vsl` | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | el 25-30% final (GUION §7) | 2 o más |
+| `vsl` | 8-20 min | 1,300-3,200 | 170-410 | 75-190 | revelación al 55-60% de duración; oferta en el resto (GUION §7) | 2 o más |
 | `clase` (en vivo) | 40-60 min | el guion completo en beats, más tramos en vivo con `dur` | 500-900 + tramos | 220-400 | sin oscuras; puente al siguiente paso | al final: comunidad, próxima clase o invitación suave |
 | `webinar` | 60-90 min | el arco completo de la referencia, estirado | 1,000-1,600 + tramos | 450-700 | ~20% final, oscura solo la revelación | 3 o más |
 | `propuesta` | 3-20 min (corta: 3-8 min, 20-60 láminas); normalmente `en_vivo` | 480-3,200 | 60-400 | 20-180 | inversión anclada + garantía o condición de salida + siguiente paso con vigencia | 1 |
@@ -191,7 +191,7 @@ Modelo: **`ejemplos/reel/`** (9:16, 11 láminas, ~55 s). Recetas de tamaño en L
    con emoji negado, «Objeción #N» o «Razón #N» entre el emoji y la frase y la objeción en negrita; la
    respuesta va en la lámina siguiente y DEMUESTRA: su primera lámina no es una `idea` que afirma (GUION §2, tabla
    «objeción → respuesta»). Nunca pegada al botón. Salen del público real, no se inventan [34:17-36:00].
-6. Oferta en el 25-30% final, beat por beat (GUION §7, «El orden en un `vsl`»): revelación, qué incluye, prueba,
+6. Revelación entre el 55 y el 60% de la duración y oferta en el resto, beat por beat (GUION §7, «El orden en un `vsl`»): revelación, qué incluye, prueba,
    precio y garantía si los hay, llamado con qué pasa después, resumen y el llamado otra vez. Ningún «aplica» antes
    de la revelación y una sola acción en todos los llamados.
 
@@ -237,6 +237,8 @@ el deck en borrador (`por_confirmar.PUENTE`), igual que quitar el puente. No hay
 
 Con N láminas, presupuesta la revelación en ≈ 0.55-0.60 × N. Quedan ≈ 0.4 × N para stack, prueba, precio, dos llamados y pago del gancho. Verifica también el porcentaje de duración con QA: no todas las láminas duran igual.
 
+El rango **55–60% aplica tanto a `vsl` como a `vsl-corto`**. La duración cambia la profundidad de la demostración, no el lugar de la revelación. El 25–30% final que antes se indicaba para `vsl` dejaba sin tiempo la explicación completa de la oferta y se sustituye por este rango. QA mide el inicio de la primera revelación oscura contra la duración total sin redondear; estar fuera del rango produce aviso también antes del render. `propuesta` conserva sus nueve bloques y `webinar` su arco propio: esta regla no los convierte en VSL.
+
 La apertura sigue la tabla de GUION §6.1 (la referencia da la promesa de 0:08 a 0:19, el nombre del mecanismo a
 0:23 y el «te voy a enseñar a…» de 0:29 a 0:36): en un anuncio de 3-4 min los primeros 30 s deciden si se quedan.
 1. **0:00-0:10, el conflicto o la escena concreta** (elige un arquetipo de GUION §6.1; si es chat, con la hora a la vista).
@@ -275,6 +277,7 @@ Pantalla y voz llevan la frase resuelta con `{{CLAVE}}`; el motivo de lo que fal
 4. **Quién la imparte y prueba**: una cifra real de años, clientes o eventos («desde 2016, 23,000 clientes»), o un
    caso parecido al suyo con números y `fuente`. Si no hay, un sustituto de GUION §7 («Sin prueba real, en este
    orden»). Nunca inventada: sin datos, una sola `idea` con `{{CREDENCIAL}}` declarado, no una lista de tres huecos.
+   El sustituto de primeros casos se anuncia aquí, **antes de la inversión**, y lleva una garantía medible (condición, plazo real y devolución o salida sin penalización), desarrollada aquí o en el bloque 8. También vale presentar esa garantía completa aquí. Una garantía presentada solo al final, sin anunciar primeros casos, no cubre el bloque 4. QA no exige inventar años o clientes cuando este sustituto ya está presente. Una captura ficticia por sí sola nunca acredita trayectoria; una hipótesis sobre pérdidas del cliente tampoco sustituye este bloque.
 5. **Metas medibles**: «de {{HOY}} a …, medido en la semana N» (`cifra`, `linea-tiempo` o `tarjetas`).
 6. **Alcance**: qué incluye (`stack` o `lista` ✅) y qué NO incluye (`lista` con encabezado «No incluye:»).
 7. **Inversión anclada**: una `cifra` con el costo del bloque 2 arriba y en gris, `{{PRECIO}}` grande y el desglose

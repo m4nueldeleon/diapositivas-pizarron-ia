@@ -178,7 +178,7 @@ function anclaArriba(l) {
   if (l.tipo === 'lista' && (l.oscura || l.activo || (Array.isArray(l.hechos) && l.hechos.length) || l.como)) return false;
   // la lista de descartes va centrada: sus pasos ocultos ya reservan el hueco, así que el primer renglón aparece desde
   // el inicio en su lugar final (~28%), como en 4:05
-  if (l.tipo === 'lista' && (T.listaCentrada(l) || (l.items?.length <= 3 && !['x', 'no'].includes(l.vineta)))) return false;
+  if (l.tipo === 'lista' && (T.listaCentrada(l) || l.items?.length <= 5)) return false;
   return Array.isArray(l.items) && l.items.length >= 2;
 }
 
@@ -286,7 +286,9 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
   // runtime.js lleva adentro la colocación del sello (runtime-sello.js), en el mismo ámbito
   const runtime = fs.readFileSync(path.join(dirSkill, 'templates', 'runtime.js'), 'utf8')
     .replace('/*@@RECORTES@@*/', () => revisarRecortes.toString())
+    .replace('/*@@DOCUMENTOS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-documentos.js'), 'utf8'))
     .replace('/*@@EMOJIS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-emojis.js'), 'utf8'))
+    .replace('/*@@FILAS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-filas.js'), 'utf8'))
     .replace('/*@@SELLO@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-sello.js'), 'utf8'));
   const presentador = fs.readFileSync(path.join(dirSkill, 'templates', 'presentador.js'), 'utf8');
   const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO};--grano-suave:${GRANO_SUAVE}}`;

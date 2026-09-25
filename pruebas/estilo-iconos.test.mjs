@@ -136,7 +136,7 @@ test('render: calendario pastel, flujo y mapa de columnas iguales, tarjetas con 
 test('render: descartes centrados, stack a sangre, calificación y chat con hora', { timeout: 180_000 }, async () => {
   await conDeck(base([
     { tipo: 'lista', items: [{ emoji: '🚚', texto: 'Dropshipping', tachado: true }, { emoji: '📈', texto: 'Trading', tachado: true }] },
-    { tipo: 'lista', encabezado: 'Sin:', vineta: 'x', items: ['uno', 'dos'] },
+    { tipo: 'lista', anclar: 'arriba', encabezado: 'Sin:', vineta: 'x', items: ['uno', 'dos'] },
     { tipo: 'stack', items: [{ emoji: '🤖', texto: 'Tu agente', doble: true }, { texto: 'Clases' }, { texto: 'Mentor', color: 'negro', sub: 'Por 6 meses' }], remate: 'Hecho **contigo**' },
     { tipo: 'calificacion', emoji: '🤔', filas: [{ emoji: '🚚', texto: 'Dropshipping', estrellas: 4 }, { texto: 'Ventas' }, { emoji: '📈', texto: 'Trading', estrellas: 1 }] },
     { tipo: 'chat', sello: 'Tarde', sello_sobre: 'm1', mensajes: [{ de: 'otro', hora: '11:40 pm', texto: '¿Cuánto cuesta?' }, { de: 'yo', hora: '9:05 am', texto: '¡Buen día!' }] },
