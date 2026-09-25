@@ -21,7 +21,9 @@ export function demostracionChat(l) {
   return mensajes.some((entrada,i) => mensajes.slice(i+1).some(salida => {
     const a=normal(entrada.texto), b=normal(salida.texto);
     if(entrada.de===salida.de || palabras(a).length<4 || palabras(b).length<3 || a===b) return false;
-    if(/vamos a mostrar|haremos una demostracion|te ensenare|puedes mostrar/.test(a+' '+b))return false;
+    // R19 [juez]: «Enseguida te muestro cómo queda armado…» colaba por «queda»; el anuncio de mostrar/enseñar
+    // descalifica aunque la frase siga con palabras nuevas, igual que ya pasa con «vamos a mostrar».
+    if(/vamos a mostrar|haremos una demostracion|te ensenare|puedes mostrar|te muestro (como|que)|te enseno (como|que)|aqui te muestro/.test(a+' '+b))return false;
     const concreto=/\?|\d|portada|archivo|pagina|mensaje|precio|revision|fecha|testimonio|publicar|descuento/.test(a);
     // R18 [juez r18]: «Puedes revisar todo tranquilamente» no responde «¿cuánto cuesta y cuándo entregas?»: si la entrada
     // pregunta cuánto o cuándo, la salida trae el valor o el plazo («La A. Puedes continuar» sí decide una elección).
@@ -54,8 +56,11 @@ const PLAZO=new RegExp('('+NUMERO+').{0,24}\\b(segund\\w*|minut\\w*|hora\\w*|dia
 const CONTENIDO=/\b(inclu\w*|trae|viene\w*|contiene)\b\s+(\d|un|una|unos|unas|dos|tres|cuatro|cinco|el|la|los|las|tu|su|sus|tus|todo)\b/;
 const PIDE={precio:VALOR,plazo:PLAZO,incluye:CONTENIDO};
 const VACIAS=new Set(['puedo','puedes','quiero','tengo','tienes','hacer','algo','esto','como','cuando','donde','porque','pero','para','sobre','entre','mucho','muchos','todo','todos','cada','cuanto','cuanta','importa','mejor']);
+// R19 [juez, caso d]: «No tengo equipo» respondido con «todo corre desde tu celular» seguía sin resolver porque
+// el motor exigía la raíz «equip-» literal. Sinónimos frecuentes del mismo componente no repiten la palabra exacta.
 const FAMILIAS=[['cuest','preci','cobr','pag','cost','inver'],['tard','plaz','tiemp','dias','seman','entreg','cuand','segund','minut','hora'],['inclu','trae','vien','conti'],
-  ['funcio','result','sirv'],['molest','incomod'],['compr','pedi','orden'],['disen','diseñ'],['garant','devol','reemb']];
+  ['funcio','result','sirv'],['molest','incomod'],['compr','pedi','orden'],['disen','diseñ'],['garant','devol','reemb'],
+  ['equip','celular','computador','compu','telefono','laptop','dispositivo']];
 export function revisarComponentes(pregunta,respuestas) {
   const partes=componentesObjecion(pregunta);
   if(partes.length<2)return [];
