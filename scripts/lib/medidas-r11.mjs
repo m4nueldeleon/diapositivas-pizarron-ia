@@ -71,11 +71,20 @@ export function medidasR11(lam) {
     const pico = +t.dataset.pico;
     if (Number.isFinite(pico) && (pico < bb.x - 1 || pico > bb.x + bb.width + 1)) avisos.push('llave con pico fuera de sus brazos: la nota debe quedar bajo su propio grupo');
   }
+  if (H > W && lam.dataset.tipo === 'tarjetas') {
+    const textosT=[...lienzo.querySelectorAll('.tarjeta')].filter(visible).flatMap(t=>textos(t).map(q=>q.el));
+    const minimo=textosT.length?Math.min(...textosT.map(e=>tam(e)/a1920)):null;
+    medidas.tarjetas_letra_nativa=minimo;
+    if(minimo!=null && minimo<60) avisos.push(`tarjetas 9:16 con letra de ${minimo.toFixed(0)} px (mínimo 60): con hasta tres tarjetas el bloque crece; con más, pártelas en dos láminas`);
+  }
   // R13: ancho real de cada burbuja, no únicamente su contenedor.
   if (H > W && lam.dataset.tipo === 'chat') {
     const burbujas=[...lienzo.querySelectorAll('.chat:not(.chat-muro) > .msj > .burbuja')].filter(visible);
     medidas.burbujas_ancho_pct=burbujas.map(e=>caja(e).w/util*100);
     medidas.chat_letras=burbujas.map(tam);
+    // R14: letra efectiva (con encaje) en px del propio lienzo vertical; bajo 64 la conversación no cabe en una lámina.
+    const nativas=burbujas.map(e=>tam(e)/a1920);
+    if(nativas.length && Math.min(...nativas)<64) avisos.push(`chat 9:16 con letra de ${Math.min(...nativas).toFixed(0)} px (mínimo 64): parte la conversación en dos láminas o acorta los mensajes; no la encojas para que quepa`);
     if(medidas.burbujas_ancho_pct.some(n=>n<82||n>86)) avisos.push('burbuja 9:16 fuera de 82–86% del ancho útil: amplía su ancho antes de reducir la letra');
   }
   if (lam.dataset.tipo==='lista') {

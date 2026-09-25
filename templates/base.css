@@ -843,3 +843,7 @@ body.sala .objeto-logos img { height: 52px !important; }
 }
 .f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .msj:not(.msj-ancho) .yo-av,
 .f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .msj:not(.msj-ancho) .otro-av { position:static; }
+/* R14: tarjeta-renglón en 9:16 (runtime-filas → ampliarTarjetasVertical): emoji al lado del rótulo cuando apiladas no caben */
+.f-vertical .tarjetas-fila .tarjeta { flex-direction: row; justify-content: flex-start; align-items: center; text-align: left; min-height: 0; padding: 34px 44px; gap: 40px; }
+.f-vertical .tarjetas-fila .tarjeta .rotulo { text-align: left; min-height: 0; }
+

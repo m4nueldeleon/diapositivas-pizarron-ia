@@ -764,6 +764,10 @@ Una respuesta real exige `fuente` con fecha, por ejemplo «Registro autorizado, 
 Si el contenido es ilustrativo, usa `ejemplo: true`: lleva el sello visible EJEMPLO. Una respuesta
 sin esa marca y sin fuente fechada es error de QA.
 
+**Piso del chat vertical (ronda 14).** La letra de un chat 9:16 no baja de 64 px para caber: un chat de tres mensajes
+con encabezado bajaba a ~36 px y la escala común del deck arrastraba a todos los chats del reel (el QA daba 100). Si no
+cabe, QA pide partir la conversación en dos láminas (la pregunta literal en una, la respuesta y su resultado en otra).
+
 **Una burbuja, una idea (ronda 14).** Tope de renglones por burbuja para CUALQUIER longitud: 4 en 9:16 y 3 en 16:9.
 Un mensaje que trae varias ideas («incluye una revisión; las modificaciones se cotizan aparte; las devoluciones…») se
 parte en mensajes seguidos, cada uno en su paso: el espectador lee una unidad de sentido a la vez y la voz la dice

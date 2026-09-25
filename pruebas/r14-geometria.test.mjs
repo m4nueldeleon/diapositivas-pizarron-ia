@@ -47,3 +47,22 @@ test('r14: una lista corta usa UN tamaño de letra para todos sus renglones',asy
  const tams=await p.evaluate(()=>[...window.PZ.lams[0].querySelectorAll('.lista > *')].map(e=>parseFloat(getComputedStyle(e).fontSize)));
  assert.equal(new Set(tams).size,1,JSON.stringify(tams));
 });
+test('r14: el chat vertical no se encoge bajo 64 px ni arrastra a los demás chats; si no cabe, QA pide partirlo',async t=>{
+ const p=await pagina(t,[
+  {tipo:'chat',mensajes:[{de:'otro',texto:'¿Me lo dejas más barato?'}]},
+  {tipo:'chat',encabezado:'Le escribes:',mensajes:[{de:'yo',texto:'¿Qué ajustamos: el precio o lo que incluye?'},{de:'otro',texto:'Solo necesito 2 de las 3 piezas.'},{de:'yo',texto:'Entonces son 2 piezas y te las entrego el viernes por la tarde.'}]},
+ ],'9:16');if(!p)return;
+ const r=await p.evaluate(()=>window.PZ.lams.map(l=>({tams:[...l.querySelectorAll('.burbuja')].map(b=>parseFloat(getComputedStyle(b).fontSize)),q:window.medidasR11(l)})));
+ assert.ok(r.every(x=>x.tams.every(t=>t>=64)),JSON.stringify(r.map(x=>x.tams)));
+ const alto=r[1].q.medidas.chat_letras?.length;
+ assert.ok(alto,'mide las burbujas del chat alto');
+ // si el encaje igual lo reduce, el aviso lo dice; si no, la letra efectiva queda en el piso o arriba
+ const efectiva=Math.min(...r[1].q.medidas.chat_letras)/(1920/1080);
+ assert.ok(efectiva>=64 || r[1].q.avisos.some(a=>/parte la conversación/.test(a)),JSON.stringify(r[1].q));
+});
+test('r14: en 9:16 hasta tres tarjetas crecen por ocupación y QA avisa si quedan chicas',async t=>{
+ const p=await pagina(t,[{tipo:'tarjetas',items:[{emoji:'📅',texto:'Pagar hoy: **asegura tu fecha**'},{emoji:'💵',texto:'Efectivo o transferencia: **sin descuento**'}]}],'9:16');if(!p)return;
+ const r=await p.evaluate(()=>{const l=window.PZ.lams[0];const bien=window.medidasR11(l);l.querySelector(':scope > .lienzo').firstElementChild.style.zoom='.6';return {bien,mal:window.medidasR11(l)};});
+ assert.ok(r.bien.medidas.tarjetas_letra_nativa>=60,JSON.stringify(r.bien.medidas));
+ assert.ok(r.mal.avisos.some(a=>/tarjetas 9:16/.test(a)),JSON.stringify(r.mal.avisos));
+});

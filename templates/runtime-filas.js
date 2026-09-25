@@ -1,7 +1,7 @@
 /* Filas cortas: la referencia ocupa 60–75 % del ancho, con íconos de 170–250 px.
    Se mide el contenido completo antes del revelado, nunca el paso visible. */
 function ampliarFilas(lam) {
-  if (lam.offsetWidth < lam.offsetHeight) return;
+  if (lam.offsetWidth < lam.offsetHeight) { if (lam.dataset.tipo === 'tarjetas') ampliarTarjetasVertical(lam); return; }
   const tipos = ['pasos', 'flujo', 'bifurcacion', 'opciones', 'rejilla', 'lista', 'circulos'];
   if (!tipos.includes(lam.dataset.tipo) || lam.dataset.tipo === 'lista') return;
   const lz = lam.querySelector(':scope > .lienzo');
@@ -86,4 +86,29 @@ function ajustarNotasLlave(lam) {
     if (actual < objetivo) n.style.setProperty('--tn', (1 + Math.ceil(tam * objetivo / (actual || 1))) + 'px');
     n.style.whiteSpace = 'nowrap';
   });
+}
+
+// R14: en 9:16, hasta tres tarjetas apiladas toman ~84% del ancho útil y su letra sube hacia el texto principal
+// (84 px, piso 64): salían a ~46 px con media lámina vacía y se leían como nota al pie [r14, reel del descuento, 7].
+// Escalar el bloque no bastaba: la frase larga fijaba el ancho. Aquí la tarjeta se ensancha y el texto se reparte.
+function ampliarTarjetasVertical(lam) {
+  const lz = lam.querySelector(':scope > .lienzo'), bloque = lz?.firstElementChild, grid = bloque?.matches('.tarjetas') ? bloque : bloque?.querySelector('.tarjetas');
+  if (!grid || grid.children.length > 3 || lz.dataset.anclar) return;
+  const cs = getComputedStyle(lz), util = lz.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const alto = lz.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom), s = escala(lam);
+  grid.style.setProperty('--cols', '1'); grid.style.setProperty('--tw', Math.round(util * .84) + 'px');
+  // Primero apiladas (emoji arriba); si a 64 px no caben, el emoji pasa AL LADO del texto (tarjeta-renglón): el alto de
+  // cada tarjeta baja casi a la mitad y la letra vuelve a 84 [r14, ejemplo reel 6: tres tarjetas + encabezado].
+  const probar = (fila) => {
+    grid.classList.toggle('tarjetas-fila', fila);
+    for (let tt = 84; tt >= 64; tt -= 4) {
+      grid.style.setProperty('--tt', tt + 'px');
+      grid.querySelectorAll('.emo').forEach(e => e.style.setProperty('--s', Math.round(tt * (fila ? 1.5 : 1.9)) + 'px'));
+      const rotulosOk = [...grid.querySelectorAll('.rotulo')].every(r => rectsTexto(r, lam).length <= 2);
+      if (rotulosOk && bloque.getBoundingClientRect().height / s <= alto * .9) return true;
+    }
+    return false;
+  };
+  if (!probar(false)) probar(true);
+  lz.style.justifyContent = 'center';
 }

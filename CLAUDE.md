@@ -253,4 +253,7 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   revelación; `pruebas/r14-documentos.test.mjs` la compara con SKILL, ARCOS, GUION y LAYOUTS.
 - `imagenes.mjs → capturaDocumento`: una captura SVG con texto de `prueba` se mide como documento.
 - Pruebas: `r14-editorial`, `r14-geometria`, `r14-documentos`. Réplica 8/10 (fallan r95 y r255).
+- `runtime-legibilidad.js → PISO_CHAT_VERTICAL` (64 px): el chat 9:16 no se encoge bajo el piso; `medidas-r11.mjs` avisa
+  y pide partir la conversación. `runtime-filas.js → ampliarTarjetasVertical`: hasta 3 tarjetas en 9:16 al 84% del ancho,
+  rótulo 84→64 px en ≤ 2 renglones; si no caben apiladas, `.tarjetas-fila` (emoji al lado).
 

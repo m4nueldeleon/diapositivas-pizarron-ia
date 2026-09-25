@@ -71,6 +71,7 @@ function ajustarConsigna(lam) {
   if(reloj)reloj.style.width='360px';
 }
 
+const PISO_CHAT_VERTICAL = 64;
 function coherenciaChats(lams) {
   const escenas=lams.filter(l=>l.offsetHeight>l.offsetWidth && l.querySelector('.lz-chat > .pila > .chat:not(.chat-muro)'));
   const burbujas=l=>[...l.querySelectorAll('.lz-chat > .pila > .chat:not(.chat-muro) .msj .burbuja')];
@@ -81,8 +82,13 @@ function coherenciaChats(lams) {
     chat.style.gap=bs.some(b=>b.closest('.msj').classList.contains('msj-ancho'))?'64px':'160px';
     if(bs.length===1 && bs[0].textContent.trim().split(/\s+/).length>8)bs[0].style.fontSize='100px';
     const alto=l.offsetHeight-640;
+    // R14: piso de 64 px. Sin piso, un chat de tres mensajes con los avatares encima bajaba la letra a ~36 px y la
+    // coherencia de escala arrastraba a TODOS los chats del reel [r14, reel del descuento]. Si no cabe en el piso, QA
+    // pide partir la conversación en dos láminas: el motor no la vuelve ilegible para que quepa.
     for(let n=0;n<25 && pila.getBoundingClientRect().height/escala(l)>alto;n++) {
-      bs.forEach(b=>b.style.fontSize=(parseFloat(getComputedStyle(b).fontSize)*.96)+'px');
+      let bajo=false;
+      bs.forEach(b=>{const t=parseFloat(getComputedStyle(b).fontSize); if(t*.96>=PISO_CHAT_VERTICAL){b.style.fontSize=(t*.96)+'px'; bajo=true;}});
+      if(!bajo)break;
     }
   }
   const chats=escenas.flatMap(burbujas);

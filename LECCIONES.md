@@ -327,3 +327,8 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Límite:** r95 (✕ delgada, 1.5% más abajo) y r255 (silueta de la fila de tachones) siguen fallando por elemento.
   Mover el relleno de la lista anclada movió el bloque de forma no lineal: hay otra regla que la reacomoda. Queda como
   pendiente medido, no como ajuste a ojo.
+- **Evidencia (reel escrito a mano por el orquestador en la ronda 14):** el primer render dio QA 100 con el texto del chat
+  a ~36 px en cuatro láminas. El bucle de encaje del chat vertical no tenía piso y la escala común arrastró a los demás
+  chats. Se corrigió con un piso de 64 px y un aviso que pide partir la conversación; el mismo reel reveló tarjetas de
+  46 px en 9:16 (ahora crecen al 84% del ancho y pasan a tarjeta-renglón si no caben). Un 100 automático no sustituye
+  mirar la hoja: esa revisión es la que encontró los dos defectos.

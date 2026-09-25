@@ -349,6 +349,8 @@ Estas medidas se aplican después del encaje, no solo al CSS nominal:
 | Contraste de dos columnas cortas | Misma ocupación; título acompaña; nota debajo | Mismos pisos; ✅ bajo título rojo |
 | Chat normal 9:16 | Cada burbuja al 84% del ancho útil; avatar arriba si hace falta | Fuera de 82–86%; escala del deck >1.3× |
 | Capa roja en Caveat (anotación, nota roja, rótulo de llave) | x ≥75% de la principal | x por debajo de 75% |
+| Chat 9:16 (letra efectiva) | Nunca se encoge bajo 64 px; la escala común del deck no arrastra bajo ese piso | Letra <64 px: parte la conversación en dos láminas |
+| Hasta 3 tarjetas en 9:16 | 84% del ancho útil, rótulo de 84 px (piso 64, ≤ 2 renglones); si apiladas no caben, tarjeta-renglón con el emoji al lado | Rótulo <60 px |
 | Nota GRIS secundaria (`nota`) | Su tamaño medido: 64 px (60 px bajo el mapa 1-2-3) [ref_115] | Nota gris <48 px efectivos |
 | Cita protagonista | x de texto principal (Figtree 84 px de referencia) | x por debajo de 100% |
 | Contenido 16:9 | ≥6% arriba y abajo | Contenido medido fuera del margen |
