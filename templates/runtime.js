@@ -380,6 +380,15 @@
   // ---------- marcas sobre texto e imágenes ----------
   const pasoDe = e => +((e.closest('[data-p]') || {}).dataset || {}).p || 0;
   function abrirEspacioSubrayados(esc, lam) {
+    // El énfasis puede ocupar varios renglones con las fuentes definitivas.
+    // Reserva aire antes de encajar y de dibujar, sin reducir la letra.
+    dentro(esc, '[data-sub]').forEach(el => {
+      if (rectsTexto(el, lam).length < 2) return;
+      const bloque = el.closest('.t, .item-texto, .nota, .etiqueta, .burbuja');
+      if (!bloque) return;
+      const cs = getComputedStyle(bloque), em = parseFloat(cs.fontSize);
+      if (parseFloat(cs.lineHeight) < em * 1.42) bloque.style.lineHeight = '1.42';
+    });
     // Un hueco [DATO] subrayado: su borde punteado deja el trazo más abajo que la línea base, y sin aire el trazo caía
     // pegado al borde o dentro del renglón siguiente (del mismo bloque o de otro: la nota, el sub de la frase). Se abre
     // el espacio en el layout ANTES de dibujar: margen inferior del hueco = lo que falta para tinta + cola + aire.

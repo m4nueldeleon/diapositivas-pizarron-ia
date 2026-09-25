@@ -33,8 +33,11 @@ fechas, personas, sala, pruebas ni respaldos. No agrega aceptaciones de avisos.
    y expón los hallazgos: ninguno de estos estados aprueba la pieza. El agente no debe seguir
    invocando el comando sin una corrección justificada. Las rondas quedan en `armado.json`.
 6. Con cero errores, avisos, datos pendientes y requisitos de cierre, se permite renderizar.
-   `armar` ejecuta `render --qa`. Lee ahora la cola **medida**, corrige y repite. El filtro de texto
-   no garantiza 85 puntos visuales: geometría, contraste y encaje se miden después.
+   `armar` abre primero el HTML con las fuentes reales y ejecuta `qa --preflight-geometria`:
+   mide todos los pasos, listas, énfasis multilínea, rótulos y sellos, sin capturar PNG ni registrar
+   una primera nota. Con errores o avisos geométricos se detiene en `encaje-pendiente`.
+   Después ejecuta `render --qa`. Lee la cola **medida**, corrige y repite. El filtro de texto
+   y el encaje no certifican calidad editorial ni visual.
 7. Solo `qa.json → estado: listo` del mismo deck permite pasar a revisar **todas** las hojas,
    incluidos los pasos intermedios. `revisar_hoja` todavía no es entrega; `puede_entregar` permanece
    falso porque el programa no puede certificar la observación humana.
@@ -93,6 +96,19 @@ incluso sin hallazgos. La limitación del entorno no se convierte en un aprobado
 La comparación de fidelidad conserva el contrato de PROTOCOLO §4b: solo la réplica versionada,
 correlación mínima 0.7 y diferencias de caja de tinta de hasta 8 puntos del lienzo. Publica la
 distancia por lámina desde `comparar.json`. Sin ejecución del comparador no hay cifra nueva.
+También publica anclas de bandas, distancias, escala del glifo cromático y su silueta. Un fallo
+por elemento hace salir con código 1 aunque el encuadre global pase. La máscara cromática no
+aísla bien glifos grises ni varios emojis juntos: sus fallos requieren inspección visual.
+Sin cuadros temporales cotejados, `secuencias: sin-referencia-temporal` no es un aprobado.
+
+## Evaluaciones independientes
+
+`evaluaciones.geometria` contiene solo las mediciones de navegador; la integridad comercial
+revisa la ficha de oferta y los pendientes. `editorial` registra indicios de repetición,
+demostración ausente, capa roja redundante y gramática. Su ausencia no certifica un buen guion.
+`aprobacion_visual` permanece `pendiente-humana`: solo un revisor identificado puede firmar
+la presentación después de ver todas las hojas. La antigua `nota` se conserva por compatibilidad
+y se identifica como cumplimiento automático, nunca como puntuación profesional.
 
 ## Contrato de producción
 

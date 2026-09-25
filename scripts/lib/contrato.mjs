@@ -1,3 +1,4 @@
+import { validarEditorial } from './editorial.mjs';
 import { validarSuperficies, sanearAceptaciones, validarAceptaciones } from './contrato-superficies.mjs';
 import { validarQr } from './qr.mjs';
 // contrato.mjs — valida y sanea deck.json antes de construir.
@@ -29,7 +30,7 @@ const LISTAS = ['items', 'nodos', 'ramas', 'columnas', 'filas', 'series', 'barra
 // Campos que lee cada diseño (además de los COMUNES). Si agregas un campo a un layout, agrégalo aquí:
 // pruebas/contrato.test.mjs revisa que todo «l.campo» de layouts-*.mjs esté en esta tabla.
 // Contrato de raíz; los campos de diseño siguen en CAMPOS.
-export const CAMPOS_RAIZ = ['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'garantia', 'reglas_cliente', 'avisos_aceptados', 'datos', 'laminas', 'piel', '_comentario'];
+export const CAMPOS_RAIZ = ['$schema', 'titulo', 'formato', 'emoji', 'animacion', 'idioma', 'marca', 'pieza', 'duracion_objetivo', 'en_vivo', 'sala', 'persona', 'persona_excepciones', 'conceptos', 'clase', 'garantia', 'reglas_cliente', 'avisos_aceptados', 'datos', 'ficha_oferta', 'bloques', 'laminas', 'piel', '_comentario'];
 
 export const COMUNES = ['id', 'tipo', 'como', 'paga', 'voz', 'accion', 'si_falla', 'excepcion_persona', 'credibilidad', 'dur', 'ancla', 'anclas', 'revelar', 'sello', 'sello_paso', 'sello_pos', 'sello_sobre',
   'clic', 'clic_paso', 'clic_pos', 'cursor', 'firma', 'oscura', 'fondo', 'anclar',
@@ -319,6 +320,7 @@ export function validarDeck(deck, tipos) {
   e.push(...validarDatos(deck.datos), ...validarMarcadores(deck), ...validarAceptaciones(deck.avisos_aceptados));
   if (deck.reglas_cliente != null) e.push(...validarAceptaciones(deck.reglas_cliente).map(x => x.replaceAll('avisos_aceptados', 'reglas_cliente')));
   if (deck.reglas_cliente != null && deck.avisos_aceptados != null) e.push('usa reglas_cliente o avisos_aceptados, no ambos: una sola ficha congelada');
+  e.push(...validarEditorial(deck));
   const ids = deck.laminas.map(l => l?.id).filter(x => x != null);
   if (new Set(ids).size !== ids.length) e.push('id de lámina repetido: como y paga exigen una referencia única');
   // `libre` vale null (sin rango): se valida que la clave EXISTA, sin tomar claves del prototipo («toString»)

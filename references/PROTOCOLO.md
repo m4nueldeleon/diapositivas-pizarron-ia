@@ -185,6 +185,12 @@ node scripts/comparar.mjs <carpeta-con-ref_SEG.jpg> --salida /tmp/pz-loop/r<N>/c
   de 8 puntos del lienzo.
 - **Límite**: mide encuadre, no estilo. Dos láminas pueden pasar con tipografías distintas; la
   revisión a ojo de `comp_N.jpg` sigue mandando.
+- Desde la ronda 10, publica por separado **encuadre** y **elementos**: bandas de tinta, distancias,
+  escala y silueta cromática. El umbral de anclas es 3 puntos; el parecido de silueta exige IoU ≥0.8.
+  Un elemento fuera de tolerancia marca «REVISAR» y devuelve código 1 aunque el encuadre pase.
+  La máscara cromática agrupa glifos y puede perder sus partes grises; inspecciona cada fallo.
+  `secuencia_render` conserva el orden del motor, pero no lo compara con el video: mientras falte
+  ese cotejo, `secuencias: sin-referencia-temporal`. Nunca sumes ese pendiente como aprobado.
 - Cada ronda del loop de mejora anota el número «pares que pasan / total» sobre `pruebas/replica` para ver
   si la réplica se acerca o se aleja del video. Ronda 2: **5/10** (pasan r10, r90, r95, r460, r628; fallan
   de verdad r115 —título en 2 renglones—, r255 —lista más arriba y más chica—, r260, r1040 y r1760).

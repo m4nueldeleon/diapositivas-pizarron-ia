@@ -111,3 +111,55 @@ export function figuraTrazo(figura, rotulo) {
     }));
   });
 }
+
+// Anclas medidas independientemente en ambos cuadros. Autocontenida para Chromium.
+// Las bandas de tinta detectan distribución vertical; el glifo cromático excluye tinta roja.
+export function anclasTinta(rgba, w, h) {
+  const filas = new Array(h).fill(0), pixeles = [], color = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (x > w * .8 && y > h * .88) continue;
+    const i = (y * w + x) * 4, [r, g, b] = rgba.slice(i, i + 3);
+    const lum = .299 * r + .587 * g + .114 * b, sat = Math.max(r, g, b) - Math.min(r, g, b);
+    if (lum < 150 || (sat > 90 && lum < 225)) { filas[y]++; pixeles.push([x,y]); }
+    if (sat > 55 && lum < 235 && !(r > g * 1.5 && r > b * 1.5)) color.push([x,y]);
+  }
+  const caja = ps => {
+    if (!ps.length) return null;
+    const limites = ps.reduce((r,[x,y]) => [Math.min(r[0],x),Math.min(r[1],y),Math.max(r[2],x),Math.max(r[3],y)], [w,h,0,0]);
+    return { x: limites[0]/w*100, y: limites[1]/h*100,
+      w: (limites[2]-limites[0]+1)/w*100, h:(limites[3]-limites[1]+1)/h*100 };
+  };
+  const bandas=[]; let inicio=null, ultimo=0;
+  for (let y=0;y<=h+6;y++) {
+    if (filas[y]>1) { if(inicio===null) inicio=y; ultimo=y; }
+    else if(inicio!==null && y-ultimo>6) {
+      const ps=pixeles.filter(p=>p[1]>=inicio&&p[1]<=ultimo);
+      if(ps.length>25) bandas.push(caja(ps));
+      inicio=null;
+    }
+  }
+  const emoji=caja(color), silueta=new Array(256).fill(0);
+  if(emoji) for(const [x,y] of color) {
+    const xx=Math.min(15,Math.floor((x/w*100-emoji.x)/emoji.w*16));
+    const yy=Math.min(15,Math.floor((y/h*100-emoji.y)/emoji.h*16));
+    silueta[yy*16+xx]=1;
+  }
+  return { bandas, emoji, silueta, limite: 'El glifo cromático puede agrupar varios emojis; tonos y texturas requieren juicio visual.' };
+}
+
+export function compararAnclas(a,b,umbral=3) {
+  const comparar=(x,y)=>x&&y ? Object.fromEntries(['x','y','w','h'].map(k=>[k,+(y[k]-x[k]).toFixed(2)])) : null;
+  const bandas=a.bandas.map((x,i)=>comparar(x,b.bandas[i]));
+  const emoji=comparar(a.emoji,b.emoji);
+  const distancias = a.bandas.slice(1).map((x,i)=>({
+    referencia: +(x.y-a.bandas[i].y-a.bandas[i].h).toFixed(2),
+    nuestra: b.bandas[i+1] ? +(b.bandas[i+1].y-b.bandas[i].y-b.bandas[i].h).toFixed(2) : null,
+  }));
+  const union=a.silueta.reduce((n,x,i)=>n+Number(x||b.silueta[i]),0);
+  const inter=a.silueta.reduce((n,x,i)=>n+Number(x&&b.silueta[i]),0);
+  const iou=union ? +(inter/union).toFixed(3) : null;
+  const falla=a.bandas.length!==b.bandas.length || bandas.some(x=>!x||Object.values(x).some(v=>Math.abs(v)>umbral))
+    || (emoji && Object.values(emoji).some(v=>Math.abs(v)>umbral)) || Boolean(a.emoji)!==Boolean(b.emoji) || (iou!==null && iou<.8);
+  return { umbral, bandas, emoji, distancias, silueta_iou:iou, falla: Boolean(falla), estado:falla?'revisar-elementos':'sin-desvio-detectado',
+    secuencia:{estado:'sin-referencia-temporal',motivo:'Un cuadro aislado no acredita el orden de aparición.'} };
+}

@@ -419,3 +419,14 @@ Estos emojis casi desaparecen según el set y el fondo. Dos fuentes, las dos en 
 
 La ✅ y la ❌ se dibujan en SVG igual en los dos sets: la ✅ de Fluent era verde menta pálido y se
 perdía sobre el cuadrante verde.
+
+## Asociaciones por contexto comprobables (ronda 10)
+
+- «Escondes el contacto»: teléfono o mensaje recibido, según el canal. La brújula solo orienta;
+  no muestra dónde escribir. Ver las filas de llamada, enviar mensaje y contactos del teléfono.
+- «Tres acuerdos»: tres elementos reconocibles en `flujo` sin flechas: producto, monto y fecha,
+  cada uno con el emoji de su concepto y una etiqueta corta. Un triángulo con «ACUERDOS» exige
+  descifrar la metáfora y no explica el mecanismo.
+- Un rótulo dentro de `trazo:` debe leerse al tamaño final: piso de 48 px efectivos en 1920.
+  Si para caber necesita menos, usa una etiqueta externa o los tres conceptos, nunca letra diminuta.
+  Revisa el PNG a tamaño de reproducción; la validación sintáctica del símbolo no prueba legibilidad.

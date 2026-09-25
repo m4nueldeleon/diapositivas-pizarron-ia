@@ -523,7 +523,9 @@ export function chat(l, ctx) {
   const ms = l.mensajes || [];
   const maxPalabras = Math.max(0, ...ms.map(m => palabras(m.texto)));
   const tbVertical = ms.length <= 2 && maxPalabras <= 6 ? 104 : ms.length <= 3 && maxPalabras <= 12 ? 76 : maxPalabras <= 12 ? 68 : maxPalabras <= 24 ? 64 : 58;
-  const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbVertical;
+  const tbHorizontal = ms.length <= 2 && maxPalabras <= 12 ? 84 : ms.length <= 3 && maxPalabras <= 12 ? 72 : 54;
+  const tbAuto = ctx.vertical ? tbVertical : tbHorizontal;
+  const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbAuto;
   const muro = l.variante === 'muro', celular = l.marco === 'celular';
   const html = ms.map((m,i) => m.de === 'prompt' ? renglonPrompt(l, ctx, i) : burbuja(m,ctx,{
     indice:i, paso:l.revelar === 'todo' || l.revelar === 'rafaga' ? 0 : muro ? Math.floor(i/(ctx.vertical ? 1 : 2)) : i,
@@ -537,7 +539,7 @@ export function chat(l, ctx) {
     return `<div class="pila"><div class="chat-celular"><div class="celular-leyenda">${rotulo(ctx,l)}${texto(ctx,l.texto,'medio',0)}</div><div class="celular"><svg class="celular-marco" viewBox="0 0 520 1040" aria-hidden="true"><rect x="3" y="3" width="514" height="1034" rx="64" fill="#151515"/><rect x="19" y="19" width="482" height="1002" rx="48" fill="#fff"/><rect x="180" y="18" width="160" height="28" rx="14" fill="#151515"/></svg><div class="celular-pantalla"><div class="celular-app">${app}${l.grabando ? '<span class="grabando">Grabando</span>' : ''}</div><div class="chat">${html}</div></div></div></div>${pie}</div>`;
   }
   if (muro) return `<div class="pila">${rotulo(ctx,l)}<div class="chat chat-muro">${html}</div>${pie}</div>`;
-  const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : ctx.vertical && !l.tam_texto ? `--tb:${tbVertical}px` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ctx.vertical ? `--av:${Math.round(tbAvatar * 1.3)}px` : ''].filter(Boolean);
+  const vars = [l.tam_texto && /px$/.test(l.tam_texto) ? `--tb:${l.tam_texto}` : !l.tam_texto ? `--tb:${tbAuto}px` : '', Number.isFinite(l.avatar_tam) ? `--av:${Math.round(l.avatar_tam)}px` : ctx.vertical ? `--av:${Math.round(tbAvatar * 1.3)}px` : ''].filter(Boolean);
   const tb = vars.length ? ` style="${vars.join(';')}"` : '';
   return `<div class="pila">${rotulo(ctx, ctx.vertical && !l.encabezado_estilo ? { ...l, encabezado_estilo: 'frase' } : l, ' style="margin-bottom:40px"')}<div class="chat"${tb}>${html}</div>${pie}</div>`;
 }

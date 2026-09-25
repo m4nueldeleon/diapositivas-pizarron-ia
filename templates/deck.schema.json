@@ -19,6 +19,8 @@
     "sala": {"oneOf": [{"type": "boolean"}, {"type": "object", "required": ["distancia_m"], "properties": {"distancia_m": {"type": "number", "exclusiveMinimum": 0}}, "additionalProperties": false}]},
     "persona": {"enum": ["tu", "ustedes"]},
     "persona_excepciones": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Frases exceptuadas de persona, sin distinguir mayúsculas ni acentos."},
+    "ficha_oferta": {"type": "object", "properties": {"ejemplo": {"type": "boolean"}, "producto": {"type": "string"}, "publico": {"type": "string"}, "resultado": {"type": "string"}, "entrega": {"type": "string"}, "responsable": {"type": "string"}, "precio": {"type": "string"}, "garantia": {"type": "string"}, "bonos": {"type": "string"}, "llamado": {"type": "string"}, "siguiente": {"type": "string"}, "evidencia": {"type": "string"}, "fuente": {"type": "string"}}, "additionalProperties": false},
+    "bloques": {"type": "array", "items": {"type": "object", "required": ["desde", "hasta", "aprendizaje"], "properties": {"desde": {"type": "string", "minLength": 1}, "hasta": {"type": "string", "minLength": 1}, "aprendizaje": {"type": "string", "minLength": 1}, "practico": {"type": "boolean"}}, "additionalProperties": false}},
     "conceptos": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1, "maxLength": 80}},
     "reglas_cliente": {"type": "array", "description": "Ficha congelada del pedido; alternativa a avisos_aceptados, nunca ambas. No se edita para silenciar QA.", "items": {"type": "object", "required": ["motivo"], "properties": {
       "regla": {"enum": ["laminas_fijadas", "duracion", "revelacion", "firma_relleno", "prueba_inventada", "cifra_inventada", "oscura_regla_8"]},

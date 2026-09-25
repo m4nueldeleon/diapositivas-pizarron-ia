@@ -191,7 +191,8 @@
   function selloEnChat(lam, burbuja, w, h, a, k0, m) {
     // del lienzo al marco del sello: el sello va girado −a, así que se deshace con +a
     const W = lam.offsetWidth, H = lam.offsetHeight, c = Math.cos(a), sn = Math.sin(a);
-    const arribaSeguro = H > W ? 220 : m, abajoSeguro = H > W ? 322 : m;
+    const margenHorizontal = Math.max(100, m);
+    const arribaSeguro = H > W ? 220 : margenHorizontal, abajoSeguro = H > W ? 322 : margenHorizontal;
     const b = caja(burbuja, lam), yo = !!burbuja.closest('.msj.yo');
     const renglones = [...lam.querySelectorAll('.burbuja, .chat-hora, .t, .nota, .encabezado')].filter(e => e.getClientRects().length && !e.closest('.escena.clon'))
       .flatMap(e => rectsTexto(e, lam));

@@ -69,6 +69,12 @@ try {
   if (!ciclo.puede_renderizar || flag('--sin-navegador')) {
     console.log(qa.advertencia); process.exit(3);
   }
+  const encaje = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts/qa.mjs'), original.jsonPath, '--salida', salida, '--preflight-geometria'], { stdio: 'inherit' });
+  if (encaje.error) throw encaje.error;
+  if (encaje.status !== 0) {
+    escribir('armado.json', { ...ciclo, estado: encaje.status === 4 ? 'render_fallido' : 'encaje-pendiente', puede_renderizar: false, puede_entregar: false, rondas: [...previo.rondas, ronda] });
+    process.exit(encaje.status ?? 3);
+  }
   const inicioRender = Date.now();
   const r = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts/render.mjs'), original.jsonPath, '--salida', salida, '--qa'], { stdio: 'inherit' });
   if (r.error) throw r.error;

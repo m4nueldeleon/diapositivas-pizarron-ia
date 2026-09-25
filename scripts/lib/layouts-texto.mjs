@@ -80,7 +80,7 @@ export function lista(l, ctx) {
   // Descartes [m_256 4:16]: si TODOS los ítems van tachados (o `alinear: "centro"`), cada renglón va centrado, en
   // seminegrita, y la lista se queda centrada en la lámina con su hueco reservado (construir.mjs, anclaArriba).
   const centrada = listaCentrada(l);
-  const gapL = l.separacion || (ctx.vertical && items.length <= 3 ? 154 : centrada && items.length <= 3 ? 130 : items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
+  const gapL = l.separacion || (ctx.vertical && items.length <= 2 ? 220 : ctx.vertical && items.length <= 3 ? 154 : centrada && items.length <= 3 ? 130 : items.length <= 3 && largo <= 4 ? 110 : items.length <= 4 ? 70 : 48);
   const vin = { x: '❌', no: '❌', check: '✅', si: '✅' };
   // Pilares que vuelven [37:40 → 39:45]: con `activo` (desde 1) la lista entra entera y los demás ítems se apagan al 25%;
   // los de `hechos` quedan encendidos con su ✅ al final. Se reúsa con `como` (CAMPOS_OBJETO.lista).
@@ -354,8 +354,8 @@ export function cifra(l, ctx) {
 export function cita(l, ctx) {
   ctx.con({ de: 'icono', a: 'cita', estilo: 'curva-roja', p: 0 });
   return `<div class="pila">
-    <div${ctx.P(0)}${ctx.A('icono')}>${ctx.emoji(l.emoji || '📝', l.emoji_tam, 'medio')}</div>
-    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px${/\*\*[\s\S]+?\*\*/.test(String(l.texto || '')) ? ';font-weight:400' : ''}">${tacharDespues(marcar(l.texto), ctx, 0, l.tachar_paso)}</div>
+    <div${ctx.P(0)}${ctx.A('icono')}>${ctx.emoji(l.emoji || '📝', l.emoji_tam || (ctx.vertical ? 430 : undefined), 'medio')}</div>
+    <div class="nota"${ctx.P(0)}${ctx.A('cita')} style="--tn:${l.tam_texto && /px$/.test(l.tam_texto) ? l.tam_texto : ctx.vertical ? '112px' : '64px'};color:var(--tinta);margin-top:90px;max-width:1400px${/\*\*[\s\S]+?\*\*/.test(String(l.texto || '')) ? ';font-weight:400' : ''}">${tacharDespues(marcar(l.texto), ctx, 0, l.tachar_paso)}</div>
     ${nota(ctx, l.nota, pasoDe(l, 'nota_paso', 1), 'mt-m')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', 0))}</div>`;
 }
 

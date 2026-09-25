@@ -178,7 +178,7 @@ function anclaArriba(l) {
   if (l.tipo === 'lista' && (l.oscura || l.activo || (Array.isArray(l.hechos) && l.hechos.length) || l.como)) return false;
   // la lista de descartes va centrada: sus pasos ocultos ya reservan el hueco, así que el primer renglón aparece desde
   // el inicio en su lugar final (~28%), como en 4:05
-  if (l.tipo === 'lista' && T.listaCentrada(l)) return false;
+  if (l.tipo === 'lista' && (T.listaCentrada(l) || (l.items?.length <= 3 && !['x', 'no'].includes(l.vineta)))) return false;
   return Array.isArray(l.items) && l.items.length >= 2;
 }
 

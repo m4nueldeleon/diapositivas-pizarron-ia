@@ -1,3 +1,4 @@
+import { evaluacionesSeparadas } from './editorial.mjs';
 import { manoDesdeHTML, pendientesDesdeHTML } from './mano-html.mjs';
 // Filtro previo sin Chromium. Su nota es provisional y nunca acredita revisión visual.
 import { revisarDeck, notaQA, infoPersona, reglasDeckCompleto, clasificarAvisos, fichaReglasCliente } from './reglas-deck.mjs';
@@ -55,7 +56,7 @@ export function revisarTexto(prep) {
   const propuestos = Object.fromEntries(Object.entries(prep.propuestos || {}).map(([clave, laminas]) => [clave, { valor: crudo.datos[clave].valor, ...(crudo.datos[clave].fuente ? {fuente:crudo.datos[clave].fuente} : {}), laminas }]));
   const porConfirmar = { ...prep.declarados, ...propuestos, ...revision.porConfirmar };
   const clasificacion = clasificarAvisos(avisos,deck.avisos_aceptados);
-  return informeSinMedir(errores, { nota_provisional: notaQA({ errores, avisos:clasificacion.pendientes, porConfirmar }), avisos:clasificacion.pendientes, avisos_aceptados: clasificacion.aceptados,
+  return informeSinMedir(errores, { evaluaciones: evaluacionesSeparadas({ deck, geometria: { errores: [], avisos: [] }, editorial: { errores, avisos: clasificacion.pendientes }, pendientes: porConfirmar, falta: revision.faltaParaFinal }), nota_provisional: notaQA({ errores, avisos:clasificacion.pendientes, porConfirmar }), avisos:clasificacion.pendientes, avisos_aceptados: clasificacion.aceptados,
     reglas_cliente:fichaReglasCliente(deck,avisos), glosario:glosarioDatos(crudo), datos_fuentes:prep.fuentes || {}, datos_por_confirmar:porConfirmar,
     info: [...infoPersona(deck), infoConceptos(deck), ...clasificacion.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`)].filter(Boolean), iconos:revision.iconos, por_confirmar: porConfirmar, pendientes, ritmo: revision.ritmo, arco: revision.arco,
     falta_para_final: revision.faltaParaFinal, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0),

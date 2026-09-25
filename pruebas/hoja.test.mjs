@@ -128,7 +128,7 @@ test('render --pdf en una propuesta: laminas-notas.pdf con la voz como texto; --
     { tipo: 'boton', id: 'firma', boton: 'Firmar', texto: 'Arrancamos el **lunes 6**', llamado: true, voz: 'Firmas y arrancamos el lunes seis.' },
   ];
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ emoji: 'apple', pieza: 'propuesta', marca: false, laminas }));
-  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--finales', '--pdf', '--sin-hoja'], { stdio: 'pipe' });
+  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--borrador', '--finales', '--pdf', '--sin-hoja'], { stdio: 'pipe' });
   const sal = path.join(dir, 'salida');
   const texto = spawnSync('pdftotext', [path.join(sal, 'laminas-notas.pdf'), '-'], { encoding: 'utf8' }).stdout;
   assert.match(texto.replace(/\s+/g, ' '), /cuarenta vendedores sin método común/);
@@ -136,6 +136,6 @@ test('render --pdf en una propuesta: laminas-notas.pdf con la voz como texto; --
   const info = JSON.parse(fs.readFileSync(path.join(sal, 'pdf.json'), 'utf8'));
   assert.deepEqual([info.paginas, info.notas, info.cursores_visibles], [2, true, 0]);
   fs.rmSync(path.join(sal, 'laminas-notas.pdf'));
-  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--finales', '--pdf', '--sin-notas', '--sin-hoja'], { stdio: 'pipe' });
+  execFileSync(process.execPath, [path.join(RAIZ, 'scripts', 'render.mjs'), dir, '--borrador', '--finales', '--pdf', '--sin-notas', '--sin-hoja'], { stdio: 'pipe' });
   assert.ok(!fs.existsSync(path.join(sal, 'laminas-notas.pdf')));
 });

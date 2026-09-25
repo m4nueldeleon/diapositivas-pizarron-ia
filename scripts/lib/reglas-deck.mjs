@@ -1,3 +1,4 @@
+import { reglasEditoriales, integridadOferta } from './editorial.mjs';
 import { CAMPOS_RAIZ } from './contrato.mjs';
 import { reglaNoNegociable, validarAceptaciones } from './contrato-superficies.mjs';
 import { reglasMarcasYSuperficies, reglasEscalaTiempo, reglasIconosInversa, reglasCapaExpresiva } from './reglas-marcas.mjs';
@@ -1301,14 +1302,14 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
     reglasProyeccion(deck), reglasPrueba(deck), reglasArco(deck), reglasObjecion(deck), reglasCredibilidad(deck, { crudo, credenciales }), reglasDescargo(deck), reglasIconos(deck),
     reglasDatosAnunciados(deck), reglasQuienEntrega(deck), reglasAtribucionRevista(deck), reglasClaves(deck), reglasFuente(deck, { crudo }), ritmo, propia, reglasPropuesta(deck, { crudo }), reglasOferta(deck, { crudo }),
     reglasDemostracion(deck), tasa, promesa, cierre, reglasRetornoMapa(deck, pasos), reglasRespuestaObjecion(deck), reglasReel(deck), reglasPagoGancho(deck), reglasNotasPonente(deck, pasos), reglasAnclaPrecio(deck, { crudo }),
-    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasEyebrows(deck), reglasVinetasPlan(crudo || deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo })];
+    reglasContrato(deck, pasos), reglasPresentacion(deck, pasos), reglasSincronia(deck, { pasos, revela }), reglasPersona(deck, { pasos, revela }), reglasAritmetica(deck, { crudo }), reglasEstilo(deck), reglasEyebrows(deck), reglasVinetasPlan(crudo || deck), reglasLogos(deck), reglasQr(deck), reglasVariantes(deck, { crudo }), reglasMarcasYSuperficies(deck), reglasEscalaTiempo(deck), origen, reglasGarantia(deck, { crudo }), reglasEditoriales(deck)];
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
     duracion: partes[1].estimado,
     iconos: inventarioIconos(deck),
     ritmo: ritmo.ritmo,
-    porConfirmar: { ...partes[0].porConfirmar, ...origen.porConfirmar, ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
+    porConfirmar: { ...(integridadOferta(deck).faltan.length ? { FICHA_OFERTA: { valor: '', laminas: [], motivo: 'Completa antes del guion: ' + integridadOferta(deck).faltan.join(', ') } } : {}), ...partes[0].porConfirmar, ...origen.porConfirmar, ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
       motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
     faltaParaFinal: faltaParaFinal(deck, { crudo, credenciales }),
     prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,

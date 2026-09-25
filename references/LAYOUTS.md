@@ -25,6 +25,8 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
 - Cualquier otra clave de primer nivel se ignora y QA la avisa, también las que empiezan con `_` (`_marca`,
   `_datos`): un aviso de entrega escondido en el deck no lo lee nadie. Solo `_comentario` queda libre.
 - `persona: "tu" | "ustedes"`: trato de pantalla y voz. `persona_excepciones: ["frase que se conserva"]` excluye esas frases del QA de persona, sin distinguir mayúsculas ni acentos.
+- `ficha_oferta`: ficha comercial mínima de SKILL.md; sin completar queda en borrador. `ejemplo: true` solo para un ejercicio ficticio pedido.
+- `bloques`: lista de `{desde, hasta, aprendizaje, practico}`. Los límites son ids de lámina; un bloque práctico exige trabajo visible (ARCOS.md).
 - `datos`: ver [Datos que se llenan una vez](#datos-que-se-llenan-una-vez).
 
 **Campos que acepta cualquier lámina**
@@ -66,7 +68,7 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
   las etiquetas bajan solas para que la mano no las toque. En un mapa con `iconos`, la punta cae en el cuarto
   inferior derecho del emoji. QA da error si la mano tapa más del 40% del número de la tecla.
 - `anclar: "arriba" | "centro"`: dónde arranca el contenido. Por omisión, `lista` y `tarjetas` que
-  se revelan de a uno arrancan ARRIBA y crecen hacia abajo [ref_95, 3:25, 9:25]; lo demás va
+  se revelan de a uno arrancan ARRIBA y crecen hacia abajo, salvo listas de hasta tres ítems que se centran con el alto final reservado; las listas de exclusiones (`vineta: "x"`/`"no"`) conservan el arranque superior [ref_95, 3:25, 9:25]; lo demás va
   centrado. `"centro"` lo devuelve al centro [15:35].
 - `oscura: true` pone la lámina en negro, y `fondo` elige el brillo: `violeta` (por omisión),
   `azul` (arriba, [37:40]) o `negro` (plano, [36:15]). Solo para revelar la marca o el producto.

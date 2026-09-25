@@ -1,5 +1,19 @@
 # Lecciones
 
+## 2026-09-25 · La nota automática no firma una presentación (ronda 10)
+
+- **Regla:** resolver ficha de oferta antes del guion comercial; escribir bloques desde aprendizajes
+  distintos, con demostración visible, sin permutar escenas para cubrir una cuota. Una anotación
+  repetida con flecha no cuenta como golpe. Revisar la voz completa como texto publicable.
+- **Porqué:** el juez encontró clases fabricadas por repetición y una venta sin condiciones resueltas
+  pese a notas técnicas altas. Se añadieron comprobaciones compartidas y evaluaciones independientes.
+- **Primer render:** medir fuentes y todos los pasos antes de capturar evita rehacer PNG por encaje.
+  Los tres encargos nuevos lograron 100 automático inicial; la revisión visual todavía pidió agrandar
+  una cita vertical. No se borra ese retoque ni se convierte en «perfecto desde el primer intento».
+- **Fidelidad:** el encuadre global no detecta un médico diferente, teclas de otro acabado o anclas
+  desplazadas. El comparador ahora los señala; la silueta cromática tiene límites con grises y grupos.
+  Sin cotejar secuencias temporales y sin firma humana, sigue pendiente el 100 profesional.
+
 Correcciones del usuario que ya se aplicaron. **Mandan sobre ESTILO.md y LAYOUTS.md.** Se escriben
 en el momento en que el usuario corrige algo, con la regla, el porqué y la fecha.
 

@@ -214,7 +214,8 @@ test('QA r3: estado del informe: un vsl sin errores pero sin prueba ni objeción
   fs.writeFileSync(path.join(dir, 'deck.json'), JSON.stringify({ ...deck, pieza: 'vsl', en_vivo: true }));
   const v = qa(dir);
   assert.equal(v.errores.length, 0, v.errores.join('\n'));
-  assert.ok(['bajo-90', 'falta-venta'].includes(v.estado), v.estado);
+  assert.equal(v.estado, 'borrador');
+  assert.ok(v.por_confirmar.FICHA_OFERTA, 'sin ficha comercial no se aprueba para vender');
   assert.ok(v.falta_para_final.includes('prueba real'));
   const e = spawnSync(process.execPath, [path.join(DIR_SKILL, 'scripts', 'qa.mjs'), dir, '--salida', tmp(), '--estricto'], { encoding: 'utf8' });
   assert.equal(e.status, 3, e.stdout);

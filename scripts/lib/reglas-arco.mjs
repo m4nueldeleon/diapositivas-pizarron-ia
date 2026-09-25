@@ -1,3 +1,4 @@
+import { anotacionAporta } from './editorial.mjs';
 // reglas-arco.mjs — reglas de QA del ARCO de la pieza, sobre el deck.json (sin navegador): el mapa 1-2-3 que vuelve,
 // la respuesta a una objeción, el «cómo» de un reel y las métricas del arco que qa.json expone (contrato de tiempo, la
 // revelación y los llamados en %). reglas-deck.mjs las suma en revisarDeck. Pruebas en pruebas/arco-r5.test.mjs.
@@ -199,7 +200,7 @@ export function tiposGolpe(l) {
   if (l.tipo === 'cifra') tipos.push('cifra');
   if (l.tipo === 'idea' && !l.emoji && plano(l.texto || '').trim().split(/\s+/).length === 1
     && (parseFloat(l.tam_texto) >= 140 || l.tam_texto === 'enorme')) tipos.push('palabra');
-  if (l.anotaciones?.some(a => !a.llave && a.a && (a.texto || a.entra))) tipos.push('anotación');
+  if (l.anotaciones?.some(a => !a.llave && a.a && anotacionAporta(l, a))) tipos.push('anotación');
   if (['objeto','tarjetas','boton'].includes(l.tipo) || l.nodos?.some(n => n.tarjeta)) tipos.push('objeto');
   return [...new Set(tipos)];
 }

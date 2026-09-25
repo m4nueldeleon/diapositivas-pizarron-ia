@@ -223,7 +223,7 @@ Foto a sangre solo con velo blanco o banda blanca; nunca foto suelta en rectáng
 
 - **Corte seco**: sin transiciones. La lámina aparece.
 - **La lista crece hacia abajo desde arriba** [ref_95 «Without:», 3:25, 9:25]: arranca en el cuarto
-  superior y el hueco de abajo anuncia que viene más. Solo una lista que entra entera se centra.
+  superior y el hueco de abajo anuncia que viene más. Una lista que entra entera se centra. También se centran las listas cortas de hasta tres ítems, salvo exclusiones (❌) o `anclar: "arriba"`: el alto final se reserva desde el primer paso.
 - **Revelado por acumulación**: cada frase dicha suma UN elemento y nada cambia de lugar. Las
   listas crecen renglón por renglón y la tabla se llena columna por columna.
 - Solo cuatro micro-efectos:
@@ -268,7 +268,7 @@ ocupaba 23-30% del alto. Equivalencias que aplica el motor:
 | nota manuscrita | 64 px | 80 px | 88 px (piso 72) |
 | frase de foco (protagonista, a mano) | 88 px (84 con más de 14 palabras) | 96 px (88) | 88 px (piso 72) |
 | texto secundario que se lee (sub, dato, %, post) | ≥ 48 px | ≥ 44 px | Piso 56 px |
-| burbuja de chat | 54 px | 104 px con ≤2 mensajes de ≤6 palabras; 58–76 px en conversaciones largas | Piso 72 px |
+| burbuja de chat | 84 px con ≤2 mensajes de ≤12 palabras; 72 con 3; resto 54 | 104 px con ≤2 mensajes de ≤6 palabras; 58–76 px en conversaciones largas | Piso 72 px |
 | emoji con tamaño con nombre (`medio`, `heroe`…) | caja de 150-360 px | ×1.25 | Igual que 16:9 |
 | lista | 58-72 px | 124 px con ≤2 ítems cortos, 112 con 3; resto ×1.2 | Piso 72 px |
 | rótulo gris | 56 px | 60 px | 64 px |

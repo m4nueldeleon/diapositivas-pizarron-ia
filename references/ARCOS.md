@@ -298,3 +298,14 @@ Las herramientas de una escena usan sus logos reales; si falta uno, declara `ima
 En vivo, el **cómo se entra** es un `qr`, una URL corta grande (≥ 64 px) o una palabra clave. El `boton` lleva debajo una URL corta ≥ 64 px (`{{URL_CORTA}}` si falta) o «Escribe PALABRA en el chat». En sala se suma `qr`; `si_falla`: «pega el link en el chat». La voz dice la URL o la palabra. Un botón por sí solo sirve en video o PDF; en una sala o por Zoom necesita una forma de acceso que el público pueda usar. La receta del QR está en LAYOUTS.md.
 
 En las plantillas de mapa, activo y texto iguales en dos láminas seguidas repiten la misma lámina. Si activo avanza, falta contenido entre bloques: añade al menos una lámina o une los mapas.
+
+### Demostración visible por bloque práctico
+
+En `bloques`, marca `practico: true` y delimita sus láminas por id. Cada bloque debe mostrar el trabajo:
+una captura o archivo de ejemplo legible, o un recorrido concreto con entrada, acción y resultado.
+Una conversación puede demostrar qué escribir y qué respuesta permite continuar. Para enseñar a
+descargar un archivo, muestra el archivo, el control de descarga y el resultado abierto: un chat
+que solo promete descargarlo no acredita esa demostración. «Duda → Demostración → Comprobación»,
+un emoji, una cámara sin acción comprobable o la descripción de una herramienta no bastan.
+Las capturas de ejemplo enseñan el procedimiento; nunca acreditan resultados comerciales.
+QA comprueba recursos visibles por bloque declarado; el revisor comprueba su relación con el objetivo.

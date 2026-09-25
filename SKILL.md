@@ -94,6 +94,20 @@ deducir.
 La primera vez en una máquina corre `bash scripts/setup.sh`: verifica Node, Playwright, ffmpeg y
 las tipografías.
 
+## Ficha de oferta antes del guion comercial
+
+Para VSL, VSL corto, webinar y propuesta, completa `ficha_oferta` ANTES de construir la pieza:
+`producto`, `publico`, `resultado`, `entrega` (formato, contenido y plazo), `responsable`,
+`precio` (moneda y pagos, o «sin precio público»), `garantia` (plazo, condición y remedio,
+o condición de salida), `bonos` (lista o «ninguno»), `llamado` (un canal y acción),
+`siguiente` (qué recibe tras actuar), `evidencia` (qué acredita exactamente y dónde verla) y
+`fuente` (material confirmado). Todos son textos. Cruza estos términos con `datos` y las láminas.
+Resuelve el material confirmado primero; pide todo lo que falte en UNA pregunta conjunta.
+Sin ficha completa, QA declara `FICHA_OFERTA` por confirmar y la pieza sigue como borrador;
+trabaja el diagnóstico y el esquema, sin fabricar el VSL completo para llenar huecos.
+Solo si el usuario pide expresamente un ejercicio ficticio, `ejemplo: true` permite una ficha de
+oferta de ejemplo: márcala así en el documento y en su entrega. No acredita testimonios ni resultados.
+
 ## 1. Flujo
 
 Antes de escribir, congela el trato y las reglas del cliente; declara `persona` y conserva la misma persona en pantalla y voz (GUION §1).
@@ -110,6 +124,13 @@ Antes del guion, congela en `reglas_cliente` lo explícito del encargo que choqu
 | **6. QA** | `node <skill>/scripts/qa.mjs <proyecto>` (o `render.mjs --qa`). **La primera captura requiere QA y revisión visual antes de entregarse**: corrige cada error y aviso que QA ya conoce (el mapa que vuelve vacío tras un bloque corto, una objeción que solo se responde con una frase, «sin prueba real», una tasa sin origen, un `no:` que niega un paso del mapa), vuelve a renderizar y a correr QA, y entrega con la salida de la ÚLTIMA corrida. El deck solo se entrega como final con `estado: "listo"` (90 o más, cero errores y, en piezas de venta, nada en `falta_para_final`). Con `bajo-90` o `falta-venta`, lista `falta_para_final` en una línea. Un loop o un agente de fondo usa `--estricto` (sale con 3 si no está listo) o lee `estado`, que va en este orden: `con errores` (gana aunque haya huecos declarados) → `borrador` → `bajo-90` → `avisos-pendientes` → `falta-venta` → `listo`. En `borrador`, `listo_salvo_datos: true` dice que solo faltan los datos; con `false` quedan avisos por corregir (`nota_sin_tope` < 90). También mide la duración y el ritmo de los pasos. **Nunca quites un beat de venta (caso o prueba, precio, garantía, llamado) ni un hueco declarado para subir la nota o salir de borrador**: decláralo con `pendiente: true`; un loop juzga por `estado` y `falta_para_final`, no por la nota. | `qa.json` |
 | **7. Entrega** | Lo que pidió: presentador, PNG, `video.mjs` o montaje con `--sobre` y `--transcripcion`. | archivos |
 | **8. Aprender** | Si el usuario corrige algo, escríbelo en `LECCIONES.md` antes de cerrar. | lección |
+
+La producción ejecuta un preflight geométrico con Chromium, fuentes cargadas y anchos reales antes
+de capturar PNG. `preflight-geometria.json` comprueba todos los pasos, listas, énfasis y sellos;
+no es un primer render y no modifica su historial. Si falla, corrige antes de capturar.
+`qa.json.evaluaciones` separa geometría, integridad comercial, revisión editorial y aprobación visual.
+La nota heredada es cumplimiento automático. Un 100 automático nunca significa calidad profesional;
+la aprobación visual queda pendiente de evidencia humana externa, con las hojas y PNG revisados.
 
 Detalle de cada fase en **[references/PROTOCOLO.md](references/PROTOCOLO.md)**. El ciclo obligatorio, las autocorrecciones acotadas y el criterio de paro están en **[Calidad antes del primer render](references/CALIDAD-PRIMER-RENDER.md)**.
 

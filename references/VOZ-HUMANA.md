@@ -66,3 +66,12 @@ saltos de línea y encuadre en el formato final, además de oír la frase en el 
   Cerrar Por WhatsApp».
 - Español antes que anglicismo: embudo, gancho, guardados. Los nombres de herramientas se quedan.
 - Números con coma de miles y el porcentaje pegado: «1,500», «20%».
+
+## 5. Notas del orador listas para publicar
+
+Lee TODAS las entradas de `voz`, también actividades, acción y contingencia. Revisa concordancia,
+acentos, puntuación y que cada frase pueda pronunciarse completa. Nunca concatenes consignas:
+«Dos minutos para define tu entrega» → «Tienes dos minutos para definir tu entrega»;
+«Al terminar revisa escribe el producto» → «Al terminar, revisa si escribiste el producto».
+Después de «para» va infinitivo. Dos imperativos requieren coordinación o punto: «Revisa el monto.
+Escribe la fecha». QA detecta estas construcciones estrechas; no es un corrector gramatical general.

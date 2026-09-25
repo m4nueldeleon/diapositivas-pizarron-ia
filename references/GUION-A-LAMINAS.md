@@ -459,3 +459,16 @@ La invitación de [43:50] usa `boton` variante `invitacion`.
 ### Lista corta comprobable antes de capturar
 
 El máximo de 22 palabras incluye encabezado, nota y las teclas numeradas: tres viñetas numéricas suman tres palabras al contador visible. En una lista de tres pasos apunta a 3–5 palabras por ítem; la explicación completa vive en la voz. Subraya solo las 1–3 palabras decisivas, no toda la oración: un subrayado largo puede cruzar el siguiente renglón. El preflight cuenta las listas simples y bloquea ese exceso antes del PNG; columnas y geometría siguen requiriendo QA medido.
+
+### Control de bloques y capa roja (ronda 10)
+
+Escribe cada lámina a mano. Calcula su número al terminar el contenido; no fabriques seis diseños
+por escena ni permutes una plantilla para cubrir minutos. QA detecta tres ventanas consecutivas de
+4–8 láminas con la misma bolsa de estructuras, aunque cambie su orden. Es un indicio editorial que
+exige reescritura; variar adjetivos o permutar escenas no lo corrige. Un retorno con `como` o `paga` no exonera un bloque entero: también se revisa su función narrativa.
+
+Declara `bloques: [{desde: "id-inicial", hasta: "id-final", aprendizaje: "decisión nueva", practico: true}]`.
+Lee de corrido los aprendizajes: cada uno debe depender del anterior y añadir información verificable.
+Una anotación con flecha aporta consecuencia, contraste, precisión o veredicto: «Entrega» sobre
+«Define una entrega» es redundante y no cuenta como golpe; «Una fecha evita reabrir el alcance» sí añade
+consecuencia. El conteo de tinta nunca reemplaza este juicio.

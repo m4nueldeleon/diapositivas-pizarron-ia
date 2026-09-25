@@ -146,3 +146,23 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
 - El chat vertical de hasta dos mensajes cortos usa 104 px y avatar automático de 135 px; tamaños explícitos conservan prioridad. No reduzcas tolerancias del QA para aprobar estos tamaños.
 - `qa.json` incluye `primer_render` del mismo historial y `composicion_vertical` (ocupación y centro del bloque). La primera nota es inmutable; el resultado actual sigue en `nota` y `estado`.
 - Los clones de `foco` deben conservar `lz-<tipo>` y `data-anclar` del origen. Cualquier CSS nuevo de diseño se prueba también en sus clones.
+
+## Ronda 10 · Guion, encaje y límites de aprobación
+
+- `lib/editorial.mjs` comparte validación y reglas de `bloques` y `ficha_oferta` entre ambos QA.
+  Detecta tres bloques estructurales repetidos incluso permutados; `como` y `paga` no los exentan.
+  Solo un bloque declarado permite exigir una demostración por bloque: la cobertura semántica
+  y la novedad del aprendizaje siguen bajo revisión del autor.
+- La oferta comercial incompleta queda como `FICHA_OFERTA` pendiente y bloquea producción.
+  Una ficha de ejemplo completa se identifica como tal; jamás acredita clientes o resultados.
+- `armar` mide el encaje con Chromium y fuentes reales antes de capturar; `preflight-geometria.json`
+  no toca el historial del primer render. `qa.json → evaluaciones` separa geometría, integridad
+  comercial, indicios editoriales y aprobación visual humana pendiente.
+- Chat corto horizontal: 84/72 px según longitud; el vertical conserva 104 px. Las listas cortas
+  reservan el bloque completo centrado, salvo exclusiones `x/no` calibradas arriba en la referencia.
+  Una cita vertical usa 112 px y glifo de 430 px: el tamaño horizontal no sirve en el lienzo alto.
+- `comparar` conserva encuadre y añade bandas, espaciado, escala y silueta cromática. Un fallo
+  de elementos sale con 1. Las secuencias sin referencia temporal no pasan por omisión.
+- La ronda 10 conserva sus pruebas nuevas y sus tres guiones manuales fuera del repo por
+  instrucción del encargo; el informe externo registra sus comandos y resultados. Las pruebas
+  existentes conservan las exigencias y reconocen el nuevo borrador por ficha incompleta.

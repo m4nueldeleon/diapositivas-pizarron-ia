@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { evaluacionesSeparadas } from './lib/editorial.mjs';
 import { reglasDeckCompleto, clasificarAvisos } from './lib/reglas-deck.mjs';
 import { medidasTrazos, avisosGeometriaSello } from './lib/medidas-trazos.mjs';
 import { subrayadosCruzan } from './lib/medidas-subrayados.mjs';
@@ -192,6 +193,12 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
       window.PZ.mostrar(lam, p, Infinity);
       const E = m => r.errores.push(`paso ${p + 1}: ${m}`), A = m => r.avisos.push(`paso ${p + 1}: ${m}`);
       window.subrayadosCruzan(lam).forEach(A);
+      for (const rotulo of lam.querySelectorAll('svg.trazo-concepto text')) {
+        if (!visible(rotulo)) continue;
+        const matriz = rotulo.getScreenCTM(), zoomLienzo = L.width / lam.offsetWidth;
+        const tam = parseFloat(getComputedStyle(rotulo).fontSize) * Math.hypot(matriz.a, matriz.b) / zoomLienzo;
+        if (tam < 48) A(`el rótulo del símbolo «${rotulo.textContent}» mide ${Math.round(tam)} px: usa etiqueta externa o un concepto reconocible (mínimo 48 px)`);
+      }
       const trazos = window.medidasTrazos(lam); trazos.errores.forEach(E); trazos.avisos.forEach(A);
       if (document.body.classList.contains('sala')) {
         const identificables = '.lz-pasos [style*="opacity"], .lz-pasos .paso-apagado .icono-paso, .lz-pasos .paso-apagado .rotulo-paso, .lz-pasos .paso-apagado .tecla, .item-apagado > *, .pasos-letras .pendiente, .rejilla .apagado, .rejilla .apagada, .calendario .dia.apagado, :scope > .clon';
@@ -882,6 +889,7 @@ porLamina.forEach(r => {
   if (flojosN.length) avis.push(`${n}: emoji fuera de la tabla medida que casi no se ve en ${modoRender} sobre ${flojosN[0].fondoN === 'oscura' ? 'la lámina oscura' : flojosN[0].fondoN === 'tarjeta' ? 'la tarjeta' : 'blanco'}: ${flojosN.map(m => `${m.ch} (${m.pct}%)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cámbialo (EMOJIS.md)`);
   if (flojos.length) avis.push(`${n}: emoji que casi no se ve sobre su fondo de color: ${flojos.map(m => `${m.ch || 'ícono'} (${m.pct}% del glifo se distingue)${CONTRASTE.SUG[m.ch] ? ` → ${CONTRASTE.SUG[m.ch]}` : ''}`).join(', ')}; cambia el color de la pieza («color») o el emoji`);
 });
+const geometria = { errores: [...errores], avisos: [...avis] };
 // Datos pendientes: UN error por dato distinto, con las láminas donde aparece. Un hueco DECLARADO a propósito
 // ({ "pendiente": true, "motivo" }) no es un olvido: va como aviso y deja el deck en BORRADOR.
 const pendientes = {};
@@ -958,11 +966,18 @@ const infoContraste = [
 ];
 const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
 info.push(...revisionAvisos.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`));
-const medicion = { glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
+const evaluaciones = evaluacionesSeparadas({ deck, geometria, editorial: { errores: errores.filter(e => !geometria.errores.includes(e)), avisos: avis.filter(a => !geometria.avisos.includes(a)) }, pendientes: porConfirmar, falta, medido: true });
+const medicion = { evaluaciones, alcance_nota: 'cumplimiento automático; no calidad profesional', glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,
   avisos: avis, datos_por_confirmar: porConfirmar, datos_fuentes: prep.fuentes || {}, reglas_cliente: reglasCliente, info, ...(delDeck.prueba !== undefined ? { prueba: delDeck.prueba } : {}), arco: delDeck.arco, pendientes, por_confirmar: porConfirmar, iconos: delDeck.iconos,
   composicion_vertical: porLamina.filter(r => r.composicion_vertical).map(r => ({ lamina: r.i + 1, ...r.composicion_vertical })),
   tinta: porLamina.map(r => ({ lamina: r.i + 1, rojo: r.rojo, trazos: r.trazos, contenedores: r.contenedores })),
   mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])), fecha: new Date().toISOString() };
+if (flag('--preflight-geometria')) {
+  fs.writeFileSync(path.join(dirSalida, 'preflight-geometria.json'), JSON.stringify({ ...medicion, fase: 'antes-de-captura', primer_render: null }, null, 2));
+  console.log(`Encaje previo con fuentes reales: ${geometria.errores.length} errores · ${geometria.avisos.length} avisos`);
+  [...geometria.errores, ...geometria.avisos].forEach(x => console.log(x));
+  process.exit(geometria.errores.length || geometria.avisos.length ? 3 : 0);
+}
 const historial = registrarQA(dirSalida, medicion, prep.html_sha);
 const informe = { ...medicion, primer_render: historial.qa_primer_render };
 fs.writeFileSync(path.join(dirSalida, 'qa.json'), JSON.stringify(informe, null, 2));
