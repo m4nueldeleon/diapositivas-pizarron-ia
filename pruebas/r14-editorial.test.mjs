@@ -64,3 +64,16 @@ test('r14: el emoji de una idea informa si su concepto del diccionario no aparec
   assert.deepEqual(r.avisos, []);
   assert.deepEqual(infoConceptoIdea({ laminas: [{ tipo: 'idea', emoji: '🛡️', texto: 'Garantía de 30 días', voz: 'Tienes garantía.' }] }).info, []);
 });
+
+test('r14: doble negación con tachón, guion literal como demostración y pasos de lista que no son llamados', async () => {
+  const { reglasEditoriales } = await import('../scripts/lib/editorial.mjs');
+  const { demostracionChat } = await import('../scripts/lib/conversacion.mjs');
+  const { esLlamadoVisible } = await import('../scripts/lib/reglas-deck.mjs');
+  assert.ok(reglasEditoriales({ laminas: [{ tipo: 'idea', texto: 'Que no tenga que ~~buscarte en Google~~' }] }).avisos.some(a => /doble negación/.test(a)));
+  assert.ok(!reglasEditoriales({ laminas: [{ tipo: 'idea', texto: '~~Buscarte en Google~~ → el enlace directo' }] }).avisos.some(a => /doble negación/.test(a)));
+  assert.equal(demostracionChat({ tipo: 'chat', guion: true, mensajes: [{ de: 'yo', texto: 'Hola [nombre], ¿me dejas una reseña aquí?' }] }), true);
+  assert.equal(demostracionChat({ tipo: 'chat', mensajes: [{ de: 'yo', texto: 'Hola [nombre], ¿me dejas una reseña aquí?' }] }), false);
+  assert.equal(esLlamadoVisible({ tipo: 'lista', items: ['Manda **el enlace directo**', 'Escribe **la frase exacta**'] }), false);
+  assert.equal(esLlamadoVisible({ tipo: 'idea', texto: 'Comenta **RESEÑA**' }), true);
+  assert.equal(esLlamadoVisible({ tipo: 'lista', items: ['Comenta la palabra RESEÑA'] }), true);
+});

@@ -127,6 +127,14 @@ export function reglasEditoriales(deck) {
     for (const v of voces.filter(Boolean)) {
       if (/\bpara (define|escribe|elige|anota|revisa|manda|abre)\b|\brevisa (escribe|define|elige|anota|manda)\b/i.test(v)) avisos.push(`lámina ${i + 1}: gramática de voz «${v}»; después de «para» usa infinitivo y separa instrucciones con puntuación`);
     }
+    // R14 [juez r14]: «Que no tenga que ~~buscarte en Google~~» niega dos veces: el tachón ya dice «no».
+    for (const t of [l.texto, l.encabezado, ...(Array.isArray(l.items) ? l.items.map(x => typeof x === 'string' ? x : x?.texto) : [])].filter(x => typeof x === 'string')) {
+      for (const frase of t.split(/[.!?;:\n]|\\n/)) {
+        const m = frase.match(/~~[^~]+~~/); if (!m) continue;
+        const antes = frase.slice(0, m.index).trim().split(/\s+/).slice(-4).join(' ');
+        if (/(^|\s)(no|nunca|sin|ni|jamás|jamas)(\s|$)/i.test(antes)) avisos.push(`lámina ${i + 1}: doble negación «${frase.trim().slice(0, 60)}»: el tachón ya niega; quita el «no» o no taches`);
+      }
+    }
     if (/contacto|escribirte|telefono/.test(normal(contenido(l))) && /🧭/.test(l.emoji || '')) avisos.push(`lámina ${i + 1}: contacto pide teléfono o mensaje; la brújula representa orientación`);
   });
   return { errores: [], avisos, info };

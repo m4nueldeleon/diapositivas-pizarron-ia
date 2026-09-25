@@ -5,6 +5,9 @@ const palabras = x => normal(x).match(/[a-z0-9]+/g) || [];
 export function demostracionChat(l) {
   if (l.tipo !== 'chat') return false;
   const mensajes = l.mensajes || [];
+  // R14 [juez r14]: un chat con `guion: true` es el texto LITERAL que el espectador copia (con sus variables): es la
+  // demostración del cómo, como en un reel, aunque no traiga respuesta.
+  if (l.guion === true && mensajes.some(m => palabras(m.texto).length >= 4)) return true;
   return mensajes.some((entrada,i) => mensajes.slice(i+1).some(salida => {
     const a=normal(entrada.texto), b=normal(salida.texto);
     if(entrada.de===salida.de || palabras(a).length<4 || palabras(b).length<3 || a===b) return false;

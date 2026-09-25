@@ -364,9 +364,12 @@ export function esVerboConObjeto(texto) {
 }
 // `llamado: false` gana a todo: un `boton` de demostración («Enviar», «Generar», el «solo das clic» del mecanismo) no es
 // un llamado (LAYOUTS §boton)
+// R14 [juez r14]: en una lista, pasos, tarjetas o flujo los imperativos son PASOS de la instrucción («Manda **el enlace
+// directo**», «Escribe la frase exacta»), no llamados: ahí solo cuentan las frases inequívocas (IMPERATIVO) o `llamado: true`.
+const DISENOS_DE_PASOS = new Set(['lista', 'pasos', 'tarjetas', 'flujo']);
 export const esLlamadoVisible = l => l.llamado !== false && (l.llamado === true || l.tipo === 'boton'
   || textosVisibles(l).some(t => IMPERATIVO.test(sinAcentos(t).replace(/^[^a-z0-9"«]+/, '')))
-  || textosCrudos(l).some(esVerboConObjeto));
+  || (!DISENOS_DE_PASOS.has(l.tipo) && textosCrudos(l).some(esVerboConObjeto)));
 // Botones que cuentan como llamado y no están en las 3 últimas láminas: pueden ser una demostración sin marcar
 export function pistaBotonDemo(deck, solo = null) {
   const L = deck.laminas, vis = L.map((l, i) => [l, i]).filter(([l]) => l && l.tipo !== 'camara');

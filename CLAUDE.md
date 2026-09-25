@@ -262,4 +262,8 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   `.sello-tinta` usa cifras alineadas; `infoConceptoIdea` informa (sin restar) el emoji de una `idea` fuera de su concepto
   o repetido con otra frase. `pruebas/r14-aprobados.test.mjs` re-renderiza `pruebas/fixtures/aprobados/*` y exige cero
   errores: un deck aprobado no puede empeorar en silencio.
+- Juez r14, segundo bloque: `elipse` (runtime) dibuja el óvalo en línea como superóvalo (n = 3.5) que encierra las cuatro
+  esquinas; `runtime-sello.js` monta el sello sobre un emoji en su esquina (≥ 50% visible) y `medidas-r11` mide cuánto lo
+  tapa; `esLlamadoVisible` no cuenta imperativos de lista/pasos/tarjetas/flujo como llamado; `demostracionChat` acepta un
+  chat con `guion: true`; `reglasEditoriales` avisa la doble negación con tachón.
 
