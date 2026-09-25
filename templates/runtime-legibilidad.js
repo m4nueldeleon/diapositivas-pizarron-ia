@@ -151,3 +151,31 @@ function reservarCarrilChat(lam) {
     bs.forEach(b => { if (parseFloat(getComputedStyle(b).fontSize) > t) b.style.fontSize = t + 'px'; });
 }
 
+// R16 [juez r16]: en 16:9 la escala del chat también es común al deck (máx. 1.3× entre láminas; la plantilla salía a 54 px
+// junto a chats de 90) y cada burbuja abraza su texto: después de repartir los renglones, su ancho es el del renglón más
+// largo (quedaban 230-330 px vacíos a la derecha). Muro y celular quedan fuera: tienen su propia rejilla.
+function coherenciaChatsHorizontal(lams) {
+  const escenas = lams.filter(l => l.offsetWidth > l.offsetHeight && l.dataset.tipo === 'chat' && l.querySelector('.lienzo .chat:not(.chat-muro)') && !l.querySelector('.celular'));
+  const burbujas = l => [...l.querySelectorAll('.lienzo .chat:not(.chat-muro) .msj .burbuja')].filter(b => !b.closest('.escena.clon'));
+  const todas = escenas.flatMap(burbujas);
+  if (!todas.length) return;
+  const tam = b => parseFloat(getComputedStyle(b).fontSize);
+  const minimo = Math.max(60, Math.min(...todas.map(tam)));
+  todas.forEach(b => { if (tam(b) > minimo * 1.3) b.style.fontSize = (minimo * 1.3) + 'px'; else if (tam(b) < 60) b.style.fontSize = '60px'; });
+}
+function ajustarBurbujas(lam) {
+  if (lam.offsetWidth <= lam.offsetHeight || lam.dataset.tipo !== 'chat' || lam.querySelector('.celular')) return;
+  lam.querySelectorAll('.lienzo .chat:not(.chat-muro) .msj .burbuja').forEach(b => {
+    b.style.width = ''; b.style.maxWidth = '';
+    // Iterar: al fijar el ancho, el reparto «pretty» de Chromium vuelve a acomodar los renglones (más cortos) y el hueco
+    // reaparecía. Se repite hasta que el ancho deja de cambiar (máx. 4 vueltas).
+    const cs = getComputedStyle(b), pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 4;
+    for (let v = 0, previo = 0; v < 4; v++) {
+      const rs = rectsTexto(b, lam); if (!rs.length) return;
+      const ancho = Math.ceil(Math.max(...rs.map(r => r.w)) + pad);
+      if (Math.abs(ancho - previo) < 2) break;
+      b.style.width = ancho + 'px'; previo = ancho;
+    }
+  });
+}
+

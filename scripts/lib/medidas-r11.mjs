@@ -77,6 +77,19 @@ export function medidasR11(lam) {
     medidas.tarjetas_letra_nativa=minimo;
     if(minimo!=null && minimo<60) avisos.push(`tarjetas 9:16 con letra de ${minimo.toFixed(0)} px (mínimo 60): con hasta tres tarjetas el bloque crece; con más, pártelas en dos láminas`);
   }
+  // R16: en 16:9 también se registra la letra del chat (saltosEscala compara 1.3× entre láminas) y la holgura interna
+  if (W > H && lam.dataset.tipo === 'chat' && !lam.querySelector('.celular')) {
+    const bs=[...lienzo.querySelectorAll('.chat:not(.chat-muro) > .msj > .burbuja')].filter(visible);
+    medidas.chat_letras=bs.map(tam);
+    for (const b of bs) {
+      const rs=window.lineasPalabras(b).length ? [...b.getClientRects()] : [];
+      const cs=getComputedStyle(b), interior=caja(b).w-(parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight))/(1);
+      const rect=document.createRange(); rect.selectNodeContents(b);
+      const lineas=[...rect.getClientRects()].map(r=>r.width/escala), maxL=lineas.length?Math.max(...lineas):interior;
+      const hueco=interior>0?1-maxL/interior:0;
+      if(hueco>.12) avisos.push(`burbuja con ${Math.round(hueco*100)}% de hueco interno: la burbuja debe abrazar su renglón más largo`);
+    }
+  }
   // R13: ancho real de cada burbuja, no únicamente su contenedor.
   if (H > W && lam.dataset.tipo === 'chat') {
     const burbujas=[...lienzo.querySelectorAll('.chat:not(.chat-muro) > .msj > .burbuja')].filter(visible);

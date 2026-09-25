@@ -1138,7 +1138,7 @@
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
     lams.forEach(l => { ampliarListas(l); ajustarConsigna(l); reservarCarrilChat(l); });
-    coherenciaChats(lams);
+    coherenciaChats(lams); coherenciaChatsHorizontal(lams);
     lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
@@ -1146,6 +1146,7 @@
     lams.forEach(l => { try { ajustarCaveat(l); ajustarNotasLlave(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de llave (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
+    lams.forEach(l => { try { ajustarBurbujas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: burbujas (${e.message})`); } });
     lams.forEach(l => { try { centrarNotasContraste(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de columna (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
     lams.forEach(l => { try { centrarNotasContraste(l); respetarMargen(l); reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });

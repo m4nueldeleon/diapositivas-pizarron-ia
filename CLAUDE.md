@@ -286,4 +286,8 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   un campo mínimo o un aviso frecuente, actualiza su tabla. Dentro del celular (`.celular-pantalla`) no hay avatares y la
   letra va a 46 px. El sello deja 3% de margen lateral y la nota de llave 3.75%. El mapa que se presenta sin texto sigue
   reservando el alto de sus regresos: gana «nada se mueve de lugar» (LECCIONES, decisión r15).
+- Juez r16: en 16:9 el chat sube por largo sin saltar a 54 px (`layouts-datos → chat`: 84/72/64, piso 60);
+  `coherenciaChatsHorizontal` iguala la escala del deck (≤ 1.3×) y `ajustarBurbujas` ciñe cada burbuja a su renglón más
+  largo (itera: el reparto «pretty» reacomoda). QA registra `chat_letras` también en 16:9 y avisa hueco interno > 12%.
+  `pruebas/fixtures/aprobados/tutorial-recuperar` es el deck del juez r16.
 

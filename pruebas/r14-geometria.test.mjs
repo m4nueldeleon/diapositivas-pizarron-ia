@@ -115,3 +115,17 @@ test('r14: el cursor del mapa entra visible en el corte y la mano va a ~60% del 
  assert.ok(r.op0>=.99,`el cursor debe verse en el corte (opacidad ${r.op0})`);
  if(r.frac!=null){ assert.equal(r.curva,'inout'); assert.ok(r.frac>.4&&r.frac<.8,`avance a 2 s: ${r.frac}`); }
 });
+test('r16: en 16:9 el chat tiene escala común (≤ 1.3×, piso 60) y cada burbuja abraza su texto',async t=>{
+ const p=await pagina(t,[
+  {tipo:'chat',mensajes:[{de:'yo',texto:'Hola [nombre], ¿qué tal salieron las galletas de nuez que llevaste en junio?'}]},
+  {tipo:'chat',mensajes:[{de:'otro',texto:'¡Riquísimas!'},{de:'yo',texto:'¡Qué gusto!'}]},
+  {tipo:'chat',mensajes:[{de:'yo',texto:'Si te molesta que te escriba, dime y ya no lo hago.'}]},
+ ]);if(!p)return;
+ const r=await p.evaluate(()=>window.PZ.lams.map(l=>{window.PZ.mostrar(l,99,Infinity);
+   return [...l.querySelectorAll('.burbuja')].map(b=>{const cs=getComputedStyle(b),rg=document.createRange();rg.selectNodeContents(b);
+     const maxL=Math.max(...[...rg.getClientRects()].map(x=>x.width)),inner=b.getBoundingClientRect().width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+     return {tam:parseFloat(cs.fontSize),hueco:1-maxL/inner};});}).flat());
+ const tams=r.map(x=>x.tam);
+ assert.ok(Math.min(...tams)>=60 && Math.max(...tams)/Math.min(...tams)<=1.3+1e-6,JSON.stringify(tams));
+ assert.ok(r.every(x=>x.hueco<=.12),JSON.stringify(r));
+});

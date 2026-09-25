@@ -1,0 +1,315 @@
+{
+ "titulo": "Cómo recuperar a los clientes que dejaron de comprarte",
+ "formato": "16:9",
+ "emoji": "apple",
+ "pieza": "tutorial",
+ "persona": "tu",
+ "laminas": [
+  {
+   "id": "gancho",
+   "tipo": "chat",
+   "sello": "Hace 90 días",
+   "sello_sobre": "m0",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "14 de junio",
+     "texto": "Me llevo dos cajas de galletas. ¡Gracias!"
+    }
+   ],
+   "voz": [
+    "En junio, Marta se llevó dos cajas de galletas.",
+    "Pasaron noventa días y no ha vuelto a pedir."
+   ]
+  },
+  {
+   "id": "tesis",
+   "tipo": "idea",
+   "emoji": "🧑‍💼",
+   "texto": "Marta ya te compró:\n__conoce lo que vendes__",
+   "nota": "No empiezas de cero",
+   "nota_paso": 1,
+   "voz": [
+    "Marta ya te compró: conoce lo que vendes.",
+    "Así que no empiezas de cero."
+   ]
+  },
+  {
+   "id": "cuenta",
+   "tipo": "cifra",
+   "arriba": "Si tienes 40 clientas como Marta:",
+   "lineas": [
+    "40 × $350 = (($14,000))"
+   ],
+   "abajo": "en pedidos que no volvieron",
+   "voz": [
+    "Cuarenta clientas como Marta, a trescientos cincuenta pesos: catorce mil pesos que no volvieron."
+   ]
+  },
+  {
+   "id": "mapa",
+   "tipo": "pasos",
+   "iconos": [
+    "📋",
+    "📲",
+    "⏰"
+   ],
+   "etiquetas": [
+    "Lista",
+    "Mensaje",
+    "Recordatorio"
+   ],
+   "activo": 1,
+   "texto": "Recupéralas en __tres pasos__",
+   "voz": "Las recuperas en tres pasos: la lista, el mensaje y el recordatorio."
+  },
+  {
+   "id": "criterios",
+   "tipo": "lista",
+   "encabezado": "Anótala si:",
+   "vineta": "numero",
+   "items": [
+    "Te compró **2 veces** o más",
+    "Último pedido: **hace 2 a 4 meses**",
+    "Tienes su **WhatsApp**"
+   ],
+   "voz": [
+    "Primero, la lista: anótala si te compró dos veces o más.",
+    "Si su último pedido fue hace dos a cuatro meses.",
+    "Y si tienes su WhatsApp."
+   ]
+  },
+  {
+   "id": "mapa-mensaje",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 2,
+   "hechos": [
+    1
+   ],
+   "texto": "Escribe __un mensaje personal__",
+   "voz": "Segundo paso: escribe un mensaje personal."
+  },
+  {
+   "id": "plantilla",
+   "tipo": "chat",
+   "guion": true,
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Hola [nombre], ¿qué tal salieron las galletas de nuez que llevaste en junio?"
+    }
+   ],
+   "anotaciones": [
+    {
+     "texto": "Nombra lo que compró",
+     "a": "m0",
+     "lado": "derecha"
+    }
+   ],
+   "voz": [
+    "Escríbele así: con su nombre y lo que te compró.",
+    "Nombra lo que compró: así sabe que te acuerdas de ella."
+   ]
+  },
+  {
+   "id": "si-no",
+   "tipo": "lista",
+   "columnas": [
+    {
+     "titulo": "SÍ",
+     "tono": "v",
+     "vineta": "check",
+     "items": [
+      "Su nombre",
+      "Lo que compró"
+     ]
+    },
+    {
+     "titulo": "NO",
+     "tono": "r",
+     "vineta": "cruz",
+     "items": [
+      "Un descuento de entrada",
+      "El mismo mensaje a todos"
+     ],
+     "llave": "Se nota que es masivo"
+    }
+   ],
+   "voz": [
+    "Lleva su nombre.",
+    "Y lo que compró.",
+    "No abras con un descuento.",
+    "Ni mandes el mismo mensaje a todos.",
+    "Se nota que es masivo, y lo ignora."
+   ]
+  },
+  {
+   "id": "respuesta-clienta",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "¡Riquísimas! Quiero para el cumpleaños de mi hija."
+    },
+    {
+     "de": "yo",
+     "texto": "¡Qué gusto! ¿Para cuántas personas y qué día?"
+    }
+   ],
+   "anotaciones": [
+    {
+     "texto": "Cierra con una pregunta",
+     "a": "m1",
+     "lado": "derecha"
+    }
+   ],
+   "voz": [
+    "Supón que te contesta: quiere galletas para el cumpleaños de su hija.",
+    "Tú respondes con algo concreto: para cuántas personas y qué día.",
+    "Cierra con una pregunta: así el pedido avanza."
+   ]
+  },
+  {
+   "id": "mapa-recordatorio",
+   "tipo": "pasos",
+   "como": "mapa",
+   "activo": 3,
+   "hechos": [
+    1,
+    2
+   ],
+   "texto": "Si no contesta, __un solo recordatorio__",
+   "voz": "Tercer paso: si no contesta, un solo recordatorio."
+  },
+  {
+   "id": "ritmo",
+   "tipo": "flujo",
+   "nodos": [
+    {
+     "emoji": "📲",
+     "etiqueta": "Mensaje"
+    },
+    {
+     "emoji": "⏳",
+     "etiqueta": "5 días"
+    },
+    {
+     "emoji": "⏰",
+     "etiqueta": "Recordatorio"
+    }
+   ],
+   "texto": "Después, __no insistas__",
+   "voz": [
+    "Mandas el mensaje.",
+    "Esperas cinco días.",
+    "Mandas un solo recordatorio y, después, no insistas."
+   ]
+  },
+  {
+   "id": "objecion",
+   "tipo": "idea",
+   "emoji": "🤔",
+   "encabezado": "Objeción #1",
+   "encabezado_pos": "entre",
+   "texto": "**«¿Y si le molesta o ya le compra a otra?»**",
+   "voz": "Objeción número uno: ¿y si le molesta, o ya le compra a otra persona?"
+  },
+  {
+   "id": "resp-molesta",
+   "tipo": "chat",
+   "guion": true,
+   "mensajes": [
+    {
+     "de": "yo",
+     "texto": "Si te molesta que te escriba, dime y ya no lo hago."
+    }
+   ],
+   "anotaciones": [
+    {
+     "texto": "Le das una salida",
+     "a": "m0",
+     "lado": "derecha"
+    }
+   ],
+   "voz": [
+    "Para que no le moleste, agrega esta frase al final del mensaje.",
+    "Le das una salida: si no quiere, no le vuelves a escribir."
+   ]
+  },
+  {
+   "id": "resp-otra",
+   "tipo": "chat",
+   "mensajes": [
+    {
+     "de": "otro",
+     "texto": "Ahora le compro a otra repostería."
+    },
+    {
+     "de": "yo",
+     "texto": "¡Gracias por decirme! ¿Qué te gusta de donde compras ahora?"
+    }
+   ],
+   "anotaciones": [
+    {
+     "texto": "Aprendes qué mejorar",
+     "a": "m1",
+     "lado": "derecha"
+    }
+   ],
+   "voz": [
+    "Y si ya le compra a otra repostería, te lo va a decir.",
+    "Agradece y pregúntale qué le gusta de donde compra ahora.",
+    "Aprendes qué mejorar, aunque no vuelva."
+   ]
+  },
+  {
+   "id": "pago",
+   "tipo": "chat",
+   "como": "gancho",
+   "paga": "gancho",
+   "sello": "Volvió",
+   "sello_sobre": "m1",
+   "mensajes": [
+    {
+     "de": "otro",
+     "hora": "14 de junio",
+     "texto": "Me llevo dos cajas de galletas. ¡Gracias!"
+    },
+    {
+     "de": "otro",
+     "hora": "Hoy",
+     "texto": "¡Apártame tres cajas para el sábado!"
+    }
+   ],
+   "voz": [
+    "El último pedido de Marta fue en junio.",
+    "Hoy, después de tu mensaje, te aparta tres cajas para el sábado.",
+    "Volvió."
+   ]
+  },
+  {
+   "id": "resumen",
+   "tipo": "lista",
+   "encabezado": "Hoy mismo:",
+   "vineta": "numero",
+   "items": [
+    "Haz tu **lista**",
+    "Manda un **mensaje personal**",
+    "Un **recordatorio** a los 5 días"
+   ],
+   "voz": [
+    "Hoy mismo, haz tu lista.",
+    "Manda un mensaje personal a cada una.",
+    "Y un recordatorio a los cinco días."
+   ]
+  },
+  {
+   "id": "llamado",
+   "tipo": "idea",
+   "emoji": "📌",
+   "texto": "Guarda este video y escríbele hoy\na __tres clientas__",
+   "voz": "Guarda este video y escríbele hoy a tres clientas de tu lista."
+  }
+ ]
+}

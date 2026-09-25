@@ -524,7 +524,10 @@ export function chat(l, ctx) {
   const ms = l.mensajes || [];
   const maxPalabras = Math.max(0, ...ms.map(m => palabras(m.texto)));
   const tbVertical = ms.length <= 2 && maxPalabras <= 6 ? 104 : 84;
-  const tbHorizontal = ms.length <= 2 && maxPalabras <= 12 ? 84 : ms.length <= 3 && maxPalabras <= 12 ? 72 : 54;
+  // R16 [juez r16]: un mensaje de 13 palabras caía a 54 px (la plantilla, lo más importante del deck, salía más chica que
+  // todo). Escala suave por largo, con piso de 60 px; la coherencia de escala del deck (1.3×) corre en runtime.
+  const tbHorizontal = ms.length <= 2 ? (maxPalabras <= 12 ? 84 : maxPalabras <= 22 ? 72 : 64)
+    : ms.length <= 3 ? (maxPalabras <= 12 ? 72 : 64) : 60;
   const tbAuto = ctx.vertical ? tbVertical : tbHorizontal;
   const tbAvatar = l.tam_texto && /px$/.test(l.tam_texto) ? parseFloat(l.tam_texto) : l.tam_texto ? 58 : tbAuto;
   const muro = l.variante === 'muro', celular = l.marco === 'celular';
