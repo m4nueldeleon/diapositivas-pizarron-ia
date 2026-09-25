@@ -9,6 +9,7 @@
 //   pdf.json           páginas, láminas, cursores visibles al capturar (0) y datos pendientes a la vista.
 // El `foco` sale tal cual (su fondo atenuado es el comentario a la lámina anterior, como en el video [15:20]) y el
 // mapa 1-2-3 que vuelve se queda: en papel también separa las secciones.
+import { nuevaPagina } from './pipeline.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -127,7 +128,7 @@ export async function capturarPaginas(page, deck, dir) {
 export async function imprimir(browser, html, dirSalida, destino, { ancho, alto }) {
   const hp = path.join(dirSalida, `.${path.basename(destino, '.pdf')}.html`);
   fs.writeFileSync(hp, html);
-  const p = await browser.newPage();
+  const p = await nuevaPagina(browser);
   await p.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
   await p.evaluate(() => document.fonts && document.fonts.ready);
   await p.pdf({ path: destino, width: `${ancho}px`, height: `${alto}px`, printBackground: true, preferCSSPageSize: true });

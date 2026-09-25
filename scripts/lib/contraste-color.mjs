@@ -13,6 +13,7 @@
 // un degradado se toma la PEOR de sus paradas y su promedio. Bajo UMBRAL_COLOR, QA avisa; sobre un PASTEL (todas las
 // paradas con luminancia > 0.6: cuadrantes, cuadros, tarjetas de tono) el glifo se ve como sobre la tarjeta #f3f3f3 y
 // vale el umbral de la tabla neutra (UMBRAL_CONTRASTE): el 📧 de Apple da 20% en blanco y 17% en el verde pastel.
+import { nuevaPagina } from './pipeline.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DEFS_GLOBALES } from './emoji.mjs';
@@ -109,7 +110,7 @@ export async function medirSobreColor(browser, porLamina, dirSalida) {
     m._k = cache.get(clave); m._pastel = esPastel(m.fondos); m._oscuro = esOscuro(m.fondos); m._neutro = m.neutro === true;
   }));
   if (!items.length) return [];
-  const pg = await browser.newPage();
+  const pg = await nuevaPagina(browser);
   let pcts = [];
   try {
     await pg.addScriptTag({ content: `window.puntuarGlifo = ${puntuarGlifo.toString()}; window.pctApagado = ${pctApagado.toString()};` });

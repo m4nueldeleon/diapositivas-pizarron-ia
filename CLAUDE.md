@@ -132,7 +132,7 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   de `avisos_aceptados`. Los layouts no leen un campo nuevo.
 - `datos.mjs` valida marcadores y deriva el glosario de usos; ambos QA lo publican.
 - Protocolo y límites: `references/CALIDAD-PRIMER-RENDER.md`. Regresiones: `pruebas/calidad-r8.test.mjs`.
-- Con Chromium bloqueado, la revisión visual pasa a Claude/orquestador; no se cambia el sandbox.
+- Con Chromium bloqueado por el sandbox, `lanzarChromium` reintenta en un solo proceso (`ARGS_UN_PROCESO`) y así Codex renderiza, ve sus hojas y corre las pruebas de navegador; `PZ_SIN_UNICO=1` lo apaga. Si ni así arranca, la revisión visual pasa al orquestador.
 
 ### Ronda 7 · Estilo e íconos
 - `emoji.mjs` valida `trazo:figura|RÓTULO` y `tinta.mjs` produce su geometría determinista; `reglas-deck.mjs` revisa reuso, identidad del producto, viñetas de plan y eyebrows.

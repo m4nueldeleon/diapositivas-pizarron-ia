@@ -134,9 +134,11 @@ node scripts/qa.mjs mi-video              # nota 0-100; errores = hay que correg
 
 ## Desde Codex / sandbox
 
-Chromium necesita permiso para arrancar: en macOS, Codex con `-s workspace-write` puede bloquearlo.
-Si está bloqueado, Claude o el orquestador hace el render y revisa las hojas en su entorno habilitado.
-Codex conserva el sandbox y entrega el filtro previo; no relanza con permisos distintos.
+Chromium necesita registrar puertos Mach para arrancar, y en macOS Codex con `-s workspace-write` lo bloquea.
+El motor lo detecta y reintenta solo en **un solo proceso** (`--single-process --no-zygote --no-sandbox
+--disable-gpu`, `ARGS_UN_PROCESO` en `pipeline.mjs`): así Codex renderiza, abre sus hojas y corre las pruebas de
+navegador sin salir del sandbox. `PZ_SIN_UNICO=1` apaga el reintento. Si ni así arranca, Claude o el orquestador
+hace el render y revisa las hojas en su entorno; Codex conserva el sandbox y no relanza con permisos distintos.
 Mientras, `node scripts/qa.mjs mi-video --sin-navegador` escribe `qa-texto.json`: es solo un filtro previo,
 con nota provisional y `estado: "sin-medir"`; no reemplaza ni pisa el `qa.json` visual.
 Sin render, QA medidos y la hoja vista no se dice «listo». Si no puedes renderizar, entrega

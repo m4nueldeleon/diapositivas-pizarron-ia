@@ -103,11 +103,47 @@ export function clasificarErrorNavegador(error) {
   return error;
 }
 
+// Dentro de un sandbox de macOS (Codex con -s workspace-write) Chromium no puede registrar sus puertos Mach y
+// muere al arrancar; en un solo proceso sí arranca y pinta igual. Se reintenta así solo cuando el primer intento
+// cae por el sandbox (PZ_SIN_UNICO=1 lo apaga). Si el reintento también falla, se conserva el diagnóstico original.
+export const ARGS_UN_PROCESO = ['--single-process', '--no-zygote', '--no-sandbox', '--disable-gpu'];
+
+async function lanzarUnaVez(opciones) {
+  if (process.env.PZ_LAUNCH_FALSO === 'mach') throw new Error('bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100)');
+  if (process.env.PZ_LAUNCH_FALSO === 'falta') throw new Error('Playwright está, pero falta el navegador. Reinstálalo con: npx playwright install chromium');
+  const { chromium } = cargarPlaywright(DIR_SKILL);
+  return await chromium.launch(opciones);
+}
+
+// Navegadores lanzados en un solo proceso: no admiten un segundo contexto (browser.newPage después de la primera
+// página falla con «Target page, context or browser has been closed»). nuevaPagina() lo resuelve.
+const UN_PROCESO = new WeakSet();
+const marcarUnProceso = b => { UN_PROCESO.add(b); return b; };
+
 export async function lanzarChromium(opciones = {}) {
-  try {
-    if (process.env.PZ_LAUNCH_FALSO === 'mach') throw new Error('bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100)');
-    if (process.env.PZ_LAUNCH_FALSO === 'falta') throw new Error('Playwright está, pero falta el navegador. Reinstálalo con: npx playwright install chromium');
-    const { chromium } = cargarPlaywright(DIR_SKILL);
-    return await chromium.launch(opciones);
-  } catch (error) { throw clasificarErrorNavegador(error); }
+  const pedido = (opciones.args || []).includes('--single-process');
+  let original;
+  try { const b = await lanzarUnaVez(opciones); return pedido ? marcarUnProceso(b) : b; } catch (error) { original = clasificarErrorNavegador(error); }
+  if (original?.motivo === 'sandbox' && process.env.PZ_SIN_UNICO !== '1') {
+    try { return marcarUnProceso(await lanzarUnaVez({ ...opciones, args: [...(opciones.args || []), ...ARGS_UN_PROCESO] })); } catch { /* queda el diagnóstico original */ }
+  }
+  throw original;
+}
+
+// Una página más en el mismo navegador. En un solo proceso se abre en un navegador extra que se cierra con la página
+// (y con el navegador principal, si alguien olvida cerrar la página). Fuera del sandbox es browser.newPage de siempre.
+export async function nuevaPagina(browser, opciones = {}) {
+  if (!UN_PROCESO.has(browser) || browser.contexts().length === 0) return browser.newPage(opciones);
+  const extra = await lanzarChromium({ args: ARGS_UN_PROCESO });
+  const page = await extra.newPage(opciones);
+  const cerrarPagina = page.close.bind(page);
+  page.close = async (...a) => { try { await cerrarPagina(...a); } finally { await extra.close().catch(() => {}); } };
+  if (!browser.__extras) {
+    browser.__extras = new Set();
+    const cerrarPrincipal = browser.close.bind(browser);
+    browser.close = async (...a) => { await Promise.all([...browser.__extras].map(x => x.close().catch(() => {}))); return cerrarPrincipal(...a); };
+  }
+  browser.__extras.add(extra);
+  extra.on('disconnected', () => browser.__extras.delete(extra));
+  return page;
 }

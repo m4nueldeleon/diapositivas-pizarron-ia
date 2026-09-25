@@ -185,9 +185,8 @@ test('QA: letra secundaria bajo 48 px avisa; emoji con texto impreso avisa; mapa
 // arrancaba en x=0.9 con trazo de 4.2 y punta redonda: el viewBox la cortaba en seco.
 test('glifos SVG: ninguna figura (ni su trazo) se sale del viewBox; los de objeto llevan volumen', { timeout: 60_000 }, async () => {
   const { TODOS_GLIFOS_SVG, DEFS_GLOBALES } = await import('../scripts/lib/emoji.mjs');
-  const { cargarPlaywright } = await import('../scripts/lib/playwright.mjs');
-  const { chromium } = cargarPlaywright(DIR_SKILL);
-  const b = await chromium.launch();
+  const { lanzarChromium } = await import('../scripts/lib/pipeline.mjs');
+  const b = await lanzarChromium();
   try {
     const pg = await b.newPage();
     const S = 240;

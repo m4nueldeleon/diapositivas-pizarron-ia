@@ -24,7 +24,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { argumentos, prepararSalida, abrir, ErrorNavegador } from './lib/pipeline.mjs';
+import { argumentos, prepararSalida, abrir, ErrorNavegador, nuevaPagina } from './lib/pipeline.mjs';
 import { cuadrosHoja, htmlHoja, filasPasos, htmlHojaPasos, paginar, tituloPagina, archivoPagina, POR_HOJA, FILAS_POR_HOJA } from './lib/hoja.mjs';
 import { duracionTotal, duracionPaso, mmss } from './lib/tiempos.mjs';
 import { palabras } from './lib/markup.mjs';
@@ -110,7 +110,7 @@ console.log(`PNG → ${path.join(dirSalida, laminasDir)} (${manifiesto.filter(m 
 async function capturar(html, ancho, destino) {
   const hp = path.join(temporal, '.hoja.html');
   fs.writeFileSync(hp, html);
-  const p2 = await browser.newPage({ viewport: { width: ancho, height: 400 } });
+  const p2 = await nuevaPagina(browser, { viewport: { width: ancho, height: 400 } });
   await p2.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
   await p2.screenshot({ path: destino, type: 'jpeg', quality: 82, fullPage: true });
   await p2.close();

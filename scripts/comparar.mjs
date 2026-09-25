@@ -28,7 +28,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { selloEvidencia } from './lib/hoja.mjs';
 import { pathToFileURL } from 'node:url';
-import { argumentos, prepararSalida, abrir, ErrorNavegador, DIR_SKILL } from './lib/pipeline.mjs';
+import { argumentos, prepararSalida, abrir, ErrorNavegador, DIR_SKILL, nuevaPagina } from './lib/pipeline.mjs';
 import { cajaTinta, compararCajas, emparejar, densidadTinta, correlacionMiniaturas, MIN_PARECIDO, esOtraEscena } from './lib/tinta.mjs';
 
 try {
@@ -89,7 +89,7 @@ for (const par of pares) {
   par.referencia = aDataUrl(path.join(dirRef, par.ref));
 }
 // Cajas de tinta: se leen los píxeles en un canvas de 480×270 (misma proporción, más rápido)
-const medir = await browser.newPage();
+const medir = await nuevaPagina(browser);
 await medir.addScriptTag({ content: [cajaTinta, densidadTinta].map(f => `window.${f.name} = ${f.toString()};`).join('\n') });
 for (const par of pares) {
   const medidas = await medir.evaluate(async urls => Promise.all(urls.map(async u => {
@@ -119,7 +119,7 @@ for (let h = 0; h * 5 < pares.length; h++) {
     ${grupo.map(p => `<div class="f"><div class="r"><b>ref_${p.seg}</b>${p.id} · paso ${p.paso + 1}<br><small>${String(p.cuadro).replace(/[<&]/g, '')}</small><br><span class="${p.falla || p.distinta ? 'mal' : 'bien'}">${p.distinta ? 'NO ES LA MISMA' : p.falla ? 'FALLA' : 'pasa'}</span> · r ${p.parecido}<br>x ${f1(p.dx)} · y ${f1(p.dy)}<br>w ${f1(p.dw)} · h ${f1(p.dh)}</div><img src="${p.referencia}"><img src="${p.nuestra}"></div>`).join('')}`;
   const hp = path.join(salida, `.comp_${h + 1}.html`);
   fs.writeFileSync(hp, html);
-  const pg = await browser.newPage({ viewport: { width: 1500, height: 400 } });
+  const pg = await nuevaPagina(browser, { viewport: { width: 1500, height: 400 } });
   await pg.goto(pathToFileURL(hp).href, { waitUntil: 'load' });
   await pg.screenshot({ path: path.join(salida, `comp_${h + 1}.jpg`), type: 'jpeg', quality: 80, fullPage: true });
   fs.unlinkSync(hp);
