@@ -114,7 +114,7 @@ function coherenciaChats(lams) {
 function respetarMargen(lam) {
   if(lam.offsetHeight>lam.offsetWidth||lam.dataset.vivo)return;
   const lz=lam.querySelector(':scope > .lienzo'), bloque=lz?.firstElementChild;
-  if(!bloque||bloque.matches('.sangre,.cuadrantes'))return;
+  if(!bloque||bloque.matches('.sangre,.cuadrantes')||bloque.querySelector('.rejilla-masiva'))return;
   const r=caja(bloque,lam),m=lam.offsetHeight*.06+1;
   const dy=r.y<m?m-r.y:r.y+r.h>lam.offsetHeight-m?lam.offsetHeight-m-r.y-r.h:0;
   if(dy){bloque.style.position='relative';bloque.style.top=((parseFloat(bloque.style.top)||0)+dy/(parseFloat(getComputedStyle(bloque).zoom)||1))+'px';}

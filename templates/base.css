@@ -426,7 +426,7 @@ s.tachon, .tachon { text-decoration: none; }
 .post .clave { position: relative; }
 
 /* ---------- rejilla ---------- */
-.rejilla { display: grid; grid-template-columns: repeat(var(--cols), var(--c)); gap: var(--g, 6px); }
+.rejilla { display: grid; grid-template-columns: repeat(var(--cols), var(--c)); gap: var(--g, 6px); column-gap: var(--gx, var(--g, 6px)); }
 .rejilla .emo { --s: var(--c); }
 .rejilla .punto { width: var(--c); height: var(--c); border-radius: 50%; }
 .rejilla .punto.v { background: radial-gradient(circle at 35% 30%, #6bea5c, #25b51a); }
@@ -870,3 +870,6 @@ b.circ[data-circulo="linea"] { margin-inline: .4em; }
 .celular-app:empty { justify-content: flex-start; gap: 18px; padding: 0 12px 18px; height: auto; border-bottom: 2px solid #ececef; }
 .celular-app:empty::before { content: ""; width: 58px; height: 58px; border-radius: 50%; background: #d4d4d8; flex: none; }
 .celular-app:empty::after { content: ""; width: 150px; height: 20px; border-radius: 10px; background: #d4d4d8; }
+/* R17 [hoja_03 6:40, ráfaga e_sello]: 500 cajas usan casi todo el alto (título al 5.7%, rejilla hasta el 97%): la cantidad
+   abruma a propósito. La rejilla masiva va a sangre vertical; QA la excluye del margen de 6%, como .sangre y .cuadrantes. */
+.lienzo:has(.rejilla-masiva) { padding-top: 40px; padding-bottom: 20px; }

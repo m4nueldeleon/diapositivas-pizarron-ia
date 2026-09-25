@@ -381,3 +381,14 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   hacer. Un aviso sin arreglo accionable enseña a ignorar el QA.
 - **Entrada:** las reglas para escribir un deck se separaron en REGLAS-DEL-AUTOR.md (≤ 8 KB); LECCIONES pesaba 34 KB y se
   leía completa antes de cada deck.
+
+## 2026-09-25 · El sello no golpea y 500 cajas abruman (ronda 17, fidelidad)
+
+- **Regla:** en seco el sello entra completo en el corte y se queda quieto; el golpe con temblor es de `suave`.
+- **Porqué:** ESTILO decía «cae con golpe y un temblor» sin medida. La ráfaga e_sello [6:44.8 → 6:44.9] lo muestra entero de
+  un cuadro al siguiente y con la misma caja y los mismos píxeles después. Nuestro golpe (1.9× → 1× en 150 ms + 180 ms de
+  temblor) se habría visto un 28% más grande en el primer cuadro de 8 cps.
+- **Regla:** la rejilla crece con la cantidad. 500 cajas van en 25 × 20 y usan casi todo el alto [hoja_03 6:40]; con 1.55 de
+  aspecto y 720 px de tope salían en 28 × 18 a ~34 px, y el sello, que mide el ancho de la rejilla, quedaba chico.
+- **Cómo se detectó:** al sumar r403 y su ráfaga a `comparar.mjs --rafagas`. El encuadre pasó de fallar (y +7.4, h −15.6) a
+  pasar (x −2.3, y +1.1, w +1.3, h −1.5); la silueta de 500 celdas diminutas queda en «revisar» y el umbral no se aflojó.

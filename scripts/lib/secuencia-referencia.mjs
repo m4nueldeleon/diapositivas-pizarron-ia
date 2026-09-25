@@ -9,6 +9,9 @@ export const RAFAGAS = [
   {nombre:'d_123',id:'r115',corte:8,fin:24,aparicion:true,
     // Termina antes de la segunda tecla: su numeral y relieve no son cursor.
     regiones:{teclas:[.20,.25,.60,.20],texto:[.06,.66,.88,.10],nota:[.16,.78,.68,.08],movimiento:[.26,.35,.16,.20]}},
+  // R17: el sello entra completo en el corte (6:44.9) y no se mueve; se mide en su paso (el último de la lámina).
+  {nombre:'e_sello',id:'r403',paso:-1,corte:16,fin:24,aparicion:true,
+    regiones:{sello:[.06,.28,.76,.52]}},
 ];
 
 // Caja de tinta por región; la tinta roja se aísla para comprobar su corte.
@@ -57,18 +60,18 @@ export async function compararSecuencia({dir,page,medir,ids,salida}) {
       const archivo=path.join(carpeta,`r_${String(f).padStart(2,'0')}.jpg`);
       if(!fs.existsSync(archivo))break;
       const ms=(f-cfg.corte)*125;
-      const dom=await page.evaluate(([i,ms])=>{
-        const l=window.PZ.lams[i];window.PZ.mostrar(l,0,ms);
+      const dom=await page.evaluate(([i,ms,paso])=>{
+        const l=window.PZ.lams[i];window.PZ.mostrar(l,paso<0?window.PZ.pasos(l)+paso:paso,ms);
         const cursor=l.querySelector('.cursor'),r=cursor?.getBoundingClientRect(),b=l.getBoundingClientRect();
         const rutas=[...l.querySelectorAll('[data-arrastre]')].map(p=>({retraso:+p.dataset.retraso||0,dash:getComputedStyle(p).strokeDashoffset}));
         return {cursor:r?{x:(r.x-b.x)/b.width,y:(r.y-b.y)/b.height,visible:getComputedStyle(cursor).visibility!=='hidden'&&+getComputedStyle(cursor).opacity>0}:null,rutas};
-      },[i,ms]);
+      },[i,ms,cfg.paso||0]);
       const png=await page.locator('section.lamina').nth(i).screenshot({type:'png'});
       const urls=['data:image/jpeg;base64,'+fs.readFileSync(archivo).toString('base64'),'data:image/png;base64,'+png.toString('base64')];
       const lados=await medir.evaluate(async ({urls,regiones})=>Promise.all(urls.map(async u=>{
         const im=new Image();im.src=u;await im.decode();const c=new OffscreenCanvas(480,270),g=c.getContext('2d');g.drawImage(im,0,0,480,270);
         const d=g.getImageData(0,0,480,270).data;
-        return Object.fromEntries(Object.entries(regiones).map(([k,r])=>[k,window.medirRegion(d,480,270,r,k==='movimiento'?'neutro':k==='trazo')]));
+        return Object.fromEntries(Object.entries(regiones).map(([k,r])=>[k,window.medirRegion(d,480,270,r,k==='movimiento'?'neutro':k==='trazo'||k==='sello')]));
       })),{urls,regiones:cfg.regiones});
       muestras.push({frame:f,ms,referencia:{regiones:lados[0]},replica:{regiones:lados[1]},dom});
       if([cfg.corte,cfg.corte+1,cfg.fin].includes(f)){
@@ -85,6 +88,6 @@ export async function compararSecuencia({dir,page,medir,ids,salida}) {
       ruta:arrastre,trazos:cfg.regiones.trazo?{estado:'presencia y estabilidad medidas; plenitud del trazo requiere revisión visual',region:'trazo',presente_en_corte:!!aparicion?.trazo.referencia&&!!aparicion?.trazo.replica}:null,muestras});
   }
   const cubiertos=casos.filter(c=>c.muestras?.length);
-  return {estado:cubiertos.length?'medida-parcial':'sin-cobertura',fps:8,casos,cobertura:{aparicion:cubiertos.some(c=>c.aparicion),estabilidad:cubiertos.some(c=>c.muestras.length>1),cursor:cubiertos.some(c=>c.cursor),ruta:cubiertos.some(c=>c.ruta?.referencia_ms!=null&&c.ruta?.replica_ms!=null),trazos:cubiertos.some(c=>c.trazos)?'subrayado de r10; flechas y sello sin pareja en réplica':false},
+  return {estado:cubiertos.length?'medida-parcial':'sin-cobertura',fps:8,casos,cobertura:{aparicion:cubiertos.some(c=>c.aparicion),estabilidad:cubiertos.some(c=>c.muestras.length>1),cursor:cubiertos.some(c=>c.cursor),ruta:cubiertos.some(c=>c.ruta?.referencia_ms!=null&&c.ruta?.replica_ms!=null),trazos:cubiertos.some(c=>c.trazos)?'subrayado de r10 y sello de r403; flechas sin pareja en réplica':false},
     limite:'La ráfaga d_123 termina antes de completar la ruta. Presencia no certifica identidad del cursor; revisar capturas y métricas. No se acredita lo no cubierto.'};
 }

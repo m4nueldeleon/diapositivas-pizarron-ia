@@ -301,3 +301,8 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   de `esperado.json`. La lista de dos renglones topa su intervalo en 2.4× la letra (QA: mínimo 36% del alto útil) y la
   llave con una sola nota centra el conjunto; el celular asienta la conversación abajo (`.celular-entrada`);
   `runtime-legibilidad.js → pisoSecundario` sube la hora del chat a 48 px efectivos después del encaje.
+- R17, fidelidad: la ráfaga e_sello entra en `secuencia-referencia.mjs → RAFAGAS` (réplica `r403`, `paso: -1` = el último, región
+  roja `sello`) y `ref_403.jpg` vive con los demás cuadros fuera del repo. En seco el sello entra completo (runtime → `mostrar`:
+  el golpe con temblor solo con `suave`). `layouts-datos → rejilla`: 400+ en 16:9 es `rejilla-masiva` (1.25 de aspecto, 900 px
+  de alto, columnas a ~1210/cols, rótulo-frase a 62 px, nota a 100 px); `respetarMargen` y el margen de QA la exceptúan.
+  La silueta de r403 (IoU ~0.6) sigue en «revisar», como r255: 500 celdas de ~12 px a 480×270 no alinean píxel a píxel.

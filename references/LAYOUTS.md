@@ -649,6 +649,9 @@ por omisión va después de la última banda. La suma de bandas no puede superar
   ```json
   { "tipo": "rejilla", "encabezado": "Tendrías que vender…", "emoji": "📦", "total": 300, "anotacion": "Son 300", "sello": "Mucha habilidad" }
   ```
+  La rejilla crece con la cantidad [hoja_03 6:35 → 6:40]. Con 400 o más en 16:9 es **masiva**: 25 × 20 para 500, ~1190 px
+  de ancho, casi todo el alto (del ~6% al ~97%), el rótulo-frase a ~62 px y la nota a 100 px. Es una composición a sangre
+  vertical: QA no le aplica el margen de 6%. El sello la cruza de lado a lado.
 - **Porcentaje**:
   ```json
   { "tipo": "rejilla", "punto": true, "total": 100, "columnas": 20, "destacar": [99], "texto": "¿El **99%**?" }

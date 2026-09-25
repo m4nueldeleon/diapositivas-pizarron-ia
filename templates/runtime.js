@@ -1030,7 +1030,9 @@
     });
     lam.querySelectorAll('.sello[data-p]').forEach(s => {
       const p = +s.dataset.p; let sc = 1, o = 1, ox = 0;
-      if (!fin && p === paso) {
+      // R17 [ráfaga e_sello 6:44.8 → 6:44.9]: en el video el sello entra COMPLETO en el corte y queda inmóvil (misma caja y
+      // los mismos píxeles en los cuadros siguientes, a 8 cps). En seco entra entero; el golpe con temblor es de `suave`.
+      if (!fin && p === paso && suave) {
         const k = clamp(t / 150);
         if (k < 1) { sc = 1.9 - 0.9 * k * k; o = clamp(k * 2.5); }
         else { const d = t - 150; ox = d < 180 ? Math.sin(d / 14) * (1 - d / 180) * 7 : 0; }

@@ -143,7 +143,7 @@ export function medidasR11(lam) {
     medidas.vivo_letra_px1920=items.length?Math.min(...items.map(tam)):null;
     if(items.length&&medidas.vivo_letra_px1920<64)avisos.push('consigna en vivo menor de 64 px a 1920: reduce el reloj antes que la instrucción');
   }
-  if(W>H) {
+  if(W>H && !lam.querySelector('.rejilla-masiva')) {
     const elems=[...lam.querySelectorAll('.t,.item,.nota,.burbuja,.emo,.encabezado,.etiqueta,.anotacion,.vivo-consigna,.vivo-items,.vivo-reloj')]
       .filter(e=>visible(e)&&!e.closest('.firma,.escena.clon,.sangre,.cuadrantes'));
     const b=union(elems);

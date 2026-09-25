@@ -417,13 +417,19 @@ export function rejilla(l, ctx) {
     const ultimo = b ? pasoDe(l, 'encerrar_paso', k0 + l.bandas.length) : k0 + l.bandas.length - 1;
     return `<div class="pila">${rotulo(ctx, l)}<div class="bandas-comparacion" style="--banda-columnas:${cols};--banda-gap:${g}px;--banda-alto:${rows * (c + g) - g}px"><div class="bandas-leyenda">${leyenda}</div><div class="rejilla-bandas"${ctx.P(0)}${ctx.A('rejilla')}>${Array.from({ length: total }, (_, i) => celda(i)).join('')}${circulo}</div></div>${texto(ctx, l.texto, 'chico mt-m', pasoDe(l, 'texto_paso', 0))}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', ultimo))}</div>`;
   }
-  const aspecto = l.aspecto || 1.55;
+  // R17 [hoja_03 6:35 → 6:40, ráfaga e_sello]: la rejilla crece con la cantidad. 200 cajas van en 20×10 (~1325×594 px);
+  // 500 van en 25×20 con celdas casi cuadradas y bajan hasta el pie (~1210×900 px): la escala se VE. Con 1.55 y 720 px de
+  // tope, 500 salían en 28×18 a ~34 px y el sello, que mide el ancho de la rejilla, quedaba chico.
+  const masiva = total >= 400 && !ctx.vertical;
+  const aspecto = l.aspecto || (masiva ? 1.25 : 1.55);
   const cols = l.columnas || Math.max(1, Math.round(Math.sqrt(total * aspecto)));
   const rows = Math.ceil(total / cols);
   // con anotación a la derecha la rejilla deja sitio para el gancho de la flecha y la nota
-  const areaW = l.ancho || (ctx.vertical ? 880 : l.anotacion ? 1250 : 1450), areaH = l.alto || (ctx.vertical ? 1100 : 720);
+  const areaW = l.ancho || (ctx.vertical ? 880 : l.anotacion ? 1250 : 1450), areaH = l.alto || (ctx.vertical ? 1100 : masiva ? 900 : 720);
   const c = Math.floor(Math.min(areaW / cols, areaH / rows) * 0.86);
   const g = Math.max(3, Math.floor(c * 0.16));
+  // En la masiva las columnas respiran más que los renglones (~48 px contra ~45 en 6:40): la rejilla llega a ~1210 px.
+  const gx = masiva && !l.ancho ? Math.max(g, Math.floor(1210 / cols) - c) : g;
   const dest = new Set(l.destacar || []);
   // `destacado_paso` > 0: el color de las destacadas aparece DESPUÉS, sobre la rejilla ya vista [43:15]
   const kDest = l.etiqueta_destacado ? 0 : pasoDe(l, 'destacado_paso', 0);
@@ -447,9 +453,10 @@ export function rejilla(l, ctx) {
   // largo real (≥ 90 px).
   const conFlecha = l.etiqueta_destacado && dest.size && l.flecha_etiqueta === true;
   if (conFlecha) ctx.con({ de: 'etq', a: 'd' + [...dest][0], estilo: 'fina-abajo', p: l.destacado_paso ?? 0 });
-  return `<div class="pila">${rotulo(ctx, l, ' style="margin-bottom:34px"')}
+  // El rótulo-frase de la rejilla masiva va a ~62 px (1093 px de ancho en 6:40; a 67 medía 1196): la escala es la rejilla.
+  return `<div class="pila">${rotulo(ctx, l, masiva && l.encabezado_estilo === 'frase' ? ' style="margin-bottom:28px;--t:62px"' : ' style="margin-bottom:34px"')}
     ${l.etiqueta_destacado ? `<div class="pila"${ctx.P(l.destacado_paso ?? 0)}${ctx.A('etq')} style="margin-bottom:${conFlecha ? 110 : 20}px">${l.emoji_etiqueta ? ctx.emoji(l.emoji_etiqueta, 110) : ''}<div style="font-size:72px;font-weight:700">${marcar(l.etiqueta_destacado)}</div></div>` : ''}
-    <div class="fila" style="align-items:center;gap:${l.anotacion ? 150 : 40}px"><div class="rejilla"${ctx.P(0)}${ctx.A('rejilla')} style="--cols:${cols};--c:${c}px;--g:${g}px">${celdas.join('')}</div>
+    <div class="fila" style="align-items:center;gap:${l.anotacion ? (masiva ? 100 : 150) : 40}px"><div class="rejilla${masiva ? ' rejilla-masiva' : ''}"${ctx.P(0)}${ctx.A('rejilla')} style="--cols:${cols};--c:${c}px;--g:${g}px;--gx:${gx}px">${celdas.join('')}</div>
     ${l.anotacion ? `<div class="nota"${ctx.P(kAn)}${ctx.A('anot')} style="--tn:66px;color:var(--tinta);margin-top:110px;white-space:nowrap">${marcar(l.anotacion)}</div>` : ''}</div>
     ${texto(ctx, l.texto, 'chico mt-m', l.texto_paso ?? 0)}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', kDest))}</div>`;
 }

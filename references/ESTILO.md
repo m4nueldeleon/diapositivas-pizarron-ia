@@ -234,10 +234,12 @@ Foto a sangre solo con velo blanco o banda blanca; nunca foto suelta en rectáng
      cerrada (más chica y gris) sale hacia la siguiente con la ruta naciendo detrás, ~700 ms por tramo,
      y termina de dedo sobre la última tecla. En `pasos` es el comportamiento por omisión con `clic`
      (`arrastre: false` lo apaga).
-  3. El **sello** cae con golpe y un temblor.
+  3. El **sello** entra COMPLETO en el corte y se queda quieto: en la ráfaga e_sello [6:44.8 → 6:44.9] aparece entero de
+     un cuadro al siguiente, y los cuadros que siguen traen la misma caja y los mismos píxeles. El golpe con temblor solo
+     existe en `animacion: "suave"`.
   4. **Foco**: la lámina anterior queda al 20 % en video [ref_1040], 35 % en sala y encima aparece una frase manuscrita.
-- Los trazos a mano (subrayado, flechas, llaves, elipses, ✕) entran completos con su elemento, en el mismo cuadro
-  del corte [ráfagas k_underline 0:41.2, c_alcancia 1:44.5, f_flechas 7:30.1]. Solo crece la ruta punteada que
+- Los trazos a mano (subrayado, flechas, llaves, elipses, ✕) y el sello entran completos con su elemento, en el mismo
+  cuadro del corte [ráfagas k_underline 0:41.2, c_alcancia 1:44.5, e_sello 6:44.9, f_flechas 7:30.1]. Solo crece la ruta punteada que
   arrastra la mano [d_123 1:55.6-1:55.9]. El dibujado progresivo existe solo en modo `suave`.
 - El subrayado va bajo los descendentes: centro ≈ línea base + 0.2 em (ref_10, m_1060); arco suave hacia arriba
   ≤0.5 % del ancho y ≤0.06 em; nunca cruza g/p/q/y ni la caja de un hueco; afina la cola (m_1790).
