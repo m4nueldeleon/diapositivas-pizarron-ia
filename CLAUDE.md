@@ -322,3 +322,6 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   la tinta roja en 6 × 4 celdas (`rojoPNG`). En 9:16 una lista con llave compacta sus renglones (0.6× la letra) y QA cuenta la
   nota de la llave en la ocupación. `unirEnfasisCorto` baja la frase 9:16 hasta 84 px para no partir una marca corta.
   📚 es «material de estudio» (no «material» a secas).
+- R19, fidelidad: `RAFAGAS` mide 7 de 12 ráfagas (suma c_alcancia → r103, k_underline → r38 y g_partner → r628). Una lámina
+  `_solo_rafaga` (r103: el cuadro usa fotos propias) replica la secuencia y `comparar` no la empareja con su cuadro fijo.
+  La ✕ del arco tachado (`equis`, `data-clase="equis"`) mide 88 px con trazo de 13, como el video.

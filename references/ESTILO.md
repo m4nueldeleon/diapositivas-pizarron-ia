@@ -159,7 +159,7 @@ limpio:
 | **Subrayado rojo** | Línea delgada y un poco ondulada bajo la frase clave en negrita | La frase que es la tesis de la lámina. |
 | **Flecha roja recta** | Plumón con punta abierta en V | Proceso A → B: identificar → aliarte. |
 | **Flecha negra curva** | Gruesa (≈10 px), en arco, con punta abierta en V del mismo grosor que el trazo | Bifurcación o salto: 1 alianza → $2,000 / $50,000. Nace por fuera de cada extremo de la frase y baja en diagonal hacia fuera [c_0635]. |
-| **Arco con ✕** | Arco negro con una ✕ roja al centro | «Esto NO lleva a aquello»: tus ahorros ✕→ apostarlos. |
+| **Arco con ✕** | Arco negro con una ✕ roja al centro, de ~90 px y plumón grueso (~13 px) [c_alcancia 1:44.5] | «Esto NO lleva a aquello»: tus ahorros ✕→ apostarlos. |
 | **Flecha gris fina** | Curva delgada de 120-160 px que sale del borde y baja en gancho con la punta SOBRE la nota | Señalar una nota: «Son 500» [6:45]. |
 | **Llave roja** | Une dos cosas con una nota manuscrita abajo | Comparar dos valores: «Mismo trabajo». |
 | **Círculo o caja roja** | Óvalo o rectángulo redondeado alrededor de un dato | La cifra, el año de credibilidad, el precio, la palabra clave o un dato de una captura. |

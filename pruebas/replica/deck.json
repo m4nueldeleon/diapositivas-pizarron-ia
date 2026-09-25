@@ -207,6 +207,37 @@
    "total": 500,
    "anotacion": "That's 500",
    "sello": "A lot of skill"
+  },
+  {
+   "_cuadro": "0:38-0:41 «100% transparent» resaltado (ráfaga k_underline)",
+   "paso_ref": -1,
+   "id": "r38",
+   "tipo": "idea",
+   "texto": "Now, I'd like to be ==**100% transparent**== here.",
+   "tam_texto": "76px"
+  },
+  {
+   "_cuadro": "1:43-1:45 alcancía → arco tachado → tragamonedas (ráfaga c_alcancia; solo secuencia: el cuadro usa fotos propias)",
+   "paso_ref": -1,
+   "id": "r103",
+   "tipo": "flujo",
+   "flecha": "arco-negro",
+   "flechas": [
+    {
+     "tachada": true
+    }
+   ],
+   "nodos": [
+    {
+     "emoji": "🐷"
+    },
+    {
+     "emoji": "🎰"
+    }
+   ],
+   "emoji_tam": 420,
+   "separacion": 520,
+   "_solo_rafaga": true
   }
  ],
  "_nota": "Réplica versionada del video de referencia: cada lámina r<seg> se compara con ref_<seg>.jpg (fuera del repo, en pizarron-ref/replica). paso_ref: paso visible en el cuadro (desde 0; -1 = el último). Ver PROTOCOLO §4b."

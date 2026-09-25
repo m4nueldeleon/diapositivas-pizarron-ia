@@ -60,7 +60,10 @@ const replicas = prep.deck.laminas.filter(l => /^r\d+$/.test(String(l.id || ''))
 const sinCuadro = replicas.filter(l => !l._cuadro);
 if (replicas.length && sinCuadro.length === replicas.length) { console.error('✗ ninguna lámina r<seg> trae _cuadro: ¿no es pruebas/replica/deck.json?'); process.exit(1); }
 sinCuadro.forEach(l => console.warn(`⚠ ${l.id} sin _cuadro: ¿no es pruebas/replica?`));
-const { pares, sinRef, sinLamina } = emparejar(ids, fs.readdirSync(dirRef));
+// R19: una lámina `_solo_rafaga` replica una SECUENCIA (aparición y estabilidad), no su cuadro fijo: en r103 el video usa
+// fotos propias (alcancía con billetes, tragamonedas) que la skill no replica a propósito; su silueta mediría la foto.
+const soloRafaga = new Set(prep.deck.laminas.filter(l => l._solo_rafaga).map(l => l.id));
+const { pares, sinRef, sinLamina } = emparejar(ids.filter(id => !soloRafaga.has(id)), fs.readdirSync(dirRef).filter(f => !soloRafaga.has('r' + (f.match(/^ref_(\d+)\./) || [])[1])));
 sinRef.forEach(id => console.warn(`⚠ la lámina «${id}» no tiene referencia (ref_${id.slice(1)}.jpg)`));
 sinLamina.forEach(f => console.warn(`⚠ sobra la referencia ${f}: no hay lámina con id «r${f.match(/\d+/)[0]}»`));
 

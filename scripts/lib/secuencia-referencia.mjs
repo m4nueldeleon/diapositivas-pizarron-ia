@@ -12,6 +12,16 @@ export const RAFAGAS = [
   // R17: el sello entra completo en el corte (6:44.9) y no se mueve; se mide en su paso (el último de la lámina).
   {nombre:'e_sello',id:'r403',paso:-1,corte:16,fin:24,aparicion:true,
     regiones:{sello:[.06,.28,.76,.52]}},
+  // R19: el arco tachado y la tragamonedas entran juntos en el corte (1:44.5) y quedan quietos. La franja del arco evita
+  // la alcancía rosa, que el detector de rojo confundiría con tinta.
+  {nombre:'c_alcancia',id:'r103',paso:-1,corte:13,fin:24,aparicion:true,
+    regiones:{trazo:[.30,.06,.45,.16],maquina:[.55,.2,.4,.55]}},
+  // R19: el resaltado se sostiene 2.7 s sin moverse (0:38.5-0:41.1) hasta el corte seco a la lámina siguiente.
+  {nombre:'k_underline',id:'r38',paso:-1,corte:1,fin:22,aparicion:true,
+    regiones:{texto:[.1,.42,.8,.16]}},
+  // R19: los cuadrantes quedan inmóviles 1.8 s (10:28.0-10:29.8) hasta el corte a «1 Partnership».
+  {nombre:'g_partner',id:'r628',paso:-1,corte:1,fin:15,aparicion:true,
+    regiones:{texto:[0,.22,1,.12],texto2:[0,.74,1,.12]}},
 ];
 
 // Caja de tinta por región; la tinta roja se aísla para comprobar su corte.
@@ -88,6 +98,6 @@ export async function compararSecuencia({dir,page,medir,ids,salida}) {
       ruta:arrastre,trazos:cfg.regiones.trazo?{estado:'presencia y estabilidad medidas; plenitud del trazo requiere revisión visual',region:'trazo',presente_en_corte:!!aparicion?.trazo.referencia&&!!aparicion?.trazo.replica}:null,muestras});
   }
   const cubiertos=casos.filter(c=>c.muestras?.length);
-  return {estado:cubiertos.length?'medida-parcial':'sin-cobertura',fps:8,casos,cobertura:{aparicion:cubiertos.some(c=>c.aparicion),estabilidad:cubiertos.some(c=>c.muestras.length>1),cursor:cubiertos.some(c=>c.cursor),ruta:cubiertos.some(c=>c.ruta?.referencia_ms!=null&&c.ruta?.replica_ms!=null),trazos:cubiertos.some(c=>c.trazos)?'subrayado de r10 y sello de r403; flechas sin pareja en réplica':false},
+  return {estado:cubiertos.length?'medida-parcial':'sin-cobertura',fps:8,casos,cobertura:{aparicion:cubiertos.some(c=>c.aparicion),estabilidad:cubiertos.some(c=>c.muestras.length>1),cursor:cubiertos.some(c=>c.cursor),ruta:cubiertos.some(c=>c.ruta?.referencia_ms!=null&&c.ruta?.replica_ms!=null),trazos:cubiertos.some(c=>c.trazos)?'subrayado de r10, sello de r403 y arco tachado de r103':false},
     limite:'La ráfaga d_123 termina antes de completar la ruta. Presencia no certifica identidad del cursor; revisar capturas y métricas. No se acredita lo no cubierto.'};
 }

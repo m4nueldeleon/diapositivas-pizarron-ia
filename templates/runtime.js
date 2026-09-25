@@ -158,10 +158,12 @@
     t.setAttribute('font-family', 'Caveat'); t.setAttribute('font-weight', '600'); t.setAttribute('font-size', o.tam || 46);
     t.setAttribute('fill', tinta(svg, o.color)); t.dataset.p = o.p || 0; t.textContent = s; svg.appendChild(t);
   }
-  function equis(svg, M, r, p, tam = 22) {
-    const j = () => (r() - 0.5) * 4;
-    trazo(svg, `M${M[0] - tam + j()} ${M[1] - tam + j()} L${M[0] + tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 8, p, dur: 120, no: true });
-    trazo(svg, `M${M[0] + tam + j()} ${M[1] - tam + j()} L${M[0] - tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 8, p, dur: 120, no: true });
+  // R19 [ráfaga c_alcancia 1:44.5, ref_103]: la ✕ sobre el arco mide ~96 px a 1920 con trazo de ~15; la nuestra medía 44
+  // con 8 y se perdía sobre el arco.
+  function equis(svg, M, r, p, tam = 44) {
+    const j = () => (r() - 0.5) * 5;
+    trazo(svg, `M${M[0] - tam + j()} ${M[1] - tam + j()} L${M[0] + tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 13, p, dur: 120, no: true, clase: 'equis' });
+    trazo(svg, `M${M[0] + tam + j()} ${M[1] - tam + j()} L${M[0] - tam + j()} ${M[1] + tam + j()}`, { color: C.rojo, ancho: 13, p, dur: 120, no: true, clase: 'equis' });
   }
 
   // ---------- conexiones entre anclas ----------
@@ -390,7 +392,7 @@
     trazo(svg, cabezaV(Q, ang, len, abre, r), { color, ancho, p, cabeza: true, clase: 'punta' });
     const M = pts[Math.floor(pts.length / 2)];
     if (c.tachada) equis(svg, M, r, p);
-    if (c.etiqueta) texto(svg, M[0], M[1] - (c.tachada ? 44 : 26), c.etiqueta, { p });
+    if (c.etiqueta) texto(svg, M[0], M[1] - (c.tachada ? 70 : 26), c.etiqueta, { p });
   }
 
   // ---------- marcas sobre texto e imágenes ----------

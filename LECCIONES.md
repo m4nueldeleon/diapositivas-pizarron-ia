@@ -416,3 +416,10 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   respuesta. Cada arreglo se prueba contra las variantes del juez Y contra los decks aprobados (la regla estricta de modales
   rompió «La A. Puedes continuar», una decisión legítima, y se corrigió antes de publicar).
 - **Regla:** una guardia que suma toda la tinta roja no ve perder un subrayado junto a un emoji rojo grande: se mide por celdas.
+
+## 2026-09-25 · Medir cada ráfaga, sin fingir el cuadro (ronda 19, fidelidad)
+
+- **Regla:** la ✕ sobre un arco tachado se ve desde lejos: ~90 px y plumón grueso. La nuestra medía la mitad y se perdía.
+- **Regla:** cuando el cuadro del video usa fotos propias (la alcancía con billetes), la réplica mide su SECUENCIA (qué
+  entra en el corte, qué se queda quieto) y no se empareja con el cuadro fijo: la silueta mediría la foto, no el motor.
+- **Evidencia:** 7 de 12 ráfagas medidas, las 7 coinciden en aparición y estabilidad; encuadre 12/12 y elementos 10/12.
