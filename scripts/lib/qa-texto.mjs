@@ -58,7 +58,7 @@ export function revisarTexto(prep) {
   const clasificacion = clasificarAvisos(avisos,deck.avisos_aceptados);
   return informeSinMedir(errores, { evaluaciones: evaluacionesSeparadas({ deck, geometria: { errores: [], avisos: [] }, editorial: { errores, avisos: clasificacion.pendientes }, pendientes: porConfirmar, falta: revision.faltaParaFinal }), nota_provisional: notaQA({ errores, avisos:clasificacion.pendientes, porConfirmar }), avisos:clasificacion.pendientes, avisos_aceptados: clasificacion.aceptados,
     reglas_cliente:fichaReglasCliente(deck,avisos), glosario:glosarioDatos(crudo), datos_fuentes:prep.fuentes || {}, datos_por_confirmar:porConfirmar,
-    info: [...infoPersona(deck), infoConceptos(deck), ...clasificacion.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`)].filter(Boolean), iconos:revision.iconos, por_confirmar: porConfirmar, pendientes, ritmo: revision.ritmo, arco: revision.arco,
+    info: [...(revision.info || []), ...infoPersona(deck), infoConceptos(deck), ...clasificacion.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`)].filter(Boolean), iconos:revision.iconos, por_confirmar: porConfirmar, pendientes, ritmo: revision.ritmo, arco: revision.arco,
     evidencias: revision.evidencias, falta_para_final: revision.faltaParaFinal, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0),
     mapa_pasos: Object.fromEntries(deck.laminas.map((l, i) => [`${i + 1} · ${l.id || l.tipo}`, revela[i] || []])),
     laminas_dir: prep.evidencia.laminas_dir, invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, fecha: new Date().toISOString() });

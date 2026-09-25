@@ -348,7 +348,8 @@ Estas medidas se aplican después del encaje, no solo al CSS nominal:
 | Lista de ≤5 renglones, cada uno ≤10 palabras | 72–84 px en 16:9; bloque centrado | Letra <64 px a 1920 o alto <45% del útil |
 | Contraste de dos columnas cortas | Misma ocupación; título acompaña; nota debajo | Mismos pisos; ✅ bajo título rojo |
 | Chat normal 9:16 | Cada burbuja al 84% del ancho útil; avatar arriba si hace falta | Fuera de 82–86%; escala del deck >1.3× |
-| Caveat con contenido | x ≥75% de la principal | x por debajo de 75% |
+| Capa roja en Caveat (anotación, nota roja, rótulo de llave) | x ≥75% de la principal | x por debajo de 75% |
+| Nota GRIS secundaria (`nota`) | Su tamaño medido: 64 px (60 px bajo el mapa 1-2-3) [ref_115] | Nota gris <48 px efectivos |
 | Cita protagonista | x de texto principal (Figtree 84 px de referencia) | x por debajo de 100% |
 | Contenido 16:9 | ≥6% arriba y abajo | Contenido medido fuera del margen |
 | Consigna en vivo | 84 px; reloj de 360 px | Consigna <64 px a 1920 |
@@ -358,6 +359,12 @@ El alto de lista reserva todos sus pasos, aunque todavía no se vean. Un anclaje
 explícito conserva su intención. Un tamaño explícito se respeta y QA avisa si incumple.
 El encabezado gris crece con los renglones; el blanco restante se reparte alrededor del bloque.
 No agrandes primero las separaciones si todavía tienes letra pequeña.
+
+**La referencia manda sobre una regla de legibilidad (ronda 14).** La ronda 13 aplicó el piso de 75% a TODA letra
+Caveat y la nota gris secundaria creció hasta ~2 renglones; ref_115 la muestra pequeña, en un renglón bajo el titular, y
+la réplica bajó de 8/10 a 6/10 elementos. El piso queda solo para la capa roja y la cita protagonista; la nota gris, la
+tabla-marcador y los rótulos de gráfica conservan el tamaño medido. Antes de subir un piso, mide el cuadro del video que
+le corresponde (`comparar.mjs`): si lo contradice, gana el cuadro.
 
 La regla del chat se refiere a conversaciones normales, no al muro, al celular ilustrado ni a
 la tarjeta de prompt. Los mensajes largos usan el ancho antes de reducir la letra; la escala

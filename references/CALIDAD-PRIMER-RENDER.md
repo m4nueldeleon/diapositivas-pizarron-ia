@@ -135,3 +135,16 @@ aún no existe aquí. Una prueba aislada del motor externo no valida ese adaptad
 No presentes un comando de importación como probado si no produjo el archivo y
 se comprobó su contenido. No ejecutes comandos que cambien preferencias del
 programa de presentación bajo la suposición de que «solo-script» es lectura.
+
+## Ronda 14 · El preflight informa lo incierto y bloquea lo comprobado
+
+- Una anotación que repite la frase (misma raíz, sin consecuencia) es **aviso**; una de aporte incierto («Queda por
+  escrito» junto a un acuerdo) es **información** (`qa.json → info`): el autor decide, el preflight no obliga a
+  reescribir [juez r12].
+- La ocupación mínima del chat depende del número de mensajes (un mensaje breve no debe llenar 35% del alto).
+- Tope de renglones por burbuja (4 en 9:16, 3 en 16:9), objeción compuesta componente por componente,
+  demostración = entrada → transformación → salida, y anotaciones en renglones de 2+ palabras sin invadir el margen
+  lateral: los cuatro se miden antes del PNG.
+- Una captura de `prueba` en SVG con texto se mide como documento (cuerpo ≥ 44 px, descargos a la vista), igual que
+  un `objeto`.
+

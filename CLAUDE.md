@@ -237,3 +237,20 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   QA y preflight ejecutan la misma función; `saltosEscala` mide también chats separados.
 - `pruebas/r13-geometria.test.mjs`: regresiones positivas y negativas con Chromium y fixtures
   temporales autónomos. El historial del primer render permanece aunque cambie el motor.
+
+## Ronda 14 · La referencia manda, una regla por pieza
+
+- `templates/runtime-legibilidad.js → CAVEAT_CON_PISO`: el piso de altura de x es solo de la capa roja (`.anotacion`,
+  `.nota.roja`, rótulo de llave) y de la cita protagonista; la nota gris, la tabla-marcador y los rótulos de gráfica
+  conservan su tamaño medido. `medidas-r11.mjs` usa el mismo criterio (la nota gris solo avisa bajo 48 px).
+- `centrarNotasContraste` (antes y después de `encajar`): la nota de una llave de columnas se queda bajo su columna y
+  se acota al lienzo. En `runtime.js` la llave horizontal acota su pico entre los brazos y marca sus trazos
+  `data-clase="llave"` + `data-forma="horizontal"`; QA avisa llave plana o pico fuera.
+- `colocarAnotaciones` solo acepta posiciones con renglones de 2+ palabras (≤ 3 renglones); QA da error por renglones
+  mínimos o margen lateral (3%).
+- `scripts/lib/conversacion.mjs`: `demostracionChat` (entrada → transformación → salida) y `revisarComponentes`
+  (objeción compuesta, `POLITICA_<TEMA>` por confirmar). `reglas-arco.mjs → RANGO_REVELACION` es la única regla de
+  revelación; `pruebas/r14-documentos.test.mjs` la compara con SKILL, ARCOS, GUION y LAYOUTS.
+- `imagenes.mjs → capturaDocumento`: una captura SVG con texto de `prueba` se mide como documento.
+- Pruebas: `r14-editorial`, `r14-geometria`, `r14-documentos`. Réplica 8/10 (fallan r95 y r255).
+

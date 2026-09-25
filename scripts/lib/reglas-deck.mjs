@@ -1,3 +1,4 @@
+import { demostracionChat } from './conversacion.mjs';
 import { reglasEditoriales, integridadOferta } from './editorial.mjs';
 import { CAMPOS_RAIZ } from './contrato.mjs';
 import { reglaNoNegociable, validarAceptaciones } from './contrato-superficies.mjs';
@@ -641,12 +642,13 @@ export function hayCifraCredibilidad(deck, opciones = {}) {
 // Función de cada evidencia, separada de su origen y de la intención del autor.
 // No se infiere un resultado de una captura cuyo contenido no se puede leer.
 export function evidenciasDelDeck(deck, opciones = {}) {
-  const r = { muestra:[], demostracion:[], resultado:[], credencial:[], intencion_sin_evidencia:[] };
+  const r = { muestra:[], demostracion:[], resultado:[], credencial:[], intencion_sin_evidencia:[], conversacion:[] };
   deck.laminas.forEach((l,i)=>{
     const muestra = l.tipo==='prueba' && capturasDe(l).some(c=>c.plantilla||c.hueco||c.ejemplo||c.procedencia==='ejemplo');
-    const dialogo = l.tipo==='chat' && ['yo','otro'].every(de=>l.mensajes?.some(m=>m.de===de&&conTexto(m.texto)));
+    const dialogo = demostracionChat(l);
     const real=origenPrueba(l), credencial=credibilidadConfirmada(opciones.crudo||deck,opciones.crudo?.laminas?.[i]||l,opciones.credenciales||[]);
     if(muestra)r.muestra.push(i+1);
+    if(l.tipo==='chat'&&!dialogo)r.conversacion.push(i+1);
     if(dialogo || real && ['prueba','objeto'].includes(l.tipo))r.demostracion.push(i+1);
     const hipotetica = /^\s*(si|cuando|con|pongamos|supongamos)\b/.test(sinAcentos(plano(l.arriba || '')))
       || l.procedencia === 'ejemplo' || /\bejemplo\b/.test(sinAcentos(l.fuente || ''));
@@ -1337,10 +1339,11 @@ export function revisarDeck(deck, pasos, { dirDeck, crudo, marca, revela = [], c
   return {
     errores: partes.flatMap(p => p.errores),
     avisos: partes.flatMap(p => p.avisos),
+    info: partes.flatMap(p => p.info || []),
     duracion: partes[1].estimado,
     iconos: inventarioIconos(deck),
     ritmo: ritmo.ritmo,
-    porConfirmar: { ...(integridadOferta(deck).faltan.length ? { FICHA_OFERTA: { valor: '', laminas: [], motivo: 'Completa antes del guion: ' + integridadOferta(deck).faltan.join(', ') } } : {}), ...partes[0].porConfirmar, ...origen.porConfirmar, ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
+    porConfirmar: { ...(integridadOferta(deck).faltan.length ? { FICHA_OFERTA: { valor: '', laminas: [], motivo: 'Completa antes del guion: ' + integridadOferta(deck).faltan.join(', ') } } : {}), ...Object.assign({},...partes.map(p=>p.porConfirmar||{})), ...origen.porConfirmar, ...propia.porConfirmar, ...tasa.porConfirmar, ...promesa.porConfirmar, ...cierre.porConfirmar, ...Object.fromEntries(huecosDePrueba(deck).map(n => [`CAPTURA_${n}`, { valor: '', laminas: [n], pendiente: true,
       motivo: 'falta la captura real (o marca "plantilla": true si el espectador pone la suya)' }])) },
     faltaParaFinal: faltaParaFinal(deck, { crudo, credenciales }),
     prueba: PIEZAS_VENTA.includes(deck.pieza) ? pruebaDelDeck(deck) : undefined,

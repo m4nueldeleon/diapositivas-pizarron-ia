@@ -342,13 +342,18 @@
         // hasta el tramo horizontal y el pico baja otro ~5% hasta ~36 px sobre la nota. La altura sale del alto de la
         // lámina (el hueco lo reserva bifurcacion() en layouts-texto.mjs), no del hueco: antes medía ~65 px y se veía chata.
         const H = lam.offsetHeight, Wl = lam.offsetWidth;
-        const P = [A.cx, A.y + A.h + 24], Q = [B.cx, B.y + B.h + 24], M = [V.cx, V.y - 36];
+        const P = [A.cx, A.y + A.h + 24], Q = [B.cx, B.y + B.h + 24];
+        // R14: el pico queda ENTRE los brazos. Con la nota fuera de su grupo el pico caía afuera y la llave salía plana y
+        // torcida [r13, clase 28]; se acota al tramo entre puntas con aire para las dos curvas.
+        const izq = Math.min(P[0], Q[0]), der = Math.max(P[0], Q[0]), holgura = Math.min(120, (der - izq) / 3);
+        const M = [Math.min(der - holgura, Math.max(izq + holgura, V.cx)), V.y - 36];
         const y = Math.max(Math.max(P[1], Q[1]) + 40, M[1] - 0.05 * H), ab = Math.max(40, Math.min(90, (M[1] - y) * 1.2));
         const brazo = (O, s) => cubica(O, [O[0], y - 10], [O[0] + s * 0.06 * Wl, y], [M[0] - s * ab, y], 22)
           .concat(cubica([M[0] - s * ab, y], [M[0] - s * ab * 0.35, y], [M[0] - s * 6, M[1] - (M[1] - y) * 0.3], M, 8).slice(1));
         const iz = brazo(P, 1), de = brazo(Q, -1);
-        trazo(svg, suave(iz), { color: C.rojo, ancho: 5, p, dur: 420 });
-        trazo(svg, suave(de), { color: C.rojo, ancho: 5, p, dur: 420 });
+        const tIz = trazo(svg, suave(iz), { color: C.rojo, ancho: 5, p, dur: 420, clase: 'llave' });
+        const tDe = trazo(svg, suave(de), { color: C.rojo, ancho: 5, p, dur: 420, clase: 'llave' });
+        Object.assign(tIz.dataset, { forma: 'horizontal', brazo: 'izq', pico: M[0] }); Object.assign(tDe.dataset, { forma: 'horizontal', brazo: 'der', pico: M[0] });
         trazo(svg, cabezaV(P, -Math.PI / 2, 20, 0.45, r), { color: C.rojo, ancho: 5, p, cabeza: true });
         trazo(svg, cabezaV(Q, -Math.PI / 2, 20, 0.45, r), { color: C.rojo, ancho: 5, p, cabeza: true });
         return;
@@ -652,7 +657,10 @@
         const x = clamp(x0, m, W - m - w), y = clamp(y0, m, H - m - h), b = { x, y, w, h };
         const pisa = Math.max(cruce(b, C), ...obst.map(o => cruce(b, o)), 0) / (w * h || 1);
         const empuje = Math.hypot(x - x0, y - y0);
-        return { lado, x, y, ok: empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 };
+        // R14: una nota no se parte en renglones de una palabra («Evita / publicar / un error» contra el borde)
+        const renglones = rectsTexto(n, lam).length, pal = ((n.textContent || '').trim().match(/\S+/g) || []).length;
+        const legible = renglones <= 1 || (renglones <= 3 && pal / renglones >= 2);
+        return { lado, x, y, ok: legible && empuje <= 20 && pisa <= 0.04 && gapR(b, A0) >= 80, costo: pisa * 10 + empuje / 100 + (legible ? 0 : 5) };
       };
       let elegido = null;
       const base = Math.max(minimo, parseFloat(getComputedStyle(n).getPropertyValue('--tn')) || 54);
@@ -1083,8 +1091,9 @@
     lams.forEach(l => { try { ajustarCaveat(l); ajustarNotasLlave(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de llave (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
+    lams.forEach(l => { try { centrarNotasContraste(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de columna (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
-    lams.forEach(l => { try { respetarMargen(l); reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
+    lams.forEach(l => { try { centrarNotasContraste(l); respetarMargen(l); reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
     // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
     const esFoco = l => !!l.querySelector(':scope > .escena.clon');
     const capa = l => {

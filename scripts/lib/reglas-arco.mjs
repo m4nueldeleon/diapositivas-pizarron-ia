@@ -1,3 +1,4 @@
+import { revisarComponentes } from './conversacion.mjs';
 import { anotacionAporta, raicesTexto } from './editorial.mjs';
 // reglas-arco.mjs — reglas de QA del ARCO de la pieza, sobre el deck.json (sin navegador): el mapa 1-2-3 que vuelve,
 // la respuesta a una objeción, el «cómo» de un reel y las métricas del arco que qa.json expone (contrato de tiempo, la
@@ -71,6 +72,22 @@ export function reglasRespuestaObjecion(deck) {
   const avisos = [];
   if (!PIEZAS_OBJECION.includes(deck.pieza)) return { errores: [], avisos };
   const L = deck.laminas;
+  const porConfirmar = {};
+  L.forEach((l,i)=>{
+    const pregunta=esObjecion(l)?l.texto:(l.tipo==='chat'?(l.mensajes||[]).filter(m=>m.de==='otro'&&/\?/.test(m.texto)).map(m=>m.texto).join(' '):'');
+    if(!pregunta)return;
+    const respuestas=[];
+    for(let j=i;j<L.length;j++) {
+      if(j>i&&(esObjecion(L[j])||esOscura(L[j])||L[j].tipo==='boton'))break;
+      if(L[j].tipo==='chat')respuestas.push(...(L[j].mensajes||[]).filter(m=>m.de==='yo').map(m=>m.texto));
+      else if(j>i)respuestas.push(...textosVisibles(L[j]));
+    }
+    for(const f of revisarComponentes(pregunta,respuestas)) {
+      avisos.push(`${nombre(deck,i)}: componente «${f.tema}» sin respuesta explícita; política pendiente: declara el dato real y responde a cada condición`);
+      const clave='POLITICA_'+f.tema.toUpperCase();
+      porConfirmar[clave]={pendiente:true,motivo:'La mención no resuelve el componente '+f.tema,laminas:[...(porConfirmar[clave]?.laminas||[]),i+1]};
+    }
+  });
   L.forEach((l, i) => {
     if (!esObjecion(l)) return;
     const bloque = [];
@@ -90,7 +107,7 @@ export function reglasRespuestaObjecion(deck) {
     const n = (sinAcentos(plano(String(l.encabezado || ''))).match(/\d+/) || ['N'])[0];
     avisos.push(`${nombre(deck, i)}: la respuesta a la Objeción #${n} solo afirma; demuéstrala con \`flujo\`, \`chat\`, \`linea-tiempo\`, \`cuadrantes\`, \`prueba\` o \`cifra\` con fuente, y deja la \`idea\` de frase como remate después (GUION §2, tabla «objeción → respuesta»)`);
   });
-  return { errores: [], avisos };
+  return { errores: [], avisos, porConfirmar };
 }
 
 // ---------- el «cómo» de un reel (ARCOS §Reel) ----------
@@ -175,8 +192,10 @@ export function reglasContrato(deck, pasos) {
   return { errores: [], avisos };
 }
 
-// El VSL largo conserva más demostración, pero ambos reservan 40–45% para
-// explicar la oferta. Se mide TIEMPO real, no número de láminas ni % redondeado.
+// Una sola regla por pieza; pruebas/r14-documentos.test.mjs exige que SKILL, ARCOS, GUION y LAYOUTS digan lo mismo.
+export const RANGO_REVELACION = Object.freeze({ 'vsl-corto': Object.freeze([0.55, 0.60]), vsl: Object.freeze([0.75, 0.82]) });
+// VSL largo: revelación 36:16 / 44:55 = 80.74%, banda 75–82%.
+// El corto reserva 40–45% para explicar su oferta. Se mide TIEMPO real, no número de láminas ni % redondeado.
 export function reglasRevelacion(deck, pasos) {
   const avisos = [];
   if (!['vsl', 'vsl-corto'].includes(deck.pieza)) return { errores: [], avisos };
@@ -184,7 +203,8 @@ export function reglasRevelacion(deck, pasos) {
   if (i < 0 || dur <= 0) return { errores: [], avisos };
   const inicio = tiemposSecuenciales(deck, pasos).find(s => s.lamina === i)?.inicio;
   const proporcion = inicio / dur;
-  if (proporcion < 0.55 || proporcion > 0.6) avisos.push(`la revelación de ${deck.pieza} cae al ${(proporcion * 100).toFixed(1)}% de la duración: debe caer entre 55–60%; ajusta el arco antes de capturar (ARCOS.md)`);
+  const [min,max]=RANGO_REVELACION[deck.pieza==='vsl'?'vsl':'vsl-corto'];
+  if (proporcion < min || proporcion > max) avisos.push(`la revelación de ${deck.pieza} cae al ${(proporcion * 100).toFixed(1)}% de la duración: debe caer entre ${Math.round(min*100)}–${Math.round(max*100)}%; ajusta el arco antes de capturar (ARCOS.md)`);
   return { errores: [], avisos };
 }
 

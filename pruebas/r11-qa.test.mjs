@@ -28,16 +28,17 @@ async function abrirDeck(t, deck) {
   return sesion.page;
 }
 
-test('r11: revelación de ambos VSL en 55–60%, con tiempos y límites exactos', () => {
-  for (const pieza of ['vsl','vsl-corto']) {
-    const crear = dur => ({ pieza, laminas: [
-      { tipo:'idea', texto:'Antes', dur }, { tipo:'oscura', texto:'Oferta', dur:100-dur },
-    ] });
-    for (const n of [44,54.99,60.01,75]) assert.equal(reglasRevelacion(crear(n),[1,1]).avisos.length,1);
-    for (const n of [55,57,60]) assert.equal(reglasRevelacion(crear(n),[1,1]).avisos.length,0);
-    assert.match(reglasContrato(crear(44),[1,1]).avisos[0], /44.0%.*55–60%/);
-    assert.equal(reglasRevelacion({ ...crear(44), pieza:'propuesta' },[1,1]).avisos.length,0);
-  }
+test('r11/r14: revelación del vsl-corto en 55–60% y del vsl largo en 75–82% (la referencia revela en 36:16 de 44:55)', () => {
+  const crear = (pieza, dur) => ({ pieza, laminas: [
+    { tipo:'idea', texto:'Antes', dur }, { tipo:'oscura', texto:'Oferta', dur:100-dur },
+  ] });
+  for (const n of [44,54.99,60.01,75]) assert.equal(reglasRevelacion(crear('vsl-corto',n),[1,1]).avisos.length,1,`vsl-corto ${n}`);
+  for (const n of [55,57,60]) assert.equal(reglasRevelacion(crear('vsl-corto',n),[1,1]).avisos.length,0,`vsl-corto ${n}`);
+  assert.match(reglasContrato(crear('vsl-corto',44),[1,1]).avisos[0], /44.0%.*55–60%/);
+  for (const n of [44,60,74.99,82.01]) assert.equal(reglasRevelacion(crear('vsl',n),[1,1]).avisos.length,1,`vsl ${n}`);
+  for (const n of [75,80,82]) assert.equal(reglasRevelacion(crear('vsl',n),[1,1]).avisos.length,0,`vsl ${n}`);
+  assert.match(reglasContrato(crear('vsl',44),[1,1]).avisos[0], /44.0%.*75–82%/);
+  assert.equal(reglasRevelacion({ ...crear('vsl',44), pieza:'propuesta' },[1,1]).avisos.length,0);
 });
 
 test('r11: propuesta admite sustituto medible de GUION antes de inversión, sin inventar trayectoria', () => {

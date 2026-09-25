@@ -1,4 +1,5 @@
 // Revisión editorial: indicios comprobables, nunca una firma de calidad humana.
+import { demostracionChat } from './conversacion.mjs';
 import { plano } from './markup.mjs';
 
 const normal = x => plano(String(x || '')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -24,7 +25,7 @@ export function anotacionAporta(l, a) {
   const consecuencia = /\b(evit\w*|reduc\w*|permit\w*|impid\w*|ahorr\w*|pierd\w*|cuesta|porque|por eso|requiere|necesita|consume|pagado|costo)\b/;
   const contraste = /\b(sin|antes|despues|excepto|en vez|no es)\b/;
   const precision = /\b(hasta|desde|solo|cada|porcentaje|ano|primero|mientras|cuando|contigo|acompanamiento)\b|\d|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b/;
-  const veredicto = /\b(comprueb\w*|comprobad\w*|verific\w*|acept\w*|rechaz\w*|sirve|falla|suficiente|falta|sobra|funciona|listos|decide|elige|acuerda|copia|pide|delimitar)\b/;
+  const veredicto = /\b(comprueb\w*|comprobad\w*|verific\w*|acept\w*|rechaz\w*|sirve|falla|suficiente|falta|sobra|funciona|listos|decide|elige|acuerda|copia|pide|delimitar)\b|queda por escrito/;
   // Una atribución concreta o una cita literal precisa el referente de su ancla.
   const referente = /\bexperiencia del equipo\b/.test(t) || /[«»"]/.test(String(a.texto));
   const aporte = [consecuencia, contraste, precision, veredicto].some(r => r.test(t)) || referente;
@@ -34,7 +35,7 @@ export function anotacionAporta(l, a) {
 export function funcionRetorica(l) {
   const t = normal(contenido(l));
   if (l.tipo === 'camara') return 'practica';
-  if (l.tipo === 'chat' && l.mensajes?.some(m => m.de === 'yo') && l.mensajes?.some(m => m.de === 'otro')) return 'demostracion';
+  if (l.tipo === 'chat') return demostracionChat(l) ? 'demostracion' : 'conversacion';
   if (/^(define|elige|escribe|anota|revisa|manda|abre|fija|confirma|delimita)\b/.test(t)) return 'instruccion';
   if (/\?/.test(contenido(l))) return 'pregunta';
   if (/^(sin|no necesitas|evita)\b/.test(t)) return 'descarte';
@@ -98,11 +99,10 @@ function demostracionVisible(l, aprendizaje = '') {
   return (l.tipo === 'prueba' && l.capturas?.some(c => c.src && !c.hueco))
     || (l.tipo === 'objeto' && l.imagen)
     // Un recorrido concreto muestra entrada literal y respuesta observable. Una flecha no basta.
-    || (!archivo && !promesa && l.tipo === 'chat' && l.mensajes?.some(m => m.de === 'yo' && tokens(m.texto).length >= 3)
-      && l.mensajes?.some(m => m.de === 'otro' && tokens(m.texto).length >= 2));
+    || (!archivo && !promesa && demostracionChat(l));
 }
 export function reglasEditoriales(deck) {
-  const avisos = [], L = deck.laminas || [];
+  const avisos = [], info = [], L = deck.laminas || [];
   let racha = 0, anterior = null;
   L.forEach((l,i) => {
     const f = funcionRetorica(l); racha = f && f === anterior ? racha + 1 : 1; anterior = f;
@@ -117,14 +117,19 @@ export function reglasEditoriales(deck) {
     if (b.practico && !L.slice(inicio, fin + 1).some(l => demostracionVisible(l, b.aprendizaje))) avisos.push(`bloque ${b.desde}: falta demostración visible; muestra archivo, captura o conversación completa, no «Duda → Demostración → Comprobación»`);
   }
   L.forEach((l, i) => {
-    for (const a of l.anotaciones || []) if (a.texto && !anotacionAporta(l, a)) avisos.push(`lámina ${i + 1}: anotación redundante «${a.texto}»; añade consecuencia, contraste, precisión o veredicto`);
+    for (const a of l.anotaciones || []) if (a.texto && !anotacionAporta(l, a)) {
+      const base=new Set(raicesTexto(contenido(l))), raices=raicesTexto(a.texto);
+      const repetida=raices.length && raices.every(w=>base.has(w));
+      const vacia=/^(entrega|excelente|bueno|mejor|importante|correcto)$/.test(normal(a.texto));
+      (repetida||vacia?avisos:info).push(`lámina ${i+1}: anotación ${repetida||vacia?'redundante':'de aporte incierto'} «${a.texto}»; ${repetida||vacia?'añade consecuencia, contraste, precisión o veredicto':'revisión editorial informativa, no bloqueo'}`);
+    }
     const voces = Array.isArray(l.voz) ? l.voz : [l.voz];
     for (const v of voces.filter(Boolean)) {
       if (/\bpara (define|escribe|elige|anota|revisa|manda|abre)\b|\brevisa (escribe|define|elige|anota|manda)\b/i.test(v)) avisos.push(`lámina ${i + 1}: gramática de voz «${v}»; después de «para» usa infinitivo y separa instrucciones con puntuación`);
     }
     if (/contacto|escribirte|telefono/.test(normal(contenido(l))) && /🧭/.test(l.emoji || '')) avisos.push(`lámina ${i + 1}: contacto pide teléfono o mensaje; la brújula representa orientación`);
   });
-  return { errores: [], avisos };
+  return { errores: [], avisos, info };
 }
 
 export function evaluacionesSeparadas({ deck, geometria, editorial, pendientes = {}, falta = [], medido = false }) {

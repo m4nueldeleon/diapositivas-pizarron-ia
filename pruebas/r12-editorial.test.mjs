@@ -18,9 +18,12 @@ test('r12: intención de credibilidad y una fuente no convierten muestra vacía 
   assert.equal(hayCifraCredibilidad({...deck,laminas:[{...muestra,texto:'Plantilla para 20 clientes'},deck.laminas[1]]}),false);
 });
 
-test('r12: conversación muestra una demostración, no inventa resultado ni credencial',()=>{
-  const r=evidenciasDelDeck({laminas:[{tipo:'chat',mensajes:[{de:'otro',texto:'¿Qué recibo?'},{de:'yo',texto:'Una página con tus servicios.'}]}]});
+test('r12/r14: una demostración en chat (entrada concreta → salida utilizable) no inventa resultado ni credencial; pregunta y respuesta es conversación',()=>{
+  const r=evidenciasDelDeck({laminas:[{tipo:'chat',mensajes:[{de:'otro',texto:'Mi menú tiene 12 platillos y 3 precios viejos.'},{de:'yo',texto:'Te entrego la página con los 12 platillos y precios actualizados el viernes.'}]}]});
   assert.deepEqual(r.demostracion,[1]);assert.deepEqual(r.resultado,[]);assert.deepEqual(r.credencial,[]);
+  // juez r12: «¿Qué recibo?» / «Una página con tus servicios.» no transforma nada: es conversación
+  const c=evidenciasDelDeck({laminas:[{tipo:'chat',mensajes:[{de:'otro',texto:'¿Qué recibo?'},{de:'yo',texto:'Una página con tus servicios.'}]}]});
+  assert.deepEqual(c.demostracion,[]);assert.deepEqual(c.conversacion,[1]);
   assert.deepEqual(evidenciasDelDeck({laminas:[{tipo:'cifra',arriba:'Si ganas dos clientes',valor:'$20,000',fuente:'Ejemplo ilustrativo'}]}).resultado,[]);
 });
 

@@ -58,7 +58,7 @@ test('r13: toda burbuja vertical usa 82–86% útil y chat conserva escala entre
   const mal=await p.evaluate(()=>{const l=window.PZ.lams[0];l.querySelector('.burbuja').style.width='60%';return window.medidasR11(l);});
   assert.ok(mal.avisos.some(s=>/82–86%/.test(s)),JSON.stringify(mal));
 });
-test('r13: citas protagonistas y toda nota Caveat tienen ojo principal',async t=>{
+test('r13/r14: citas protagonistas con ojo principal; una nota Caveat diminuta avisa (la gris no se infla: referencia)',async t=>{
   const p=await pagina(t,[{tipo:'cita',emoji:'💬',texto:'«Nos preguntan lo mismo por mensaje»'},
     {tipo:'idea',texto:'Conserva el precio acordado',nota:'Menos alcance, otra propuesta'}]);if(!p)return;
   const q=await p.evaluate(()=>window.PZ.lams.map(l=>{const n=l.querySelector('.nota');const bien=window.medidasR11(l);n.style.fontSize='30px';return {bien,mal:window.medidasR11(l)};}));

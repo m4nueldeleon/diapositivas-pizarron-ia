@@ -54,6 +54,23 @@ export function medidasR11(lam) {
       if (palabras > 0 && palabras <= 8 && lineas.length > 2) avisos.push(`burbuja de ${palabras} palabras ocupa ${lineas.length} renglones (máximo 2): amplía la burbuja hasta 82–86% del ancho útil`);
     }
   }
+  // R14: una burbuja carga una unidad de sentido. Tope de renglones para CUALQUIER longitud (≤ 4 en 9:16, ≤ 3 en 16:9);
+  // un mensaje con varias ideas se parte en mensajes revelados por separado [juez r12: 8 renglones en un paso].
+  if (lam.dataset.tipo === 'chat') {
+    const tope = H > W ? 4 : 3;
+    for (const e of lienzo.querySelectorAll('.chat:not(.chat-muro) .burbuja')) {
+      if (!visible(e)) continue;
+      const n = window.lineasPalabras(e).length;
+      if (n > tope) avisos.push(`burbuja de ${n} renglones (tope ${tope} en ${H > W ? '9:16' : '16:9'}): divide el mensaje en varios mensajes revelados por separado, una idea por burbuja`);
+    }
+  }
+  for (const t of lam.querySelectorAll(':scope > .capa-mano path[data-clase="llave"][data-forma="horizontal"]')) {
+    if (!visible(t)) continue;
+    const bb = t.getBBox();
+    if (bb.height < 35) avisos.push(`llave plana (${bb.height.toFixed(0)} px de alto): reserva aire entre el grupo y su nota`);
+    const pico = +t.dataset.pico;
+    if (Number.isFinite(pico) && (pico < bb.x - 1 || pico > bb.x + bb.width + 1)) avisos.push('llave con pico fuera de sus brazos: la nota debe quedar bajo su propio grupo');
+  }
   // R13: ancho real de cada burbuja, no únicamente su contenedor.
   if (H > W && lam.dataset.tipo === 'chat') {
     const burbujas=[...lienzo.querySelectorAll('.chat:not(.chat-muro) > .msj > .burbuja')].filter(visible);
@@ -78,7 +95,15 @@ export function medidasR11(lam) {
   const ctx=document.createElement('canvas').getContext('2d');ctx.font='400 84px Figtree';
   const base=ctx.measureText('x').actualBoundingBoxAscent;
   const principal=window.alturaPrincipal(lam)||base;
-  const manuscritos=[...new Set(textos(lam).map(q=>q.el).filter(e=>/Caveat/i.test(getComputedStyle(e).fontFamily)))];
+  // R14: el piso de altura de x es de la capa roja y de la cita protagonista; la nota gris, la
+  // tabla-marcador y los rótulos de gráfica siguen el tamaño medido en la referencia.
+  const conPiso=e=>!!e.closest('.anotacion, .nota.roja, [data-a="llave-et"], [data-a="cita"]');
+  const enCaveat=[...new Set(textos(lam).map(q=>q.el).filter(e=>/Caveat/i.test(getComputedStyle(e).fontFamily)))];
+  const manuscritos=enCaveat.filter(conPiso);
+  for(const e of enCaveat.filter(e=>!conPiso(e)&&e.closest('.nota'))) {
+    const n=tam(e);
+    if(n<48)avisos.push(`nota gris en Caveat «${corto(e.textContent)}» de ${n.toFixed(1)} px a 1920 (mínimo 48 px; la referencia la mide en 64 px): reserva su espacio antes de encoger`);
+  }
   medidas.caveat_x=manuscritos.map(e=>{
     const protagonista=!!e.closest('[data-a="cita"]'), minimo=protagonista?1:.75;
     const referencia=protagonista?base:principal, x=window.alturaX(e,lam), proporcion=x/referencia;
@@ -149,6 +174,11 @@ export function medidasR11(lam) {
     medidas.anotaciones_x.push({texto:corto(e.textContent),x,principal,proporcion:principal ? x/principal : null});
     if(principal && x/principal < .75) errores.push(`anotación «${corto(e.textContent)}»: altura x ${(100*x/principal).toFixed(1)}% del texto principal (mínimo 75%); aumenta Caveat y reserva espacio antes de encajar`);
     if((e.dataset.llaveHasta || e.matches('.nota.roja')) && window.lineasPalabras(e).length>1) errores.push(`nota junto a llave «${corto(e.textContent)}» partida: mantenla en un renglón y reserva su anchura real`);
+    // R14: ni renglones de una palabra ni pegada al borde lateral [r13, clase 36: «Evita / publicar / un error»]
+    const lineas=window.lineasPalabras(e), pal=lineas.flat().length;
+    if(pal>=3 && lineas.length>1 && (lineas.length>3 || pal/lineas.length<2)) errores.push(`anotación «${corto(e.textContent)}» en renglones mínimos (${lineas.map(l=>l.length).join('/')} palabras): dale ancho para 1-3 renglones de 2+ palabras o muévela debajo`);
+    const bx=caja(e), mh=W*.03;
+    if(bx.x<mh-.5 || bx.x+bx.w>W-mh+.5) errores.push(`anotación «${corto(e.textContent)}» invade el margen horizontal (${(Math.min(bx.x,W-bx.x-bx.w)*a1920).toFixed(0)} px a 1920; mínimo ${(mh*a1920).toFixed(0)}): cámbiala de lado o debajo de su ancla`);
   }
   medidas.principal_x = window.alturaPrincipal(lam)*a1920;
   medidas.tipo = lam.dataset.tipo;

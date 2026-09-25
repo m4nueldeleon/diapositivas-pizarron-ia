@@ -517,7 +517,7 @@ const porLamina = await page.evaluate(([W, H, MARCA, CT, PISOS, palabraFuente, d
         const ocupa = (y1 - y0) / H;
         r.composicion_vertical = { ocupacion_pct: +(ocupa * 100).toFixed(1), centro_pct: +((y0 + y1) / (2 * H) * 100).toFixed(1) };
         // idea, cita, cifra, objeto y botón son un solo punto focal: centrados y grandes, no llenan el alto a propósito
-        if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara', 'boton'].includes(lam.dataset.tipo) && ocupa < 0.35) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande (≥ 35%)${['chat', 'rejilla', 'prueba'].includes(lam.dataset.tipo) ? '; sube tam_texto y usa encabezado_estilo:"frase"' : ''}`);
+        if (!['idea', 'cita', 'cifra', 'objeto', 'oscura', 'foco', 'camara', 'boton'].includes(lam.dataset.tipo) && ocupa < (lam.dataset.tipo==='chat' ? Math.min(.35, .12 + Math.max(0,lam.querySelectorAll('.msj,.chat-tarjeta').length-1)*.10) : .35)) AF(`el contenido ocupa ${Math.round(ocupa * 100)}% del alto; en 9:16 conviene más grande según su función y número de mensajes${['chat', 'rejilla', 'prueba'].includes(lam.dataset.tipo) ? '; sube tam_texto y usa encabezado_estilo:"frase"' : ''}`);
         if (zona) AF(`«${zona}» entra en la zona que tapan el caption y los botones de Reels (abajo 320 px, derecha 140 px)`);
       }
     }
@@ -968,7 +968,7 @@ const infoContraste = [
   enVivoInfo.length ? `contraste medido en vivo (fuera de la tabla de medir-emojis.mjs) en ${modoRender}: ${enVivoInfo.join(' ')}${CONTRASTE.pedido === 'auto' ? `; con emoji "auto", en ${modoRender === 'apple' ? 'fluent' : 'apple'} quedaron sin revisar` : ''}` : null,
   sinRevisar.length ? `no revisados (Apple solo se mide en macOS): ${sinRevisar.join(' ')}` : null,
 ];
-const info = [...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
+const info = [...(delDeck.info || []), ...infoPersona(deck), ...porLamina.flatMap(r => (r.info || []).map(x => `${nombre(r.i)}: ${x}`)), ...infoContraste, infoEmoji(crudo), infoFirma(crudo, { aplicada: firmaDe, rutaGlobal: rutaGlobal(), ficha: fichaMarca }), avisoFirma, ...infoDatosFicha, pruebaInfo, infoIconos(deck), infoConceptos(deck)].filter(Boolean);
 info.push(...revisionAvisos.aceptados.map(a => `excepción pedida por el cliente: ${a.aviso}; ${a.motivo}`));
 const evaluaciones = evaluacionesSeparadas({ deck, geometria, editorial: { errores: errores.filter(e => !geometria.errores.includes(e)), avisos: avis.filter(a => !geometria.avisos.includes(a)) }, pendientes: porConfirmar, falta, medido: true });
 const medicion = { evaluaciones, alcance_nota: 'cumplimiento automático; no calidad profesional', glosario: glosarioDatos(crudo), html_sha: prep.html_sha, medido: true, laminas_dir: prep.evidencia.laminas_dir, avisos_aceptados: revisionAvisos.aceptados, pendientes_por_paso: porLamina.filter(r => Object.keys(r.pendientes_pasos || {}).length).map(r => ({ lamina: r.i+1, datos: r.pendientes_pasos })), invalido: prep.evidencia.invalido, deck_sha: prep.evidencia.deck_sha, nota, estado, ...(borrador ? { nota_sin_tope: sinTope, listo_salvo_datos: listoSalvoDatos } : {}), avisos_n: avis.length, falta_para_final: falta, laminas: deck.laminas.length, pasos: pasos.reduce((a, b) => a + b, 0), duracion, ritmo: delDeck.ritmo, errores,

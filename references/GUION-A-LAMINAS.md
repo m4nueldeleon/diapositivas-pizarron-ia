@@ -351,7 +351,8 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
 - **El orden en un `vsl` o `vsl-corto`** (la referencia: objeciones 34:17-36:00 → revelación 36:16 → componentes y
   stack → resumen 42:29 → primer «click the button below» 43:36 → el mismo botón otra vez 44:31):
   1. objeción y su respuesta (beat 0);
-  2. revelación oscura (beat 4): en un `vsl-corto`, a más tardar al 60% (en un `vsl` largo va en el ~20-25% final);
+  2. revelación oscura (beat 4): en un `vsl-corto` entre el 55 y el 60% de la duración; en un `vsl` largo entre el 75 y el 82%
+     (el ~20% final, como la referencia: 36:16 de 44:55; ARCOS.md, «VSL corto»);
   3. qué incluye: componentes y `stack` (beats 5 y 7);
   4. prueba (beat 6);
   5. si hay precio a la vista, la garantía va, aunque sea {{GARANTIA_DIAS}} pendiente; si de verdad no hay garantía, `garantia: false` y una lámina de qué pasa si no funciona; sin precio público, ni precio ni garantía;
@@ -403,6 +404,12 @@ honesto (abajo, «Sin prueba real, en este orden»); nunca se inventa.
   familias explícitas de raíz (paga/pago/pagar, cambio/cambios, entrega/entregar/entregable).
   Aplica también a clase, tutorial, propuesta y reel. Coincidir en una palabra no prueba que
   resolviste la objeción: el autor verifica los cuatro eslabones mirando la respuesta sin audio.
+
+  **Objeción compuesta (ronda 14).** «¿Incluye las modificaciones y las devoluciones?» son DOS preguntas: cada
+  componente recibe su respuesta explícita (qué se incluye, qué se cotiza, si procede la devolución y bajo qué
+  condición). Mencionar el término no lo responde: «las devoluciones se acuerdan por escrito» deja la política abierta.
+  Si la política real no existe todavía, no la inventes: QA la deja como `POLITICA_<TEMA>` por confirmar y el deck
+  sigue en borrador hasta que el creador la dé.
 - **Sin prueba real, en este orden** (el beat 6 y el tramo de prueba de un vsl o webinar):
 
   | # | Sustituto | Diseño |

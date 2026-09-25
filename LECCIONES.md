@@ -311,3 +311,19 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Límite:** rehacer el render después de cambiar el motor también es un retoque. Un primer
   100 no acredita «sin retoques» si el HTML final cambió. Una oferta de ejemplo puede enseñar
   muestra y demostración; no permite inventar credenciales ni resultados para callar QA.
+
+## 2026-09-25 · La referencia manda sobre una regla de legibilidad (ronda 14)
+
+- **Error del orquestador:** la ronda 13 pidió «TODA letra Caveat con contenido ≥ 75% de la x principal». La nota gris
+  secundaria creció a dos renglones y la réplica cayó de 8/10 a 6/10 elementos (r10, r115). Acotar el piso a la capa roja
+  y a la cita protagonista devolvió el 8/10 sin tocar tolerancias.
+- **Regla:** antes de subir un piso de tamaño o de margen, corre `comparar.mjs` con la réplica. Si un cuadro del video
+  contradice la regla, gana el cuadro y la regla se acota a lo que el cuadro no cubre.
+- **Regla:** una sola regla de revelación por pieza. `vsl-corto` 55–60%; `vsl` largo 75–82% (la referencia revela en
+  36:16 de 44:55). La ronda 11 las había unificado en 55–60% y GUION seguía diciendo «~20-25% final»: el juez lo detectó.
+  `pruebas/r14-documentos.test.mjs` compara ahora los documentos contra `RANGO_REVELACION`.
+- **Regla:** una burbuja carga una idea (tope 4 renglones en 9:16, 3 en 16:9); una objeción compuesta se responde
+  componente por componente; una demostración muestra entrada, transformación y salida utilizable.
+- **Límite:** r95 (✕ delgada, 1.5% más abajo) y r255 (silueta de la fila de tachones) siguen fallando por elemento.
+  Mover el relleno de la lista anclada movió el bloque de forma no lineal: hay otra regla que la reacomoda. Queda como
+  pendiente medido, no como ajuste a ojo.

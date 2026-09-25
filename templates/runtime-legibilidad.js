@@ -12,13 +12,15 @@ function ampliarListas(lam) {
   const contraste = bloque.querySelector('.contraste');
   if(contraste)contraste.dataset.filaCorta='2';
   if (contraste && !vertical) {
-    // La nota de una llave larga vive debajo de las columnas: nunca obliga a
-    // reducir ambas columnas para caber en media pantalla.
-    contraste.querySelectorAll('.nota.roja').forEach(n => { bloque.appendChild(n); n.style.marginTop='140px'; });
+    // R14: la nota de la llave se queda bajo SU columna (su llave la señala desde ese grupo). Puede ser más ancha
+    // que la columna: va en un renglón, centrada en ella, y centrarNotasContraste() la acota al margen seguro.
+    contraste.querySelectorAll('.nota.roja').forEach(n => { Object.assign(n.style, { marginTop:'140px', whiteSpace:'nowrap', maxWidth:'none', width:'max-content', position:'relative', left:'50%', transform:'translateX(-50%)' }); });
     contraste.style.gap='100px';
   }
   if (!vertical) {
-    items.forEach(e => { const lista=e.closest('.lista'); if(!lista.dataset.tamExplicito)e.style.fontSize=(e.textContent.trim().length>30?72:84)+'px'; });
+    // R14: UN tamaño por lista (antes cada renglón elegía 72 u 84 y el largo salía más chico que sus vecinos [demo 2]).
+    listas.forEach(lista => { if (lista.dataset.tamExplicito) return; const propios=[...lista.children];
+      const t=propios.some(e=>e.textContent.trim().length>30)?72:84; propios.forEach(e=>e.style.fontSize=t+'px'); });
     listas.filter(l=>!l.dataset.gapExplicito).forEach(l => l.style.setProperty('--gap-lista', items.length<=3 ? '110px' : '76px'));
     bloque.querySelectorAll('.encabezado').forEach(e=>e.style.fontSize='64px');
     bloque.querySelectorAll('.contraste-titulo').forEach(e=>e.style.fontSize='84px');
@@ -35,14 +37,17 @@ function ampliarListas(lam) {
   }
 }
 
+// R14: la referencia manda. Solo la capa roja (anotación, nota roja, rótulo de llave) y la cita
+// protagonista tienen piso de altura de x; la nota GRIS secundaria, la tabla-marcador y los rótulos
+// de gráfica conservan el tamaño medido en el video (ref_115: nota gris de --t-nota bajo el titular).
+const CAVEAT_CON_PISO = '.anotacion, .nota.roja, [data-a="llave-et"], [data-a="cita"]';
 function ajustarCaveat(lam) {
   const ctx=document.createElement('canvas').getContext('2d');
   ctx.font="400 84px Figtree";
   const base=ctx.measureText('x').actualBoundingBoxAscent;
   const principal=alturaPrincipal(lam)||base;
-  const notas=[...lam.querySelectorAll('*')].filter(e=>e.textContent.trim() && /Caveat/i.test(getComputedStyle(e).fontFamily) && !/Caveat/i.test(getComputedStyle(e.parentElement).fontFamily));
+  const notas=[...lam.querySelectorAll(CAVEAT_CON_PISO)].filter(e=>e.textContent.trim() && /Caveat/i.test(getComputedStyle(e).fontFamily) && !e.closest('.escena.clon'));
   notas.forEach(e=>{
-    if(e.matches('.nota') && getComputedStyle(e).position==='absolute' && e.closest('.lz-calendario')) { e.style.maxWidth='500px'; e.style.left='40px'; e.style.textWrap='balance'; if(lam.offsetHeight>lam.offsetWidth){e.style.maxWidth='760px';} else {const cal=lam.querySelector('.calendario');cal.style.position='relative';cal.style.left='240px';} }
     const protagonista=e.dataset.a==='cita';
     const objetivo=protagonista?base:principal*.76;
     const actual=alturaX(e,lam), tam=parseFloat(getComputedStyle(e).fontSize);
@@ -93,4 +98,17 @@ function respetarMargen(lam) {
   const r=caja(bloque,lam),m=lam.offsetHeight*.06+1;
   const dy=r.y<m?m-r.y:r.y+r.h>lam.offsetHeight-m?lam.offsetHeight-m-r.y-r.h:0;
   if(dy){bloque.style.position='relative';bloque.style.top=((parseFloat(bloque.style.top)||0)+dy/(parseFloat(getComputedStyle(bloque).zoom)||1))+'px';}
+}
+
+// R14: la nota de una llave de columnas no se sale del lienzo: si su centro sobre la columna la empuja más allá del
+// margen, se corre lo justo hacia adentro (la llave apunta a su centro real y su pico se acota entre los brazos).
+function centrarNotasContraste(lam) {
+  // Corre ANTES de encajar (contra el relleno del lienzo: la nota no obliga a encoger las columnas) y después (margen).
+  const lz=lam.querySelector(':scope > .lienzo'), W=lam.offsetWidth;
+  const m=Math.max(W*.03, lz ? parseFloat(getComputedStyle(lz).paddingLeft)||0 : 0);
+  lam.querySelectorAll('.contraste .nota.roja').forEach(n=>{
+    const b=caja(n,lam), z=parseFloat(getComputedStyle(n.closest('.lienzo > *')||n).zoom)||1;
+    const dx=b.x<m?m-b.x:b.x+b.w>W-m?W-m-b.x-b.w:0;
+    if(dx) n.style.marginLeft=((parseFloat(n.style.marginLeft)||0)+dx/z)+'px';
+  });
 }

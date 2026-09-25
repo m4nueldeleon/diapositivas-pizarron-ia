@@ -174,6 +174,12 @@ Anclas `c0`/`c1` para columnas e `i0`… para ítems; `nota` añade el remate ma
 {"tipo":"lista","columnas":[{"titulo":"SÍ","tono":"v","vineta":"check","items":["Una tarea concreta","Una fecha"],"llave":"Un resultado observable"},{"titulo":"NO","tono":"r","vineta":"cruz","items":["Pedir todo junto","Dejarlo abierto"]}],"nota":"Empieza por una tarea"}
 ```
 
+
+**Llave en columnas (`columnas[j].llave`, ronda 14).** La llave abraza los renglones de SU columna y su nota roja va
+debajo de esa columna, en un renglón, centrada en ella (si se saldría del lienzo, se corre lo justo hacia adentro). El
+pico de la llave siempre cae entre sus dos brazos; con la nota fuera de su grupo la llave salía plana y torcida [r13].
+QA avisa una llave plana (< 35 px de alto) o con el pico fuera de sus brazos.
+
 ### Fuente de un dato o un estudio (`idea`, `lista`, `objeto`, `flujo`, `grafica`, `cifra`, `cita`, `rejilla`, `tabla`, `tarjetas`, `linea-tiempo`)
 `"fuente": "Antonio Damasio, «El error de Descartes» (1994)"` pinta al pie de la lámina una línea en sans gris de
 40 px (36 en 9:16), sin cursiva: **un solo estilo** para citar, «Autor, «obra», medio (año)» («Reich y Ruipérez-Valiente,
@@ -757,6 +763,14 @@ Cada bloque lleva `texto`, `sub` opcional y `tono`: `azul`, `verde` o `morado`. 
 Una respuesta real exige `fuente` con fecha, por ejemplo «Registro autorizado, 2026-09-24».
 Si el contenido es ilustrativo, usa `ejemplo: true`: lleva el sello visible EJEMPLO. Una respuesta
 sin esa marca y sin fuente fechada es error de QA.
+
+**Una burbuja, una idea (ronda 14).** Tope de renglones por burbuja para CUALQUIER longitud: 4 en 9:16 y 3 en 16:9.
+Un mensaje que trae varias ideas («incluye una revisión; las modificaciones se cotizan aparte; las devoluciones…») se
+parte en mensajes seguidos, cada uno en su paso: el espectador lee una unidad de sentido a la vez y la voz la dice
+junto con su burbuja. QA avisa por encima del tope. Para demostrar algo en un chat hace falta entrada concreta →
+transformación → salida utilizable («Mi menú tiene 12 platillos y 3 precios viejos» → «Te entrego la página con los 12
+platillos y precios actualizados el viernes»); un saludo, un eco o la promesa de mostrar algo es conversación, no
+demostración (`qa.json → evidencias.conversacion`).
 
 ```json
 {"tipo":"chat","mensajes":[{"de":"prompt","texto":"Resume el texto en tres tareas."},{"de":"prompt","texto":"Indica responsable y fecha."},{"de":"respuesta","remitente":"IA","texto":"Revisar, confirmar y enviar.","ejemplo":true}]}

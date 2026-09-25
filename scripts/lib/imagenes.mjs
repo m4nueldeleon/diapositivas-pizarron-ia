@@ -15,6 +15,16 @@ export function imagenRecortada(ctx, src, alto, rol = 'objeto') {
   return medible.replace('<img ', `<img data-recorte="${rol}"${documento ? ' data-documento-svg="1"' : ''} `);
 }
 
+// R14: una captura de prueba en SVG con texto también es un documento medible (el piso de 44 px del cuerpo y los
+// descargos a la vista valían solo para `objeto`; la muestra de un VSL en `prueba` salía a ~36 px [r13, VSL 8]).
+// `ruta` es lo que devolvió ctx.img (ya validada dentro de la carpeta del deck).
+export function capturaDocumento(ctx, ruta) {
+  if (!ruta || path.extname(ruta).toLowerCase() !== '.svg') return { src: ruta, attr: '' };
+  const xml = fs.readFileSync(path.join(ctx.dirSalida, ruta), 'utf8');
+  if (!/<text\b/i.test(xml)) return { src: ruta, attr: '' };
+  return { src: `data:image/svg+xml;base64,${Buffer.from(xml, 'utf8').toString('base64')}`, attr: ' data-documento-svg="1"' };
+}
+
 // Autocontenida para runtime y pruebas: nunca mide sombras; lee los píxeles del archivo original.
 export function revisarRecortes(raiz = document) {
   return [...raiz.querySelectorAll('img[data-recorte]')].map(img => {

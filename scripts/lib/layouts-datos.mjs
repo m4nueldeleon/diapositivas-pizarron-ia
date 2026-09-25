@@ -4,7 +4,7 @@ import { posicionesTiempo } from './reglas-marcas.mjs';
 // layouts-datos.mjs — tabla a mano, gráficas, línea de tiempo, medidor, opciones, rejilla, prueba, chat,
 // reparto, calendario, botón y círculos.
 import { marcar, escapar, texto, nota, fuente, pasoDe, PERSONA, PIN, CURSOR_MANO, estrellas, rotuloProcedencia, imagenConHueco } from './comun.mjs';
-import { imagenRecortada } from './imagenes.mjs';
+import { imagenRecortada, capturaDocumento } from './imagenes.mjs';
 import { unirGuiones, plano, palabras } from './markup.mjs';
 
 const COLOR = { v: 'var(--verde)', r: 'var(--rojo)', n: 'var(--naranja)', g: 'var(--gris)', a: 'var(--azul)', k: 'var(--tinta)' };
@@ -506,7 +506,8 @@ export function prueba(l, ctx) {
         c.circulo ? ` data-circulo-img="${c.circulo.join(',')}"` : '',
         c.tachar ? ` data-tachon-img="${escapar(JSON.stringify(c.tachar))}"` : '',
       ].join('');
-      dentro = `<img src="${ctx.img(c.src)}" alt=""${extra} style="${Number.isFinite(c.alto) ? `max-height:${c.alto}px` : ''}">`;
+      const doc = capturaDocumento(ctx, ctx.img(c.src));
+      dentro = `<img src="${doc.src}" alt=""${doc.attr}${extra} style="${Number.isFinite(c.alto) ? `max-height:${c.alto}px` : ''}">`;
     }
     const fuente = c.ejemplo !== true && typeof c.fuente === 'string' && c.fuente.trim() ? `<div class="fuente">${escapar(c.fuente)}</div>` : '';
     return `<div class="captura"${k}${aCap} style="${giro}">${l.variante === 'pantallas' ? '<div class="barra-ventana" aria-hidden="true"><i></i><i></i><i></i></div>' : ''}${dentro}${aCirc}${fuente}${rotuloProcedencia(c.procedencia)}</div>`;
