@@ -43,7 +43,8 @@ for (const nombre of fs.readdirSync(APROBADOS).filter(n => fs.existsSync(path.jo
     if (ACTUALIZAR) {
       const nuevo = { nota: Math.max(esperado.nota, qa.nota), borrador: !!esperado.borrador,
         avisos: [...new Set(qa.avisos.map(normalizarAviso))].sort(), geometria: foto, hashes: { plataforma, png: hashes, rojo } };
-      fs.writeFileSync(archivoEsperado, JSON.stringify(nuevo, null, 1) + '\n');
+      // las listas de números (tinta roja por celda) van en un renglón: la foto se lee en un diff
+      fs.writeFileSync(archivoEsperado, JSON.stringify(nuevo, null, 1).replace(/\[\s+([\d,\s]+?)\s+\]/g, (_, x) => `[${x.replace(/\s+/g, '')}]`) + '\n');
       t.diagnostic(`${nombre}: esperado.json actualizado (${Object.keys(hashes).length} PNG)`);
       return;
     }
