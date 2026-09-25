@@ -196,7 +196,7 @@ export function alturaX(el, lam) {
   return (m.actualBoundingBoxAscent+m.actualBoundingBoxDescent)*z;
 }
 export function alturaPrincipal(lam) {
-  const selector='.t,.item,.etiqueta,.rotulo-paso,.burbuja,.cifra,.b-texto';
+  const selector='.t,.item,.etiqueta,.rotulo-paso,.burbuja,.cifra,.b-texto,.tabla td,.tabla th,svg text:not(.t-mano)';
   const elementos=[...lam.querySelectorAll(selector)].filter(e=>!e.closest('.escena.clon,.anotacion,.firma') && !e.querySelector(selector));
   return Math.max(0,...elementos.map(e=>alturaX(e,lam)));
 }

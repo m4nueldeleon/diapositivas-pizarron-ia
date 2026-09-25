@@ -23,7 +23,7 @@ export function listaContraste(l, ctx) {
   const total = columnas.reduce((n,c) => n+(porColumna ? 1 : c.items.length)+(c.llave ? 1 : 0),0);
   const html = columnas.map((c,j) => {
     const filas = c.items.map((item,i) => {
-      const o = typeof item === 'string' ? {texto:item} : item, e = o.emoji || (c.vineta === 'cruz' ? '❌' : '✅');
+      const o = typeof item === 'string' ? {texto:item} : item, e = o.emoji || (c.vineta === 'cruz' || (c.tono || (j ? 'r' : 'v')) === 'r' ? '❌' : '✅');
       return `<div class="item"${ctx.P(offsets[j]+(porColumna ? 0 : i))}${ctx.A('i'+(indices[j]+i))}>${ctx.em.html(e,'1.12em')}<span>${marcar(o.texto)}</span></div>`;
     }).join('');
     const k = offsets[j]+(porColumna ? 1 : c.items.length);

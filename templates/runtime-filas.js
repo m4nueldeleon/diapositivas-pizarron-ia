@@ -3,7 +3,7 @@
 function ampliarFilas(lam) {
   if (lam.offsetWidth < lam.offsetHeight) return;
   const tipos = ['pasos', 'flujo', 'bifurcacion', 'opciones', 'rejilla', 'lista', 'circulos'];
-  if (!tipos.includes(lam.dataset.tipo)) return;
+  if (!tipos.includes(lam.dataset.tipo) || lam.dataset.tipo === 'lista') return;
   const lz = lam.querySelector(':scope > .lienzo');
   if (lam.dataset.tipo === 'opciones' && lz?.children.length > 1) {
     const hijos = [...lz.children], envoltura = document.createElement('div');
@@ -30,10 +30,11 @@ function ampliarFilas(lam) {
   });
   // Las teclas y el mapa ya están calibrados; un flujo sin flechas heredaba 120 px.
   if (['flujo', 'bifurcacion'].includes(lam.dataset.tipo)) {
-    fila.querySelectorAll('.emo').forEach(e => {
+    (lam.dataset.tipo==='bifurcacion'?bloque:fila).querySelectorAll('.emo').forEach(e => {
       if (!e.closest('.insignia') && e.offsetWidth < 210) e.style.setProperty('--s', '210px');
     });
   }
+  if(lam.dataset.tipo==='bifurcacion') { fila.style.marginTop='40px'; bloque.querySelectorAll('.nodo .emo').forEach(e=>e.style.setProperty('--s',e.closest('.fila')?'180px':'200px')); bloque.querySelectorAll('.etiqueta').forEach(e=>e.style.fontSize='84px'); bloque.querySelectorAll('.nota.roja').forEach(e=>e.style.marginTop='200px'); }
   const s = escala(lam), cajas = nodos.map(e => e.getBoundingClientRect());
   const anchoTinta = (Math.max(...cajas.map(r => r.right)) - Math.min(...cajas.map(r => r.left))) / s;
   const b = bloque.getBoundingClientRect();

@@ -291,3 +291,23 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
 - **Cómo se comprobó**: decks nuevos antes y después, capturas dentro de Codex, hojas finales y de pasos abiertas, pruebas de regresión vistas fallar antes del arreglo y réplica medida contra sus cuadros.
 
 - **Cierre adicional de la ronda 9**: una lista de 20 palabras con tres viñetas numeradas suma 23 visibles. El preflight ahora cuenta las listas simples con el mismo criterio; la explicación se conserva en voz y el texto se comprime. Esto se encontró después del primer render de una clase: su primera nota no se reemplaza por la corregida.
+
+## 2026-09-25 · El 100 no detectaba letra pequeña con mucho blanco (ronda 13)
+
+- **Regla:** una lista de hasta cinco renglones cortos crece antes de encajar. En horizontal,
+  objetivo de 72–84 px, piso QA de 64 y bloque de al menos 45% del alto útil. El contraste
+  comparte la regla, incluido su encabezado; la llave larga ocupa el ancho del conjunto.
+- **Regla:** la burbuja vertical normal ocupa 82–86% del ancho útil. El avatar puede subir
+  encima de un mensaje largo; no se roba ese ancho al texto. La escala entre chats del mismo
+  deck no varía más de 1.3×. Medir el contenedor del chat no basta.
+- **Regla:** Caveat se mide por altura de x, no por tamaño nominal: 75% de la principal;
+  la cita protagonista alcanza la principal. El reloj cede espacio a la consigna de 84 px.
+- **Regla:** el borde superior/inferior del contenido de 16:9 conserva al menos 6%. La nota
+  puede usar más ancho antes de empujar las burbujas. No se suma margen a costa de encoger
+  otra vez toda la composición. Una columna roja no recibe una marca verde por omisión.
+- **Evidencia:** el cuadro de lista tachada ocupa 48.3% del alto; sus márgenes de tinta son
+  26.4% arriba y 25.3% abajo. En diez cuadros de réplica el menor margen superior es 6.02%.
+  La firma de la esquina queda fuera de esta medición de tinta.
+- **Límite:** rehacer el render después de cambiar el motor también es un retoque. Un primer
+  100 no acredita «sin retoques» si el HTML final cambió. Una oferta de ejemplo puede enseñar
+  muestra y demostración; no permite inventar credenciales ni resultados para callar QA.

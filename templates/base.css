@@ -822,3 +822,24 @@ body.sala .objeto-logos img { height: 52px !important; }
 .lamina:not(.f-vertical) .lz-lista[data-anclar="arriba"] .encabezado { margin-bottom:100px; }
 /* La frase protagonista usa un plumón de 6 px [ref_10], legible al reducir. */
 .lamina:has(.lz-idea) .capa-mano path[data-clase="subrayado"] { stroke-width:6px; }
+
+/* R13: 84% del ancho útil para cada burbuja. En mensajes largos el avatar
+   pasa encima y deja ancho real al texto antes de reducir su letra. */
+.f-vertical .lienzo.lz-chat { padding-left:30px; padding-right:30px; }
+.f-vertical .lienzo.lz-chat:has(.chat-tarjeta) { padding-left:90px; padding-right:90px; }
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .burbuja { width:84%; max-width:84%; }
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .msj {
+  width:100%; position:relative; display:flex; flex-direction:column;
+  align-items:center; padding-top:151px; gap:0;
+}
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .yo-av,
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .otro-av {
+  width:var(--av,135px); flex:none; position:absolute; top:0;
+}
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .yo-av { right:8%; }
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .otro-av { left:8%; }
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .msj:not(.msj-ancho) {
+  flex-direction:row; align-items:flex-end; padding-top:0; gap:16px;
+}
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .msj:not(.msj-ancho) .yo-av,
+.f-vertical .lz-chat > .pila > .chat:not(.chat-muro) .msj:not(.msj-ancho) .otro-av { position:static; }

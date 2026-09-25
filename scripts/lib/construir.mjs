@@ -290,7 +290,7 @@ export function construirHTML({ deck: original, dirDeck, dirSalida, dirSkill }) 
     .replace('/*@@RECORTES@@*/', () => revisarRecortes.toString())
     .replace('/*@@DOCUMENTOS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-documentos.js'), 'utf8'))
     .replace('/*@@EMOJIS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-emojis.js'), 'utf8'))
-    .replace('/*@@FILAS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-filas.js'), 'utf8'))
+    .replace('/*@@FILAS@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-filas.js'), 'utf8') + '\n' + fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-legibilidad.js'), 'utf8'))
     .replace('/*@@SELLO@@*/', () => fs.readFileSync(path.join(dirSkill, 'templates', 'runtime-sello.js'), 'utf8'));
   const presentador = fs.readFileSync(path.join(dirSkill, 'templates', 'presentador.js'), 'utf8');
   const vars = `:root{--W:${F.W}px;--H:${F.H}px;--margen-v:${F.mv}px;--margen-h:${F.mh}px;--ancho-texto:${F.at}px;--grano:${GRANO};--grano-suave:${GRANO_SUAVE}}`;

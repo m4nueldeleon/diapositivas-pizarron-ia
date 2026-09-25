@@ -54,6 +54,51 @@ export function medidasR11(lam) {
       if (palabras > 0 && palabras <= 8 && lineas.length > 2) avisos.push(`burbuja de ${palabras} palabras ocupa ${lineas.length} renglones (máximo 2): amplía la burbuja hasta 82–86% del ancho útil`);
     }
   }
+  // R13: ancho real de cada burbuja, no únicamente su contenedor.
+  if (H > W && lam.dataset.tipo === 'chat') {
+    const burbujas=[...lienzo.querySelectorAll('.chat:not(.chat-muro) > .msj > .burbuja')].filter(visible);
+    medidas.burbujas_ancho_pct=burbujas.map(e=>caja(e).w/util*100);
+    medidas.chat_letras=burbujas.map(tam);
+    if(medidas.burbujas_ancho_pct.some(n=>n<82||n>86)) avisos.push('burbuja 9:16 fuera de 82–86% del ancho útil: amplía su ancho antes de reducir la letra');
+  }
+  if (lam.dataset.tipo==='lista') {
+    const listas=[...lienzo.querySelectorAll('.lista')];
+    const items=listas.flatMap(l=>[...l.children]);
+    if(listas.length && listas.every(l=>l.children.length<=5) && items.every(e=>e.textContent.trim().split(/\s+/).length<=10)) {
+      const cs=getComputedStyle(lienzo), alto=H-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+      medidas.lista_letra_px1920=Math.min(...items.map(tam));
+      medidas.lista_alto_util_pct=caja(lienzo.firstElementChild).h/alto*100;
+      if(medidas.lista_letra_px1920<64)avisos.push(`lista corta: renglón de ${medidas.lista_letra_px1920.toFixed(1)} px (mínimo 64 px a 1920); aumenta la letra antes de encoger`);
+      if(medidas.lista_alto_util_pct<45)avisos.push(`lista corta: bloque ocupa ${medidas.lista_alto_util_pct.toFixed(1)}% del alto útil (mínimo 45%); aumenta letra y separación, centrando el conjunto`);
+    }
+    for(const col of lienzo.querySelectorAll('.contraste-col')) {
+      if(col.querySelector('.contraste-titulo.tono-r') && [...col.querySelectorAll('.emo')].some(e=>visible(e)&&decodeURIComponent(e.dataset.e||'')==='✅'))avisos.push('columna roja con ✅ verde: usa una cruz o marca neutra acorde con la exclusión o cambio');
+    }
+  }
+  const ctx=document.createElement('canvas').getContext('2d');ctx.font='400 84px Figtree';
+  const base=ctx.measureText('x').actualBoundingBoxAscent;
+  const principal=window.alturaPrincipal(lam)||base;
+  const manuscritos=[...new Set(textos(lam).map(q=>q.el).filter(e=>/Caveat/i.test(getComputedStyle(e).fontFamily)))];
+  medidas.caveat_x=manuscritos.map(e=>{
+    const protagonista=!!e.closest('[data-a="cita"]'), minimo=protagonista?1:.75;
+    const referencia=protagonista?base:principal, x=window.alturaX(e,lam), proporcion=x/referencia;
+    if(proporcion<minimo)avisos.push(`Caveat «${corto(e.textContent)}»: altura x ${(100*proporcion).toFixed(1)}% (mínimo ${minimo*100}% del texto principal); amplía el contenido manuscrito`);
+    return {texto:corto(e.textContent),proporcion,minimo,x,principal:referencia};
+  });
+  if(lam.dataset.vivo) {
+    const items=[...lam.querySelectorAll('.vivo-items li,.vivo-consigna')].filter(visible);
+    medidas.vivo_letra_px1920=items.length?Math.min(...items.map(tam)):null;
+    if(items.length&&medidas.vivo_letra_px1920<64)avisos.push('consigna en vivo menor de 64 px a 1920: reduce el reloj antes que la instrucción');
+  }
+  if(W>H) {
+    const elems=[...lam.querySelectorAll('.t,.item,.nota,.burbuja,.emo,.encabezado,.etiqueta,.anotacion,.vivo-consigna,.vivo-items,.vivo-reloj')]
+      .filter(e=>visible(e)&&!e.closest('.firma,.escena.clon,.sangre,.cuadrantes'));
+    const b=union(elems);
+    if(b) {
+      medidas.margen_superior_pct=b.y/H*100;medidas.margen_inferior_pct=(H-b.y-b.h)/H*100;
+      if(b.y<H*.06-.5||b.y+b.h>H*.94+.5)avisos.push('contenido fuera del margen seguro de 6% arriba/abajo: reubica la anotación o reduce su espacio antes de acercar el bloque al borde');
+    }
+  }
   const lista = lienzo.querySelector('.lista');
   if (lam.dataset.tipo === 'lista' && lista && lista.querySelectorAll(':scope > .item').length <= 5) {
     // El contenedor reserva TODOS los pasos: una lista no salta mientras se revela.
@@ -86,6 +131,14 @@ export function medidasR11(lam) {
       medidas.fila_rotulo_px1920 = minimo == null ? null : +minimo.toFixed(1);
       if (minimo != null && minimo < 60) avisos.push(`fila corta: rótulo de ${minimo.toFixed(1)} px a 1920 (mínimo 60 px): aumenta la tipografía antes de encoger el conjunto`);
     }
+  }
+  if(lam.dataset.tipo==='bifurcacion') {
+    const origen=lienzo.querySelector('.pila > .nodo .emo');
+    if(origen && visible(origen)) {
+      medidas.bifurcacion_origen_px1920=caja(origen).w*a1920;
+      if(medidas.bifurcacion_origen_px1920<170)avisos.push('bifurcación: origen menor de 170 px a 1920; amplía el ícono antes de encoger');
+    }
+    if(medidas.fila_rotulo_px1920!=null && medidas.fila_rotulo_px1920<64)avisos.push('bifurcación: rótulos menores de 64 px a 1920; aumenta la letra como texto principal');
   }
   for (const e of lam.querySelectorAll('.anotacion, .nota.roja')) {
     if (!visible(e)) continue;
@@ -143,5 +196,7 @@ export function saltosEscala(medidas) {
     const menor=a.principal_x<b.principal_x?a:b,ratio=Math.max(a.principal_x,b.principal_x)/menor.principal_x;
     if(diagramas.has(menor.tipo)&&ratio>1.8) avisos.push(`salto de escala entre láminas ${i} y ${i+1}: texto principal ${ratio.toFixed(2)}×; amplía el diagrama o revisa la jerarquía contigua`);
   }
+  const chats=medidas.flatMap(m=>m?.chat_letras||[]);
+  if(chats.length && Math.max(...chats)/Math.min(...chats)>1.3+1e-6)avisos.push('chat: diferencia de escala mayor de 1.3× entre láminas; conserva una escala común en el deck');
   return avisos;
 }

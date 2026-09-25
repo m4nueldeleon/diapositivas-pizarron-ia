@@ -338,3 +338,33 @@ QA avisa runs `{v:…}` sin cifra, moneda, porcentaje, sí/ok/✓ o verbo de res
 lograr). `{r:…}` pide una cifra negativa, no/✕, pérdida explícita o señal conectada (flecha, llave o subrayado).
 También avisa cuatro palabras largas consecutivas en mayúsculas en idea/lista/cifra/pasos. Sellos, secciones,
 stack, calendario, huecos, siglas cortas o con dígitos quedan fuera. Son avisos de lectura, no errores.
+
+### Legibilidad y ocupación verificable (ronda 13)
+
+Estas medidas se aplican después del encaje, no solo al CSS nominal:
+
+| Composición | Objetivo del motor | Aviso de QA |
+|---|---|---|
+| Lista de ≤5 renglones, cada uno ≤10 palabras | 72–84 px en 16:9; bloque centrado | Letra <64 px a 1920 o alto <45% del útil |
+| Contraste de dos columnas cortas | Misma ocupación; título acompaña; nota debajo | Mismos pisos; ✅ bajo título rojo |
+| Chat normal 9:16 | Cada burbuja al 84% del ancho útil; avatar arriba si hace falta | Fuera de 82–86%; escala del deck >1.3× |
+| Caveat con contenido | x ≥75% de la principal | x por debajo de 75% |
+| Cita protagonista | x de texto principal (Figtree 84 px de referencia) | x por debajo de 100% |
+| Contenido 16:9 | ≥6% arriba y abajo | Contenido medido fuera del margen |
+| Consigna en vivo | 84 px; reloj de 360 px | Consigna <64 px a 1920 |
+| Bifurcación horizontal | Origen de 200 px, rótulos de 84 px antes de encajar | Origen <170 px o rótulo <64 px efectivos |
+
+El alto de lista reserva todos sus pasos, aunque todavía no se vean. Un anclaje superior
+explícito conserva su intención. Un tamaño explícito se respeta y QA avisa si incumple.
+El encabezado gris crece con los renglones; el blanco restante se reparte alrededor del bloque.
+No agrandes primero las separaciones si todavía tienes letra pequeña.
+
+La regla del chat se refiere a conversaciones normales, no al muro, al celular ilustrado ni a
+la tarjeta de prompt. Los mensajes largos usan el ancho antes de reducir la letra; la escala
+común se calcula entre las conversaciones del deck completo, aunque haya otras escenas en medio.
+
+Referencia medida por caja de tinta, sin firma de esquina: lista tachada `m_256`, 48.33% de
+alto y márgenes 26.39/25.28%; `ref_95` (primer paso), 13.89/63.98%; `ref_1760`, 6.02/30.56%.
+El mínimo de 6% protege el contenido; los fondos a sangre y la firma tienen sus zonas propias.
+El QA automático de margen cubre texto principal, listas, notas, burbujas, emojis, rótulos,
+anotaciones y tramo en vivo. No sustituye revisar imágenes, tablas y trazos en las hojas.

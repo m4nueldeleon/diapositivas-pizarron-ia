@@ -611,7 +611,7 @@
   // pisa y un aviso. Antes el borde la regresaba ENCIMA de la tarjeta y su gancho tachaba la propia nota [r5, muro 14].
   const OBST_ANOT = '.emo, img, .t, .t-remate, .llamada-tarjeta, .meses, .nota, .item, .etiqueta, .valor, .encabezado, .cifra, .etiqueta-chica, .tarjeta, .opcion, .burbuja, .titulo-marca, .fuente, .captura, .post, .sello, .tabla, .rejilla, .bento, .cuadro, .grafica svg, .dia';
   function colocarAnotaciones(lam) {
-    const W = lam.offsetWidth, H = lam.offsetHeight, m = 40, aire = 130;
+    const W = lam.offsetWidth, H = lam.offsetHeight, m = Math.max(40, H * .06), aire = 130;
     const cruce = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
     const gapR = (a, b) => Math.hypot(Math.max(0, a.x - (b.x + b.w), b.x - (a.x + a.w)), Math.max(0, a.y - (b.y + b.h), b.y - (a.y + a.h)));
     const puestas = [];
@@ -662,7 +662,7 @@
       if (base > minimo) tams.push(minimo);
       for (const tn of tams) {
         if (tn !== base) n.style.setProperty('--tn', tn + 'px');
-        for (const ancho of [760, 640, 500, 400, 320]) {
+        for (const ancho of [760, 640, 500, 400, 320, W-2*m]) {
           n.style.maxWidth = ancho + 'px';
           elegido = lados.flatMap(lado => [0, -160, 160, -320, 320, -480, 480].map(d => probar(lado, d))).find(c => c.ok) || null;
           if (elegido) break;
@@ -672,7 +672,7 @@
       if (!elegido) {
         // Abre una banda real bajo el bloque; no achica letra ni acorta flechas.
         const bloque=lam.querySelector(':scope > .lienzo')?.firstElementChild;
-        n.style.maxWidth='760px'; n.style.setProperty('--tn',base+'px');
+        n.style.maxWidth=(W-2*m)+'px'; n.style.setProperty('--tn',minimo+'px');
         if(bloque && bloque.contains(el)){
           const desplazamiento=Math.min(Math.max(0,A0.y+A0.h+aire+n.offsetHeight-(H-m)),Math.max(0,caja(bloque,lam).y-m));
           if(desplazamiento>0){
@@ -774,6 +774,7 @@
   }
 
   function encajar(lam) {
+    if (lam.dataset.vivo) return;
     // En sala se divide el calendario o la fila de meses; no se achican sus celdas.
     if (document.body.classList.contains('sala') && ['calendario', 'meses'].includes(lam.dataset.tipo)) return;
     [lam, ...lam.querySelectorAll('.escena')].forEach(esc => esc.querySelectorAll(':scope > .lienzo').forEach(lz => {
@@ -794,7 +795,7 @@
       });
       const w = (x1 - x0) / s, hh = (y1 - y0) / s;
       const k = Math.min(1, aw / w, (ah + 40) / hh);
-      if (k < 0.995) { h.style.zoom = k.toFixed(3); if (esc === lam) lam.dataset.encaje = k.toFixed(2); }
+      if (k < 0.995) { h.style.zoom = ((parseFloat(getComputedStyle(h).zoom)||1)*k).toFixed(3); if (esc === lam) lam.dataset.encaje = k.toFixed(2); }
     }));
   }
 
@@ -1073,15 +1074,17 @@
     lams.forEach(l => { fijarDescargos(l); ajustarChatVertical(l); ajustarPalabrasChat(l); });
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
+    lams.forEach(l => { ampliarListas(l); ajustarConsigna(l); });
+    coherenciaChats(lams);
     lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
     lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });
-    lams.forEach(l => { try { ajustarNotasLlave(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de llave (${e.message})`); } });
+    lams.forEach(l => { try { ajustarCaveat(l); ajustarNotasLlave(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de llave (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
     lams.forEach(l => { try { encajar(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: encaje (${e.message})`); } });
-    lams.forEach(l => { try { reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
+    lams.forEach(l => { try { respetarMargen(l); reservarSelloLibre(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: sitio del sello (${e.message})`); } });
     // Primero las láminas normales; el foco, después: su fondo copia el sello y las notas ya colocados de la anterior
     const esFoco = l => !!l.querySelector(':scope > .escena.clon');
     const capa = l => {

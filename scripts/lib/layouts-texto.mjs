@@ -98,7 +98,7 @@ export function lista(l, ctx) {
     return `<div class="item${apagado}"${ctx.P(mapa ? 0 : i)}${ctx.A('i' + i)}${kT}>${viñeta}<span class="item-texto">${marcar(o.texto)}</span>${ok}</div>`;
   }).join('');
   return `<div class="pila">${l.encabezado ? `<div class="encabezado"${ctx.P(0)}>${marcar(l.encabezado)}</div>` : ''}
-    <div class="lista${centrada ? ' centrada' : ''}" style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', mapa ? 0 : Math.max(0, items.length - 1)))}</div>`;
+    <div class="lista${centrada ? ' centrada' : ''}"${l.tam_texto ? ' data-tam-explicito="1"' : ''}${l.separacion ? ' data-gap-explicito="1"' : ''} style="--t:${t};--gap-lista:${gapL}px">${filas}</div>${nota(ctx, l.nota, pasoDe(l, 'nota_paso', mapa ? 1 : items.length), 'mt-l')}${fuente(ctx, l.fuente, pasoDe(l, 'fuente_paso', mapa ? 0 : Math.max(0, items.length - 1)))}</div>`;
 }
 
 // FLUJO — nodos (emoji + etiqueta) unidos por flechas rojas a mano. A → B → C.

@@ -215,3 +215,25 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   de la ráfaga. Los umbrales de elementos no cambian; los resultados se reportan en el informe de ejecución.
 - Regresiones de esta ronda: `pruebas/r12-*.test.mjs`. Los fixtures viven en directorios temporales
   del sistema; no leen los decks externos del encargo. Ningún 100 automático equivale a firma profesional.
+
+## Ronda 13 · Ocupación, manuscrita y chat coherente
+
+- `templates/runtime-legibilidad.js` se inserta junto con `runtime-filas.js` en el marcador
+  `FILAS` de `runtime.js`. Amplía listas cortas y contrastes antes de encajar; reserva todos
+  los pasos, centra el bloque y separa la nota de llave de la columna estrecha.
+- `layouts-texto.mjs` conserva tamaños y separaciones explícitos mediante atributos internos;
+  no son campos nuevos del deck. `layouts-interfaces.mjs` elige cruz para la columna roja.
+- `coherenciaChats` da 84% del ancho útil a cada burbuja vertical normal; con mensajes largos
+  pone los avatares encima y armoniza la letra del deck a una diferencia máxima de 1.3×.
+  Los muros, celulares y tarjetas de prompt conservan sus composiciones propias.
+- `ajustarCaveat` amplía el contenido manuscrito por altura de x, incluyendo citas, notas y
+  rótulos. La cita protagonista toma la referencia de Figtree principal de 84 px. En mapas,
+  una nota que crece a dos renglones reduce el aire anterior al titular, no su letra.
+- `ajustarConsigna` prioriza texto de 84 px sobre el reloj; `encajar` omite el lienzo oculto
+  del tramo en vivo. `respetarMargen` y `colocarAnotaciones` reservan 6% arriba/abajo en 16:9.
+  El encaje conserva el zoom de crecimiento anterior en vez de sustituirlo.
+- `medidas-r11.mjs` incorpora medidas y avisos R13: letra/ocupación de lista, sentido de
+  columna, ancho y escala del chat, x manuscrita, margen, consigna y origen de bifurcación.
+  QA y preflight ejecutan la misma función; `saltosEscala` mide también chats separados.
+- `pruebas/r13-geometria.test.mjs`: regresiones positivas y negativas con Chromium y fixtures
+  temporales autónomos. El historial del primer render permanece aunque cambie el motor.

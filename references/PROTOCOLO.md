@@ -315,3 +315,12 @@ El ciclo cierra solo cuando la última corrida da `estado: listo` con el mismo `
 Las láminas marcadas NO-VALE nunca son evidencia.
 
 Los PNG de `render.mjs` de una réplica no son evidencia: si ves `laminas-NO-VALE/`, corre `node scripts/comparar.mjs <carpeta-ref>` y publica su `comparar.json`.
+
+### Primer render y cambios del motor
+
+Guarda el historial y las hojas de la primera captura antes de cualquier ajuste posterior.
+Cambiar el motor, aunque el deck no cambie, invalida la afirmación «sin retoques» del resultado
+final. Reporta por separado primera nota, nota final, errores/avisos y revisión visual de todas
+las hojas finales y de pasos. Una captura diagnóstica mediante `render.mjs` tras un bloqueo de
+`armar.mjs` no se convierte por ello en entrega comercial aprobada. La credibilidad ausente se
+reporta: no se rellena con cifras de ejemplo, clientes ficticios ni resultados de una plantilla.
