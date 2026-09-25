@@ -116,7 +116,7 @@ test('capa a mano: un renglón = un trazo; puntas en V gruesas; codo que no tach
   });
 });
 
-test('sello: cabe en 9:16, se centra en su ancla; clic_pos mueve el cursor', { timeout: 120_000 }, async () => {
+test('sello: cabe en 9:16, se monta en la esquina de su emoji (≥ 50% visible); clic_pos mueve el cursor', { timeout: 120_000 }, async () => {
   await conDeck({ formato: '9:16', emoji: 'apple', marca: false, laminas: [
     { tipo: 'rejilla', emoji: '📦', total: 30, columnas: 5, sello: 'Ventas perdidas' },
     { tipo: 'idea', emoji: '💰', texto: 'Frase', sello: 'Ojo', sello_sobre: 'emoji' },
@@ -127,11 +127,14 @@ test('sello: cabe en 9:16, se centra en su ancla; clic_pos mueve el cursor', { t
       const s = a.querySelector('.sello').getBoundingClientRect(), La = a.getBoundingClientRect();
       const sb = b.querySelector('.sello').getBoundingClientRect(), e = b.querySelector('[data-a="emoji"]').getBoundingClientRect();
       const bt = c.querySelector('.boton-ui').getBoundingClientRect(), on = c.querySelector('.onda');
-      return { dentro: s.left - La.left >= 0 && s.right - La.left <= W, dx: Math.abs((sb.left + sb.right) / 2 - (e.left + e.right) / 2),
+      // R14: sobre un EMOJI el sello se monta en su esquina (toca el ícono y deja ver ≥ 50%); ya no se centra encima
+      const tb = b.querySelector('.sello-tinta').getBoundingClientRect();
+      const cruce = Math.max(0, Math.min(e.right, tb.right) - Math.max(e.left, tb.left)) * Math.max(0, Math.min(e.bottom, tb.bottom) - Math.max(e.top, tb.top));
+      return { dentro: s.left - La.left >= 0 && s.right - La.left <= W, cubre: cruce / (e.width * e.height),
         clicX: parseFloat(on.style.left) - (bt.left - c.getBoundingClientRect().left), ancho: bt.width };
     });
     assert.ok(r.dentro, 'el sello se sale del lienzo de 1080');
-    assert.ok(r.dx < 2, 'el sello no se centró en su ancla');
+    assert.ok(r.cubre > 0 && r.cubre <= 0.5, `el sello debe montarse en su emoji sin taparlo más de la mitad (cubre ${r.cubre})`);
     assert.ok(Math.abs(r.clicX - r.ancho * 0.1) < 2, 'clic_pos no movió el cursor');
   });
 });

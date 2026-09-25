@@ -83,3 +83,17 @@ test('r14: el conector recto del flujo queda centrado en el hueco entre sus emoj
  assert.ok(Math.max(r.izq,r.der)/Math.min(r.izq,r.der)<=1.5,JSON.stringify(r));
  assert.ok(!r.avisos.some(a=>/flecha (huérfana|descentrada)/.test(a)),JSON.stringify(r.avisos));
 });
+test('r14: el óvalo en línea encierra las cuatro esquinas de su texto (no corta el primer ni el último glifo)',async t=>{
+ const p=await pagina(t,[{tipo:'cifra',lineas:[{texto:'Costo actual: $8,000 al mes',tam:'64px'},{texto:'Inversión: (($6,000 MXN))',tam:'120px',peso:800}]}]);if(!p)return;
+ const r=await p.evaluate(()=>{const l=window.PZ.lams[0];window.PZ.mostrar(l,99,Infinity);
+   const o=l.querySelector('.capa-mano path[data-clase="ovalo"]'),t=l.querySelector('b.circ[data-circulo="linea"]');if(!o||!t)return {falta:true};
+   const b=t.getBoundingClientRect(),inv=o.getScreenCTM().inverse();
+   return [[b.left,b.top],[b.right,b.top],[b.left,b.bottom],[b.right,b.bottom]].map(([x,y])=>{const q=new DOMPoint(x,y).matrixTransform(inv);return o.isPointInFill(q);});});
+ assert.ok(Array.isArray(r)&&r.every(Boolean),JSON.stringify(r));
+});
+test('r14: un sello sobre el emoji protagonista deja ver al menos la mitad del ícono',async t=>{
+ const p=await pagina(t,[{tipo:'idea',emoji:'🛡️',texto:'Si en 14 días falta el tablero',nota:'Garantía: devolvemos el primer pago',sello:'Por escrito',sello_sobre:'emoji',sello_paso:1}]);if(!p)return;
+ const q=await p.evaluate(()=>{const l=window.PZ.lams[0];window.PZ.mostrar(l,99,Infinity);return window.medidasR11(l);});
+ assert.ok(q.medidas.sello_cubre_emoji!=null && q.medidas.sello_cubre_emoji<=.5,JSON.stringify(q.medidas));
+ assert.ok(!q.avisos.some(a=>/sello tapa/.test(a)),JSON.stringify(q.avisos));
+});

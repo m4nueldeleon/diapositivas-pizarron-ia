@@ -48,9 +48,10 @@ Son **32 diseños**: 30 de lámina (texto e ideas, procesos y relaciones, datos,
   dijo: tapar parte de la rejilla es fiel a [6:45]; QA solo avisa si tapa más del 25% de las destacadas). Se
   El sello libre respeta `--margen-v` arriba y abajo (100 px en 16:9; abajo 140 px con firma inferior), deja 24 px al bloque y nunca se monta sobre el último renglón. La firma cuenta como obstáculo. Su ancho girado no supera `max(0.8 × ancho del bloque, 420 px)` y su letra no supera 96 px. QA avisa si invade la franja inferior o la firma, o queda corrido en horizontal más del 15 % del ancho del lienzo respecto al centro del bloque. Se mueve con:
   - `sello_sobre: "<ancla>"`: lo centra sobre ese elemento (ver [anclas](#anclas)) y lo hace medir
-    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). Eso vale para rejillas y cajas, y también sobre el
-    `emoji` de una `idea`: tapa el ícono a propósito y QA no lo cuenta como error (sí cuenta cualquier otro emoji
-    y todo renglón que quede debajo). Sobre una
+    ~100% de su ancho, como en [6:45] (letra de 72 a 170 px). Eso vale para rejillas y cajas. Sobre el `emoji` de
+    una `idea` ya NO se centra (tapaba el ícono protagonista entero [juez r14]): va a su tamaño base, montado en la
+    esquina inferior derecha del ícono, que queda visible al menos en un 50% (QA avisa si tapa más; también cuenta
+    cualquier otro emoji y todo renglón que quede debajo). Sobre una
   burbuja de `chat` el sello va con tinta fija y se pega junto a ella sin taparla (ver `chat`). No lo pongas
   sobre notas ni flechas: QA lo avisa;
   - `sello_pos`: `centro`, `arriba`, `abajo`, `izquierda`, `derecha`, `arriba-izquierda`,

@@ -73,7 +73,7 @@
     const tintaLibre = s.querySelector('.sello-tinta');
     if (libre && tintaLibre) tintaLibre.style.fontSize = Math.min(96, parseFloat(getComputedStyle(tintaLibre).fontSize) || 96) + 'px';
     let [cx, cy] = (ZONAS[s.dataset.pos] || ZONAS.centro).map((f, i) => f * (i ? H : W));
-    let rejilla = null, burbuja = null, sobre = null;
+    let rejilla = null, burbuja = null, sobre = null, sobreEmoji = null;
     if (s.dataset.sobre) {
       const el = ancla(lam, s.dataset.sobre);
       if (el && (el.classList.contains('burbuja') || el.closest('.chat'))) {
@@ -81,6 +81,11 @@
         burbuja = el;
         const tinta = s.querySelector('.sello-tinta');
         if (tinta) tinta.style.fontSize = (H > W ? 72 : 84) + 'px';
+      } else if (el && (el.matches('.emo') || (el.querySelector('.emo') && el.children.length === 1))) {
+        // R14 [juez r14, propuesta 20]: sobre un EMOJI el sello lo tapaba entero (se centraba y medía el 97% de su ancho).
+        // Ahora va a su tamaño base, montado en la esquina inferior derecha: el ícono protagonista queda visible (≥ 50%).
+        sobreEmoji = caja(el, lam); sobre = el;
+        const tinta = s.querySelector('.sello-tinta'); if (tinta) tinta.style.fontSize = (H > W ? 72 : 84) + 'px';
       } else if (el) {
         const b = caja(el, lam), tinta = s.querySelector('.sello-tinta');
         cx = b.cx; cy = b.cy; sobre = el;
@@ -95,6 +100,11 @@
     let k = Math.min(1, (W - 2 * m) / (w * Math.cos(a) + h * Math.sin(a)), (H - arriba - abajo) / (w * Math.sin(a) + h * Math.cos(a)));
     const medio = kk => [(w * Math.cos(a) + h * Math.sin(a)) * kk / 2, (w * Math.sin(a) + h * Math.cos(a)) * kk / 2];
     let [bw, bh] = medio(k);
+    if (sobreEmoji) {
+      const b = sobreEmoji;
+      cx = clamp(b.x + b.w * 0.55 + bw, m + bw, W - m - bw); cy = clamp(b.y + b.h * 0.72, arriba + bh, H - abajo - bh);
+      if (cx - bw < b.x + b.w * 0.45) cx = clamp(b.x + b.w * 0.45 - bw, m + bw, W - m - bw);   // sin sitio a la derecha: a la izquierda
+    }
     if (rejilla) [cx, cy] = selloEnRejilla(lam, rejilla, [cx, cy], w * k, h * k, a, bw, bh, m);
     else if (burbuja) {
       const r = selloEnChat(lam, burbuja, w, h, a, k, m);

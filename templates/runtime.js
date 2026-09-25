@@ -451,14 +451,27 @@
       });
     });
   }
+  // R14 [juez r14, propuesta 18]: el óvalo EN LÍNEA pasaba por dentro de las esquinas de su caja (rx = w/2+14) y cortaba
+  // el primer y el último glifo («$6,000 MXN»: el $ y la N). Ahora es un superóvalo (n = 3.5) con ~0.14 em de aire
+  // vertical y el radio horizontal que encierra las cuatro esquinas: |w/2a|^n + |h/2b|^n ≤ 0.95. base.css le da al
+  // número encerrado margen lateral y a su renglón aire vertical: el óvalo no pisa la etiqueta ni el renglón vecino.
+  const N_OVALO = 3.5;
   function elipse(svg, b, r, p, ancho = 4.8, enLinea = false) {
-    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + (enLinea ? 14 : Math.max(18, b.w * 0.07)), ry = b.h / 2 + (enLinea ? Math.min(10, .25 * b.h) : Math.max(14, b.h * 0.3));
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    let rx = b.w / 2 + Math.max(18, b.w * 0.07), ry = b.h / 2 + Math.max(14, b.h * 0.3);
+    if (enLinea) {
+      ry = b.h / 2 + Math.max(10, .14 * b.h);
+      const resto = Math.max(.05, .95 - Math.pow((b.h / 2) / ry, N_OVALO));
+      rx = Math.max(b.w / 2 + 14, (b.w / 2) / Math.pow(resto, 1 / N_OVALO));
+    }
     const a0 = -2.4 + r() * 0.4, pts = [];
+    const sp = (t, n) => Math.sign(t) * Math.pow(Math.abs(t), 2 / n);
     for (let i = 0; i <= 44; i++) {
       const a = a0 + (i / 44) * Math.PI * 2.12;
       const k = enLinea ? 1 : 1 + (r() - 0.5) * 0.035 + (i / 44) * 0.05;
       const aireX = enLinea ? (r() - .5) * 2 : 0, aireY = enLinea ? (r() - .5) * 2 : 0;
-      pts.push([cx + Math.cos(a) * (rx*k+aireX), cy + Math.sin(a) * (ry*k+aireY)]);
+      const cxA = enLinea ? sp(Math.cos(a), N_OVALO) : Math.cos(a), syA = enLinea ? sp(Math.sin(a), N_OVALO) : Math.sin(a);
+      pts.push([cx + cxA * (rx*k+aireX), cy + syA * (ry*k+aireY)]);
     }
     return trazo(svg, suave(pts), { color: C.rojo, ancho, p, dur: 520, clase: enLinea ? 'ovalo' : 'circulo' });
   }

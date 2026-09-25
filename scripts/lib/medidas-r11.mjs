@@ -191,6 +191,16 @@ export function medidasR11(lam) {
     const bx=caja(e), mh=W*.03;
     if(bx.x<mh-.5 || bx.x+bx.w>W-mh+.5) errores.push(`anotación «${corto(e.textContent)}» invade el margen horizontal (${(Math.min(bx.x,W-bx.x-bx.w)*a1920).toFixed(0)} px a 1920; mínimo ${(mh*a1920).toFixed(0)}): cámbiala de lado o debajo de su ancla`);
   }
+  // R14: un sello sobre el emoji protagonista deja ver al menos la mitad del ícono [juez r14, propuesta 20].
+  for (const se of lam.querySelectorAll(':scope > .sello[data-sobre]')) {
+    if (!visible(se)) continue;
+    const an = lam.querySelector(`[data-a="${se.dataset.sobre}"]`), emo = an && (an.matches('.emo') ? an : an.querySelector(':scope > .emo'));
+    if (!emo || !visible(emo)) continue;
+    const a = caja(emo), b = caja(se.querySelector('.sello-tinta') || se);
+    const cubre = Math.max(0, Math.min(a.x+a.w, b.x+b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y+a.h, b.y+b.h) - Math.max(a.y, b.y)) / (a.w*a.h || 1);
+    medidas.sello_cubre_emoji = +cubre.toFixed(2);
+    if (cubre > .5) avisos.push(`el sello tapa ${Math.round(cubre*100)}% de su emoji (máximo 50%): móntalo en una esquina del ícono, no encima`);
+  }
   medidas.principal_x = window.alturaPrincipal(lam)*a1920;
   medidas.tipo = lam.dataset.tipo;
   for(const nodo of lienzo.querySelectorAll('.fila-flujo .nodo')) {
