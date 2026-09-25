@@ -118,3 +118,23 @@ function centrarNotasContraste(lam) {
     if(dx) n.style.marginLeft=((parseFloat(n.style.marginLeft)||0)+dx/z)+'px';
   });
 }
+
+// R14 [juez r14]: un chat 16:9 con anotaciones no dejaba sitio a la nota (las burbujas llenaban el alto y la nota caía
+// encima, con el gancho cruzando el texto). Antes de encajar se reserva un carril lateral: el chat se angosta al 58% del
+// ancho y se corre a la izquierda; la nota va a la derecha de su burbuja.
+function reservarCarrilChat(lam) {
+  if (lam.offsetWidth <= lam.offsetHeight || lam.dataset.tipo !== 'chat') return;
+  const notas = [...lam.querySelectorAll(':scope > .anotacion[data-sobre]')].filter(n => !n.dataset.llaveHasta && !n.dataset.fija);
+  if (!notas.length) return;
+  const lz = lam.querySelector(':scope > .lienzo'), chat = lz?.querySelector('.chat');
+  if (!chat) return;
+  const W = lam.offsetWidth;
+  chat.style.maxWidth = Math.round(W * .58) + 'px'; chat.style.width = Math.round(W * .58) + 'px';
+  lz.style.alignItems = 'flex-start'; lz.style.paddingLeft = Math.round(W * .08) + 'px';
+  notas.forEach(n => { if (!n.dataset.lado || n.dataset.lado === 'arriba' || n.dataset.lado === 'abajo') n.dataset.lado = 'derecha'; });
+  // Más angosto, una burbuja podía pasar el tope de 3 renglones: la letra baja de 4 en 4 hasta 64 px antes de romperlo.
+  const bs = [...chat.querySelectorAll('.burbuja')];
+  for (let t = 80; t >= 64 && bs.some(b => rectsTexto(b, lam).length > 3); t -= 4)
+    bs.forEach(b => { if (parseFloat(getComputedStyle(b).fontSize) > t) b.style.fontSize = t + 'px'; });
+}
+

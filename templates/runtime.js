@@ -1124,7 +1124,7 @@
     lams.forEach(l => { fijarDescargos(l); ajustarChatVertical(l); ajustarPalabrasChat(l); });
     // Una lámina con un error no tumba al resto: se avisa y se sigue
     lams.forEach(l => { try { abrirEspacioSubrayados(l,l); igualarFilas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: fila (${e.message})`); } });
-    lams.forEach(l => { ampliarListas(l); ajustarConsigna(l); });
+    lams.forEach(l => { ampliarListas(l); ajustarConsigna(l); reservarCarrilChat(l); });
     coherenciaChats(lams);
     lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });

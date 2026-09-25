@@ -185,6 +185,11 @@ export function medidasR11(lam) {
     // R14: se admiten DOS renglones balanceados (2+ palabras cada uno); más, o un renglón de una palabra, es error.
     { const ls=window.lineasPalabras(e);
       if((e.dataset.llaveHasta || e.matches('.nota.roja')) && (ls.length>2 || (ls.length===2 && ls.some(l=>l.length<2)))) errores.push(`nota junto a llave «${corto(e.textContent)}» partida en ${ls.length} renglones: máximo dos balanceados de 2+ palabras; reserva su anchura real`); }
+    // R14: una anotación no pisa texto (burbuja, renglón, ítem): caía encima del chat con el gancho sobre las letras
+    { const bn=caja(e), pisa=[...lam.querySelectorAll('.burbuja, .t, .item, .etiqueta, .encabezado')].filter(x=>visible(x)&&!e.contains(x)&&!x.contains(e))
+        .map(x=>{const b=caja(x);return Math.max(0,Math.min(bn.x+bn.w,b.x+b.w)-Math.max(bn.x,b.x))*Math.max(0,Math.min(bn.y+bn.h,b.y+b.h)-Math.max(bn.y,b.y));});
+      const fr=Math.max(0,...pisa)/(bn.w*bn.h||1);
+      if(fr>.08) errores.push(`anotación «${corto(e.textContent)}» pisa texto (${Math.round(fr*100)}% de su caja): el motor reserva carril en chats 16:9; acórtala o cámbiala de ancla`); }
     // R14: ni renglones de una palabra ni pegada al borde lateral [r13, clase 36: «Evita / publicar / un error»]
     const lineas=window.lineasPalabras(e), pal=lineas.flat().length;
     if(pal>=3 && lineas.length>1 && (lineas.length>3 || pal/lineas.length<2)) errores.push(`anotación «${corto(e.textContent)}» en renglones mínimos (${lineas.map(l=>l.length).join('/')} palabras): dale ancho para 1-3 renglones de 2+ palabras o muévela debajo`);

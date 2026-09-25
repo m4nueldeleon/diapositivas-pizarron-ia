@@ -97,3 +97,9 @@ test('r14: un sello sobre el emoji protagonista deja ver al menos la mitad del �
  assert.ok(q.medidas.sello_cubre_emoji!=null && q.medidas.sello_cubre_emoji<=.5,JSON.stringify(q.medidas));
  assert.ok(!q.avisos.some(a=>/sello tapa/.test(a)),JSON.stringify(q.avisos));
 });
+test('r14: un chat 16:9 con anotación reserva carril y la nota no pisa texto',async t=>{
+ const p=await pagina(t,[{tipo:'chat',mensajes:[{de:'yo',texto:'¡Qué bueno que [lo que hiciste] quedó como querías!'},{de:'yo',texto:'¿Me dejas una reseña en Google? Aquí está el enlace: [enlace]'}],anotaciones:[{a:'m0',texto:'Así no suena masivo',lado:'derecha'}]}]);if(!p)return;
+ const q=await p.evaluate(()=>{const l=window.PZ.lams[0];window.PZ.mostrar(l,99,Infinity);return window.medidasR11(l);});
+ assert.ok(!q.errores.some(e=>/pisa texto|margen horizontal|renglones mínimos/.test(e)),JSON.stringify(q.errores));
+ assert.ok(!q.avisos.some(a=>/burbuja de \d+ renglones/.test(a)),JSON.stringify(q.avisos));
+});

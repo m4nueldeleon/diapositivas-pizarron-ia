@@ -765,6 +765,10 @@ Una respuesta real exige `fuente` con fecha, por ejemplo «Registro autorizado, 
 Si el contenido es ilustrativo, usa `ejemplo: true`: lleva el sello visible EJEMPLO. Una respuesta
 sin esa marca y sin fuente fechada es error de QA.
 
+**Chat 16:9 con anotaciones (ronda 14).** Antes de encajar, el chat se angosta al 58% del ancho y se corre a la izquierda:
+la nota va en el carril de la derecha, junto a su burbuja (si alguna burbuja pasa de 3 renglones, la letra baja hasta
+64 px). QA da error si una anotación pisa texto.
+
 **Piso del chat vertical (ronda 14).** La letra de un chat 9:16 no baja de 64 px para caber: un chat de tres mensajes
 con encabezado bajaba a ~36 px y la escala común del deck arrastraba a todos los chats del reel (el QA daba 100). Si no
 cabe, QA pide partir la conversación en dos láminas (la pregunta literal en una, la respuesta y su resultado en otra).
