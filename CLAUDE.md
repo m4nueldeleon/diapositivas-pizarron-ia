@@ -328,3 +328,17 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   `sobre` invierte la escala: mano de 160 y tecla de 110 [ref_668]. Encuadre 16/16; elementos 10/16. Una lámina
   `_solo_rafaga` (r103: el cuadro usa fotos propias) replica la secuencia y `comparar` no la empareja con su cuadro fijo.
   La ✕ del arco tachado (`equis`, `data-clase="equis"`) mide 88 px con trazo de 13, como el video.
+- Juez r19 (Claude, 88.95 sobre 058d029): la llave de una lista sin columnas en 16:9 (`colocarAnotaciones`,
+  `templates/runtime.js`) no tenía ruta de repliegue cuando los ítems eran de largo normal — se rendía con la nota fuera
+  del lienzo y `armar.mjs` truena. Ahora, si el corrimiento y el piso de 64 px no bastan, cae al mismo repliegue horizontal
+  que ya usa 9:16 (llave bajo la lista, nota centrada debajo), encogiendo la lista si hace falta. `demostracionChat`
+  (`conversacion.mjs`) exigía frases de anuncio EXACTAS; «Enseguida te muestro cómo queda armado…» colaba porque «queda»
+  está en la lista de palabras útiles: la lista negra ahora cubre también «te muestro/enseño cómo/que». `FAMILIAS`
+  (misma función) suma sinónimos de equipo (celular, computadora…) para que una objeción de «no tengo equipo» se
+  resuelva con «todo corre desde tu celular» sin repetir la raíz «equip-». Una lista 9:16 de 2-3 ítems cortos en
+  PALABRAS pero largos en caracteres («Un solo lugar para pagar») se armaba al tamaño fijo de `layouts-texto.mjs`
+  (144/112 px) sin comprobar que cupiera: cada palabra caía en su propio renglón; `ampliarListas`
+  (`runtime-legibilidad.js`) ahora baja la letra de 4 en 4 hasta el piso de 64 px si un ítem pasa de 2 renglones.
+  ARRANQUE.md avisa que un reel de 10+ láminas con varios elementos casi siempre pasa de 60 s. Pendientes documentados
+  en LECCIONES: réplica de r255/r403 en «revisar», cobertura temporal (7/12 ráfagas, sin trayectoria de cursor) y un
+  falso positivo de `revisarComponentes` con paráfrasis que no está en `FAMILIAS`.
