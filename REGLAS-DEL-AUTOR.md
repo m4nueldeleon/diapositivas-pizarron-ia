@@ -21,6 +21,8 @@ Cuando el usuario corrija algo, la regla va aquí en una línea y su historia en
 - Una clase cierra con tarea y puente: cuándo o cómo se entra.
 - Un reel que promete un «cómo» enseña el cómo a la vista (el prompt literal). «Guarda» solo va si hay algo que
   guardar.
+- Una muestra corta (6-8 láminas) no es un `tutorial`/`clase`/`vsl` completo: declárala `"pieza": "libre"` en vez de
+  forzar su duración y su demostración obligatoria.
 
 ## Guion y voz
 

@@ -475,3 +475,43 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   `clave()` coincida). Estos tres quedan documentados y sin tocar: requieren trabajo de calibración visual contra los
   cuadros del video (fuera del repo) o extender `FAMILIAS` caso por caso, que no se puede generalizar sin arriesgar
   nuevos falsos negativos.
+
+## 2026-09-25 · Un parche sobre el caso exacto no es la corrección de raíz (juez r20, 88.80 sobre 15116d4)
+
+- **Regla:** un juez independiente probó los tres "arreglos" semánticos de r19 con paráfrasis NUEVAS (no las mismas
+  frases) y los tres seguían fallando. La lección: cuando el pendiente es «una lista fija coló X», sumar X a la lista
+  cierra el caso reportado pero no el defecto — hay que preguntar qué PATRÓN describe X, no qué FRASE.
+- **Regla:** `demostracionChat` (`conversacion.mjs`) tenía una lista negra de frases EXACTAS para el anuncio de una
+  demo («te muestro cómo queda», sumada en r19). «Mira cómo queda armado…», «aquí puedes ver cómo se resuelve…» y
+  «checa cómo queda…» — ninguna coincide con la lista, las tres colaban. El patrón real no es el verbo (mostrar,
+  enseñar, mirar, checar, ver todos sirven igual de anuncio) sino la construcción «cómo/qué + verbo de estado»
+  (queda, resuelve, funciona, se ve) sin ningún dato propio detrás. Se reemplazó la lista de frases por esa
+  construcción general, con una salvedad: si la frase SÍ trae un dato (cifra, día o palabra de entregable como
+  «archivo», «enlace», «cotización»), no descalifica — «mira cómo queda: 12 páginas listas» demuestra igual que
+  «aquí está el reporte: quedó listo el jueves».
+- **Regla:** `revisarComponentes` (misma función) resolvía un componente con `String.includes()`: la respuesta
+  «videollamadas» resolvía el componente «llamada» porque la cadena «llama» aparece DENTRO de «videollamadas», sin
+  que sea la misma palabra ni un sinónimo real de la familia `FAMILIAS`. Cambiar `.includes(r)` por una prueba con
+  límite de palabra (`\b` + la raíz) basta: ahora exige que la raíz empiece una palabra, no que aparezca a media
+  palabra por accidente ortográfico.
+- **Regla:** `reglasRespuestaObjecion` (`reglas-arco.mjs`) derivaba una «pregunta de objeción» de CUALQUIER mensaje
+  de un chat con «?» que viniera de `otro`, sin filtrar si el contenido era realmente una objeción. Una pregunta de
+  agenda («¿la llamada es en mi hora o en la tuya?») —dos partes unidas por «o», como cualquier objeción compuesta—
+  se marcaba con el mismo aviso que «no tengo tiempo ni dinero». El filtro que faltaba: la pregunta debe traer una
+  duda/negación real (no, nunca, dudo, preocupa, miedo, inseguro, difícil, caro…) o tocar un tema ya conocido
+  (`TEMAS`); una pregunta neutra de logística no entra a `revisarComponentes`.
+- **Porqué:** el patrón se repite en LECCIONES.md al menos tres veces ya (r17, r18, r19): una regla de texto que
+  compara contra una lista fija de frases o una raíz literal siempre se evade con la primera paráfrasis que no está
+  en la lista. La corrección sostenible es describir la FORMA del problema (construcción gramatical, límite de
+  palabra, vocabulario de dominio), no enumerar sus instancias conocidas.
+- **Límite (abierto):** el juez también reportó `r1738` (ráfaga `i_calendario`) como el peor IoU medido (0.203) tras
+  ampliar la cobertura de 7 a 12 ráfagas. Se investigó la hipótesis del juez (un desfase de 1-2 cuadros en el
+  `corte`) y NO es la causa: las dos anotaciones del cuadro de referencia («I like this person's content», «I need
+  to buy this product») YA estaban en `pruebas/replica/deck.json` (`dia: 1` y `dia: 14`, con su `lado`/`arriba`/
+  `paso`) desde una ronda anterior. La comparación visual (`comp_4.jpg`) muestra que el contenido es correcto pero
+  la geometría no calza con precisión (offsets de la caja y de las flechas de anotación) — es un problema de
+  calibración fina de posición, no de temporización ni de contenido faltante. Corregirlo exige iterar
+  render→captura→comparación visual contra el cuadro real (fuera del repo) varias veces, como ya documentaron rondas
+  anteriores para r255/r403; no se adivinó un valor de `arriba`/`lado` sin esa verificación. `demostracionChat` y
+  `revisarComponentes` siguen usando reglas semánticas basadas en vocabulario/regex, no en comprensión real: un
+  humano sigue debiendo leer cada componente/demostración marcado, estas reglas solo bajan cuánto hay que revisar.

@@ -342,3 +342,16 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   ARRANQUE.md avisa que un reel de 10+ láminas con varios elementos casi siempre pasa de 60 s. Pendientes documentados
   en LECCIONES: réplica de r255/r403 en «revisar», cobertura temporal (7/12 ráfagas, sin trayectoria de cursor) y un
   falso positivo de `revisarComponentes` con paráfrasis que no está en `FAMILIAS`.
+- Juez r20 (independiente, 88.80 sobre 15116d4): los tres arreglos semánticos de r19 eran parches sobre el caso
+  exacto, no la corrección de raíz — el juez los reprodujo con paráfrasis nuevas y los tres volvieron a fallar.
+  `demostracionChat` cambió su lista negra de frases por la construcción general «cómo/qué + verbo de estado» (queda,
+  resuelve, funciona, se ve) sin dato propio detrás; una frase con cifra, día o palabra de entregable ya no
+  descalifica. `revisarComponentes` cambió `.includes(raíz)` por una prueba con límite de palabra (`\b`): «videollamadas»
+  ya no resuelve el componente «llamada» por contener la subcadena «llama». `reglasRespuestaObjecion` ya no deriva una
+  «pregunta de objeción» de cualquier «?» en un chat: exige duda/negación real o un tema conocido
+  (`pareceObjecionChat`), así que una pregunta neutra de agenda («¿mi hora o la tuya?») no dispara el aviso.
+  ARRANQUE.md suma el aviso inverso al de r19: una muestra corta (6-8 láminas) declarada `tutorial`/`clase`/`vsl`
+  dispara exigencias de arco completo que no aplican; usa `"pieza": "libre"`. Pendiente investigado y NO resuelto: el
+  peor caso de fidelidad (r1738, IoU 0.203) no es temporización ni contenido faltante (las dos anotaciones del
+  calendario ya estaban en `pruebas/replica/deck.json`) sino geometría fina de posición — requiere iterar
+  render→captura→comparación visual, documentado en LECCIONES en vez de adivinarse.
