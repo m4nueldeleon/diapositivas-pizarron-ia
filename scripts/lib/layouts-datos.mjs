@@ -618,10 +618,13 @@ export function calendario(l, ctx) {
   // Con más de 20 días (4-6 semanas) van de 7 en 7; la fila se achica para que todo quepa en el alto útil
   const cols = l.columnas || (ctx.vertical ? (dias.length > 20 ? 5 : cabeV(4) ? 4 : 3) : dias.length > 20 ? 7 : 5);
   const filas = Math.ceil(dias.length / cols);
-  // Calendario GRANDE [ref_1760]: 16:9, sin notas al margen y ≤ 15 días (3 filas de 5). La tarjeta usa casi todo el alto
+  // Calendario GRANDE [ref_1760]: 16:9, ≤ 15 días (3 filas de 5). La tarjeta usa casi todo el alto
   // (1004 de 1080), mide ~1250 de ancho, la barra ~170 y las celdas son CUADRADAS (~234) con ~6-10 px de separación.
   // Con los márgenes normales (alto útil 880) no cabían celdas cuadradas: aquí el alto útil es H − 80 (base.css).
-  const grande = !ctx.vertical && ctx.F.W > ctx.F.H && !(l.anotaciones || []).length && dias.length <= 15 && cols === 5;
+  // r1738 [28:58-29:00]: las notas de `dia` viven en el margen, A UN LADO de la tarjeta — no la encogen. El motor
+  // antes excluía este caso de "grande" solo por tener anotaciones, y la tarjeta caía al tamaño chico (~880 de alto
+  // útil en vez de 1000): el juez r21 lo midió contra el video (cajaRef 80% de alto vs cajaNuestra 73%).
+  const grande = !ctx.vertical && ctx.F.W > ctx.F.H && dias.length <= 15 && cols === 5;
   const gapDia = grande ? 10 : 20;
   const altoUtil = grande ? ctx.F.H - 80 : ctx.F.H - 2 * ctx.F.mv, barraH = grande ? 160 : 114, pad = grande ? 66 : 70;
   const anchoGrande = 1250, celdaG = (anchoGrande - 68 - gapDia * (cols - 1)) / cols;
@@ -630,7 +633,9 @@ export function calendario(l, ctx) {
   const compacto = altoDia < 110;
   const faseDe = d => fases.findIndex(f => d + 1 >= f.desde && d + 1 <= f.hasta);
   // El sub conserva 32 px; si no cabe se redistribuyen columnas, no se vuelve ilegible.
-  const anchoCal = ctx.vertical ? anchoV : (l.anotaciones || []).length ? 1080 : grande ? anchoGrande : 1400;
+  // «grande» manda el ancho aunque haya anotaciones (r1738): la nota vive en el margen sobrante, no en el
+  // ancho que angosta la tarjeta (eso solo aplica cuando el calendario NO es «grande», p. ej. > 15 días).
+  const anchoCal = ctx.vertical ? anchoV : grande ? anchoGrande : (l.anotaciones || []).length ? 1080 : 1400;
   const celdaW = (anchoCal - 72 - (cols - 1) * gapDia) / cols;
   const tamSub = 32;
   // Sin fase activa los días van en gris neutro (la lámina que presenta el plan, 28:45).
@@ -655,7 +660,10 @@ export function calendario(l, ctx) {
   // de abajo queda 30 px sobre la tarjeta (centrada en el lienzo), sin importar sus renglones ni el `arriba` de 16:9
   const altoCal = barraH + 66 + filas * altoDia + (filas - 1) * gapDia + 4;
   const posV = `bottom:${Math.round((ctx.F.H + altoCal) / 2 + 30)}px`;
-  const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? 'right:40px' : 'left:40px'};${ctx.vertical ? posV : `top:${arriba(a)}`};--tn:${a.tam || '56px'};color:var(--tinta);max-width:340px">${marcar(a.texto)}</div>`).join('');
+  // «grande» acerca la tarjeta al borde del lienzo (r1738): 40px deja una flecha por debajo de 60px (garabato,
+  // qa.mjs lo avisa). Con la tarjeta grande la nota se separa más del borde para conservar una flecha legible.
+  const margenNota = grande ? 15 : 40;
+  const anot = (l.anotaciones || []).map((a, i) => `<div class="nota"${ctx.P(a.paso ?? 1)}${ctx.A('an' + i)} style="position:absolute;${a.lado === 'derecha' ? `right:${margenNota}px` : `left:${margenNota}px`};${ctx.vertical ? posV : `top:${arriba(a)}`};--tn:${a.tam || '56px'};color:var(--tinta);max-width:340px">${marcar(a.texto)}</div>`).join('');
   const sub = activa && activa.sub ? `<em class="sub">${escapar(activa.sub)}</em>` : '';
   // con notas al margen el calendario se angosta para que la nota quede FUERA, como en m_1740
   const angosto = (l.anotaciones || []).length && !ctx.vertical;
