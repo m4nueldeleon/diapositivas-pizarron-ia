@@ -69,11 +69,20 @@ const PLAZO=new RegExp('('+NUMERO+').{0,24}\\b(segund\\w*|minut\\w*|hora\\w*|dia
 const CONTENIDO=/\b(inclu\w*|trae|viene\w*|contiene)\b\s+(\d|un|una|unos|unas|dos|tres|cuatro|cinco|el|la|los|las|tu|su|sus|tus|todo)\b/;
 const PIDE={precio:VALOR,plazo:PLAZO,incluye:CONTENIDO};
 const VACIAS=new Set(['puedo','puedes','quiero','tengo','tienes','hacer','algo','esto','como','cuando','donde','porque','pero','para','sobre','entre','mucho','muchos','todo','todos','cada','cuanto','cuanta','importa','mejor']);
+// R21 [juez]: en «ni tengo alguien de soporte», clave() elegía «alguien» (empata en longitud con «soporte» y
+// queda primero) y el aviso de «sin responder» no se resolvía aunque la respuesta sí trajera «el soporte es
+// por correo». Un pronombre indefinido nunca es la palabra que la respuesta debe retomar.
+const PRONOMBRES_INDEFINIDOS=new Set(['alguien','alguno','algunos','alguna','algunas','nadie','ninguno','ninguna','ningunos','ningunas','cualquiera','quienquiera']);
 // R19 [juez, caso d]: «No tengo equipo» respondido con «todo corre desde tu celular» seguía sin resolver porque
 // el motor exigía la raíz «equip-» literal. Sinónimos frecuentes del mismo componente no repiten la palabra exacta.
 const FAMILIAS=[['cuest','preci','cobr','pag','cost','inver'],['tard','plaz','tiemp','dias','seman','entreg','cuand','segund','minut','hora'],['inclu','trae','vien','conti'],
   ['funcio','result','sirv'],['molest','incomod'],['compr','pedi','orden'],['disen','diseñ'],['garant','devol','reemb'],
   ['equip','celular','computador','compu','telefono','laptop','dispositivo']];
+// R21 [juez]: «comprometerme» caía en la familia comprar/pedir/orden solo por compartir las 5 letras «compr» con
+// «comprar» — un verbo distinto, no una conjugación. Una palabra de la MISMA familia solo alarga la raíz con una
+// desinencia corta (comprar: -o, -as, -ar, -ando, -amos…); un remanente largo señala una palabra distinta.
+const RAIZ_MAX_DESINENCIA=4;
+const compartenRaiz=(palabra,raiz)=>palabra.startsWith(raiz)&&palabra.length-raiz.length<=RAIZ_MAX_DESINENCIA;
 export function revisarComponentes(pregunta,respuestas) {
   const partes=componentesObjecion(pregunta);
   if(partes.length<2)return [];
@@ -90,9 +99,12 @@ export function revisarComponentes(pregunta,respuestas) {
 // retomada en una frase que la responda. Es un indicio (aviso), no una política por confirmar: `generico: true`.
 function genericos(pregunta,respuestas,sueltas,partes){
   if(!sueltas.length)return [];
-  const clave=c=>(c.match(/[a-zñ]+/g)||[]).filter(w=>w.length>=4&&!VACIAS.has(w)).sort((a,b)=>b.length-a.length)[0];
-  const familia=k=>{const f=FAMILIAS.find(f=>f.some(r=>k.startsWith(r)));return f||[k.slice(0,5)];};
-  const tipo=k=>{const i=FAMILIAS.findIndex(f=>f.some(r=>k.startsWith(r)));return ['precio','plazo','incluye'][i]||null;};
+  const clave=c=>(c.match(/[a-zñ]+/g)||[]).filter(w=>w.length>=4&&!VACIAS.has(w)&&!PRONOMBRES_INDEFINIDOS.has(w)).sort((a,b)=>b.length-a.length)[0];
+  // Sin familia real, la raíz de respaldo conserva casi toda la palabra (solo hasta 4 caracteres de flexión al
+  // final): una raíz fija de 5 letras truncaba "comprometerme" al mismo "compr" de la familia comprar/pedir/orden
+  // y volvía a colar el falso amigo por la puerta de atrás.
+  const familia=k=>{const f=FAMILIAS.find(f=>f.some(r=>compartenRaiz(k,r)));return f||[k.slice(0,Math.max(5,k.length-RAIZ_MAX_DESINENCIA))];};
+  const tipo=k=>{const i=FAMILIAS.findIndex(f=>f.some(r=>compartenRaiz(k,r)));return ['precio','plazo','incluye'][i]||null;};
   // Una pregunta cuenta si AGREGA contenido (2+ palabras que la objeción no tenía: «¿Qué te gusta de donde compras
   // ahora?»); la que solo repite la objeción es eco («¿Te molesta? ¿Compras en otro lado?») y no responde.
   const deLaObjecion=new Set((normal(pregunta).match(/[a-zñ]{4,}/g)||[]));
@@ -101,8 +113,10 @@ function genericos(pregunta,respuestas,sueltas,partes){
   // Una frase que solo valora el tema («El precio es importante») sin ningún dato no lo responde
   const vacia=f=>VALORA.test(f)&&!CONCRETA.test(f);
   // R20 [juez]: «videollamadas» resolvía el componente «llamada» por contener la subcadena "llama" a media
-  // palabra, no por sinonimia real; la raíz debe empezar una palabra propia (límite \b).
-  const contieneRaiz=(f,r)=>new RegExp('\\b'+r).test(f);
+  // palabra, no por sinonimia real; la raíz debe empezar una palabra propia (límite \b). R21 [juez]: la palabra
+  // que empieza con la raíz tampoco puede alargarse sin límite (ver compartenRaiz) o cualquier palabra ajena que
+  // arranque igual (p. ej. "comprometido" contra la raíz "compr") contaría como respuesta.
+  const contieneRaiz=(f,r)=>(f.match(/[a-z]+/g)||[]).some(w=>compartenRaiz(w,r));
   const responde=(r,k)=>{ const pide=PIDE[tipo(k)];
     return afirmaciones.some(f=>contieneRaiz(f,r)&&!vacia(f)&&(!pide||(pide.test(f)&&!/\?\s*$/.test(f.trim())))); };
   // Opciones con artículo («¿Qué importa más, el diseño o el plazo?»): el interrogativo no es un componente aparte
