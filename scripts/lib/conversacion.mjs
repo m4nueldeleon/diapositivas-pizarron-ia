@@ -23,7 +23,12 @@ export function demostracionChat(l) {
     if(entrada.de===salida.de || palabras(a).length<4 || palabras(b).length<3 || a===b) return false;
     // R19 [juez]: «Enseguida te muestro cómo queda armado…» colaba por «queda»; el anuncio de mostrar/enseñar
     // descalifica aunque la frase siga con palabras nuevas, igual que ya pasa con «vamos a mostrar».
-    if(/vamos a mostrar|haremos una demostracion|te ensenare|puedes mostrar|te muestro (como|que)|te enseno (como|que)|aqui te muestro/.test(a+' '+b))return false;
+    // R20 [juez]: la lista fija de frases se evade con cualquier paráfrasis («mira/checa/ve cómo queda…», «aquí
+    // puedes ver cómo se resuelve…»): un anuncio con «cómo/qué» + un verbo de estado vago descalifica salvo que la
+    // frase traiga además un dato propio (cifra, día o entregable) que sí demuestre algo concreto.
+    const anuncioVago=/vamos a mostrar|haremos una demostracion|te ensenare|puedes mostrar|te muestro (como|que)|te enseno (como|que)|aqui te muestro|\b(como|que)\b\s+(se\s+)?(queda|quedo|ve|resuelve|funciona|soluciona|sale|arma|armo)\b/.test(a+' '+b);
+    const entregable=/\d|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b|\b(archivo|reporte|pagina|documento|enlace|link|cotizacion|propuesta|plantilla|formato|diseno|video|imagen|entrega\w*|precio|fecha|monto|total|borrador|contrato|factura|recibo)\b/.test(b);
+    if(anuncioVago&&!entregable)return false;
     const concreto=/\?|\d|portada|archivo|pagina|mensaje|precio|revision|fecha|testimonio|publicar|descuento/.test(a);
     // R18 [juez r18]: «Puedes revisar todo tranquilamente» no responde «¿cuánto cuesta y cuándo entregas?»: si la entrada
     // pregunta cuánto o cuándo, la salida trae el valor o el plazo («La A. Puedes continuar» sí decide una elección).
@@ -44,6 +49,14 @@ const TEMAS = [
  ['descuento',/descuento\w*|rebaja\w*/, /\b(no|sin|mantengo|conservo|aplica\w*|inclu\w*|ofre\w*|redu\w*)\b/],
  ['publicacion',/public\w*|nombre|anonim\w*/, /\b(no|sin|solo|puedes|autoriza\w*|permiso|anonim\w*)\b/],
 ];
+// R20 [juez]: en un chat, CUALQUIER pregunta de dos partes con «o» se trataba como si fuera una objeción a resolver
+// («¿mi hora o la tuya?» se marcaba igual que «no tengo tiempo ni dinero»). Solo cuenta como objeción si trae una
+// duda o negación real, o toca un tema ya conocido (TEMAS); una pregunta neutra de agenda o logística no basta.
+const DUDA_OBJECION=/\bno\b|\bnunca\b|\bdud[oa]\w*|\bpreocup\w*|\bmiedo\b|\binsegur\w*|\bdesconf\w*|\briesgo\w*|\barriesg\w*|\bdificil\b|\bcomplicad\w*|\bcaro\b|\bcostoso\b|\bque pasa si\b|\by si\b|\bseguro que\b/;
+export function pareceObjecionChat(texto) {
+  const t=normal(texto);
+  return DUDA_OBJECION.test(t) || TEMAS.some(([,rx])=>rx.test(t));
+}
 // R17 [juez r17]: «El precio es importante» nombra el tema sin responderlo: una frase que solo lo valora (es importante,
 // es clave) y no trae ningún dato concreto (cifra, plazo, día, cantidad, sí/no, límite o alternativa) no cuenta.
 const CONCRETA = /\d|\b(un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|quince|veinte|treinta|cien|mil|gratis|nada|todo|todos|ningun\w*|si|no|sin|solo|hasta|desde|cada|antes|despues|hoy|manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|semana\w*|dia|dias|hora\w*|minuto\w*|mes|meses|aqui|cuando|siempre|nunca|ya|usa|usas|basta|alcanza|puedes|sirve|en lugar|en vez)\b/;
@@ -87,8 +100,11 @@ function genericos(pregunta,respuestas,sueltas,partes){
   const afirmaciones=respuestas.flatMap(t=>normal(t).split(/(?<=[.!?])\s+|\n+/)).filter(f=>f.trim()&&(!/\?\s*$/.test(f.trim())||aporta(f)));
   // Una frase que solo valora el tema («El precio es importante») sin ningún dato no lo responde
   const vacia=f=>VALORA.test(f)&&!CONCRETA.test(f);
+  // R20 [juez]: «videollamadas» resolvía el componente «llamada» por contener la subcadena "llama" a media
+  // palabra, no por sinonimia real; la raíz debe empezar una palabra propia (límite \b).
+  const contieneRaiz=(f,r)=>new RegExp('\\b'+r).test(f);
   const responde=(r,k)=>{ const pide=PIDE[tipo(k)];
-    return afirmaciones.some(f=>f.includes(r)&&!vacia(f)&&(!pide||(pide.test(f)&&!/\?\s*$/.test(f.trim())))); };
+    return afirmaciones.some(f=>contieneRaiz(f,r)&&!vacia(f)&&(!pide||(pide.test(f)&&!/\?\s*$/.test(f.trim())))); };
   // Opciones con artículo («¿Qué importa más, el diseño o el plazo?»): el interrogativo no es un componente aparte
   const conArticulo=partes.filter(p=>/^(el|la|los|las|un|una|tu|tus)\s/.test(normal(p).replace(/^[^a-z]+/,''))).length;
   const interrogativa=p=>/^(que|cual|cuales|como|cuanto|cuanta|cuando|donde|por que|quien)\b/.test(normal(p).replace(/^[^a-z]+/,''));

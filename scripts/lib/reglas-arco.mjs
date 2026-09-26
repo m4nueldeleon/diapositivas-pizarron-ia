@@ -1,4 +1,4 @@
-import { revisarComponentes } from './conversacion.mjs';
+import { revisarComponentes, pareceObjecionChat } from './conversacion.mjs';
 import { anotacionAporta, raicesTexto } from './editorial.mjs';
 // reglas-arco.mjs — reglas de QA del ARCO de la pieza, sobre el deck.json (sin navegador): el mapa 1-2-3 que vuelve,
 // la respuesta a una objeción, el «cómo» de un reel y las métricas del arco que qa.json expone (contrato de tiempo, la
@@ -74,7 +74,10 @@ export function reglasRespuestaObjecion(deck) {
   const L = deck.laminas;
   const porConfirmar = {};
   L.forEach((l,i)=>{
-    const pregunta=esObjecion(l)?l.texto:(l.tipo==='chat'?(l.mensajes||[]).filter(m=>m.de==='otro'&&/\?/.test(m.texto)).map(m=>m.texto).join(' '):'');
+    // R20 [juez]: cualquier pregunta de dos partes con «o» en un chat se trataba como objeción a resolver, incluso
+    // una pregunta neutra de agenda («¿mi hora o la tuya?»); solo cuenta si trae una duda/negación real o un tema
+    // conocido (pareceObjecionChat).
+    const pregunta=esObjecion(l)?l.texto:(l.tipo==='chat'?(l.mensajes||[]).filter(m=>m.de==='otro'&&/\?/.test(m.texto)&&pareceObjecionChat(m.texto)).map(m=>m.texto).join(' '):'');
     if(!pregunta)return;
     const respuestas=[];
     for(let j=i;j<L.length;j++) {
