@@ -76,8 +76,10 @@ export function reglasRespuestaObjecion(deck) {
   L.forEach((l,i)=>{
     // R20 [juez]: cualquier pregunta de dos partes con «o» en un chat se trataba como objeción a resolver, incluso
     // una pregunta neutra de agenda («¿mi hora o la tuya?»); solo cuenta si trae una duda/negación real o un tema
-    // conocido (pareceObjecionChat).
-    const pregunta=esObjecion(l)?l.texto:(l.tipo==='chat'?(l.mensajes||[]).filter(m=>m.de==='otro'&&/\?/.test(m.texto)&&pareceObjecionChat(m.texto)).map(m=>m.texto).join(' '):'');
+    // conocido (pareceObjecionChat). R21 [juez]: ese chequeo exigía además un "?" literal, así que la forma más
+    // natural de objetar en español («No tengo presupuesto, ni sé si funciona…», una afirmación) nunca se
+    // revisaba; pareceObjecionChat ya distingue duda/negación real de una frase neutra, sin necesitar el signo.
+    const pregunta=esObjecion(l)?l.texto:(l.tipo==='chat'?(l.mensajes||[]).filter(m=>m.de==='otro'&&pareceObjecionChat(m.texto)).map(m=>m.texto).join(' '):'');
     if(!pregunta)return;
     const respuestas=[];
     for(let j=i;j<L.length;j++) {
