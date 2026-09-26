@@ -355,3 +355,28 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   peor caso de fidelidad (r1738, IoU 0.203) no es temporización ni contenido faltante (las dos anotaciones del
   calendario ya estaban en `pruebas/replica/deck.json`) sino geometría fina de posición — requiere iterar
   render→captura→comparación visual, documentado en LECCIONES en vez de adivinarse.
+- Juez r21 (independiente, 88.65 sobre 6b87732): sin regresiones, mismo nivel que r19/r20; el paso de punta a punta del
+  juez (dos decks escritos a mano) confirmó 3 huecos semánticos cerrados de raíz y destapó fricciones nuevas de
+  usabilidad. `layouts-datos.mjs → calendario`: `grande` (el calendario que usa casi todo el alto, ref_1760) se
+  desactivaba solo por traer `anotaciones` de `dia`, aunque esas notas viven en el margen y nunca ocupan el ancho de
+  la tarjeta — r1738 medía IoU 0.203 por eso; ahora `grande` no depende de las anotaciones y el margen de la nota se
+  ajusta a 15px cuando la tarjeta es grande (si no, la flecha de conexión cae bajo 60px y qa.mjs la avisa como
+  garabato). IoU sube a 0.27 y el encuadre mejora de w−4.8/h−7.4 a w−2.3/h−1.5 contra el video; r1760 no cambia.
+  `conversacion.mjs`: `familia()` agrupaba por PREFIJO sin límite ("comprometerme" caía en comprar/pedir/orden por
+  compartir "compr" con "comprar", un verbo distinto); `compartenRaiz` exige un remanente ≤ 4 letras (la desinencia
+  típica de una conjugación real) y la raíz de respaldo sin familia real ya no trunca a 5 letras fijas. `clave()`
+  excluye pronombres indefinidos (alguien, algo, nadie…) de la selección, que antes ganaban por longitud a la palabra
+  real. `reglas-arco.mjs`: el chequeo de objeción compuesta en un chat exigía un "?" literal además de
+  `pareceObjecionChat`; la forma más natural de objetar en español es declarativa («No tengo presupuesto, ni…») y
+  nunca se revisaba — se quita el requisito del signo. `construir.mjs → anclaArriba`: un chat de UN solo mensaje
+  corto en 9:16 se ancla al tercio superior (como listas/tarjetas) en vez de flotar centrado con ~70% del lienzo
+  vacío; se probó también con 2 mensajes pero un sello o procedencia se posicionan asumiendo el chat centrado y se
+  encimaban al moverlo, así que se acotó a 1 mensaje. `secuencia-referencia.mjs`: `medirRegion` acepta `conSilueta`
+  (rejilla 16×16 de la región, misma idea que el glifo de tinta.mjs) e `iouSiluetas` compara esa rejilla; la ráfaga
+  d_123 ahora trae `forma_iou` por muestra (0.70→0.22 a lo largo de la ráfaga), una segunda métrica que se suma a
+  presencia/caja sin reemplazarlas y sin certificar identidad exacta del asset. `reglas-deck.mjs → laminaMasLarga`
+  (tiempos.mjs): el aviso de reel > 60s ahora nombra la lámina con más segundos de voz para recortar primero ahí (el
+  juez necesitó 5 rondas de recorte a ciegas sin esa pista). Hallazgos NUEVOS documentados en LECCIONES sin resolver
+  esta ronda: `armar.mjs` no renderiza ni un PNG mientras quede cualquier aviso (incluida la duración), dejando al
+  autor sin ver el resultado visual mientras ajusta pacing; y un reel con los 8 elementos típicos de una pieza
+  completa no cabe en 60s pase lo que pase.

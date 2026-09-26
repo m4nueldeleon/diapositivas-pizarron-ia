@@ -515,3 +515,62 @@ de una fuente no puede borrar el beat que antes ocupaba: conserva pasos y voz o 
   anteriores para r255/r403; no se adivinó un valor de `arriba`/`lado` sin esa verificación. `demostracionChat` y
   `revisarComponentes` siguen usando reglas semánticas basadas en vocabulario/regex, no en comprensión real: un
   humano sigue debiendo leer cada componente/demostración marcado, estas reglas solo bajan cuánto hay que revisar.
+
+## 2026-09-25 · El calendario se encogía por sus propias notas (juez r21, 88.65 sobre 6b87732)
+
+- **r1738 resuelto (parcial):** el pendiente abierto en r20 SÍ tenía una causa de motor, no solo de calibración fina.
+  `layouts-datos.mjs → calendario`: el modo «grande» (casi todo el alto del lienzo, barra de 160px, ref_1760) se
+  desactivaba en cuanto la lámina traía `anotaciones` con `dia` — exactamente el caso de r1738 (dos notas al margen)
+  — y caía al tamaño chico (altura útil H−2·mv en vez de H−80). Las notas viven en el margen lateral y NUNCA ocupan
+  el ancho de la tarjeta, así que no había ninguna razón real para excluirlas de «grande»; era una condición
+  sobrante. Quitarla sube el `parecido` de 0.896 a 0.974 y el IoU de silueta de 0.203 a 0.27 (el encuadre pasa de
+  w−4.8%/h−7.4% a w−2.3%/h−1.5% contra el video). El margen de la nota al borde del lienzo se acotó a 15px (antes
+  40px fijos) cuando la tarjeta es grande: con la tarjeta más ancha, 40px dejaba la flecha de conexión por debajo de
+  60px (qa.mjs ya la avisa como «garabato», un umbral que no se tocó). r1760 (sin notas) no cambió: 0.989→0.989.
+- **Por qué seguía en «revisar»:** el IoU de silueta compara píxeles de tinta, no la caja de encuadre. Con 0.27
+  sigue bajo el umbral de 0.8 de `compararAnclas`, pero la mejora de encuadre y de `parecido` confirma que la
+  dirección es correcta: cerrar la brecha entera exigiría además ajustar el tamaño exacto de celda y el punto de
+  inserción de cada flecha, iterando contra el cuadro real — el mismo patrón de r255/r403, documentado, no adivinado.
+- **Objeción declarativa:** `reglasRespuestaObjecion` (reglas-arco.mjs) pedía un "?" literal ADEMÁS de
+  `pareceObjecionChat` para considerar un mensaje como objeción. La corrección de r20 (duda/negación real, no
+  cualquier «?») era necesaria pero el filtro adicional del signo sobraba y excluía la forma MÁS natural de objetar
+  en español: una afirmación («No tengo presupuesto, ni sé si funciona, ni quiero comprometerme sin verlo»). El
+  juez verificó en vivo que sus propias láminas «objecion»/«respuesta» no generaban ningún aviso por esta causa.
+- **Un nivel arriba de la subcadena:** r20 corrigió que «videollamadas» resolviera «llamada» por `String.includes`
+  sin límite de palabra. El juez r21 encontró el MISMO patrón un nivel de abstracción arriba: `familia()`
+  (conversacion.mjs) agrupaba por `k.startsWith(raiz)` sin límite de longitud, así que «comprometerme» caía en la
+  familia comprar/pedir/orden solo por compartir las 5 letras «compr» con «comprar» — un verbo distinto, no una
+  conjugación. La raíz de respaldo sin familia real (`k.slice(0,5)`) agravaba el problema: para «comprometerme»
+  daba literalmente el mismo «compr», así que el arreglo directo (limitar `familia()`) no bastaba por sí solo; el
+  respaldo también necesitaba conservar casi toda la palabra. La regla general: una palabra de la MISMA familia solo
+  alarga la raíz con una desinencia corta (-o, -as, -ar, -ando, -amos…, ≤ 4 letras); un remanente largo señala una
+  palabra distinta. Además, `clave()` podía escoger un pronombre indefinido («alguien») en vez del sustantivo real
+  («soporte») cuando empataban en longitud — un descarte de vocabulario, no de forma, pero del mismo origen: nadie
+  había probado el caso con un pronombre de relleno.
+- **Chat de un mensaje, ancla arriba:** pendiente abierto desde r19. La causa no era de tamaño de letra sino de
+  POSICIÓN: `anclaArriba` (construir.mjs) ya sabía anclar listas/tarjetas al tercio superior cuando se revelan de a
+  uno; extenderlo a un chat de un único mensaje corto en vertical resuelve el «~70% de lienzo vacío» sin tocar
+  ninguna escala de letra (que además está topada por `coherenciaChats` a 1.3× el chat más pequeño del deck — subir
+  la letra del mensaje solitario no habría sido suficiente en un deck con otros chats más chicos). Se probó
+  extender esto a 2 mensajes también, pero un `sello` o una `procedencia` («Ejemplo ficticio») se posicionan
+  asumiendo el chat centrado y se encimaban con el mensaje al moverlo arriba (guardia de aprobados, reel-juez-r17):
+  se acotó a exactamente 1 mensaje, que además es el caso que documentaron los tres jueces.
+- **Cursor por forma, no solo presencia:** la región compartida cursor/ruta de d_123 solo medía si había tinta
+  neutra (presencia) y su caja. `medirRegion` ahora arma opcionalmente una rejilla 16×16 de la región (la misma
+  idea que ya usaba tinta.mjs para el glifo de un emoji) e `iouSiluetas` la compara entre referencia y réplica: una
+  segunda métrica que se SUMA a presencia/caja, nunca las reemplaza, y sigue sin certificar identidad exacta del
+  asset (el estado lo dice explícitamente). Contra el video real da una serie con variación genuina (0.70 → 0.22 a
+  lo largo de la ráfaga), no un valor plano — la mano se aleja de la posición de referencia según avanza el
+  arrastre, una señal más honesta que «hay tinta en la caja».
+- **Reel > 60s, ahora con adónde recortar:** el juez necesitó CINCO rondas de recorte a ciegas para bajar un reel de
+  ~1:23 a ~1:08 porque el aviso solo decía «pasa de 60 s; recorta beats», sin decir DÓNDE. `laminaMasLarga`
+  (tiempos.mjs) suma los segundos de voz por lámina y el mensaje del reel ahora nombra la que más acumula.
+- **Hallazgos nuevos, sin resolver esta ronda:** (1) `armar.mjs` no genera ni un PNG mientras quede un solo aviso,
+  incluida la duración — un autor que solo use el flujo de producción documentado puede quedarse ciego, iterando el
+  guion sin ver jamás el render; solo `render.mjs --qa` reveló los problemas de geometría reales. (2) Un reel de
+  10-14 láminas con los 8 elementos típicos de una pieza completa (chat, lista+llave, flujo, tarjetas, contraste,
+  cifra, objeción, pago del gancho) no cabe en 60s ni con recorte agresivo — quizá ARCOS.md necesite una franja de
+  60-90s para esta combinación exacta, en vez de asumir que siempre cabe recortando voz.
+- **Porqué (patrón repetido):** de nuevo, un parche sobre el caso reportado (el "?" del juez r20, la subcadena de
+  r20) no cierra el hueco si la regla de fondo sigue basada en superficie (un signo literal, un prefijo sin límite).
+  La corrección que resiste una paráfrasis nueva describe la FORMA gramatical o geométrica del problema.
