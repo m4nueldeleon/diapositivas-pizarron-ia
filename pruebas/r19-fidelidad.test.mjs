@@ -1,4 +1,4 @@
-// R19 (fidelidad): 11 de 12 ráfagas medidas (falta i_calendario), la ✕ sobre el arco a la escala
+// R19 (fidelidad): las 12 ráfagas medidas, la ✕ sobre el arco a la escala
 // del video [c_alcancia 1:44.5] y las réplicas de secuencia (`_solo_rafaga`) fuera de las parejas de cuadro fijo.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,10 +8,10 @@ import path from 'node:path';
 import { prepararSalida, abrir } from '../scripts/lib/pipeline.mjs';
 import { RAFAGAS } from '../scripts/lib/secuencia-referencia.mjs';
 
-test('r19: once de doce ráfagas del video tienen su lámina en la réplica', () => {
+test('r19: las doce ráfagas del video tienen su lámina en la réplica', () => {
   const replica = JSON.parse(fs.readFileSync(new URL('./replica/deck.json', import.meta.url), 'utf8'));
   const ids = new Set(replica.laminas.map(l => l.id));
-  assert.deepEqual(RAFAGAS.map(r => r.nombre).sort(), ['a_doctor', 'b_lista', 'c_alcancia', 'd_123', 'e_sello', 'f_flechas', 'g_partner', 'h_pill', 'j_table', 'k_underline', 'l_stack']);
+  assert.deepEqual(RAFAGAS.map(r => r.nombre).sort(), ['a_doctor', 'b_lista', 'c_alcancia', 'd_123', 'e_sello', 'f_flechas', 'g_partner', 'h_pill', 'i_calendario', 'j_table', 'k_underline', 'l_stack']);
   assert.ok(RAFAGAS.every(r => ids.has(r.id)), RAFAGAS.map(r => r.id).join(','));
   const r103 = replica.laminas.find(l => l.id === 'r103');
   assert.equal(r103._solo_rafaga, true, 'r103 replica la secuencia, no el cuadro fijo con fotos propias');

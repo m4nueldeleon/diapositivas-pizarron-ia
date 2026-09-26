@@ -34,6 +34,9 @@ export const RAFAGAS = [
   // R19: la pastilla del reparto entra sola en el corte [15:23.9] y queda quieta; las partes llegan después
   {nombre:'h_pill',id:'r922',paso:0,corte:16,fin:24,aparicion:true,
     regiones:{pastilla:[.2,.1,.6,.5]}},
+  // R19: la segunda nota del calendario entra completa en el corte [29:00.5 → 29:00.6], abajo a la derecha
+  {nombre:'i_calendario',id:'r1738',paso:-1,corte:21,fin:24,aparicion:true,
+    regiones:{nota:[.72,.7,.28,.2]}},
 ];
 
 // Caja de tinta por región; la tinta roja se aísla para comprobar su corte.

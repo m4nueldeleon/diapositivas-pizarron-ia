@@ -322,10 +322,10 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   la tinta roja en 6 × 4 celdas (`rojoPNG`). En 9:16 una lista con llave compacta sus renglones (0.6× la letra) y QA cuenta la
   nota de la llave en la ocupación. `unirEnfasisCorto` baja la frase 9:16 hasta 84 px para no partir una marca corta.
   📚 es «material de estudio» (no «material» a secas).
-- R19, fidelidad: `RAFAGAS` mide 11 de 12 ráfagas (suma c_alcancia → r103, k_underline → r38, g_partner → r628, j_table → r328,
-  f_flechas → r448, l_stack → r668 y h_pill → r922; falta i_calendario). Las regiones `gris…` se miden en modo neutro. La
+- R19, fidelidad: `RAFAGAS` mide las 12 ráfagas (suma c_alcancia → r103, k_underline → r38, g_partner → r628, j_table → r328,
+  f_flechas → r448, l_stack → r668, h_pill → r922 e i_calendario → r1738). Las regiones `gris…` se miden en modo neutro. La
   gráfica 16:9 va en 1720 × 740 (eje desde x=40, 5 guías hasta bajo la banda, banda de 380 × 80 a 46 px) y `pasos` con
-  `sobre` invierte la escala: mano de 160 y tecla de 110 [ref_668]. Encuadre 16/16; elementos 10/16. Una lámina
+  `sobre` invierte la escala: mano de 160 y tecla de 110 [ref_668]. Encuadre 17/17; elementos 10/17. Una lámina
   `_solo_rafaga` (r103: el cuadro usa fotos propias) replica la secuencia y `comparar` no la empareja con su cuadro fijo.
   La ✕ del arco tachado (`equis`, `data-clase="equis"`) mide 88 px con trazo de 13, como el video.
 - Juez r19 (Claude, 88.95 sobre 058d029): la llave de una lista sin columnas en 16:9 (`colocarAnotaciones`,

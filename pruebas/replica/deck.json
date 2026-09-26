@@ -351,6 +351,74 @@
      "tono": "verde"
     }
    ]
+  },
+  {
+   "_cuadro": "28:58-29:00 calendario de 14 días; la segunda nota entra en el corte (ráfaga i_calendario)",
+   "paso_ref": -1,
+   "id": "r1738",
+   "tipo": "calendario",
+   "titulo": "14 Days Calendar",
+   "rango": "DAYS 1-14",
+   "palabra_dia": "DAY",
+   "dias": [
+    {
+     "sub": "Investment"
+    },
+    {
+     "sub": "Identification"
+    },
+    {
+     "sub": "Community"
+    },
+    {
+     "sub": "Authority"
+    },
+    {
+     "sub": "Trust"
+    },
+    {
+     "sub": "Reciprocity"
+    },
+    {
+     "sub": "Social Proof"
+    },
+    {
+     "sub": "Story"
+    },
+    {
+     "sub": "Anticipation"
+    },
+    {
+     "sub": "FOMO"
+    },
+    {
+     "sub": "FOMO"
+    },
+    {
+     "sub": "FOMO"
+    },
+    {
+     "sub": "URGENCY"
+    },
+    {
+     "sub": "URGENCY"
+    }
+   ],
+   "anotaciones": [
+    {
+     "texto": "«I like this person's content»",
+     "dia": 1,
+     "lado": "izquierda",
+     "arriba": "30%"
+    },
+    {
+     "texto": "«I need to buy this product.»",
+     "dia": 14,
+     "lado": "derecha",
+     "paso": 1,
+     "arriba": "74%"
+    }
+   ]
   }
  ],
  "_nota": "Réplica versionada del video de referencia: cada lámina r<seg> se compara con ref_<seg>.jpg (fuera del repo, en pizarron-ref/replica). paso_ref: paso visible en el cuadro (desde 0; -1 = el último). Ver PROTOCOLO §4b."
