@@ -85,6 +85,15 @@ export function duracionPorTipo(deck, pasos) {
 
 export const mmss = seg => { const s = Math.max(0, Math.round(seg)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
+// La lámina con más segundos de voz acumulados entre todos sus pasos: dónde recortar primero (reel > 60 s).
+export function laminaMasLarga(deck, pasos) {
+  const totales = new Map();
+  for (const s of tiemposSecuenciales(deck, pasos)) totales.set(s.lamina, (totales.get(s.lamina) || 0) + (s.fin - s.inicio));
+  let mejor = null;
+  for (const [i, seg] of totales) if (!mejor || seg > mejor.seg) mejor = { lamina: i + 1, id: deck.laminas[i].id || deck.laminas[i].tipo, seg };
+  return mejor;
+}
+
 // ---------- alineación con transcripción ----------
 export function normalizar(t) {
   return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')

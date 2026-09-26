@@ -20,7 +20,7 @@ export { reglasSincronia, reglasPersona, infoPersona } from './sincronia.mjs';
 //
 // Todas devuelven { errores: [], avisos: [] } con mensajes accionables que citan la referencia o el archivo.
 import { plano, palabras, sinCitas } from './markup.mjs';
-import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso } from './tiempos.mjs';
+import { PIEZAS, minutosObjetivo, duracionTotal, duracionPorTipo, tiemposSecuenciales, mmss, duracionPaso, laminaMasLarga } from './tiempos.mjs';
 import { DATO_DURO } from './layouts-datos.mjs';
 import { analizarCompuesto, analizarTrazo, PARECIDOS, esCampoEmoji, specsDeCampo, contrasteMedido, esGlifoDibujado } from './emoji.mjs';
 import { RELLENO, esFirmaRelleno, buscarMarca } from './marca.mjs';
@@ -185,7 +185,11 @@ export function reglasDuracion(deck, pasos) {
     const seg = i0 >= 0 ? tiemposSecuenciales(deck, pasos).find(s => s.lamina === i0) : null;
     if (seg && seg.inicio / est > 0.7) avisos.push(`la oferta del VSL corto empieza en ${mmss(seg.inicio)} de ~${mmss(est)} (${Math.round((seg.inicio / est) * 100)}%): en 3-6 min va desde el 55-60%, con el llamado 2 veces (ARCOS.md, VSL corto)`);
   }
-  if (deck.pieza === 'reel' && est > 60) avisos.push(`el reel dura ~${mmss(est)}: pasa de 60 s; recorta beats (ARCOS.md, reel)`);
+  if (deck.pieza === 'reel' && est > 60) {
+    const peor = laminaMasLarga(deck, pasos);
+    const donde = peor ? ` Recorta primero la lámina ${peor.lamina} (${peor.id}): concentra ~${mmss(peor.seg)} de voz.` : '';
+    avisos.push(`el reel dura ~${mmss(est)}: pasa de 60 s; recorta beats (ARCOS.md, reel).${donde}`);
+  }
   return { errores, avisos, estimado: est, laminas: lam, camara: cam };
 }
 
