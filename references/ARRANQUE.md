@@ -9,7 +9,9 @@ lee siempre: manda.
 1. Fija la pieza y su duración (ARCOS.md, tabla de piezas): `reel` 30-60 s, `tutorial`, `clase`, `vsl-corto`, `vsl`,
    `propuesta`. Si vende, llena antes la `ficha_oferta` (SKILL.md, ruta mínima por pieza). Un reel de 10+ láminas
    con chat, lista, flujo, tarjetas y contraste casi siempre pasa de 60 s en la primera pasada [r19]: arranca con
-   7-9 láminas o cuenta con recortar la voz 2-3 veces en `armar.mjs --corregir`.
+   7-9 láminas o cuenta con recortar la voz 2-3 veces en `armar.mjs --corregir`. En la otra dirección, una muestra
+   corta (6-8 láminas) declarada `tutorial`/`clase`/`vsl` exige el arco completo de esa pieza (2-8 min, demostración
+   real): si es solo una muestra o un ejemplo, usa `"pieza": "libre"` en vez de forzar el arco [r20].
 2. Escribe el guion como **frases de voz**, una por cosa que aparece en pantalla.
 3. Traduce cada frase a una lámina (tabla de abajo) y escribe `deck.json` a mano.
 4. Corre `node scripts/armar.mjs <carpeta>`: revisa el guion y la geometría ANTES del primer PNG. Corrige lo que pida
