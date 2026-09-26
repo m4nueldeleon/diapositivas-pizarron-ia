@@ -380,3 +380,6 @@ Desde Codex/sandbox: consulta [PROTOCOLO, Desde Codex / sandbox](references/PROT
   esta ronda: `armar.mjs` no renderiza ni un PNG mientras quede cualquier aviso (incluida la duración), dejando al
   autor sin ver el resultado visual mientras ajusta pacing; y un reel con los 8 elementos típicos de una pieza
   completa no cabe en 60s pase lo que pase.
+- R21 (laptop, al integrar): `runtime-legibilidad.js → ajustarSubsCalendario` iguala la letra de los rótulos de día del
+  calendario hasta que el más ancho quepa en su tarjeta (4 px de aire, piso de 30 px, el mínimo de QA): con el calendario
+  grande de la ronda 21, «Identificación» se cortaba en el borde.

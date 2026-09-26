@@ -244,3 +244,16 @@ function ajustarFlujoVertical(lam) {
   let t = Math.max(...ets.map(e => parseFloat(getComputedStyle(e).fontSize) || 84));
   for (; t > 76 && ets.some(e => ancho(e) > 780); t -= 4) ets.forEach(e => e.style.fontSize = (t - 4) + 'px');
 }
+
+// R21 [demo 25]: con el calendario grande, «Identificación» (una sola palabra) se cortaba en el borde de su tarjeta: el
+// rótulo tiene overflow oculto y una palabra no se parte. Una letra común para todos los rótulos del calendario, que baja
+// de 1 en 1 hasta que el rótulo más ancho quepa (piso 30 px, el mínimo de QA para texto visible).
+function ajustarSubsCalendario(lam) {
+  const subs = [...lam.querySelectorAll('.calendario .dia span')].filter(e => e.textContent.trim() && e.getClientRects().length);
+  if (!subs.length) return;
+  // contra la TARJETA con 4 px de aire por lado: medido contra el propio rótulo, «Identificación» quedaba pegada al borde.
+  // El piso es el de QA para texto visible (30 px): si ni así cabe, QA le pide al autor un rótulo más corto.
+  const desborda = () => subs.some(e => e.scrollWidth > Math.min(e.clientWidth + 1, e.parentElement.clientWidth - 8));
+  let t = Math.max(...subs.map(e => parseFloat(getComputedStyle(e).fontSize) || 32));
+  for (; t > 30 && desborda(); t -= 1) subs.forEach(e => e.style.fontSize = (t - 1) + 'px');
+}

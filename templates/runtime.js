@@ -1207,7 +1207,7 @@
     lams.forEach(l => { try { ampliarFilas(l); alinearFlujoMixto(l); ajustarFlujoVertical(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: escala de fila (${e.message})`); } });
     lams.forEach(l => { try { colocarSignos(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: signos (${e.message})`); } });
     lams.forEach(l => { try { igualarCuadros(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cuadrantes (${e.message})`); } });
-    lams.forEach(l => { try { ajustarCifras(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra (${e.message})`); } });
+    lams.forEach(l => { try { ajustarCifras(l); ajustarSubsCalendario(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: cifra o calendario (${e.message})`); } });
     lams.forEach(l => { try { ajustarCaveat(l); ajustarNotasLlave(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: nota de llave (${e.message})`); } });
     lams.forEach(l => { try { ajustarTablas(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: tabla (${e.message})`); } });
     lams.forEach(l => { try { ajustarFirma(l); } catch (e) { avisos.push(`lámina ${+l.dataset.i + 1}: firma (${e.message})`); } });
