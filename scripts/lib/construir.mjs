@@ -8,7 +8,7 @@ import { bloqueQr } from './qr.mjs';
 import path from 'node:path';
 import { Emojis, DEFS_GLOBALES } from './emoji.mjs';
 import { crearCtx, escapar, CURSOR_MANO, CURSOR_PUNO, CURSOR_FLECHA } from './comun.mjs';
-import { marcar } from './markup.mjs';
+import { marcar, palabras } from './markup.mjs';
 import * as T from './layouts-texto.mjs';
 import * as D from './layouts-datos.mjs';
 import { validarDeck, sanearDeck, resolverComo } from './contrato.mjs';
@@ -159,7 +159,7 @@ function armarLamina(l, i, deck, comun) {
   }
   const revela = l.tipo === 'camara' ? [['a cámara']] : describirPasos(interior + extras, pasos, ctx.conexiones);
   return {
-    interior, pasos, extras, oscura, revela, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l),
+    interior, pasos, extras, oscura, revela, conexiones: ctx.conexiones, avisos: ctx.avisos, arriba: anclaArriba(l, ctx.vertical),
     clic: clic ? JSON.stringify({ a: clic.a, p: clic.p, ...(clic.pos ? { pos: clic.pos } : {}), ...(clic.fin ? { fin: clic.fin } : {}) }) : '',
   };
 }
@@ -167,10 +167,16 @@ function armarLamina(l, i, deck, comun) {
 // Listas y tarjetas que se revelan de a uno arrancan ARRIBA y crecen hacia abajo: el hueco de abajo le
 // anuncia al ojo que viene más [ref_95 «Without:», 3:25, 9:25]. Una lista que entra entera se queda
 // centrada [15:35]. `anclar: "arriba" | "centro"` lo fuerza en cualquier diseño.
-function anclaArriba(l) {
+function anclaArriba(l, vertical) {
   if (l.tipo === 'lista' && Array.isArray(l.columnas)) return false;
   if (l.anclar === 'centro') return false;
   if (l.anclar === 'arriba') return true;
+  // R21 [juez]: un chat de UN SOLO mensaje corto en 9:16 quedaba centrado en el lienzo (el bloque mide poco,
+  // así que el centrado deja ~70% del alto vacío arriba y abajo). Como en un feed real, el mensaje se ancla
+  // al tercio superior. Con 2+ mensajes ya no aplica: un sello o una procedencia («Ejemplo ficticio») se
+  // posicionan asumiendo el chat centrado y se encimaban con el mensaje al moverlo arriba.
+  if (vertical && l.tipo === 'chat' && !l.marco && l.variante !== 'muro' && Array.isArray(l.mensajes)
+    && l.mensajes.length === 1 && palabras(l.mensajes[0].texto) <= 8) return true;
   if (!['lista', 'tarjetas'].includes(l.tipo) || l.revelar === 'todo') return false;
   // la fila de logos es una sola fila: crecer desde arriba dejaba media lámina vacía
   if (l.tipo === 'tarjetas' && l.variante === 'logos') return false;
